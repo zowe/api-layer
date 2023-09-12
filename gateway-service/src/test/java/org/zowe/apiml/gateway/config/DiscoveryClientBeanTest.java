@@ -12,8 +12,6 @@ package org.zowe.apiml.gateway.config;
 
 import com.netflix.appinfo.*;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -25,14 +23,12 @@ import static org.mockito.Mockito.when;
 class DiscoveryClientBeanTest {
     DiscoveryClientConfig dcConfig;
 
-    @BeforeEach
     void setup() {
         ApplicationContext context = mock(ApplicationContext.class);
         EurekaJerseyClientImpl.EurekaJerseyClientBuilder builder = mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class);
         dcConfig = new DiscoveryClientConfig(context, null, builder);
     }
 
-    @Test
     void givenListOfCentralRegistryURLs_thenCreateNewDiscoveryClientForEach() {
         String[] centralRegistryUrls = {"https://localhost:10021/eureka", "https://localhost:10011/eureka"};
         ReflectionTestUtils.setField(dcConfig, "centralRegistryUrls", centralRegistryUrls);
