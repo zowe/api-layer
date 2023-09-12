@@ -44,7 +44,7 @@ class DiscoveryClientBeanTest {
         LeaseInfo leaseInfo = mock(LeaseInfo.class);
         when(info.getLeaseInfo()).thenReturn(leaseInfo);
         EurekaClientConfigBean bean = new EurekaClientConfigBean();
-        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoverClientWrapper(manager, bean, null);
+        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null);
         wrapper.shutdown();
         assertEquals(2, wrapper.getDiscoveryClients().size());
     }

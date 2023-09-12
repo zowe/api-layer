@@ -69,12 +69,12 @@ public class DiscoveryClientConfig {
     @Bean(destroyMethod = "shutdown")
     @ConditionalOnProperty(name = "apiml.service.centralRegistryUrls")
     @RefreshScope
-    public DiscoveryClientWrapper additionalDiscoverClientWrapper(ApplicationInfoManager manager,
-                                                                  EurekaClientConfig config,
-                                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    public DiscoveryClientWrapper additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
+                                                                   EurekaClientConfig config,
+                                                                   @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
         ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
-        List<ApimlDiscoveryClient> listOfDiscoveryClients = new ArrayList<>();
+        List<ApimlDiscoveryClient> discoveryClientsList = new ArrayList<>();
 
         for (String url : centralRegistryUrls) {
 
@@ -91,9 +91,9 @@ public class DiscoveryClientConfig {
 
             final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, configBean, args, this.context);
             discoveryClientClient.registerHealthCheck(healthCheckHandler);
-            listOfDiscoveryClients.add(discoveryClientClient);
+            discoveryClientsList.add(discoveryClientClient);
         }
 
-        return new DiscoveryClientWrapper(listOfDiscoveryClients);
+        return new DiscoveryClientWrapper(discoveryClientsList);
     }
 }
