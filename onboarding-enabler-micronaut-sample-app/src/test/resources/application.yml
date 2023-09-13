@@ -4,6 +4,7 @@ micronaut:
   server:
       port: ${apiml.service.port}
       context-path: /${apiml.service.serviceId}
+      host: ${apiml.service.hostname}
   ssl:
       enabled: true
       key-store:

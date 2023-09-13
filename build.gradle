@@ -79,6 +79,8 @@ allprojects {
             //substitute(module('javax.inject:javax.inject:1')).using(module('jakarta.inject:jakarta.inject-api:1.0.5'))
             substitute(module('javax.activation:javax.activation-api:1.0')).using(module('jakarta.activation:jakarta.activation-api:1.2.2'))
         }
+
+        resolutionStrategy.force "org.slf4j:slf4j-api:${slf4jVersion}"
     }
 
     dependencies {
