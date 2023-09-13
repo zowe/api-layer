@@ -111,9 +111,9 @@ body {
         flex-direction: column;
         align-items: center;
         max-width: 368px;
+        min-width: 19.3%;
         width: var( --sideNavWidth );
         min-height: 100dvh;
-        min-width: var( --sideNavWidth );
         padding: var( --spaceSmall ) var( --spaceSmaller ) var( --spaceSmall ) var( --spaceSmall );
         position: relative;
       }

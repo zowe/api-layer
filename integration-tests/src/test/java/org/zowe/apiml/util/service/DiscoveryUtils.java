@@ -36,16 +36,20 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 public class DiscoveryUtils {
 
-    public static final String getDiscoveryUrl() {
+    public static String getDiscoveryUrl() {
         DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getHost() + ":" + discoveryServiceConfiguration.getPort();
     }
+    public static String getAdditionalDiscoveryUrl() {
+        DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getAdditionalHost() + ":" + discoveryServiceConfiguration.getAdditionalPort();
+    }
 
-    public static final List<String> getGatewayUrls() {
+    public static List<String> getGatewayUrls() {
         return getInstances("gateway").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
     }
 
-    public static final List<InstanceInfo> getInstances(String serviceId) {
+    public static List<InstanceInfo> getInstances(String serviceId) {
         SSLConfig originalConfig = RestAssured.config.getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         List<InstanceInfo> instances = getInstances(serviceId, null);
@@ -53,7 +57,7 @@ public class DiscoveryUtils {
         return instances;
     }
 
-    public static final List<InstanceInfo> getInstances(String serviceId, String instanceId) {
+    public static List<InstanceInfo> getInstances(String serviceId, String instanceId) {
         final List<InstanceInfo> out = new LinkedList<>();
 
         final StringBuilder url = new StringBuilder().append(getDiscoveryUrl()).append("/eureka");

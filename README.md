@@ -32,14 +32,12 @@ The API Mediation Layer (API ML) provides a single point of access for mainframe
 
 The following platform is required to run the API Mediation Layer:
 
-* Java SE Development Kit 8 
-    * <https://jdk.java.net/java-se-ri/8-MR3> 
-    * <http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html> 
-    * <https://www.ibm.com/developerworks/java/jdk/>
+* Java SE Development Kit 8 or 11
+* Java version 17 isn't supported for building yet
 
 The following tools are required to build and develop the API Mediation Layer:
 
-* Node.js version 10.23.3 and npm are required to be installed globally to run npm commands in project root folder.
+* Node.js and npm are required to be installed globally to run npm commands in project root folder.
   
     * <https://nodejs.org/dist/>
     
@@ -55,10 +53,10 @@ The following tools are required to build and develop the API Mediation Layer:
    ./gradlew build
    ```
 
-2. Install `concurrently` globally:
+2. Install the same version of the `concurrently` globally:
 
   ```sh
-   npm install -g concurrently
+   npm install -g concurrently@^6.0.0
    ```
 
 3. Run all service on your local machine:
@@ -71,7 +69,23 @@ Alternatively, to use Docker to run the API ML, consult the [Docker README](dock
 
 ## Security
 
-The API Mediation Layer can use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.   
+By default the API Mediation Layer for local development uses mock zOSMF as the authentication provider. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password
+
+The API Mediation Layer can also use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.  
+<details>
+  <summary>Configure dummy credentials provider</summary>
+  ### Configure `dummy` credentials provider
+
+  Modify [gateway-service.yml](/config/local/gateway-service.yml) 
+  ```yaml
+        apiml:
+          security:
+            auth:
+              #provider: zosmf
+              provider: dummy
+
+  ```
+</details>
 
 For more information, see [API Mediation Layer Security](https://docs.zowe.org/stable/extend/extend-apiml/zowe-api-mediation-layer-security-overview).
 
@@ -84,6 +98,7 @@ To run integration tests, follow the instructions in [Integration Tests](integra
 For more information about how the certificates between API ML services are set up for localhost, see [TLS Certificates for localhost](keystore/README.md).
 
 ## Contributor guidelines
+
 To add new functionality, follow the guidelines in [Contributing](CONTRIBUTING.md).
 
 ## Local configuration of services
