@@ -135,7 +135,8 @@ task runIntegrationTests(type: Test) {
             'AdditionalLocalTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
     }
 }
@@ -155,7 +156,8 @@ task runLocalIntegrationTests(type: Test) {
             'AdditionalLocalTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -175,7 +177,8 @@ task runAllLocalIntegrationTests(type: Test) {
             'MainframeDependentTests',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -197,7 +200,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'HATest',
             'ChaoticHATest',
             'NotAttlsTest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
 
     }
@@ -246,7 +250,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'DiscoverableClientDependentTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -272,7 +277,8 @@ task runCITests(type: Test) {
             'ServiceIdPrefixReplacerTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test'
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
     }
 }
@@ -352,7 +358,8 @@ task runBaseTests(type: Test) {
             'InfinispanStorageTest',
             'OktaOauth2Test',
             'CloudGatewayProxyTest',
-            'CloudGatewayServiceRouting'
+            'CloudGatewayServiceRouting',
+            'MultipleRegistrationsTest'
         )
     }
 }

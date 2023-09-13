@@ -27,11 +27,8 @@ public class HADiscoveryRequests {
     public List<DiscoveryRequests> discoveryServices = new ArrayList<>();
 
     public HADiscoveryRequests() {
-        String[] discoveryHosts = environmentConfiguration().getDiscoveryServiceConfiguration().getHost().split(",");
-        for (String host : discoveryHosts) {
-            discoveryServices.add(new DiscoveryRequests(host));
-        }
-
+        discoveryServices.add(new DiscoveryRequests(environmentConfiguration().getDiscoveryServiceConfiguration().getHost()));
+        discoveryServices.add(new DiscoveryRequests(environmentConfiguration().getDiscoveryServiceConfiguration().getAdditionalHost()));
         log.info("Created HADiscoveryRequests");
     }
 

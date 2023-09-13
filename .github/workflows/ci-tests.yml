@@ -28,7 +28,10 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew clean build runStartUpCheck --info --scan -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew clean build --info --scan
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --info --scan
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
@@ -36,5 +39,11 @@ jobs:
                     name: CITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+                        gateway-service/build/reports/**
+                        api-catalog-services/build/reports/**
+                        caching-service/build/reports/**
+                        cloud-gateway-service/build/reports/**
+                        discovery-service/build/reports/**
+                        metrics-service/build/reports/**
 
             -   uses: ./.github/actions/teardown
