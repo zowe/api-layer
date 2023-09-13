@@ -102,6 +102,15 @@
                                                                     "description": "Enable if client certificate should be considered as a source of authentication.",
                                                                     "default": false
                                                                 },
+                                                                "acceptForwardedCert":  {
+                                                                    "type": "boolean",
+                                                                    "description": "Enable if the the Client Certificate forwarded in a dedicated header should be accepted",
+                                                                    "default": false
+                                                                },
+                                                                "certificatesUrl": {
+                                                                    "type": "string",
+                                                                    "description": "URL of the Central Gateway and its endpoint where it provides its public certificates."
+                                                                },
                                                                 "externalMapperUrl": {
                                                                     "type": "string",
                                                                     "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
@@ -147,6 +156,12 @@
                                                             "type": "boolean",
                                                             "description": "Allow URLs on gateway to contain encoded slashes.",
                                                             "default": true
+                                                        },
+                                                        "centralRegistryUrls": {
+                                                            "type": "array",
+                                                            "description": "List of additional Discovery Services URLs to register with.",
+                                                            "minItems": 1,
+                                                            "uniqueItems": true
                                                         },
                                                         "corsEnabled": {
                                                             "type": "boolean",
