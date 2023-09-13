@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * This controller allows control the caches about services. The main purpose is to evict cached data
- * about services when a update happened in discovery service. Discovery service notifies about any
+ * about services when an update happened in discovery service. Discovery service notifies about any
  * change to be sure that cache on gateway is still valid.
  */
 @AllArgsConstructor

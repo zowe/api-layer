@@ -14,22 +14,32 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
+import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
  * fetchRegistry. User can call this method to asynchronously fetch new data from discovery service. There is no time
  * to fetching.
  * <p>
- * Configuration also add listeners to call other beans waiting for fetch new registry. It speed up distribution of
+ * Configuration also add listeners to call other beans waiting for fetch new registry. It speeds up distribution of
  * changes in whole gateway.
  */
 @Configuration
@@ -37,23 +47,53 @@ import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 public class DiscoveryClientConfig {
     private final ApplicationContext context;
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
+    private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+
+    @Value("${apiml.service.centralRegistryUrls:-}")
+    private String[] centralRegistryUrls;
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
-    public ApimlDiscoveryClient eurekaClient(ApplicationInfoManager manager,
-                                             EurekaClientConfig config,
-                                             @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    public ApimlDiscoveryClient primaryApimlEurekaClient(ApplicationInfoManager manager,
+                                                         EurekaClientConfig config,
+                                                         @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
-        ApplicationInfoManager appManager;
-        if (AopUtils.isAopProxy(manager)) {
-            appManager = ProxyUtils.getTargetObject(manager);
-        } else {
-            appManager = manager;
-        }
+        ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
+
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
         return discoveryClientClient;
     }
 
+    @Bean(destroyMethod = "shutdown")
+    @ConditionalOnProperty(name = "apiml.service.centralRegistryUrls")
+    @RefreshScope
+    public DiscoveryClientWrapper additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
+                                                                   EurekaClientConfig config,
+                                                                   @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    ) {
+        ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
+        List<ApimlDiscoveryClient> discoveryClientsList = new ArrayList<>();
+
+        for (String url : centralRegistryUrls) {
+
+            EurekaClientConfigBean configBean = new EurekaClientConfigBean();
+            BeanUtils.copyProperties(config, configBean);
+
+            Map<String, String> urls = new HashMap<>();
+            urls.put("defaultZone", url);
+
+            configBean.setServiceUrl(urls);
+
+            MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
+            args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
+
+            final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, configBean, args, this.context);
+            discoveryClientClient.registerHealthCheck(healthCheckHandler);
+            discoveryClientsList.add(discoveryClientClient);
+        }
+
+        return new DiscoveryClientWrapper(discoveryClientsList);
+    }
 }
