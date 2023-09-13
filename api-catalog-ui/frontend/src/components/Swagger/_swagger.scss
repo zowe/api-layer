@@ -166,7 +166,10 @@ body {
     border-radius: var( --borderRadius1 );
     margin-bottom: var( --spaceMedium );
 
-    .opblock-section-header,
+    .opblock-section-header {
+      display: flex;
+      justify-content: space-between;
+    }
     .parameters-container {
       margin: var( --spaceSmaller ) 0px var( --spaceSmaller );
     }
@@ -200,12 +203,29 @@ body {
     table {
       width: 100%;
 
+      .parameters-col_name,
+      .parameters-col_description {
+        padding-top: var(--spaceSmall);
+      }
+      tr:first-child{
+        .parameters-col_name,
+        .parameters-col_description {
+  
+          padding-top: 0;
+        }
+
+      }
+
+
       td {
         vertical-align: top;
 
         > *:not(:last-child) {
           margin-bottom: var( --spaceSmaller );
         }
+          .renderedMarkdown:nth-child(2) {
+              display: none !important;
+          }
       }
     }
 
