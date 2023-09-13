@@ -186,13 +186,32 @@ body {
       > * {
 
         &:first-child {
+          font-weight: 700;
           flex: 100%;
         }
         &:not(:first-child) {
           flex: 1;
         }
       }
+
+      .parameter__type {
+        color: #3b4151;
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .parameter__in {
+        color: gray;
+        font-family: monospace;
+        font-size: 12px;
+        font-style: italic;
+        font-weight: 600;
+      }
     }
+    
+
+
     .opblock-section-header {
       align-items: center;
 
@@ -219,10 +238,6 @@ body {
 
       td {
         vertical-align: top;
-
-        > *:not(:last-child) {
-          margin-bottom: var( --spaceSmaller );
-        }
           .renderedMarkdown:nth-child(2) {
               display: none !important;
           }
