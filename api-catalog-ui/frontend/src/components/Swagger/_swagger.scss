@@ -167,15 +167,10 @@ body {
     margin-bottom: var( --spaceMedium );
 
     .opblock-section-header,
-    .parameters-col_name {
-      display: flex;
-    }
     .parameters-container {
       margin: var( --spaceSmaller ) 0px var( --spaceSmaller );
     }
-    .parameters-col_description {
-      text-align: right;
-    }
+
     .col_header {
       margin-bottom: var( --spaceMedium );
     }
@@ -191,7 +186,6 @@ body {
           flex: 100%;
         }
         &:not(:first-child) {
-          margin-left: var( --spaceMedium );
           flex: 1;
         }
       }
