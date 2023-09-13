@@ -14,6 +14,11 @@ module.exports = {
         config.module.rules = [
             ...config.module.rules,
             {
+                test: /\.html$/i,
+                use: 'html-loader',
+                // loader: 'html-loader',
+            },
+            {
                 resolve: {
                     fallback: { querystring: require.resolve('querystring-es3') },
                 },
