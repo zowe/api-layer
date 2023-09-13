@@ -299,5 +299,9 @@ public class HttpConfig {
         return eurekaJerseyClientBuilder.build();
     }
 
+    @Bean
+    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
+        return eurekaJerseyClientBuilder;
+    }
 
 }

@@ -102,6 +102,9 @@ spring:
     application:
         name: ${apiml.service.id}
     cloud:
+        discovery:
+            reactive:
+                enabled: false
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
