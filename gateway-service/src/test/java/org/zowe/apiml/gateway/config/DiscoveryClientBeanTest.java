@@ -34,7 +34,7 @@ class DiscoveryClientBeanTest {
 
     @Test
     void givenListOfCentralRegistryURLs_thenCreateNewDiscoveryClientForEach() {
-        String[] centralRegistryUrls = {"https://localhost:10021/eureka", "https://localhost:10011/eureka"};
+        String[] centralRegistryUrls = {"https://host:10021/eureka", "https://host:10011/eureka"};
         ReflectionTestUtils.setField(dcConfig, "centralRegistryUrls", centralRegistryUrls);
         ApplicationInfoManager manager = mock(ApplicationInfoManager.class);
         InstanceInfo info = mock(InstanceInfo.class);

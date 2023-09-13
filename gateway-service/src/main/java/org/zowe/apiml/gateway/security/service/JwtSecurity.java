@@ -258,12 +258,6 @@ public class JwtSecurity {
      */
     private void validateInitializationWhenZosmfIsAvailable() {
         zosmfListener.register();
-        Exception e1;
-        try {
-            throw new RuntimeException("hlaska tu");
-        } catch (Exception e) {
-            e1 = e;
-        }
         new Thread(() -> {
             try {
                 events.add("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
@@ -278,8 +272,7 @@ public class JwtSecurity {
                     apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                 }
                 apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
-                System.out.println(e1);
-                System.exit(1);
+                System.exit(1); // TODO remove
             }
         }).start();
     }
@@ -323,7 +316,7 @@ public class JwtSecurity {
                         synchronized (events) {
                             apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                         }
-                        System.exit(1);
+                        System.exit(1); // TODO remove
                     }
                 } else {
                     events.add("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
