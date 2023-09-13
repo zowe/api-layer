@@ -43,6 +43,7 @@ apiml:
         scheme: https  # "https" or "http"
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        centralRegistryUrls: # List of additional Discovery Services URLs to register with
 
     httpclient:
         conn-pool:
@@ -101,6 +102,9 @@ spring:
     application:
         name: ${apiml.service.id}
     cloud:
+        discovery:
+            reactive:
+                enabled: false
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:

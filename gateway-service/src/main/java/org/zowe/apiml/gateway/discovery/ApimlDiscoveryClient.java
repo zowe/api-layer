@@ -26,7 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Custom implementation of Eureka client. It support additional feature:
+ * Custom implementation of Eureka client. It supports additional feature:
  * - fetchRegistry - invoke asynchronous task to update registry from discovery client immediatelly
  */
 public class ApimlDiscoveryClient extends CloudEurekaClient {

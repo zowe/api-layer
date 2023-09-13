@@ -12,16 +12,12 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -30,7 +26,6 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.net.ssl.SSLHandshakeException;
-
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -38,6 +33,7 @@ import java.util.function.Supplier;
 
 import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
+@RequiredArgsConstructor
 @Slf4j
 public abstract class AbstractZosmfService {
 
@@ -53,18 +49,6 @@ public abstract class AbstractZosmfService {
     protected final DiscoveryClient discovery;
     protected final RestTemplate restTemplateWithoutKeystore;
     protected final ObjectMapper securityObjectMapper;
-
-    protected AbstractZosmfService(
-        AuthConfigurationProperties authConfigurationProperties,
-        DiscoveryClient discovery,
-        @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-        ObjectMapper securityObjectMapper
-    ) {
-        this.authConfigurationProperties = authConfigurationProperties;
-        this.discovery = discovery;
-        this.restTemplateWithoutKeystore = restTemplateWithoutKeystore;
-        this.securityObjectMapper = securityObjectMapper;
-    }
 
     /**
      * @return serviceId of z/OSMF service from configuration, which is used
@@ -121,7 +105,6 @@ public abstract class AbstractZosmfService {
      *
      * @param zosmf the z/OSMF service id
      * @return the uri
-     *
      * @throws ServiceNotAccessibleException if z/OSMF is not available in discovery service
      */
     protected String getURI(String zosmf) {

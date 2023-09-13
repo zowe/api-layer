@@ -22,7 +22,9 @@ public class DiscoveryServiceConfiguration {
     private String user;
     private String password;
     private String host;
+    private String additionalHost;
     private int port;
+    private int additionalPort;
     private int instances;
 }
 
