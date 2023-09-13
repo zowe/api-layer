@@ -272,7 +272,6 @@ public class JwtSecurity {
                     apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));
                 }
                 apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
-                System.exit(1); // TODO remove
             }
         }).start();
     }
