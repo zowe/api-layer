@@ -97,7 +97,8 @@ function setMultipleElements(uiConfig) {
  * @returns {Promise<T>}
  */
 function fetchImagePath() {
-    const getImgUrl = `${getBaseUrl()}/custom-logo`;
+    const baseUrl = getBaseUrl().endsWith('/') ? getBaseUrl().slice(0, -1) : getBaseUrl();
+    const getImgUrl = `${baseUrl}/custom-logo`;
 
     return fetch(getImgUrl)
         .then((response) => {
