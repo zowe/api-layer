@@ -4,54 +4,72 @@
     width: auto;
     height: 100%;
 }
-
 dialog {
     top: 91%;
 }
 
-.form {
-    font-family: Roboto;
-    font-size: 14px;
-    
-    h4 {
-        color: #CC092F;
-        font-size: 28px;
-        font-weight: 400 !important;
-      }
-    textarea {
-        height: 5vw;
-        width: 100%;
-    }
-    label {
-        color: var(--text20)
-    }
-    p {
-        color: #bf1650;
-      }
-      
-      p::before {
-        display: inline;
-        content: "⚠ ";
-      }
-    .nameContainer {
+.feedback-dialog {
+    .alert-dialog-title {
         display: flex;
         justify-content: space-between;
-    }
-    .textWithLabel {
-        display: flex;
-        flex-direction: column;
-    }
 
-    .legalAgreementText {
-        font-size: 10px;
+        .close-trigger {
+            height: var( --spaceMedium );
+        }
     }
+    .form {
+        font-family: var( --fontFamily00 );
+        font-size: var( --fontSmall );
+        
+        h4 {
+            color: var( --controlText15 );
+            font-size: var( --fontLarger );
+            font-weight: var( --fontWeightNormal ) !important;
+            margin: 0px;
+        }
+        textarea {
+            height: 253px;
+            width: 100%;
+            resize: none;
+        }
+        label {
+            color: var(--text20)
+        }
+        p {
+            color: #bf1650;
+    
+            &:before {
+                display: inline;
+                content: "⚠ ";
+            }
+        }
 
-    .submitButton {
-        padding: 7px 20px;
-        border: 1px solid #CC092F;
-        border-radius: 3px;
-        background-color: #CC092F;
-        color: white;
-        cursor: pointer;
+        .legalAgreementText {
+            font-size: var( --fontSmaller );
+        }
+        .submitButton {
+            padding: var( --spaceSmaller ) var( --spaceLarge );
+            border: 1px solid #CC092F;
+            border-radius: var( --borderRadius2);
+            background-color: #CC092F;
+            color: white;
+            cursor: pointer;
+            width: auto;
+        }
+        input[type=checkbox] {
+            display: block;
+            margin-right: var( --spaceSmaller );
+        }
+        > * {
+            &:not(:first-child){
+                @extend .mt-3;
+            }
+            &:not(.full-width) {
+                width: calc(50% - calc(#{var( --spacing2 )} / 2))
+            }
+            label, input:not([type=checkbox]) {
+                @extend .full-width;
+            }
+        }
     }
 }

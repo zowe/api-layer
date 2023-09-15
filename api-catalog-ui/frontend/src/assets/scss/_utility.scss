@@ -1,0 +1,154 @@
+body {
+  //flex
+
+  .flex-dir-row,
+  .flex-dir-col,
+  .flex-jc-end,
+  .flex-jc-start,
+  .flex-jc-center,
+  .flex-ai-end,
+  .flex-ai-start,
+  .flex-ai-center,
+  .flex {
+    display: flex;
+  }
+  .flex-dir-row {
+    flex-direction: row;
+  }
+  .flex-dir-col {
+    flex-direction: column;
+
+    > label {
+      & + * {
+        margin-top: var( --spacing1 );
+      }
+    } 
+  }
+  .flex-jc-end {
+    justify-content: flex-end;
+  }
+  .flex-jc-start {
+    justify-content: flex-start;
+  }
+  .flex-jc-center {
+    justify-content: center;
+  }
+  .flex-ai-end {
+    align-items: flex-end;
+  }
+  .flex-ai-start {
+    align-items: flex-start;
+  }
+  .flex-ai-center {
+    align-items: center;
+  }
+
+  //width
+
+  .full-width {
+    width: 100%;
+  }
+  .half-width {
+    width: 50%;
+  }
+  .no-width {
+    width: 0px;
+  }
+
+  //padding
+
+
+  .pl-1 {
+    padding-left: var( --spacing1 );
+  }
+  .pl-2 {
+    padding-left: var( --spacing2 );
+  }
+  .pl-3 {
+    padding-left: var( --spacing3 );
+  }
+  .pr-1 {
+    padding-right: var( --spacing1 );
+  }
+  .pr-2 {
+    padding-right: var( --spacing2 );
+  }
+  .pr-3 {
+    padding-right: var( --spacing3 );
+  }
+  .pb-1 {
+    padding-bottom: var( --spacing1 );
+  }
+  .pb-2 {
+    padding-bottom: var( --spacing2 );
+  }
+  .pb-3 {
+    padding-bottom: var( --spacing3 );
+  }
+  .pt-1 {
+    padding-top: var( --spacing1 );
+  }
+  .pt-2 {
+    padding-top: var( --spacing2 );
+  }
+  .pt-3 {
+    padding-top: var( --spacing3 );
+  }
+  .p-1 {
+    padding: var( --spacing1 );
+  }
+  .p-2 {
+    padding: var( --spacing2 );
+  }
+  .p-3 {
+    padding: var( --spacing3 );
+  }
+
+  //margin
+
+  .ml-1 {
+    margin-left: var( --spacing1 );
+  }
+  .ml-2 {
+    margin-left: var( --spacing2 );
+  }
+  .ml-3 {
+    margin-left: var( --spacing3 );
+  }
+  .mr-1 {
+    margin-right: var( --spacing1 );
+  }
+  .mr-2 {
+    margin-right: var( --spacing2 );
+  }
+  .mr-3 {
+    margin-right: var( --spacing3 );
+  }
+  .mb-1 {
+    margin-bottom: var( --spacing1 );
+  }
+  .mb-2 {
+    margin-bottom: var( --spacing2 );
+  }
+  .mb-3 {
+    margin-bottom: var( --spacing3 );
+  }
+  .mt-1 {
+    margin-top: var( --spacing1 );
+  }
+  .mt-2 {
+    margin-top: var( --spacing2 );
+  }
+  .mt-3 {
+    margin-top: var( --spacing3 );
+  }
+  .m-1 {
+    margin: var( --spacing1 );
+  }
+  .m-2 {
+    margin: var( --spacing2 );
+  }
+  .m-3 {
+    margin: var( --spacing3 );
+  }
+}

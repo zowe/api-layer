@@ -105,3 +105,11 @@
     }//end api-diff-form
   }//end body
 }
+@media screen and (min-width: 768px) {
+  .feedback-dialog {
+      .MuiPaper-root {
+          width: 900px;
+          min-width: 900px;
+      }
+  }
+}

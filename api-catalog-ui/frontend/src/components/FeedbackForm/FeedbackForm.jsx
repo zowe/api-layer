@@ -8,16 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { Component } from 'react';
+import { Button } from '@material-ui/core';
 import { useForm } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { isAPIPortal } from '../../utils/utilFunctions';
-import './FeedbackForm.scss';
+import closeIcon from '../../assets/images/xmark.svg';
 
-export default function FeedbackForm(isDialogOpen, handleDialog) {
+export default function FeedbackForm(isDialogOpen, handleDialogClose) {
     const {
         register,
         handleSubmit,
@@ -27,40 +25,41 @@ export default function FeedbackForm(isDialogOpen, handleDialog) {
     const onSubmit = (data) => console.log(data);
 
     return (
-        <Dialog open={isDialogOpen}>
-            <DialogTitle id="alert-dialog-title">
-                <div>
-                    <span>Feedback Form</span>
-                    {/* Close doesn't work */}
-                    <button type="button" onClick={() => handleDialog()}>
-                        Close
-                    </button>
-                </div>
+        <Dialog open={isDialogOpen} className="feedback-dialog">
+            <DialogTitle className="alert-dialog-title">
+                <span>Feedback Form</span>
+                {/* Close doesn't work */}
+                <Button className="close-btn icon-btn" aria-label="close" onClick={() => handleDialogClose}>
+                    <img alt="Close" src={closeIcon} className="close-trigger" />
+                </Button>
             </DialogTitle>
+
             <DialogContent>
                 <form className="form" onSubmit={handleSubmit(onSubmit)}>
                     <h4>Do you have feedback for us?</h4>
-                    <div className="textWithLabel">
+                    <div className="flex-dir-col full-width">
                         <label>Write your feedback</label>
-                        <textarea {...register('feedback', { required: true })} />
+                        <textarea {...register('feedback', { required: true })} className={errors?.feedback?.type === 'required' ? 'input-error' : ''} />
                         {errors?.feedback?.type === 'required' && <p>This field is required</p>}
                     </div>
 
-                    <div className="nameContainer">
-                        <div className="textWithLabel">
+                    <div className="flex-dir-row full-width name-container">
+                        <div className="full-width flex-dir-col">
                             <label>First Name</label>
-                            <input {...register('firstName', { required: true })} />
+                            <input type='text' {...register('firstName', { required: true })} className={errors?.firstName?.type === 'required' ? 'input-error' : ''} />
                             {errors?.firstName?.type === 'required' && <p>This field is required</p>}
                         </div>
-                        <div className="textWithLabel">
+                        <div className="full-width flex-dir-col ml-2">
                             <label>Last name</label>
-                            <input {...register('lastName', { required: true })} />
+                            <input type='text' {...register('lastName', { required: true })} className={errors?.lastName?.type === 'required' ? 'input-error' : ''} />
                             {errors?.lastName?.type === 'required' && <p>This field is required</p>}
                         </div>
                     </div>
-                    <div className="textWithLabel">
+                    <div className="flex-dir-col">
                         <label>Work Email</label>
                         <input
+                            type='email'
+                            className={errors?.workEmail?.type === 'required' ? 'input-error' : ''}
                             {...register('workEmail', {
                                 required: true,
                                 pattern: {
@@ -73,14 +72,14 @@ export default function FeedbackForm(isDialogOpen, handleDialog) {
                         {errors?.workEmail?.type === 'required' && <p>This field is required</p>}
                         {errors?.workEmail?.message && <p>{errors?.workEmail?.message}</p>}
                     </div>
-                    <div className="textWithLabel">
+                    <div className="flex-dir-col">
                         <label>Job title</label>
-                        <input {...register('title', { required: true })} />
+                        <input type='text' {...register('title', { required: true })} className={errors?.title?.type === 'required' ? 'input-error' : ''} />
                         {errors?.title?.type === 'required' && <p>This field is required</p>}
                     </div>
-                    <div className="textWithLabel">
+                    <div className="flex-dir-col">
                         <label>Country</label>
-                        <select {...register('country', { required: true })}>
+                        <select {...register('country', { required: true })} className={errors?.country?.type === 'required' ? 'input-error' : ''}>
                             <option value="">Select an Item</option>
                             <option value="US">United States of America</option>
                             <option value="AF">Afghanistan</option>
@@ -336,11 +335,10 @@ export default function FeedbackForm(isDialogOpen, handleDialog) {
                         </select>
                         {errors?.country?.type === 'required' && <p>This field is required</p>}
                     </div>
-                    <div className="textWithLabel">
+                    <div className="flex-dir-col full-width">
                         <label>Legal Agreement Details</label>
-                        <div>
-                            {/* Checkbox isn't displaying */}
-                            <input type="checkbox" id="legal" name="legal" value="legalAgreement" />
+                        <div className='flex-dir-row flex-ai-start'>
+                            <input {...register('legal', { required: true })} className={errors?.legal?.type === 'required' ? 'input-error' : ''} type="checkbox" id="legal" name="legal" value="legalAgreement" />
                             <label htmlFor="legal" className="legalAgreementText">
                                 I agree to continue receiving commercial messages about Broadcom products and services.
                                 I understand that my use of Broadcom's website is subject to Broadcom's Terms of Use, my
@@ -348,8 +346,11 @@ export default function FeedbackForm(isDialogOpen, handleDialog) {
                                 from emailed communications at any time.
                             </label>
                         </div>
+                        {errors?.legal?.type === 'required' && <p>This field is required</p>}
                     </div>
-                    <input type="submit" className="submitButton" />
+                    <div className="full-width flex-dir-row">
+                        <Button className="submitButton" aria-label="Submit" type="submit">Submit</Button>
+                    </div>
                 </form>
             </DialogContent>
         </Dialog>
