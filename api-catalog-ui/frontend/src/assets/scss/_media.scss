@@ -9,6 +9,9 @@
     .desktop-view {
       display: none !important;
     }
+    .feedback-dialog .form textarea {
+      height: 150px;
+    }
     .header {
       #doc, .product-name {
         margin-right: var( --spaceSmaller );
@@ -104,12 +107,4 @@
       }
     }//end api-diff-form
   }//end body
-}
-@media screen and (min-width: 768px) {
-  .feedback-dialog {
-      .MuiPaper-root {
-          width: 900px;
-          min-width: 900px;
-      }
-  }
 }

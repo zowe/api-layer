@@ -9,6 +9,10 @@ dialog {
 }
 
 .feedback-dialog {
+    .MuiPaper-root {
+        width: 85vw;
+        max-width: 900px;
+    }
     .alert-dialog-title {
         display: flex;
         justify-content: space-between;
@@ -28,7 +32,7 @@ dialog {
             margin: 0px;
         }
         textarea {
-            height: 253px;
+            height: 250px;
             width: 100%;
             resize: none;
         }
