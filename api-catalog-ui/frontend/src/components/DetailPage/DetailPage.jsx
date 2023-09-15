@@ -11,6 +11,7 @@ import { Component, Suspense } from 'react';
 import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -19,6 +20,7 @@ import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 export default class DetailPage extends Component {
     componentDidMount() {
@@ -91,11 +93,13 @@ export default class DetailPage extends Component {
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
+        const showSideBar = false;
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
         }
         return (
             <div className="main">
+                <FeedbackButton leftPlacement="80vw" />
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
@@ -148,13 +152,6 @@ export default class DetailPage extends Component {
                                         <h2 id="title" className="text-block-11">
                                             {tiles[0].title}
                                         </h2>
-                                    )}
-                                </div>
-                                <div className="paragraph-description-container">
-                                    {tiles !== undefined && tiles.length > 0 && (
-                                        <p id="description" className="text-block-12">
-                                            {tiles[0].description}
-                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -235,9 +232,11 @@ export default class DetailPage extends Component {
                         )}
                         {apiPortalEnabled && <Divider light id="footer-divider" />}
                     </div>
+
+                    <Footer />
                 </div>
 
-                <div className="side-bar" />
+                {showSideBar && <div className="side-bar" />}
             </div>
         );
     }

@@ -1,28 +1,35 @@
-body #bottom-info-div {
-  display: flex;
-  width: 74%;
-  margin: auto;
-  justify-content: space-between;
-  padding: var( --spaceMedium ) 0px;
-  text-align: center;
-
-  strong {
-    font-size: var( --fontMedium );
-    display: block;
-    margin-bottom: var( --spaceMedium );
-  }
-  a {
-    color: #53565A;
-    font-size: var( --fontSmall );
-
-    &:hover {
-      color: #1976D2;
+body {
+  #pageFooter {
+    > div {
+      display: flex;
     }
   }
+  #bottom-info-div {
+    display: flex;
+    width: 74%;
+    margin: auto;
+    justify-content: space-between;
+    padding: var( --spaceMedium ) 0px;
+    text-align: center;
+  
+    strong {
+      font-size: var( --fontMedium );
+      display: block;
+      margin-bottom: var( --spaceMedium );
+    }
     .links {
-        display: block;
-        padding: 5px;
+      display: block;
+      padding: 5px;
     }
+    a {
+      color: var( --text10Disabled );
+      font-size: var( --fontSmall );
+  
+      &:hover {
+        color: var( --text15 );
+      }
+    }
+  }
 }
 h6#footer-message {
     color: #53565A;
@@ -32,3 +39,24 @@ h6#footer-message {
     font-weight: 400;
     line-height: 18.7px;
 }
+
+@media (max-width: 800px) {
+  body #bottom-info-div {
+    flex-direction: column;
+  }
+  .left {
+    .MuiTypography-root, .MuiTypography-subtitle2 {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-left: 0 !important;
+      #footer-logo {
+        width: auto !important;
+        margin-right: 0 !important;
+        margin-bottom: 6px !important;
+      }
+    }
+  }
+
+}
+

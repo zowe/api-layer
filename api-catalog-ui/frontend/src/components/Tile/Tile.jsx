@@ -70,49 +70,64 @@ export default class Tile extends Component {
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
                 <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
-                        <Typography id="tileLabel" className="grid-tile-status">
-                            {!apiPortalEnabled && this.getTileStatus(tile)}
-                            {!apiPortalEnabled && this.getTileStatusText(tile)}
-                        </Typography>
-                        <Typography id="service-title" variant="subtitle1">
-                            {service.title}
-                        </Typography>
-                        {!apiPortalEnabled && service.sso && (
-                            <Typography variant="h6" id="grid-tile-sso">
-                                (SSO)
-                            </Typography>
-                        )}
-                        {apiPortalEnabled && (
-                            <div id="media-icons">
-                                <div id="swagger">{hasSwagger && <img alt="Swagger" src={swaggerImg} />}</div>
-                                <Typography
-                                    className="media-labels"
-                                    id="use-cases-counter"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    {useCasesCounter}
+                        <div className="tile-ctn">
+                            <div className="tile-title">
+                                <Typography id="tileLabel" className="grid-tile-status">
+                                    {!apiPortalEnabled && this.getTileStatus(tile)}
+                                    {!apiPortalEnabled && this.getTileStatusText(tile)}
                                 </Typography>
-                                <Typography
-                                    className="media-labels"
-                                    id="tutorials-counter"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    {tutorialsCounter}
+                                <Typography id="service-title" variant="subtitle1">
+                                    {service.title}
                                 </Typography>
-                                <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
-                                <Typography
-                                    className="media-labels"
-                                    id="videos-counter"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    {videosCounter}
-                                </Typography>
-                                <img id="videos" alt="Videos" src={videosImg} />
+                                {!apiPortalEnabled && service.sso && (
+                                    <Typography variant="h6" id="grid-tile-sso">
+                                        (SSO)
+                                    </Typography>
+                                )}
                             </div>
-                        )}
+
+                            {apiPortalEnabled && (
+                                <>
+                                    <div id="swagger" className="desktop-view">
+                                        {hasSwagger ? (
+                                            <img alt="Swagger" src={swaggerImg} />
+                                        ) : (
+                                            <div style={{ height: '24px', width: '24px' }} />
+                                        )}
+                                    </div>
+                                    <Typography
+                                        className="media-labels desktop-view"
+                                        id="use-cases-counter"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        {useCasesCounter}
+                                    </Typography>
+                                    <div className="imageCounter desktop-view">
+                                        <Typography
+                                            className="media-labels desktop-view"
+                                            id="tutorials-counter"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            {tutorialsCounter}
+                                        </Typography>
+                                        <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
+                                    </div>
+                                    <div className="imageCounter desktop-view">
+                                        <Typography
+                                            className="media-labels"
+                                            id="videos-counter"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            {videosCounter}
+                                        </Typography>
+                                        <img id="videos" alt="Videos" src={videosImg} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </CardContent>
                 </CardActionArea>
             </Card>

@@ -1,0 +1,57 @@
+.feedback-form-content {
+    margin: auto;
+    display: flex;
+    width: auto;
+    height: 100%;
+}
+
+dialog {
+    top: 91%;
+}
+
+.form {
+    font-family: Roboto;
+    font-size: 14px;
+    
+    h4 {
+        color: #CC092F;
+        font-size: 28px;
+        font-weight: 400 !important;
+      }
+    textarea {
+        height: 5vw;
+        width: 100%;
+    }
+    label {
+        color: var(--text20)
+    }
+    p {
+        color: #bf1650;
+      }
+      
+      p::before {
+        display: inline;
+        content: "⚠ ";
+      }
+    .nameContainer {
+        display: flex;
+        justify-content: space-between;
+    }
+    .textWithLabel {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .legalAgreementText {
+        font-size: 10px;
+    }
+
+    .submitButton {
+        padding: 7px 20px;
+        border: 1px solid #CC092F;
+        border-radius: 3px;
+        background-color: #CC092F;
+        color: white;
+        cursor: pointer;
+    }
+}

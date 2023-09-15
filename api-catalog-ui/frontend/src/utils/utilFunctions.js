@@ -144,6 +144,14 @@ function handleWhiteHeader(uiConfig) {
     }
 }
 
+export const closeMobileMenu = () => {
+    document.body.classList.remove('mobile-menu-open');
+};
+
+export const openMobileMenu = (event) => {
+    document.body.classList.toggle('mobile-menu-open');
+};
+
 /**
  * Custom the UI look to match the setup from the service metadata
  * @param uiConfig the configuration to customize the UI
