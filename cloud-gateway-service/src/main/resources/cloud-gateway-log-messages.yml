@@ -376,3 +376,10 @@ messages:
       text: "Cannot receive information about services on API Gateway with apimlId '%s' because: %s"
       reason: "Cannot connect to the Gateway service."
       action: "Make sure that the external Gateway service is running and the truststore of the both Gateways contain the corresponding certificate."
+
+    - key: org.zowe.apiml.gateway.serviceRegistryDisabled
+      number: ZWESG101
+      type: INFO
+      text: "Skip cloud gateway registry list request"
+      reason: "Cloud gateway service registry is disabled."
+      action: "Enable cloud gateway service."

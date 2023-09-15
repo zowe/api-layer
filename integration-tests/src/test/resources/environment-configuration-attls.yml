@@ -15,6 +15,8 @@ discoveryServiceConfiguration:
     user: user
     password: user
     host: localhost
+    additionalHost: localhost
+    additionalPort: 10031
     port: 10001
     instances: 1
 discoverableClientConfiguration:

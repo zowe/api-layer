@@ -14,7 +14,9 @@ discoveryServiceConfiguration:
     scheme: https
     user: user
     password: user
-    host: discovery-service,discovery-service-2
+    host: discovery-service
+    additionalHost: discovery-service-2
+    additionalPort: 10011
     port: 10011
     instances: 2
 discoverableClientConfiguration:
