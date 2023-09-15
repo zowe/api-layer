@@ -9,9 +9,9 @@
  */
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { Provider } from 'react-redux';
+import FeedbackForm from './FeedbackForm';
 import configureStore from 'redux-mock-store';
-import FeedbackButtonContainer from './FeedbackButtonContainer';
+import { Provider } from 'react-redux';
 
 const mockStore = configureStore();
 
@@ -25,7 +25,7 @@ describe('Feedback Button Container', () => {
         };
         container = render(
             <Provider store={store}>
-                <FeedbackButtonContainer history={history} />
+                <FeedbackForm history={history} />
             </Provider>
         );
     });

@@ -11,8 +11,6 @@ import { Fab } from '@material-ui/core';
 import { Component } from 'react';
 import FeedbackImage from '../../assets/images/square-envelope.svg';
 import FeedbackForm from '../FeedbackForm/FeedbackForm';
-import formatError from '../Error/ErrorFormatter';
-import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
 export default class FeedbackButton extends Component {
     constructor(props) {
@@ -46,7 +44,7 @@ export default class FeedbackButton extends Component {
     // };
 
     render() {
-        const { isLoading, noFloat, leftPlacement } = this.props;
+        const { noFloat, leftPlacement } = this.props;
         const { isDialogOpen } = this.state;
 
         return (

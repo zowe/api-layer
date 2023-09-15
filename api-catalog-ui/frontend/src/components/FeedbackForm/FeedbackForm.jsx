@@ -14,6 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import closeIcon from '../../assets/images/xmark.svg';
+import './FeedbackForm.scss';
 
 export default function FeedbackForm(isDialogOpen, handleDialogClose) {
     const {

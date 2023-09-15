@@ -99,7 +99,7 @@ export default class DetailPage extends Component {
         }
         return (
             <div className="main">
-                <FeedbackButton leftPlacement="80vw" />
+                {apiPortalEnabled && <FeedbackButton leftPlacement="80vw" />}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
@@ -154,6 +154,15 @@ export default class DetailPage extends Component {
                                         </h2>
                                     )}
                                 </div>
+                                {!apiPortalEnabled && (
+                                    <div className="paragraph-description-container">
+                                        {tiles !== undefined && tiles.length > 0 && (
+                                            <p id="description" className="text-block-12">
+                                                {tiles[0].description}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             {apiPortalEnabled && !onlySwaggerPresent && (
                                 <div id="right-resources-menu">
