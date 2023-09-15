@@ -38,7 +38,7 @@ class RegistryControllerTest {
         @Test
         void shouldReturnEmptyFlux() {
 
-            StepVerifier.create(registryController.getServices(null, null))
+            StepVerifier.create(registryController.getServices(null, null, null))
                     .verifyComplete();
 
             verifyNoInteractions(centralApimlInfoMapper, gatewayIndexService);
@@ -60,16 +60,16 @@ class RegistryControllerTest {
         @Test
         void shouldFetchTwoApimlInfos() {
             Map<String, List<ServiceInfo>> registryServices = Maps.of("apiml1", servicesOne, "apiml2", servicesTwo);
-            when(gatewayIndexService.listRegistry(null, null)).thenReturn(registryServices);
+            when(gatewayIndexService.listRegistry(null, null, null)).thenReturn(registryServices);
             when(centralApimlInfoMapper.buildApimlServiceInfo(any(), any())).thenReturn(apimlInfoOne, apimlInfoTwo);
 
-            StepVerifier.create(registryController.getServices("", null))
+            StepVerifier.create(registryController.getServices("", null, null))
                     .expectNext(apimlInfoOne)
                     .expectNext(apimlInfoTwo)
                     .verifyComplete();
 
 
-            verify(gatewayIndexService).listRegistry(null, null);
+            verify(gatewayIndexService).listRegistry(null, null, null);
             verify(centralApimlInfoMapper).buildApimlServiceInfo("apiml1", servicesOne);
             verify(centralApimlInfoMapper).buildApimlServiceInfo("apiml2", servicesTwo);
         }
@@ -77,15 +77,15 @@ class RegistryControllerTest {
         @Test
         void shouldHandleErrorAndFetchSecondApimlInfo() {
             Map<String, List<ServiceInfo>> registryServices = Maps.of("apiml1", servicesOne, "apiml2", servicesTwo);
-            when(gatewayIndexService.listRegistry(null, null)).thenReturn(registryServices);
+            when(gatewayIndexService.listRegistry(null, null, null)).thenReturn(registryServices);
             when(centralApimlInfoMapper.buildApimlServiceInfo(any(), any())).thenReturn(null, apimlInfoTwo);
 
-            StepVerifier.create(registryController.getServices("", ""))
+            StepVerifier.create(registryController.getServices("", "", ""))
                     .expectNext(apimlInfoTwo)
                     .verifyComplete();
 
 
-            verify(gatewayIndexService).listRegistry(null, null);
+            verify(gatewayIndexService).listRegistry(null, null, null);
             verify(centralApimlInfoMapper).buildApimlServiceInfo("apiml1", servicesOne);
             verify(centralApimlInfoMapper).buildApimlServiceInfo("apiml2", servicesTwo);
         }

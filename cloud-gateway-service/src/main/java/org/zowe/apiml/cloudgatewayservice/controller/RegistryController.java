@@ -37,10 +37,10 @@ public class RegistryController {
     private boolean serviceRegistryEnabled;
 
     @GetMapping(value = {"/registry/", "/registry", "/registry/{apimlId}"})
-    public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId) {
+    public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId, @RequestParam(name = "serviceId", required = false) String serviceId) {
 
         if (serviceRegistryEnabled) {
-            Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId));
+            Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
             return Flux.fromIterable(apimlList.entrySet()).map(this::buildEntry).onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));
         }
         apimlLog.log("org.zowe.apiml.gateway.serviceRegistryDisabled");
