@@ -7,9 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography, IconButton, Snackbar } from '@material-ui/core';
+import { Typography, IconButton, Snackbar, Fab } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import { Component } from 'react';
+import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import Tile from '../Tile/Tile';
@@ -21,6 +22,7 @@ import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 export default class Dashboard extends Component {
     componentDidMount() {
@@ -86,6 +88,7 @@ export default class Dashboard extends Component {
         }
         return (
             <div className="main-content dashboard-content">
+                <FeedbackButton leftPlacement="80vw" />
                 {!apiPortalEnabled && (
                     <div id="dash-buttons">
                         <DialogDropdown
@@ -150,6 +153,7 @@ export default class Dashboard extends Component {
                             </div>
                             {apiPortalEnabled && (
                                 <div className="dashboard-grid-header">
+                                    <div className="empty" />
                                     <h4 className="description-header">Swagger</h4>
                                     <h4 className="description-header">Use Cases</h4>
                                     <h4 className="description-header">Tutorials</h4>
@@ -157,25 +161,28 @@ export default class Dashboard extends Component {
                                 </div>
                             )}
                             <hr id="separator2" />
-                            {isLoading && <div className="loadingDiv" />}
+                            <div className="tile-container">
+                                {isLoading && <div className="loadingDiv" />}
 
-                            {hasTiles &&
-                                tiles.map((tile) =>
-                                    tile.services.map((service) => (
-                                        <Tile
-                                            storeCurrentTileId={storeCurrentTileId}
-                                            service={service}
-                                            key={service}
-                                            tile={tile}
-                                            history={history}
-                                        />
-                                    ))
+                                {hasTiles &&
+                                    tiles.map((tile) =>
+                                        tile.services.map((service) => (
+                                            <Tile
+                                                storeCurrentTileId={storeCurrentTileId}
+                                                service={service}
+                                                key={service}
+                                                tile={tile}
+                                                history={history}
+                                            />
+                                        ))
+                                    )}
+                                {!hasTiles && hasSearchCriteria && (
+                                    <Typography id="search_no_results" variant="subtitle2" className="no-content">
+                                        No services found matching search criteria
+                                    </Typography>
                                 )}
-                            {!hasTiles && hasSearchCriteria && (
-                                <Typography id="search_no_results" variant="subtitle2">
-                                    No services found matching search criteria
-                                </Typography>
-                            )}
+                                <Footer />
+                            </div>
                         </div>
                     </div>
                 )}

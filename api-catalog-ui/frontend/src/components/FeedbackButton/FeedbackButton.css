@@ -1,0 +1,296 @@
+body {
+    background-color: #EFEFEF !important;
+    background-image: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+#grid-container {
+    width : 100%;
+    height: 100%;
+    justify-items: center;
+    padding: 0 3rem 3rem 36px;
+    display: grid;
+    grid-gap: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.api-heading {
+    color: #58606e ;
+    text-align: center;
+    font-weight: 440;
+    margin-top: auto;
+}
+
+#api-heading-id {
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+
+.info-headers {
+    display: inline-flex;
+    font-size: 12px;
+    margin-left: 39px;
+}
+
+#info-headers-div {
+    margin-top: -22px;
+    margin-left: 740px;
+    margin-bottom: -15px;
+    float: right;
+    /*disabled for Zowe Catalog*/
+    display: none;
+}
+
+.footer-links {
+    font-size: 18px;
+    width: 119px;
+    flex-direction: column;
+    line-height: 25px;
+}
+
+.footer-container {
+    position: relative;
+    color: black;
+}
+
+#footer-menu-separator {
+    width: 2px;
+    height: 202px;
+    background-color: #1d5bbf;
+}
+
+.links {
+    color: #000000;
+    font-size: 14px;
+}
+
+.MuiContainer-root.MuiContainer-maxWidthLg {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: auto;
+}
+
+.info-headers-footer {
+    display: flex;
+    width: 46px;
+    flex-direction: column;
+}
+
+#col-1 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.filtering-container {
+    grid-row: 1;
+    grid-column: 1/-1;
+    margin-left: 0;
+    width: 100%;
+    justify-items: left;
+    float: left;
+    grid-template-columns: 422px;
+    grid-template-rows: auto auto;
+}
+
+.filtering-container {
+    float: left;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:before {
+    border-bottom: none;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:after {
+    border: none;
+}
+
+.MuiInputBase-root.MuiInput-root.MuiInput-underline:hover:not(.Mui-disabled):before {
+    border-bottom: none;
+}
+
+#search {
+    height: 50px;
+    width: 422px;
+    margin-top: -20px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #FFFFFF;
+    border: 1px solid #C9C8C5;
+}
+
+#search .MuiInputBase-root {
+    width: 100%;
+}
+
+#search-input > svg {
+    margin-left: 168px;
+}
+
+/* For Firefox */
+@-moz-document url-prefix() {
+    #search > div > div > div > #search-icon {
+        margin-left: 125px;
+    }
+    #search-input > svg {
+        margin-left: 125px;
+    }
+}
+
+
+#search_no_results {
+    color: #1d5bbf;
+}
+
+.no-tiles-container {
+    margin-left: 2rem;
+    text-align: left;
+    overflow: hidden;
+    width: 100%;
+}
+
+@media only screen and (max-width: 950px) {
+    #grid-container {
+        grid-template-columns: auto;
+    }
+}
+
+@media only screen and (max-width: 530px) {
+    .filtering-container {
+        grid-template-columns: 360px;
+    }
+
+    #grid-container {
+        grid-template-columns: 360px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .filtering-container {
+        grid-template-columns: 320px;
+    }
+
+    #grid-container {
+        grid-template-columns: 320px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (min-width: 972px) {
+    .apis {
+        background-image: url(../../assets/images/background.svg);
+    }
+}
+
+/* Custom styles for IE10 and above */
+@media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
+    #grid-container {
+        width : 100%;
+        height: 100%;
+        padding: 0 3rem 3rem 36px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #grid-container > #grid-tile {
+        margin-bottom: 20px;
+    }
+
+    .filtering-container {
+        margin-left: 0;
+        width: 100%;
+        justify-items: left;
+        float: left;
+    }
+
+    .no-tiles-container {
+        margin-left: 2rem;
+        text-align: left;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    @media only screen and (max-width: 530px) {
+        #grid-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    @media only screen and (max-width: 600px) {
+        #grid-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+}
+
+#dash-buttons {
+    margin: -48px 140px;
+    float: right;
+}
+#dash-buttons > span {
+    margin-right: 10px;
+}
+
+#refresh-api-button, #onboard-wizard-button, #wizard-done-button, #wizard-cancel-button, #onboard-wizard-button.MuiButton-label, .wizardForm .MuiButton-label, .wizardForm button.MuiButtonBase-root.MuiButton-root.MuiButton-text {
+    font-size: 16px;
+    height: 2em;
+    color: #3272d9;
+    background-color: #ffffff;
+    margin-right: 10px;
+}
+
+#refresh-api-button:hover, #onboard-wizard-button:hover, #wizard-done-button:hover, #wizard-cancel-button:hover, #onboard-wizard-button.MuiButton-label:hover, .wizardForm .MuiButton-label:hover, .wizardForm button.MuiButtonBase-root.MuiButton-root.MuiButton-text:hover {
+    background-color: #F4F7FA;
+    border: none;
+}
+
+.MuiButton-root, .MuiButton-label, #onboard-wizard-button.MuiButton-label {
+    text-transform: capitalize;
+}
+
+#separator {
+    /*disabled for Zowe Catalog*/
+    display: none;
+    background-color: #1d5bbf;
+    height: 5px;
+    width: 120px;
+}
+
+#separator2 {
+    background-color: #1d5bbf;
+    margin-bottom: auto;
+    margin-top: auto;
+    height: 2px;
+    width: 1096px;
+    display: block;
+}
+
+#top-right-buttons {
+    display: contents;
+}
+
+@media only screen and (max-width: 1120px) {
+    #dash-buttons {
+        margin: 0;
+        float: none;
+    }
+    #search {
+        width: auto;
+    }
+    #separator2 {
+      width: 100%;
+    }
+}
+

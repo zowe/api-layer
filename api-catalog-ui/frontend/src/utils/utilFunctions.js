@@ -97,7 +97,8 @@ function setMultipleElements(uiConfig) {
  * @returns {Promise<T>}
  */
 function fetchImagePath() {
-    const getImgUrl = `${getBaseUrl()}/custom-logo`;
+    const baseUrl = getBaseUrl().endsWith('/') ? getBaseUrl().slice(0, -1) : getBaseUrl();
+    const getImgUrl = `${baseUrl}/custom-logo`;
 
     return fetch(getImgUrl)
         .then((response) => {
@@ -142,6 +143,14 @@ function handleWhiteHeader(uiConfig) {
         }
     }
 }
+
+export const closeMobileMenu = () => {
+    document.body.classList.remove('mobile-menu-open');
+};
+
+export const openMobileMenu = (event) => {
+    document.body.classList.toggle('mobile-menu-open');
+};
 
 /**
  * Custom the UI look to match the setup from the service metadata

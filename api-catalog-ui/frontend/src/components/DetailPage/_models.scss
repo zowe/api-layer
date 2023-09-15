@@ -43,6 +43,11 @@ body {
     .model-box-control[aria-expanded="true"] .model-toggle {
       rotate: -90deg;
     }
+    .model .property {
+      word-break: break-word;
+      padding: var( --spaceSmaller );
+      display: block;
+    }
 
     .model-toggle {
       width: 20px;
