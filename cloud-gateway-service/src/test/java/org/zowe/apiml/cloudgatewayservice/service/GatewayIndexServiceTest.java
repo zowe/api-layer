@@ -57,6 +57,7 @@ class GatewayIndexServiceTest {
     private ServiceInfo serviceInfoA, serviceInfoB;
     private WebClient webClient;
     private final String apiCatalogApiId = "zowe.apiml.apicatalog";
+    private final String serviceId = "mockzosmf";
     @Mock
     private ClientResponse clientResponse;
     @Mock
@@ -76,6 +77,7 @@ class GatewayIndexServiceTest {
         serviceInfoB.setApiml(new ServiceInfo.Apiml());
         ServiceInfo.ApiInfoExtended sysviewApiInfo = new ServiceInfo.ApiInfoExtended();
         sysviewApiInfo.setApiId(apiCatalogApiId);
+        serviceInfoB.setServiceId("mockzosmf");
 
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
@@ -105,7 +107,7 @@ class GatewayIndexServiceTest {
 
             verify(exchangeFunction).exchange(any());
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null,null);
 
             assertThat(allServices).containsOnlyKeys("testApimlIdA");
             assertThat(allServices.get("testApimlIdA")).containsExactlyInAnyOrder(serviceInfoA, serviceInfoB);
@@ -122,7 +124,7 @@ class GatewayIndexServiceTest {
                     .expectNext(asList(serviceInfoA, serviceInfoB))
                     .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null,null);
 
             assertThat(allServices).containsOnlyKeys("SUBSTITUTE_testInstanceIdA");
         }
@@ -134,16 +136,28 @@ class GatewayIndexServiceTest {
                     .expectNext(asList(serviceInfoA, serviceInfoB))
                     .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, apiCatalogApiId);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, apiCatalogApiId,null);
+
+            assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
+        }
+
+        @Test
+        void shouldFilterCachedServicesByServiceId() {
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
+
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null,serviceId);
 
             assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
         }
 
         @Test
         void shouldReturnEmptyMapForNotExistingApimlId() {
-            assertThat(gatewayIndexService.listRegistry("unknownId", null)).isEmpty();
-            assertThat(gatewayIndexService.listRegistry(null, "unknownApiId")).isEmpty();
-            assertThat(gatewayIndexService.listRegistry("unknownId", "unknownApiId")).isEmpty();
+            assertThat(gatewayIndexService.listRegistry("unknownId", null,null)).isEmpty();
+            assertThat(gatewayIndexService.listRegistry(null, "unknownApiId",null)).isEmpty();
+            assertThat(gatewayIndexService.listRegistry("unknownId", "unknownApiId",null)).isEmpty();
         }
     }
 

@@ -141,13 +141,14 @@ public class GatewayIndexService {
      * @param apiId   - filter for only services of particular type e.g. <code>zowe.apiml.apicatalog</code>
      * @return full of filter immutable map of the registry
      */
-    public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId) {
+    public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId, String serviceId) {
 
         Map<String, List<ServiceInfo>> allServices = ImmutableMap.<String, List<ServiceInfo>>builder()
                 .putAll(apimlServicesCache.asMap()).build();
         return allServices.entrySet().stream()
                 .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
                 .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiId(entry.getValue(), apiId)))
+                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByServcieId(entry.getValue(), serviceId)))
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
@@ -161,9 +162,26 @@ public class GatewayIndexService {
         return Collections.emptyList();
     }
 
+    List<ServiceInfo> filterServicesByServcieId(List<ServiceInfo> apimlIdServices, String serviceId) {
+        if (!CollectionUtils.isEmpty(apimlIdServices)) {
+            return apimlIdServices.stream()
+                .filter(Objects::nonNull)
+                .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
+                .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     private boolean hasSameApiId(ServiceInfo serviceInfo, String apiId) {
         if (serviceInfo.getApiml() != null && !isEmpty(serviceInfo.getApiml().getApiInfo())) {
             return StringUtils.equals(apiId, serviceInfo.getApiml().getApiInfo().get(0).getApiId());
+        }
+        return false;
+    }
+
+    private boolean hasSameServiceId(ServiceInfo serviceInfo, String serviceId) {
+        if (serviceInfo.getApiml() != null && serviceInfo.getServiceId() != null) {
+            return StringUtils.equals(serviceId, serviceInfo.getServiceId());
         }
         return false;
     }
