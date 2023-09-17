@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography, IconButton, Snackbar } from '@material-ui/core';
+import { Typography, IconButton, Snackbar, Fab } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import { Component } from 'react';
 import Footer from '../Footer/Footer';
