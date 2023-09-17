@@ -44,26 +44,37 @@ export default function FeedbackForm(props) {
                     <h4>Do you have feedback for us?</h4>
                     <div className="flex-dir-col full-width">
                         <label>Write your feedback</label>
-                        <textarea {...register('feedback', { required: true })} className={errors?.feedback?.type === 'required' ? 'input-error' : ''} />
+                        <textarea
+                            {...register('feedback', { required: true })}
+                            className={errors?.feedback?.type === 'required' ? 'input-error' : ''}
+                        />
                         {errors?.feedback?.type === 'required' && <p>This field is required</p>}
                     </div>
 
                     <div className="flex-dir-row full-width name-container">
                         <div className="full-width flex-dir-col">
                             <label>First Name</label>
-                            <input type='text' {...register('firstName', { required: true })} className={errors?.firstName?.type === 'required' ? 'input-error' : ''} />
+                            <input
+                                type="text"
+                                {...register('firstName', { required: true })}
+                                className={errors?.firstName?.type === 'required' ? 'input-error' : ''}
+                            />
                             {errors?.firstName?.type === 'required' && <p>This field is required</p>}
                         </div>
                         <div className="full-width flex-dir-col ml-2">
                             <label>Last name</label>
-                            <input type='text' {...register('lastName', { required: true })} className={errors?.lastName?.type === 'required' ? 'input-error' : ''} />
+                            <input
+                                type="text"
+                                {...register('lastName', { required: true })}
+                                className={errors?.lastName?.type === 'required' ? 'input-error' : ''}
+                            />
                             {errors?.lastName?.type === 'required' && <p>This field is required</p>}
                         </div>
                     </div>
                     <div className="flex-dir-col">
                         <label>Work Email</label>
                         <input
-                            type='email'
+                            type="email"
                             className={errors?.workEmail?.type === 'required' ? 'input-error' : ''}
                             {...register('workEmail', {
                                 required: true,
@@ -79,12 +90,19 @@ export default function FeedbackForm(props) {
                     </div>
                     <div className="flex-dir-col">
                         <label>Job title</label>
-                        <input type='text' {...register('title', { required: true })} className={errors?.title?.type === 'required' ? 'input-error' : ''} />
+                        <input
+                            type="text"
+                            {...register('title', { required: true })}
+                            className={errors?.title?.type === 'required' ? 'input-error' : ''}
+                        />
                         {errors?.title?.type === 'required' && <p>This field is required</p>}
                     </div>
                     <div className="flex-dir-col">
                         <label>Country</label>
-                        <select {...register('country', { required: true })} className={errors?.country?.type === 'required' ? 'input-error' : ''}>
+                        <select
+                            {...register('country', { required: true })}
+                            className={errors?.country?.type === 'required' ? 'input-error' : ''}
+                        >
                             <option value="">Select an Item</option>
                             <option value="US">United States of America</option>
                             <option value="AF">Afghanistan</option>
@@ -342,8 +360,15 @@ export default function FeedbackForm(props) {
                     </div>
                     <div className="flex-dir-col full-width">
                         <label>Legal Agreement Details</label>
-                        <div className='flex-dir-row flex-ai-start'>
-                            <input {...register('legal', { required: true })} className={errors?.legal?.type === 'required' ? 'input-error' : ''} type="checkbox" id="legal" name="legal" value="legalAgreement" />
+                        <div className="flex-dir-row flex-ai-start">
+                            <input
+                                {...register('legal', { required: true })}
+                                className={errors?.legal?.type === 'required' ? 'input-error' : ''}
+                                type="checkbox"
+                                id="legal"
+                                name="legal"
+                                value="legalAgreement"
+                            />
                             <label htmlFor="legal" className="legalAgreementText">
                                 I agree to continue receiving commercial messages about Broadcom products and services.
                                 I understand that my use of Broadcom's website is subject to Broadcom's Terms of Use, my
@@ -354,7 +379,9 @@ export default function FeedbackForm(props) {
                         {errors?.legal?.type === 'required' && <p>This field is required</p>}
                     </div>
                     <div className="full-width flex-dir-row">
-                        <Button className="submitButton" aria-label="Submit" type="submit">Submit</Button>
+                        <Button className="submitButton" aria-label="Submit" type="submit">
+                            Submit
+                        </Button>
                     </div>
                 </form>
             </DialogContent>
