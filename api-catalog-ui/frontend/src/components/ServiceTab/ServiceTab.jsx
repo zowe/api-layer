@@ -119,19 +119,19 @@ export default class ServiceTab extends Component {
         return apiVersions;
     }
 
-    // handleDialogOpen = (currentService) => {
-    //     const { selectedVersion } = this.state;
-    //     if (selectedVersion === null) {
-    //         this.setState({ previousVersion: currentService.defaultApiVersion });
-    //     } else {
-    //         this.setState({ previousVersion: selectedVersion });
-    //     }
-    //     this.setState({
-    //         isDialogOpen: true,
-    //         selectedVersion: 'diff',
-    //         previousVersion: selectedVersion ?? currentService.defaultApiVersion,
-    //     });
-    // };
+    handleDialogOpen = (currentService) => {
+        const { selectedVersion } = this.state;
+        if (selectedVersion === null) {
+            this.setState({ previousVersion: currentService.defaultApiVersion });
+        } else {
+            this.setState({ previousVersion: selectedVersion });
+        }
+        this.setState({
+            isDialogOpen: true,
+            selectedVersion: 'diff',
+            previousVersion: selectedVersion ?? currentService.defaultApiVersion,
+        });
+    };
 
     handleDialogClose = () => {
         this.setState({ isDialogOpen: false, selectedVersion: null });
