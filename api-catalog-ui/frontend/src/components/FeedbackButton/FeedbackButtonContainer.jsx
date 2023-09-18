@@ -9,7 +9,7 @@
  */
 import { connect } from 'react-redux';
 import FeedbackButton from './FeedbackButton';
-import { createLoadingSelector, getFilteredServices } from '../../selectors/selectors';
+import { createLoadingSelector } from '../../selectors/selectors';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 
@@ -17,7 +17,6 @@ const mapStateToProps = (state) => ({
     isLoading: loadingSelector(state),
 });
 
-const mapDispatchToProps = {
-};
+const mapDispatchToProps = {};
 
 export default connect(mapStateToProps, mapDispatchToProps)(FeedbackButton);

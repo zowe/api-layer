@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { Component } from 'react';
+import React from 'react';
 import { Button } from '@material-ui/core';
 import { useForm } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';

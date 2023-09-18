@@ -9,9 +9,9 @@
  */
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import FeedbackButton from './FeedbackButton';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
+import FeedbackButton from './FeedbackButton';
 
 const mockStore = configureStore();
 
