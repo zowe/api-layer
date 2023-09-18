@@ -138,21 +138,9 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.service.preferIpAddress=false \
 
-if [ -z "${ZWE_configs_heap_max}" ]; then
-    JVM_HEAP_SIZE_MAX=512
-else
-    JVM_HEAP_SIZE_MAX=${ZWE_configs_heap_max}
-fi
-
-if [ -z "${ZWE_configs_heap_init}" ]; then
-    JVM_HEAP_SIZE_INIT=32
-else
-    JVM_HEAP_SIZE_INIT=${ZWE_configs_heap_init}
-fi
-
 CATALOG_CODE=AC
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
-    -Xms${JVM_HEAP_SIZE_INIT}m -Xmx${JVM_HEAP_SIZE_MAX}m \
+    -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
