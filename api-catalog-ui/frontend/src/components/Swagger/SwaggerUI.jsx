@@ -10,10 +10,11 @@
 import { Component } from 'react';
 import * as React from 'react';
 import SwaggerUi from 'swagger-ui-react';
-// import InstanceInfo from '../ServiceTab/InstanceInfo';
+import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -78,19 +79,24 @@ export default class SwaggerUI extends Component {
                 },
             },
         },
-        // wrapComponents: {
-        //     // prettier-ignore
-        //     // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
-        //     operations: (Original, { React }) => props => { // NOSONAR
-        //         const { selectedService, selectedVersion, tiles } = this.props;
-        //         return (
-        //             <div>
-        //                 <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
-        //                 <Original {...props} />
-        //             </div>
-        //         );
-        //     },
-        // },
+        wrapComponents: {
+            // prettier-ignore
+            // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
+            operations: (Original, { React }) => props => { // NOSONAR
+                const { selectedService, selectedVersion, tiles } = this.props;
+
+                return (
+                    <div>
+                        {isAPIPortal() &&
+                        (
+                            <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
+                        )
+                        }
+                        <Original {...props} />
+                    </div>
+                )
+            },
+        },
     });
 
     setSwaggerState = () => {
