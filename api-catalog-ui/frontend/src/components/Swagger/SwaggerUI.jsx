@@ -87,7 +87,7 @@ export default class SwaggerUI extends Component {
 
                 return (
                     <div>
-                        {isAPIPortal() &&
+                        {!isAPIPortal() &&
                         (
                             <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
                         )
