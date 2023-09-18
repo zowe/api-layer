@@ -137,8 +137,9 @@ public class GatewayIndexService {
     /**
      * list currently cached apiml registry with option to filter by the <code>apimlId</code> and <code>apiId</code>
      *
-     * @param apimlId - filter for only services from the particular apiml instance, NULL - filter not applied
-     * @param apiId   - filter for only services of particular type e.g. <code>zowe.apiml.apicatalog</code>
+     * @param apimlId   - filter for only services from the particular apiml instance, NULL - filter not applied
+     * @param apiId     - filter for only services of particular type e.g. <code>zowe.apiml.apicatalog</code>
+     * @param serviceId - filter for only services of the same serviceId e.g. <code>gateway</code>
      * @return full of filter immutable map of the registry
      */
     public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId, String serviceId) {
@@ -147,27 +148,18 @@ public class GatewayIndexService {
                 .putAll(apimlServicesCache.asMap()).build();
         return allServices.entrySet().stream()
                 .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiId(entry.getValue(), apiId)))
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByServcieId(entry.getValue(), serviceId)))
+                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiIdAndServiceId(entry.getValue(), apiId, serviceId)))
+                .filter(entry -> !CollectionUtils.isEmpty(entry.getValue()))
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
-    List<ServiceInfo> filterServicesByApiId(List<ServiceInfo> apimlIdServices, String apiId) {
+    List<ServiceInfo> filterServicesByApiIdAndServiceId(List<ServiceInfo> apimlIdServices, String apiId, String serviceId) {
         if (!CollectionUtils.isEmpty(apimlIdServices)) {
             return apimlIdServices.stream()
                     .filter(Objects::nonNull)
                     .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
+                    .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
                     .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-    }
-
-    List<ServiceInfo> filterServicesByServcieId(List<ServiceInfo> apimlIdServices, String serviceId) {
-        if (!CollectionUtils.isEmpty(apimlIdServices)) {
-            return apimlIdServices.stream()
-                .filter(Objects::nonNull)
-                .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
-                .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
@@ -180,9 +172,6 @@ public class GatewayIndexService {
     }
 
     private boolean hasSameServiceId(ServiceInfo serviceInfo, String serviceId) {
-        if (serviceInfo.getApiml() != null && serviceInfo.getServiceId() != null) {
-            return StringUtils.equals(serviceId, serviceInfo.getServiceId());
-        }
-        return false;
+        return StringUtils.equals(serviceId, serviceInfo.getServiceId());
     }
 }
