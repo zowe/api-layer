@@ -196,6 +196,31 @@ Consider the following when you create or respond to pull requests:
 - Review guidelines for [how to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
   and [good commits](https://chris.beams.io/posts/git-commit/).
 
+## API ML repository automated builds using GH actions
+Automated builds of api-layer repo are run as workflows. They are defined in the folder .github/workflows
+General info about workflows https://docs.github.com/en/actions/using-workflows/about-workflows
+Reusable workflows are stored either in local repo .github/actions or https://github.com/zowe-actions/shared-actions e.g. for publishing the images https://github.com/zowe-actions/shared-actions/tree/main/prepare-workflow
+
+Usage of workflows:
+- release https://github.com/zowe/api-layer/blob/v2.x.x/docs/release.md#github-actions
+- build + unit tests + test of correct registration of all services: service-registration.yml
+- generate changelog after release: changelog.yml
+- update docs with new error messages: docs.yml
+- all flavors of integration tests: integration-tests.yml
+- publish identify federation plugin: zowe-cli-deploy-component.yml
+
+Services are using JIB containers which are built by PublishJibContainers and all other jobs that are using JIBs must depend on this, so they have the latest build
+JIB definition is stored in gradle/jib.gradle
+- docs https://github.com/GoogleContainerTools/jib/blob/master/jib-maven-plugin/README.md
+- directories whose content is copied into images: ['../config', '../keystore', '../scripts']
+- additional config location is set to `/docker` and config location is therefore stored in `<root>/config/docker`
+  How to start new component
+- define a new record in `services`
+- the name of the component will become its hostname
+- select image
+- change configuration using environment variable in `env`
+
+
 ## Security fixes
 
 To provide long-term support(LTS) for versions in maintenance mode, any security fix must be merged to the master branch as a separate commit. The reasoning behind these requirements is, that security fixes will be cherry-picked to the maintenance versions of API Mediation layer.
