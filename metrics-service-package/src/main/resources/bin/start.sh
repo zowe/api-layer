@@ -75,6 +75,18 @@ then
     QUICK_START=-Xquickstart
 fi
 
+if [ -z "${ZWE_configs_heap_max}" ]; then
+    JVM_HEAP_SIZE_MAX=256
+else
+    JVM_HEAP_SIZE_MAX=${ZWE_configs_heap_max}
+fi
+
+if [ -z "${ZWE_configs_heap_init}" ]; then
+    JVM_HEAP_SIZE_INIT=32
+else
+    JVM_HEAP_SIZE_INIT=${ZWE_configs_heap_init}
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -99,7 +111,8 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 METRICS_CODE=MS
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java -Xms16m -Xmx512m \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
+  -Xms${JVM_HEAP_SIZE_INIT}m -Xmx${JVM_HEAP_SIZE_MAX}m \
    ${QUICK_START} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \

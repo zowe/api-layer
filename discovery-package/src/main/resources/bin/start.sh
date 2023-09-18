@@ -25,6 +25,8 @@
 # - LIBPATH
 # - LIBRARY_PATH
 # - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_heap_max
+# - ZWE_configs_heap_init
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
 # - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
@@ -109,6 +111,18 @@ if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]; then
     DISCOVERY_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${DISCOVERY_LOADER_PATH}
 fi
 
+if [ -z "${ZWE_configs_heap_max}" ]; then
+    JVM_HEAP_SIZE_MAX=256
+else
+    JVM_HEAP_SIZE_MAX=${ZWE_configs_heap_max}
+fi
+
+if [ -z "${ZWE_configs_heap_init}" ]; then
+    JVM_HEAP_SIZE_INIT=32
+else
+    JVM_HEAP_SIZE_INIT=${ZWE_configs_heap_init}
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}/bin"
@@ -134,7 +148,9 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 DISCOVERY_CODE=AD
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
+    -Xms${JVM_HEAP_SIZE_INIT}m -Xmx${JVM_HEAP_SIZE_MAX}m \
+    ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \

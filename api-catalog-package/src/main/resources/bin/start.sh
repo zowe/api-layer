@@ -31,6 +31,8 @@
 # - ZWE_components_gateway_apiml_security_authorization_resourceClass
 # - ZWE_components_gateway_port - the port the api gateway service will use
 # - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_heap_max
+# - ZWE_configs_heap_init
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
 # - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
@@ -136,9 +138,21 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.service.preferIpAddress=false \
 
+if [ -z "${ZWE_configs_heap_max}" ]; then
+    JVM_HEAP_SIZE_MAX=512
+else
+    JVM_HEAP_SIZE_MAX=${ZWE_configs_heap_max}
+fi
+
+if [ -z "${ZWE_configs_heap_init}" ]; then
+    JVM_HEAP_SIZE_INIT=32
+else
+    JVM_HEAP_SIZE_INIT=${ZWE_configs_heap_init}
+fi
+
 CATALOG_CODE=AC
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
-    -Xms16m -Xmx512m \
+    -Xms${JVM_HEAP_SIZE_INIT}m -Xmx${JVM_HEAP_SIZE_MAX}m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
