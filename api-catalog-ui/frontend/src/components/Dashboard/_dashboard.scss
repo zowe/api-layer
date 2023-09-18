@@ -89,6 +89,19 @@
     &::-webkit-scrollbar {
       width: 0px;
     }
+
+
+  }
+  .zowe-styling {
+    grid-gap: 20px !important;
+    display: grid !important;
+
+    height: 100%;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      width: 0px;
+    }
   }
   .scrollable-flex-content {
     border-top: 1px solid var( --criticalShade00 );
@@ -146,6 +159,7 @@
     height: var( --spaceTinier );
     width: 99%;
     display: block;
+    border-color: var( --criticalShade10 );
 }
 
 .floating-button {
