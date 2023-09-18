@@ -86,11 +86,13 @@ function Header(props) {
     }
     return (
         <div className="header">
-            <div className="mobile-view mobile-menu-trigger-ctn">
-                <Button className="mobile-menu-trigger-btn icon-btn" aria-label="menu" onClick={openMobileMenu}>
-                    <img alt="Menu" src={MenuImage} className="mobile-menu-trigger" />
-                </Button>
-            </div>
+            {isAPIPortal() && (
+                <div className="mobile-view mobile-menu-trigger-ctn">
+                    <Button className="mobile-menu-trigger-btn icon-btn" aria-label="menu" onClick={openMobileMenu}>
+                        <img alt="Menu" src={MenuImage} className="mobile-menu-trigger" />
+                    </Button>
+                </div>
+            )}
 
             <div className="product-name">
                 <Link data-testid="link" href={dashboard}>
@@ -105,28 +107,44 @@ function Header(props) {
                 </Link>
             </div>
 
-            <div className="mobile-view mobile-menu-close-ctn">
-                <Button
-                    className="mobile-menu-close-btn icon-btn mobile-view"
-                    aria-label="close-menu"
-                    onClick={closeMobileMenu}
-                >
-                    <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
-                </Button>
-            </div>
+            {isAPIPortal() && (
+                <div className="mobile-view mobile-menu-close-ctn">
+                    <Button
+                        className="mobile-menu-close-btn icon-btn mobile-view"
+                        aria-label="close-menu"
+                        onClick={closeMobileMenu}
+                    >
+                        <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
+                    </Button>
+                </div>
+            )}
 
-            <h2 className="title1 mobile-view">Useful Links</h2>
+            {isAPIPortal() && <h2 className="title1 mobile-view">Useful Links</h2>}
 
             <div className="right-icons desktop-view">
-                <Link
-                    data-testid="internal-link"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    href="https://techdocs.broadcom.com/"
-                >
-                    Broadcom TechDoc
-                    <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
-                </Link>
+                {docLink && docLink.length === 2 && (
+                    <Link
+                        data-testid="internal-link"
+                        id="internal-link"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        href={docLink[1]}
+                    >
+                        {docLink[0]}
+                        <img id="img-internal-link" alt="Internal doc" src={customDoc} />
+                    </Link>
+                )}
+                {!docLink && isAPIPortal() && (
+                    <Link
+                        data-testid="internal-link"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        href="https://techdocs.broadcom.com/"
+                    >
+                        Broadcom TechDoc
+                        <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
+                    </Link>
+                )}
                 {isAPIPortal() && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
@@ -188,10 +206,12 @@ function Header(props) {
                 )}
             </div>
 
-            <div className="mobile-view feedback-ctn">
-                <h2 className="title1 mobile-view">Get in Touch</h2>
-                <FeedbackButton noFloat />
-            </div>
+            {isAPIPortal() && (
+                <div className="mobile-view feedback-ctn">
+                    <h2 className="title1 mobile-view">Get in Touch</h2>
+                    {isAPIPortal() && <FeedbackButton noFloat />}
+                </div>
+            )}
         </div>
     );
 }

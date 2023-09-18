@@ -9,6 +9,9 @@
     .desktop-view {
       display: none !important;
     }
+    .feedback-dialog .form textarea {
+      height: 150px;
+    }
     .header {
       #doc, .product-name {
         margin-right: var( --spaceSmaller );

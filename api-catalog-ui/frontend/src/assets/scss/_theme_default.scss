@@ -146,4 +146,8 @@
   --contentHeightAdj: calc(100dvh - calc(#{var( --headerHeight )} + #{var( --contentBottomPadding )}));
 
   --scrollPadding: var( --spaceSmaller );
+
+  --spacing1: var( --spaceSmallest );
+  --spacing2: var( --spaceSmall );
+  --spacing3: var( --spaceMedium );
 }

@@ -60,11 +60,12 @@
     margin-left: auto;
     margin-right: auto;
     background: var( --surface05 );
-    border: 1px solid var( --divider15 );
     display: flex;
 
     .MuiInput-root {
       width: 100%;
+      border: 1px solid var( --divider15 );
+
       &.Mui-focused, &:hover {
         border: 1px solid var(--linkHover);
       }

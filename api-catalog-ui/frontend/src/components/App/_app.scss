@@ -77,8 +77,27 @@ body {
       }
     }
   }//end mobile-menu-trigger
-  
 
+  input[type=text], input[type=number], input[type=email], input[type=password], textarea, select, .MuiSelect-select, .MuiSelect-select.MuiSelect-select {
+    padding: var( --spaceSmaller ) var( --spaceSmall );
+    border: 1px solid var( --input00Bc );
+    border-radius: var( --borderRadius1 );
+  }
+  .MuiOutlinedInput-root,
+  .dashboard-content #search {
+    input[type=text], input[type=number], input[type=email], input[type=password] {
+      border: none;
+    }
+  }
+  .input-error {
+    &, &:focus, &:focus-visible {
+      border-color: var( --criticalShade10 );
+    }
+    &[type=checkbox] {
+      box-shadow: 0 0 1px 1px var( --criticalShade10 ) inset;
+    }
+  }
+  
   .MuiTab-root {
     overflow: visible;
   }
@@ -95,9 +114,14 @@ body {
       top: 0px;
       padding: 6px;
     }
+    .MuiDialogContent-root {
+      padding: var( --spaceMedium) var( --spaceLarger );
+    }
     .MuiDialogTitle-root {
-      padding: var( --spaceSmaller ) var( --spaceMedium );
+      padding: var( --spaceSmall ) var( --spaceSmall ) var( --spaceSmall ) var( --spaceLarger );
+      margin: 0px;
       color: var(--controlText15);
+      border-bottom: 1px solid var( --divider10 );
 
       h2 {
         margin: 0px;
@@ -297,7 +321,7 @@ body {
 
   select, .MuiSelect-select, .MuiSelect-select.MuiSelect-select {
     font-size: var( --fontSmall );
-    padding: var( --spaceSmallest ) var( --spaceHuge ) var( --spaceSmallest ) var( --spaceSmall );
+    padding-right: var( --spaceHuge );
     border: 1px solid var( --input00Bc );
     border-radius: var( --borderRadius1 );
     background: var( --surface15 ) url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCI+ICAgIDxwYXRoIGQ9Ik0xMy40MTggNy44NTljLjI3MS0uMjY4LjcwOS0uMjY4Ljk3OCAwIC4yNy4yNjguMjcyLjcwMSAwIC45NjlsLTMuOTA4IDMuODNjLS4yNy4yNjgtLjcwNy4yNjgtLjk3OSAwbC0zLjkwOC0zLjgzYy0uMjctLjI2Ny0uMjctLjcwMSAwLS45NjkuMjcxLS4yNjguNzA5LS4yNjguOTc4IDBMMTAgMTFsMy40MTgtMy4xNDF6Ii8+PC9zdmc+) right 10px center no-repeat;

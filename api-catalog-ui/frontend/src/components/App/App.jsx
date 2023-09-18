@@ -16,7 +16,7 @@ import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
-import { closeMobileMenu } from '../../utils/utilFunctions';
+import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
 
 class App extends Component {
@@ -45,9 +45,11 @@ class App extends Component {
                                 <div className="content">
                                     <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
 
-                                    <div className="dashboard-mobile-menu mobile-view">
-                                        <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
-                                    </div>
+                                    {isAPIPortal() && (
+                                        <div className="dashboard-mobile-menu mobile-view">
+                                            <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+                                        </div>
+                                    )}
 
                                     <Switch>
                                         <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
