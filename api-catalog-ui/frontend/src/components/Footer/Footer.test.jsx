@@ -11,18 +11,18 @@ import * as enzyme from 'enzyme';
 import Footer from './Footer';
 
 describe('>>> Footer component tests', () => {
-    xit('should not display a Link', () => {
+    it('should not display a Link', () => {
         const footer = enzyme.shallow(<Footer />);
         expect(footer.find('footer').length).toBeFalsy();
     });
 
-    xit('should display link', () => {
+    it('should display link', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
         expect(footer.find('Link').length).toBeDefined();
     });
 
-    xit('should show the paragraph', () => {
+    it('should show the paragraph', () => {
         process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
         const paragraph = footer.find('p');

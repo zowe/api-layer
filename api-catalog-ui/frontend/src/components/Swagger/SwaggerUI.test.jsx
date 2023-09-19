@@ -107,7 +107,8 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
 
-    xit('should transform swagger server url', async () => {
+    it('should transform swagger server url', async () => {
+        process.env.REACT_APP_API_PORTAL = false;
         const endpoint = '/enabler/api/v1';
         const service = {
             serviceId: 'testservice',
@@ -151,7 +152,8 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint}`);
     });
 
-    xit('should update swagger', async () => {
+    it('should update swagger', async () => {
+        process.env.REACT_APP_API_PORTAL = false;
         const endpoint1 = '/oldenabler/api/v1';
         const endpoint2 = '/newenabler/api/v2';
         const service1 = {
@@ -218,7 +220,8 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint2}`);
     });
 
-    xit('should get snippet from selectedVersion and render swagger', async () => {
+    it('should get snippet from selectedVersion and render swagger', async () => {
+        process.env.REACT_APP_API_PORTAL = false;
         const endpoint1 = '/oldenabler/api/v1';
         const service1 = {
             serviceId: 'oldservice',
