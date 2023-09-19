@@ -32,6 +32,20 @@
                                         "debug": {
                                             "type": "boolean",
                                             "description": "Enable debug logs in discovery service"
+                                        },
+                                        "heap": {
+                                            "type": "object",
+                                            "description": "Configure JVM parameters for heap size",
+                                            "properties": {
+                                                "init": {
+                                                    "type": "integer",
+                                                    "description": "Initial heap size in MB."
+                                                },
+                                                "max": {
+                                                    "type": "integer",
+                                                    "description": "Maximum heap size in MB."
+                                                }
+                                            }
                                         }
                                     }
                                 }
