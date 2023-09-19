@@ -27,6 +27,8 @@
 # - LIBPATH
 # - LIBRARY_PATH
 # - ZWE_components_discovery_port - the port the discovery service will use
+# - ZWE_configs_heap_max
+# - ZWE_configs_heap_init
 # - ZWE_configs_apiml_catalog_serviceId
 # - ZWE_configs_apiml_gateway_timeoutMillis
 # - ZWE_configs_apiml_security_auth_provider
@@ -198,7 +200,7 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
-    -Xms32m -Xmx256m \
+    -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \

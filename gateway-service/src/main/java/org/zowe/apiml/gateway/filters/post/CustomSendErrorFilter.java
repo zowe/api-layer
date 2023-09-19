@@ -31,7 +31,7 @@ public class CustomSendErrorFilter extends SendErrorFilter {
 
     private String errorPath;
 
-    public CustomSendErrorFilter(@Value("${error.path:/error}") String errorPath) {
+    public CustomSendErrorFilter(@Value("${error.path:/internal_error}") String errorPath) {
         this.errorPath = errorPath;
     }
 
