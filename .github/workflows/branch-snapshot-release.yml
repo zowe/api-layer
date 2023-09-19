@@ -1,12 +1,12 @@
 # This workflow will release project with Gradle
 
-name: Publish binary version from PR
+name: Publish binary version from branch
 
 on:
     workflow_dispatch:
         inputs:
             pull_request:
-                description: 'The pull request snapshot that is going to be released (i.e XXXX)'
+                description: 'The suffix of the snapshot that is going to be released (i.e XXXX)'
                 required: true
 
 env:
