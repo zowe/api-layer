@@ -9,7 +9,7 @@
  */
 
 import jest from 'jest-mock';
-import { userService } from './user.service';
+import { userService } from '../services';
 
 function mockFetch(data) {
     return jest.fn().mockImplementation(() =>

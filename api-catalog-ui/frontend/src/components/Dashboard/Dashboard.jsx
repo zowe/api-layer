@@ -9,7 +9,7 @@
  */
 import { Typography, IconButton, Snackbar } from '@material-ui/core';
 import { Alert } from '@mui/material';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -22,7 +22,15 @@ import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
-import FeedbackButton from '../FeedbackButton/FeedbackButton';
+
+const loadFeedbackButton = () => {
+    if (isAPIPortal()) {
+        return import('../FeedbackButton/FeedbackButton');
+    }
+    return Promise.resolve(null);
+};
+
+const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class Dashboard extends Component {
     componentDidMount() {

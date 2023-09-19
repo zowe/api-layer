@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component, Suspense } from 'react';
+import React, { Component, Suspense } from 'react';
 import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
@@ -20,7 +20,15 @@ import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
-import FeedbackButton from '../FeedbackButton/FeedbackButton';
+
+const loadFeedbackButton = () => {
+    if (isAPIPortal()) {
+        return import('../FeedbackButton/FeedbackButton');
+    }
+    return Promise.resolve(null);
+};
+
+const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class DetailPage extends Component {
     componentDidMount() {

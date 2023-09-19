@@ -38,8 +38,6 @@ export default class FeedbackButton extends Component {
         feedbackService.getToken().then(
             (rsp) => {
                 // eslint-disable-next-line no-console
-                console.log('asdfadsfasdfasdf');
-                // eslint-disable-next-line no-console
                 console.log(rsp);
                 this.setState({ formToken: rsp });
             },
@@ -69,12 +67,14 @@ export default class FeedbackButton extends Component {
         const { isDialogOpen, formToken } = this.state;
 
         const submit = (data) => {
+            // eslint-disable-next-line no-console
             console.log('submitting data');
+            // eslint-disable-next-line no-console
             console.log(data);
             feedbackService.submitFeedback().then(
                 (rsp) => {
                     // eslint-disable-next-line no-console
-                    console.log('asdfadsfasdfasdf');
+                    console.log(rsp);
                 },
                 (error) => {
                     // if (error.messageNumber === 'ZWEAT413E') {

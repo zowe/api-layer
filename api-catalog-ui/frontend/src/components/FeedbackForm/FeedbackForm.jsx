@@ -36,8 +36,6 @@ export default function FeedbackForm(props) {
         // post to https://s3805888.t.eloqua.com/e/f2
         // 3805888
         // form281
-        // eslint-disable-next-line no-console
-        console.log(data);
         // Couldn't spread on data, copy by hand.
         const temp = {
             comments1: data.comments1,
@@ -50,7 +48,7 @@ export default function FeedbackForm(props) {
         };
         // Need to get the form token in this object.  Maybe pass it via props down?
         const combinedData = { ...formInfo, ...temp };
-        console.log('123123');
+        // eslint-disable-next-line no-console
         console.log(combinedData);
         props.formSubmission(combinedData);
     };

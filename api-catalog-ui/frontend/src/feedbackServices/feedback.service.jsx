@@ -9,7 +9,6 @@
  */
 
 import * as log from 'loglevel';
-import getBaseUrl from '../helpers/urls';
 
 function handleResponse(response) {
     return response.text().then((text) => {
@@ -60,6 +59,7 @@ function getToken() {
 }
 
 function submitFeedback(feedbackdata) {
+    // eslint-disable-next-line no-console
     console.log(feedbackdata);
     const allowOrigin = checkOrigin();
     const requestOptions = {
