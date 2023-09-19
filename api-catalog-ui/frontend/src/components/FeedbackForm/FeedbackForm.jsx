@@ -14,6 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import closeIcon from '../../assets/images/xmark.svg';
+import { feedbackService } from '../../feedbackServices';
 import './FeedbackForm.scss';
 
 export default function FeedbackForm(props) {
@@ -22,8 +23,37 @@ export default function FeedbackForm(props) {
         handleSubmit,
         formState: { errors },
     } = useForm();
-    // eslint-disable-next-line no-console
-    const onSubmit = (data) => console.log(data);
+    const formInfo = {
+        elqFormName: 'FM_281',
+        elqSiteId: '3805888',
+        hiddenFormName: 'MSD_FY23_GEN_API-Feedback_0_Contact-Us_MKT_FM_281',
+        hiddenDivision: 'MSD',
+        hiddenProductSolution: 'GEN',
+    };
+    const onSubmit = (data) => {
+        // need to get submission token from https://s3805888.t.eloqua.com/e/formsubmittoken?elqSiteID=3805888
+        // save token
+        // post to https://s3805888.t.eloqua.com/e/f2
+        // 3805888
+        // form281
+        // eslint-disable-next-line no-console
+        console.log(data);
+        // Couldn't spread on data, copy by hand.
+        const temp = {
+            comments1: data.comments1,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            emailAddress: data.emailAddress,
+            jobTitle: data.jobTitle,
+            country: data.country,
+            optIn: 'on',
+        };
+        // Need to get the form token in this object.  Maybe pass it via props down?
+        const combinedData = { ...formInfo, ...temp };
+        console.log('123123');
+        console.log(combinedData);
+        props.formSubmission(combinedData);
+    };
 
     const onClose = () => {
         props.handleDialog();
@@ -45,10 +75,10 @@ export default function FeedbackForm(props) {
                     <div className="flex-dir-col full-width">
                         <label>Write your feedback</label>
                         <textarea
-                            {...register('feedback', { required: true })}
-                            className={errors?.feedback?.type === 'required' ? 'input-error' : ''}
+                            {...register('comments1', { required: true })}
+                            className={errors?.comments1?.type === 'required' ? 'input-error' : ''}
                         />
-                        {errors?.feedback?.type === 'required' && <p>This field is required</p>}
+                        {errors?.comments1?.type === 'required' && <p>This field is required</p>}
                     </div>
 
                     <div className="flex-dir-row full-width name-container">
@@ -75,8 +105,8 @@ export default function FeedbackForm(props) {
                         <label>Work Email</label>
                         <input
                             type="email"
-                            className={errors?.workEmail?.type === 'required' ? 'input-error' : ''}
-                            {...register('workEmail', {
+                            className={errors?.emailAddress?.type === 'required' ? 'input-error' : ''}
+                            {...register('emailAddress', {
                                 required: true,
                                 pattern: {
                                     /* eslint-disable no-useless-escape */
@@ -85,17 +115,17 @@ export default function FeedbackForm(props) {
                                 },
                             })}
                         />
-                        {errors?.workEmail?.type === 'required' && <p>This field is required</p>}
-                        {errors?.workEmail?.message && <p>{errors?.workEmail?.message}</p>}
+                        {errors?.emailAddress?.type === 'required' && <p>This field is required</p>}
+                        {errors?.emailAddress?.message && <p>{errors?.emailAddress?.message}</p>}
                     </div>
                     <div className="flex-dir-col">
                         <label>Job title</label>
                         <input
                             type="text"
-                            {...register('title', { required: true })}
-                            className={errors?.title?.type === 'required' ? 'input-error' : ''}
+                            {...register('jobTitle', { required: true })}
+                            className={errors?.jobTitle?.type === 'required' ? 'input-error' : ''}
                         />
-                        {errors?.title?.type === 'required' && <p>This field is required</p>}
+                        {errors?.jobTitle?.type === 'required' && <p>This field is required</p>}
                     </div>
                     <div className="flex-dir-col">
                         <label>Country</label>

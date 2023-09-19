@@ -11,12 +11,14 @@ import { Fab } from '@material-ui/core';
 import { Component } from 'react';
 import FeedbackImage from '../../assets/images/square-envelope.svg';
 import FeedbackForm from '../FeedbackForm/FeedbackForm';
+import { feedbackService } from '../../feedbackServices';
 
 export default class FeedbackButton extends Component {
     constructor(props) {
         super(props);
         this.state = {
             isDialogOpen: false,
+            formToken: '',
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
         this.handleDialogOpen = this.handleDialogOpen.bind(this);
@@ -31,8 +33,27 @@ export default class FeedbackButton extends Component {
     handleDialogClose = () => {
         this.setState({ isDialogOpen: false });
     };
-    // componentDidMount() {
-    // }
+
+    componentDidMount() {
+        feedbackService.getToken().then(
+            (rsp) => {
+                // eslint-disable-next-line no-console
+                console.log('asdfadsfasdfasdf');
+                // eslint-disable-next-line no-console
+                console.log(rsp);
+                this.setState({ formToken: rsp });
+            },
+            (error) => {
+                // if (error.messageNumber === 'ZWEAT413E') {
+                //     dispatch(invalidPassword(error));
+                // } else if (error.messageNumber === 'ZWEAT412E') {
+                //     dispatch(expiredPassword(error));
+                // } else {
+                //     dispatch(failure(error));
+                // }
+            }
+        );
+    }
 
     // componentWillUnmount() {
     // }
@@ -45,11 +66,37 @@ export default class FeedbackButton extends Component {
 
     render() {
         const { noFloat, leftPlacement } = this.props;
-        const { isDialogOpen } = this.state;
+        const { isDialogOpen, formToken } = this.state;
+
+        const submit = (data) => {
+            console.log('submitting data');
+            console.log(data);
+            feedbackService.submitFeedback().then(
+                (rsp) => {
+                    // eslint-disable-next-line no-console
+                    console.log('asdfadsfasdfasdf');
+                },
+                (error) => {
+                    // if (error.messageNumber === 'ZWEAT413E') {
+                    //     dispatch(invalidPassword(error));
+                    // } else if (error.messageNumber === 'ZWEAT412E') {
+                    //     dispatch(expiredPassword(error));
+                    // } else {
+                    //     dispatch(failure(error));
+                    // }
+                }
+            );
+        };
 
         return (
             <div>
-                {isDialogOpen && <FeedbackForm handleDialog={this.handleDialogClose} isDialogOpen={isDialogOpen} />}
+                {isDialogOpen && (
+                    <FeedbackForm
+                        handleDialog={this.handleDialogClose}
+                        isDialogOpen={isDialogOpen}
+                        formSubmission={submit}
+                    />
+                )}
                 <div className={noFloat ? '' : 'floating-button'}>
                     <Fab
                         variant="extended"
