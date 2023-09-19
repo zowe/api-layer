@@ -17,7 +17,15 @@ import MenuImage from '../../assets/images/hamburger.svg';
 import customDoc from '../../assets/images/ExternalLink.svg';
 import { isAPIPortal, openMobileMenu, closeMobileMenu } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
-import FeedbackButton from '../FeedbackButton/FeedbackButton';
+
+const loadFeedbackButton = () => {
+    if (isAPIPortal()) {
+        return import('../FeedbackButton/FeedbackButton');
+    }
+    return Promise.resolve(null);
+};
+
+const FeedbackButton = React.lazy(loadFeedbackButton);
 
 const useStyles = makeStyles({
     root: {
