@@ -491,7 +491,10 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers()
                     .antMatchers("/application/**")
-                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
+                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH,
+                        // TO BE REMOVED
+                        "/gateway/api/v1/zaas/ticket"
+                    )
                     .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
                 ).authorizeRequests()
                     .anyRequest().authenticated()
