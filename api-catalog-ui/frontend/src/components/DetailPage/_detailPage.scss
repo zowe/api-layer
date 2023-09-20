@@ -62,9 +62,16 @@ body .detail-content {
           font-family: var( --fontFamily00 );
           margin: 0px;
         }
+        pre.base-url {
+            visibility: hidden;
+        }
         h2.title {
           @extend .MuiTypography-h4;
           margin-top: 0px;
+          visibility: hidden;
+        }
+        h2.title span {
+            visibility: visible;
         }
         .version {
           &:before {
