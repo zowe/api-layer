@@ -25,6 +25,8 @@
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_components_gateway_port - the port the api gateway service will use
 # - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_heap_max
+# - ZWE_configs_heap_init
 # - ZWE_configs_storage_evictionStrategy
 # - ZWE_configs_storage_mode
 # - ZWE_configs_storage_size
@@ -125,7 +127,8 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 #   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 CACHING_CODE=CS
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java -Xms16m -Xmx512m \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
+  -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
    ${QUICK_START} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
