@@ -29,4 +29,16 @@ describe('>>> App component tests', () => {
 
         expect(header).toHaveLength(0);
     });
+
+    it('should find the dashboardo-mobile div', () => {
+        process.env.REACT_APP_CA_ENV = true;
+        const wrapper = shallow(
+            <MemoryRouter initialEntries={['/login']}>
+                <App />
+            </MemoryRouter>
+        );
+        const header = wrapper.find('.dashboard-mobile-menu mobile-view');
+
+        expect(header).toHaveLength(0);
+    });
 });
