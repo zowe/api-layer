@@ -148,7 +148,7 @@ export const closeMobileMenu = () => {
     document.body.classList.remove('mobile-menu-open');
 };
 
-export const openMobileMenu = (event) => {
+export const openMobileMenu = () => {
     document.body.classList.toggle('mobile-menu-open');
 };
 

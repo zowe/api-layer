@@ -206,7 +206,6 @@ body {
         width: 100%;
         padding: var( --contentTopPadding ) var( --contentRightPadding ) var( --contentBottomPadding ) var( --contentLeftPadding );
         position: relative;
-        // overflow-x: auto;
         overflow:auto;
 
         &:before {
