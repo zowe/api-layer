@@ -177,6 +177,10 @@ body {
     .opblock-section-header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      > * {
+          margin-right: var( --spaceSmaller );
+      }
     }
     .parameters-container {
       margin: var( --spaceSmaller ) 0px var( --spaceSmaller );
@@ -219,14 +223,6 @@ body {
     }
     
 
-
-    .opblock-section-header {
-      align-items: center;
-
-      > * {
-        margin-right: var( --spaceSmaller );
-      }
-    }
     table {
       width: 100%;
 

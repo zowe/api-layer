@@ -186,7 +186,6 @@ body {
         flex-direction: column;
         align-items: center;
         max-width: 368px;
-        min-width: 19.3%;
         width: var( --sideNavWidth );
         min-width: var( --sideNavWidth );
         padding: var( --spaceSmall ) var( --sideNavRightPadding ) var( --sideNavBottomPadding ) var( --sideNavLeftPadding );
@@ -358,7 +357,4 @@ body {
 .App {
   height: 100dvh;
   overflow: hidden;
-}
-#ot-sdk-btn.ot-sdk-show-settings, #ot-sdk-btn.optanon-show-settings {
-    display: none;
 }
