@@ -52,6 +52,7 @@ dependencies {
         exclude group: "org.springframework", module: "spring-test"
     }
     testImplementation libraries.spring_test
+    testImplementation libraries.spring_context_support
     testImplementation libraries.json_smart
     testImplementation(libraries.eh_cache)
     testImplementation(libraries.jackson_core)

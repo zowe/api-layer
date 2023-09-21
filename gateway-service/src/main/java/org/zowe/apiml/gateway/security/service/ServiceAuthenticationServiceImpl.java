@@ -114,7 +114,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
-    @Cacheable(CACHE_BY_AUTHENTICATION)
+    @Cacheable(value = CACHE_BY_AUTHENTICATION, condition = "#result != null")
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final IAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         return scheme.createCommand(authentication, authSource);

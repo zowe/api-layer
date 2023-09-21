@@ -12,9 +12,9 @@ package org.zowe.apiml.gateway.config;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.ehcache.EhCacheCacheManager;
-import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.cache.jcache.JCacheCacheManager;
+import org.springframework.cache.jcache.JCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -48,18 +48,17 @@ public class CacheConfig {
     }
 
     @Bean
-    public CacheManager cacheManager() {
-        net.sf.ehcache.CacheManager cache = ehCacheCacheManager().getObject();
-        assert cache != null;
-        return new EhCacheCacheManager(cache);
+    public JCacheManagerFactoryBean cacheManagerFactoryBean() throws Exception {
+        JCacheManagerFactoryBean jCacheManagerFactoryBean = new JCacheManagerFactoryBean();
+        jCacheManagerFactoryBean.setCacheManagerUri(new ClassPathResource("ehcache.xml").getURI());
+        return jCacheManagerFactoryBean;
     }
 
     @Bean
-    public EhCacheManagerFactoryBean ehCacheCacheManager() {
-        EhCacheManagerFactoryBean cmfb = new EhCacheManagerFactoryBean();
-        cmfb.setConfigLocation(new ClassPathResource("ehcache.xml"));
-        cmfb.setShared(true);
-        return cmfb;
+    public CacheManager cacheManager() throws Exception {
+        final JCacheCacheManager jCacheCacheManager = new JCacheCacheManager();
+        jCacheCacheManager.setCacheManager(cacheManagerFactoryBean().getObject());
+        return jCacheCacheManager;
     }
 
     @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR)

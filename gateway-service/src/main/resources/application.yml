@@ -93,9 +93,6 @@ spring:
     output:
         ansi:
             enabled: detect
-    cache:
-        ehcache:
-            config: classpath:ehcache.xml
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
