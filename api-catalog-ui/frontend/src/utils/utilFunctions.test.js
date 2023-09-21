@@ -145,9 +145,7 @@ describe('>>> Util Functions tests', () => {
         const swaggerLabel = document.getElementById('swagger-label');
         const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
         const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
-        const link = document.querySelector("link[rel~='icon']");
         const tileLabel = document.querySelector('p#tileLabel');
-        expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('white');
         expect(title.style.getPropertyValue('color')).toBe('black');
         expect(productTitle.style.getPropertyValue('color')).toBe('black');

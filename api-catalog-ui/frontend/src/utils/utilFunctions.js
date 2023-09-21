@@ -160,14 +160,7 @@ export const customUIStyle = async (uiConfig) => {
     const root = document.documentElement;
     const logo = document.getElementById('logo');
     if (logo && uiConfig.logo) {
-        let link = document.querySelector("link[rel~='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.getElementsByTagName('head')[0].appendChild(link);
-        }
         const img = await fetchImagePath();
-        link.href = img;
         logo.src = img;
         logo.style.height = 'auto';
         logo.style.width = 'auto';

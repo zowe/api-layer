@@ -131,7 +131,6 @@ export default class SwaggerUI extends Component {
                 selectedService.apiDoc !== undefined &&
                 selectedService.apiDoc.length !== 0
             ) {
-                // Think this is where we do transforming of the api doc?
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
                 this.setState({
@@ -142,6 +141,7 @@ export default class SwaggerUI extends Component {
                         presets: [SwaggerUi.presets.apis],
                         requestSnippetsEnabled: true,
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
+                        filter: true,
                     },
                 });
             }

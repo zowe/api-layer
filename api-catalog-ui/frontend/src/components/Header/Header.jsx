@@ -12,20 +12,10 @@ import { Button, Link, Typography, Menu, MenuItem, Divider, makeStyles, styled }
 import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
-import zoweImage from '../../assets/images/zowe.png';
-import MenuImage from '../../assets/images/hamburger.svg';
-import customDoc from '../../assets/images/ExternalLink.svg';
-import { isAPIPortal, openMobileMenu, closeMobileMenu } from '../../utils/utilFunctions';
-import MenuCloseImage from '../../assets/images/xmark.svg';
-
-const loadFeedbackButton = () => {
-    if (isAPIPortal()) {
-        return import('../FeedbackButton/FeedbackButton');
-    }
-    return Promise.resolve(null);
-};
-
-const FeedbackButton = React.lazy(loadFeedbackButton);
+import zoweDocsImage from '../../assets/images/zowe-docs.png';
+import zoweAuthImage from '../../assets/images/zowe-auth.png';
+import customDoc from '../../assets/images/custom-doc.png';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 const useStyles = makeStyles({
     root: {
@@ -94,14 +84,6 @@ function Header(props) {
     }
     return (
         <div className="header">
-            {isAPIPortal() && (
-                <div className="mobile-view mobile-menu-trigger-ctn">
-                    <Button className="mobile-menu-trigger-btn icon-btn" aria-label="menu" onClick={openMobileMenu}>
-                        <img alt="Menu" src={MenuImage} className="mobile-menu-trigger" />
-                    </Button>
-                </div>
-            )}
-
             <div className="product-name">
                 <Link data-testid="link" href={dashboard}>
                     <div className="app-icon-container">
@@ -114,22 +96,7 @@ function Header(props) {
                     </Typography>
                 </Link>
             </div>
-
-            {isAPIPortal() && (
-                <div className="mobile-view mobile-menu-close-ctn">
-                    <Button
-                        className="mobile-menu-close-btn icon-btn mobile-view"
-                        aria-label="close-menu"
-                        onClick={closeMobileMenu}
-                    >
-                        <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
-                    </Button>
-                </div>
-            )}
-
-            {isAPIPortal() && <h2 className="title1 mobile-view">Useful Links</h2>}
-
-            <div className="right-icons desktop-view">
+            <div className="right-icons">
                 {docLink && docLink.length === 2 && (
                     <Link
                         data-testid="internal-link"
@@ -142,32 +109,17 @@ function Header(props) {
                         <img id="img-internal-link" alt="Internal doc" src={customDoc} />
                     </Link>
                 )}
-                {!docLink && isAPIPortal() && (
-                    <Link
-                        data-testid="internal-link"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        href="https://techdocs.broadcom.com/"
-                    >
-                        Broadcom TechDoc
-                        <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
-                    </Link>
-                )}
                 {isAPIPortal() && (
                     <div id="zowe-links">
                         <Link rel="noopener noreferrer" target="_blank" href="https://docs.zowe.org">
-                            <img id="doc" alt="Zowe docs" src={zoweImage} className="hover" />
-                            Zowe Docs
-                            <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
+                            <img id="doc" alt="Zowe docs" src={zoweDocsImage} className="hover" />
                         </Link>
                         <Link
                             rel="noopener noreferrer"
                             target="_blank"
                             href="https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#authentication-endpoints"
                         >
-                            <img id="auth" alt="Zowe authentication" src={zoweImage} />
-                            Zowe Authentication
-                            <img id="img-internal-link" alt="Internal doc" src={customDoc} className="ext" />
+                            <img id="auth" alt="Zowe authentication" src={zoweAuthImage} />
                         </Link>
                     </div>
                 )}
@@ -213,13 +165,6 @@ function Header(props) {
                     </div>
                 )}
             </div>
-
-            {isAPIPortal() && (
-                <div className="mobile-view feedback-ctn">
-                    <h2 className="title1 mobile-view">Get in Touch</h2>
-                    {isAPIPortal() && <FeedbackButton noFloat />}
-                </div>
-            )}
         </div>
     );
 }

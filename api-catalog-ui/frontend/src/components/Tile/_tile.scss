@@ -20,9 +20,7 @@ body {
   .dashboard-grid-header {
     display: flex;
     align-items: center;
-    &, &:last-child {
-      // padding: var( --spaceLarge );
-    }
+    &,
     > * {
 
       &.tile-description,
