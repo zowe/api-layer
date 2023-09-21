@@ -34,9 +34,11 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class Dashboard extends Component {
     componentDidMount() {
-        const productLabel = document.getElementById('product-title');
-        if (productLabel) {
-            productLabel.style.display = 'none';
+        if (isAPIPortal()) {
+            const productLabel = document.getElementById('product-title');
+            if (productLabel) {
+                productLabel.style.display = 'none';
+            }
         }
         const { fetchTilesStart, clearService } = this.props;
         clearService();
