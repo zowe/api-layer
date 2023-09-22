@@ -40,8 +40,8 @@ class CentralApimlInfoMapperTest {
     @Nested
     class WhenParametersAreInvalid {
         @Test
-        void shouldThrowNpeWhenApimlIdIsNull() {
-            assertThatThrownBy(() -> centralApimlInfoMapper.buildApimlServiceInfo(null, new ArrayList<>()))
+        void shouldThrowNPEWhenApimlIdIsNull() {
+            assertThatThrownBy(() -> centralApimlInfoMapper.buildApimlServiceInfo(null, new ArrayList<ServiceInfo>()))
                     .isExactlyInstanceOf(NullPointerException.class);
         }
 
