@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Strings.nullToEmpty;
+import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -50,6 +52,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     static void setupAll() {
         //In order to avoid config customization
         ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
+
         SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword(),
             ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore(),
             ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore());
@@ -64,7 +67,6 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @Test
     @SneakyThrows
     void shouldFindRegisteredGatewayInCentralApiml() {
-        Thread.sleep(5_000);
         ValidatableResponse response = listCentralRegistry("central-apiml", "zowe.apiml.gateway", null);
 
         List<Map<String, Object>> services = response.extract().jsonPath().getObject("[0].services", new TypeRef<List<Map<String, Object>>>() {
@@ -85,6 +87,16 @@ class CentralRegistryTest implements TestWithStartedInstances {
             .extract().jsonPath().getList("apimlId");
 
         assertThat(apimlIds, Matchers.hasItems(Matchers.equalTo("central-apiml"), Matchers.equalTo("node-apiml")));
+    }
+
+    @Test
+    void shouldRejectUnauthorizedAccessToCentralRegistry() {
+        //This test should be enabled after the x509 projection is implemented
+        URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
+        given()
+            .get(cloudGatewayEndpoint)
+            .then()
+            .statusCode(HttpStatus.UNAUTHORIZED.value());
     }
 
     private ValidatableResponse listCentralRegistry(String apimlId, String apiId, String serviceId) {
