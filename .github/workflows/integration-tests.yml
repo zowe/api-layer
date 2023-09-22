@@ -233,6 +233,81 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CloudGatewayCentralRegistry:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_HOSTNAME: gateway-service
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+                    APIML_CLOUDGATEWAY_SERVICEREGISTRYENABLED: true
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+
+            discovery-service-2:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_APIMLID: node-apiml
+                    APIML_SERVICE_HOSTNAME: discovery-service-2
+                    APIML_SERVICE_PORT: 10031
+            gateway-service-2:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: node-apiml
+                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_PORT: 10037
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
+                    APIML_SERVICE_CENTRALREGISTRYURLS: https://discovery-service:10011/eureka
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_SERVICE_APIMLID: node-apiml
+
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runCloudGatewayCentralRegistryTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CloudGatewayCentralRegistry-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
