@@ -31,7 +31,7 @@ import java.util.List;
 public class WebSecurity {
 
     @Value("${apiml.security.x509.serviceList.allowedUsers:-}")
-    private List usersWhiteList = new ArrayList<>();
+    private List<String> usersWhiteList = new ArrayList<>();
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -39,15 +39,16 @@ public class WebSecurity {
         SubjectDnX509PrincipalExtractor principalExtractor = new SubjectDnX509PrincipalExtractor();
 
         ReactiveAuthenticationManager authenticationManager = authentication -> {
-            log.warn("Debug uname {}", authentication.getName());
             authentication.setAuthenticated(usersWhiteList.contains(authentication.getName()));
             return Mono.just(authentication);
         };
 
         http.x509(x509 ->
-            x509
-                .principalExtractor(principalExtractor)
-                .authenticationManager(authenticationManager)).authorizeExchange().pathMatchers("/api/v1/registry/**").authenticated();
+                x509
+                    .principalExtractor(principalExtractor)
+                    .authenticationManager(authenticationManager)).authorizeExchange().pathMatchers("/api/v1/registry/**").authenticated()
+            .and()
+            .authorizeExchange().anyExchange().permitAll();
 
         return http.build();
     }
