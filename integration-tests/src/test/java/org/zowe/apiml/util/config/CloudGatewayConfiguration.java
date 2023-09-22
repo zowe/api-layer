@@ -13,10 +13,6 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-
-import java.net.URI;
-import java.net.URL;
 
 @Data
 @AllArgsConstructor

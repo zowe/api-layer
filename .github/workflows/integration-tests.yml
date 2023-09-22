@@ -279,7 +279,6 @@ jobs:
                     APIML_SERVICE_PORT: 10037
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
                     APIML_SERVICE_CENTRALREGISTRYURLS: https://discovery-service:10011/eureka
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_SERVICE_APIMLID: node-apiml
 
         steps:
             -   uses: actions/checkout@v3
