@@ -53,9 +53,10 @@ export default class SwaggerUI extends Component {
         if (filterInput && filterInput.length > 0) {
             filterInput.item(0).placeholder = 'Filter APIs';
         }
-        if (isAPIPortal()) {
+        if (isAPIPortal() && !document.getElementById('filter-label')) {
             const divInfo = document.querySelector('.info');
             const searchLabel = document.createElement('span');
+            searchLabel.setAttribute('id', 'filter-label');
             searchLabel.textContent = 'Search through Swagger';
             if (divInfo && searchLabel) {
                 searchLabel.style.fontWeight = 'bold';
