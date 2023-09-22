@@ -23,6 +23,7 @@ import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 
 /**
  * Spring configuration to use EhCache. This context is using from application and also from tests.
@@ -48,14 +49,14 @@ public class CacheConfig {
     }
 
     @Bean
-    public JCacheManagerFactoryBean cacheManagerFactoryBean() throws Exception {
+    public JCacheManagerFactoryBean cacheManagerFactoryBean() throws IOException {
         JCacheManagerFactoryBean jCacheManagerFactoryBean = new JCacheManagerFactoryBean();
         jCacheManagerFactoryBean.setCacheManagerUri(new ClassPathResource("ehcache.xml").getURI());
         return jCacheManagerFactoryBean;
     }
 
     @Bean
-    public CacheManager cacheManager() throws Exception {
+    public CacheManager cacheManager() throws IOException {
         final JCacheCacheManager jCacheCacheManager = new JCacheCacheManager();
         jCacheCacheManager.setCacheManager(cacheManagerFactoryBean().getObject());
         return jCacheCacheManager;

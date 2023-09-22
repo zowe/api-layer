@@ -67,7 +67,7 @@ public class CacheUtils {
             Spliterator<javax.cache.Cache.Entry<Object, Object>> spliterator = ((javax.cache.Cache<Object, Object>) nativeCache).spliterator();
             Set<Object> keysToRemove = StreamSupport.stream(spliterator, true)
                 .filter(e -> !(e.getKey() instanceof  CompositeKey) || keyPredicate.test((CompositeKey) e.getKey()))
-                .map(e -> e.getKey())
+                .map(javax.cache.Cache.Entry::getKey)
                 .collect(Collectors.toSet());
             ((javax.cache.Cache<Object, Object>) nativeCache).removeAll(keysToRemove);
         } else {
@@ -92,7 +92,7 @@ public class CacheUtils {
         final Object nativeCache = cache.getNativeCache();
         if (nativeCache instanceof javax.cache.Cache) {
             Spliterator<javax.cache.Cache.Entry<Object, T>> spliterator = ((javax.cache.Cache<Object, T>) nativeCache).spliterator();
-            return StreamSupport.stream(spliterator, true).map(e -> e.getValue()).collect(Collectors.toList());
+            return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Unsupported type of cache : " + nativeCache.getClass());
         }
