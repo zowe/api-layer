@@ -8,8 +8,15 @@ body {
     td {
       overflow: auto;
     }
-    
+
   }
+  .operation-filter-input:hover {
+      border: 1px solid var( --linkHover );
+  }
+    .operation-filter-input:focus {
+        border: 1px solid var( --linkHover );
+        outline: none;
+    }
     @media only screen and (max-width: 1240px) {
         .renderedMarkdown p {
             max-width: 200px;
@@ -35,7 +42,7 @@ body {
       }// end curl-command
     }// request-snippets
   }// responses-inner
-  
+
   .opblock {
     margin-bottom: var( --spaceSmall );
   }
@@ -85,6 +92,7 @@ body {
 
       .opblock-summary-method {
         background: var( --info10 );
+        color: black;
       }
     }//end get
     &.opblock-summary-post {
@@ -93,6 +101,7 @@ body {
 
       .opblock-summary-method {
         background: var( --success10 );
+          color: black;
       }
     }//end post
     &.opblock-summary-patch {
@@ -101,6 +110,7 @@ body {
 
       .opblock-summary-method {
         background: var( --success20 );
+        color: black;
       }
     }//end patch
     &.opblock-summary-delete {
@@ -109,6 +119,7 @@ body {
 
       .opblock-summary-method {
         background: var( --critical10 );
+        color: black;
       }
     }//end delete
     &.opblock-summary-put {
@@ -117,6 +128,7 @@ body {
 
       .opblock-summary-method {
         background: var( --warn10 );
+        color: black;
       }
     }//end put
 
@@ -221,7 +233,7 @@ body {
         font-weight: 600;
       }
     }
-    
+
 
     table {
       width: 100%;
@@ -233,7 +245,7 @@ body {
       tr:first-child{
         .parameters-col_name,
         .parameters-col_description {
-  
+
           padding-top: 0;
         }
 
