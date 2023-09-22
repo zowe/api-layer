@@ -15,12 +15,12 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
-import java.util.Optional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
@@ -28,16 +28,18 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.schema.IAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
+import org.zowe.apiml.gateway.security.service.schema.IAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.util.CacheUtils;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This bean is responsible for "translating" security to specific service. It decorate request with security data for
@@ -60,23 +62,33 @@ import java.util.List;
  * also in loadbalancer
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationService {
 
     public static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
 
     private static final String CACHE_BY_SERVICE_ID = "serviceAuthenticationByServiceId";
-    private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
+    static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
     private final LoadBalancerAuthenticationCommand loadBalancerCommand = new LoadBalancerAuthenticationCommand();
     private final LoadBalancerAuthentication loadBalancerAuthentication = new LoadBalancerAuthentication();
 
+    private final ApplicationContext applicationContext;
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final AuthSourceService authSourceService;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
+
+    // to force calling inside methods with aspects - ie. ehCache aspect
+    private ServiceAuthenticationService meAsProxy;
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        meAsProxy = applicationContext.getBean(ServiceAuthenticationService.class);
+    }
+
 
     /**
      * Marker type of Authentication, the sole purpose of it is to highlight the fact that
@@ -113,8 +125,9 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     }
 
     @Override
+    @RetryIfExpired
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
-    @Cacheable(value = CACHE_BY_AUTHENTICATION, condition = "#result != null")
+    @Cacheable(value = CACHE_BY_AUTHENTICATION, unless = "#result == null")
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final IAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         return scheme.createCommand(authentication, authSource);
@@ -127,14 +140,14 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             condition = "#result != null && #result.isExpired()",
             keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
-    @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
+    @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR, unless = "#result == null")
     public AuthenticationCommand getAuthenticationCommand(String serviceId, Authentication found, AuthSource authSource) {
         // Authentication cannot be determined before load balancer
         if (found instanceof LoadBalancerAuthentication) return loadBalancerCommand;
         // if no instance exist or no metadata found, do nothing
         if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
-        return getAuthenticationCommand(found, authSource);
+        return meAsProxy.getAuthenticationCommand(found, authSource);
     }
 
     public Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication) {
@@ -182,7 +195,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             boolean rejected = false;
             try {
                 final Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest();
-                cmd = getAuthenticationCommand(auth, authSource.orElse(null));
+                cmd = meAsProxy.getAuthenticationCommand(auth, authSource.orElse(null));
 
                 // if authentication schema required valid authentication source, check it
                 if (cmd.isRequiredValidSource()) {
