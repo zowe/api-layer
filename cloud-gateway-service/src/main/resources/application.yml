@@ -22,6 +22,9 @@ apiml:
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
+        x509:
+#            users: # List of users
+            serviceList.allowedUsers:
     cloudGateway:
         serviceRegistryEnabled: false
 
@@ -66,3 +69,4 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
+
