@@ -91,9 +91,8 @@ class CentralRegistryTest implements TestWithStartedInstances {
     }
 
     @Test
-    @Disabled
+    @Disabled("This test should be enabled after the x509 projection is implemented")
     void shouldRejectUnauthorizedAccessToCentralRegistry() {
-        //This test should be enabled after the x509 projection is implemented
         URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
         given()
             .get(cloudGatewayEndpoint)
