@@ -81,18 +81,18 @@ public class GatewayIndexService {
         if (this.customClientSslContext != null) {
             SslProvider sslProvider = SslProvider.builder().sslContext(customClientSslContext).build();
             HttpClient httpClient = HttpClient.create()
-                    .secure(sslProvider);
+                .secure(sslProvider);
 
             return WebClient.builder()
-                    .baseUrl(baseUrl)
-                    .clientConnector(new ReactorClientHttpConnector(httpClient))
-                    .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-                    .build();
+                .baseUrl(baseUrl)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .build();
         }
 
         return defaultWebClient.mutate()
-                .baseUrl(baseUrl)
-                .build();
+            .baseUrl(baseUrl)
+            .build();
     }
 
     public Mono<List<ServiceInfo>> indexGatewayServices(ServiceInstance registration) {
@@ -100,9 +100,9 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
         apimlGatewayLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
-                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex.getMessage()))
-                .onErrorComplete()
-                .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
+            .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex.getMessage()))
+            .onErrorComplete()
+            .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
     }
 
     /**
@@ -121,9 +121,9 @@ public class GatewayIndexService {
         };
 
         return webClient.get().uri("/gateway/services")
-                .retrieve()
-                .bodyToMono(serviceInfoType)
-                .doOnNext(foreignServices -> apimlServicesCache.put(apimlId, foreignServices));
+            .retrieve()
+            .bodyToMono(serviceInfoType)
+            .doOnNext(foreignServices -> apimlServicesCache.put(apimlId, foreignServices));
     }
 
     private String buildAlternativeApimlIdKey(ServiceInstance registration) {
@@ -145,21 +145,21 @@ public class GatewayIndexService {
     public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId, String serviceId) {
 
         Map<String, List<ServiceInfo>> allServices = ImmutableMap.<String, List<ServiceInfo>>builder()
-                .putAll(apimlServicesCache.asMap()).build();
+            .putAll(apimlServicesCache.asMap()).build();
         return allServices.entrySet().stream()
-                .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiIdAndServiceId(entry.getValue(), apiId, serviceId)))
-                .filter(entry -> !CollectionUtils.isEmpty(entry.getValue()))
-                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+            .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
+            .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiIdAndServiceId(entry.getValue(), apiId, serviceId)))
+            .filter(entry -> !CollectionUtils.isEmpty(entry.getValue()))
+            .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
     List<ServiceInfo> filterServicesByApiIdAndServiceId(List<ServiceInfo> apimlIdServices, String apiId, String serviceId) {
         if (!CollectionUtils.isEmpty(apimlIdServices)) {
             return apimlIdServices.stream()
-                    .filter(Objects::nonNull)
-                    .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
-                    .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
-                    .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
+                .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
+                .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +36,8 @@ import static com.google.common.base.Strings.emptyToNull;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Central Registry")
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 public class RegistryController {
 
     @InjectApimlLogger

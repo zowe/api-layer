@@ -35,7 +35,7 @@ dependencies {
     testImplementation project(':zaas-client')
 
     testImplementation libs.hamcrest
-    testImplementation libs.rest.assured
+    // testImplementation libs.assertj
     testImplementation libs.awaitility
     testImplementation libs.logback.classic
     testCompileOnly libs.lombok
@@ -309,7 +309,8 @@ task runContainerTests(type: Test) {
             'InfinispanStorageTest',
             'OktaOauth2Test',
             'CloudGatewayProxyTest',
-            'CloudGatewayServiceRouting'
+            'CloudGatewayServiceRouting',
+            'CloudGatewayCentralRegistry'
         )
     }
 }
@@ -359,6 +360,7 @@ task runBaseTests(type: Test) {
             'OktaOauth2Test',
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
+            'CloudGatewayCentralRegistry',
             'MultipleRegistrationsTest'
         )
     }
@@ -401,6 +403,20 @@ task runCloudGatewayServiceRoutingTest(type: Test) {
     useJUnitPlatform {
         includeTags(
             'CloudGatewayServiceRouting'
+        )
+    }
+}
+
+task runCloudGatewayCentralRegistryTest(type: Test) {
+    group "integration tests"
+    description "Run tests verifying cloud gateway central registry endpoint"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CloudGatewayCentralRegistry'
         )
     }
 }
@@ -518,7 +534,6 @@ task runBaseTestsInternalPort(type: Test) {
     dependsOn runBaseTests
     systemProperties System.properties
     systemProperty "gateway.port", System.getProperty("internal.gateway.port")
-
 }
 
 task runHATests(type: Test) {

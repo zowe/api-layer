@@ -25,6 +25,8 @@
 # - LIBPATH
 # - LIBRARY_PATH
 # - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_heap_max
+# - ZWE_configs_heap_init
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
 # - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
@@ -134,7 +136,9 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 DISCOVERY_CODE=AD
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
+    -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
+    ${QUICK_START} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
