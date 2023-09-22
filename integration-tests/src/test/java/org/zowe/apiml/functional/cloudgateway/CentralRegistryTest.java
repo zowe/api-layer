@@ -18,6 +18,7 @@ import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -90,6 +91,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     }
 
     @Test
+    @Disabled
     void shouldRejectUnauthorizedAccessToCentralRegistry() {
         //This test should be enabled after the x509 projection is implemented
         URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
