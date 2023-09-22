@@ -35,6 +35,24 @@ function transformSwaggerToCurrentHost(swagger) {
     return swagger;
 }
 
+function setFilterBarStyle() {
+    const filterInput = document.getElementsByClassName('operation-filter-input');
+    if (filterInput && filterInput.length > 0) {
+        filterInput.item(0).placeholder = 'Filter APIs';
+    }
+    if (isAPIPortal() && !document.getElementById('filter-label')) {
+        const divInfo = document.querySelector('.info');
+        const searchLabel = document.createElement('span');
+        searchLabel.setAttribute('id', 'filter-label');
+        searchLabel.textContent = 'Search through Swagger';
+        if (divInfo && searchLabel) {
+            searchLabel.style.fontWeight = 'bold';
+            searchLabel.style.fontSize = '13.3px';
+            divInfo.appendChild(searchLabel);
+        }
+    }
+}
+
 export default class SwaggerUI extends Component {
     constructor(props) {
         super(props);
@@ -49,21 +67,7 @@ export default class SwaggerUI extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const filterInput = document.getElementsByClassName('operation-filter-input');
-        if (filterInput && filterInput.length > 0) {
-            filterInput.item(0).placeholder = 'Filter APIs';
-        }
-        if (isAPIPortal() && !document.getElementById('filter-label')) {
-            const divInfo = document.querySelector('.info');
-            const searchLabel = document.createElement('span');
-            searchLabel.setAttribute('id', 'filter-label');
-            searchLabel.textContent = 'Search through Swagger';
-            if (divInfo && searchLabel) {
-                searchLabel.style.fontWeight = 'bold';
-                searchLabel.style.fontSize = '13.3px';
-                divInfo.appendChild(searchLabel);
-            }
-        }
+        setFilterBarStyle();
         const { selectedService, selectedVersion } = this.props;
         if (
             selectedService.serviceId !== prevProps.selectedService.serviceId ||
