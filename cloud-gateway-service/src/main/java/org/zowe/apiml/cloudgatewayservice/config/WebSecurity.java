@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,27 +24,30 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.List;
 
+@Slf4j
 @Configuration
 public class WebSecurity {
 
     @Value("${apiml.security.x509.serviceList.allowedUsers:-}")
-     private ArrayList usersList = new ArrayList<>();
+    private List usersWhiteList = new ArrayList<>();
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-
 
         SubjectDnX509PrincipalExtractor principalExtractor = new SubjectDnX509PrincipalExtractor();
 
         ReactiveAuthenticationManager authenticationManager = authentication -> {
-            authentication.setAuthenticated(usersList.contains(authentication.getName()));
+            log.warn("Debug uname {}", authentication.getName());
+            authentication.setAuthenticated(usersWhiteList.contains(authentication.getName()));
             return Mono.just(authentication);
         };
 
         http.x509(x509 ->
             x509
                 .principalExtractor(principalExtractor)
-                .authenticationManager(authenticationManager)).authorizeExchange().pathMatchers("/registry/**").authenticated();
+                .authenticationManager(authenticationManager)).authorizeExchange().pathMatchers("/api/v1/registry/**").authenticated();
 
         return http.build();
     }
@@ -53,8 +57,8 @@ public class WebSecurity {
     ReactiveUserDetailsService userDetailsService() {
 
         return username -> Mono.just(User.withUsername(username).password("")
-           .authorities("user") // should be enhanced for user roles
-           .build());
+            .authorities("user") // should be enhanced for user roles
+            .build());
     }
 
 }

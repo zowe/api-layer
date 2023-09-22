@@ -18,7 +18,6 @@ import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -28,6 +27,7 @@ import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
+import org.zowe.apiml.util.config.TlsConfiguration;
 
 import java.net.URI;
 import java.net.URL;
@@ -54,9 +54,8 @@ class CentralRegistryTest implements TestWithStartedInstances {
         //In order to avoid config customization
         ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
 
-        SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword(),
-            ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore(),
-            ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore());
+        TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
+        SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
         SslContext.prepareSslAuthentication(sslContextConfigurer);
     }
 
@@ -91,7 +90,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     }
 
     @Test
-    @Disabled("This test should be enabled after the x509 projection is implemented")
+        //@Disabled("This test should be enabled after the x509 projection is implemented")
     void shouldRejectUnauthorizedAccessToCentralRegistry() {
         URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
         given()
