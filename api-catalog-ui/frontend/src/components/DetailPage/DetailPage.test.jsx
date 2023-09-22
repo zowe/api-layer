@@ -308,4 +308,24 @@ describe('>>> Detailed Page component tests', () => {
         const instance = wrapper.instance();
         instance.componentDidMount();
     });
+
+    it('should call getElementById to get product title and hide it', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const spyElementById = jest.spyOn(document, 'getElementById');
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+            />
+        );
+        expect(spyElementById).toHaveBeenCalledWith('product-title');
+    });
 });

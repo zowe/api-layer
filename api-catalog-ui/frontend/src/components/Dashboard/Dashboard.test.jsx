@@ -268,4 +268,21 @@ describe('>>> Dashboard component tests', () => {
         const button = wrapper.find('.loadingDiv');
         expect(button.length).toEqual(1);
     });
+
+    it('should call getElementById to get product title and hide it', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const spyElementById = jest.spyOn(document, 'getElementById');
+        shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        expect(spyElementById).toHaveBeenCalledWith('product-title');
+    });
 });

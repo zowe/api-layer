@@ -256,4 +256,33 @@ describe('>>> Swagger component tests', () => {
         await act(async () => render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container));
         expect(container).not.toBeNull();
     });
+
+    it('should create element if api portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const service = {
+            serviceId: 'testservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/enabler/',
+            basePath: '/enabler/api/v1',
+            apiDoc: null,
+        };
+        service.apis = {
+            codeSnippet: {
+                codeBlock: 'code',
+                endpoint: '/test',
+                language: 'java',
+            },
+        };
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service} />
+            </div>
+        );
+        const swaggerDiv = wrapper.find('span');
+
+        expect(swaggerDiv).toBeDefined();
+    });
 });
