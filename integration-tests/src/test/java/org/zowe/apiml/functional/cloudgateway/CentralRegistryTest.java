@@ -104,7 +104,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
         URI cloudGatewayEndpoint = buildRegistryURI(apimlId, apiId, serviceId);
 
         return with().given()
-            .config(SslContext.clientCertApiml)
+            .config(SslContext.clientCertUser)
             .get(cloudGatewayEndpoint)
             .then()
             .statusCode(200)
