@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.cloudgatewayservice.service.CentralApimlInfoMapper;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.model.ApimlInfo;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.services.ServiceInfo;
@@ -55,7 +56,7 @@ public class RegistryController {
             Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
             return Flux.fromIterable(apimlList.entrySet()).map(this::buildEntry).onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));
         }
-        apimlLog.log("org.zowe.apiml.gateway.serviceRegistryDisabled");
+        apimlLog.log(MessageType.INFO,"org.zowe.apiml.gateway.serviceRegistryDisabled");
         return Flux.empty();
     }
 
