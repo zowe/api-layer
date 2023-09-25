@@ -66,6 +66,8 @@ public class CacheUtils {
         if (nativeCache instanceof javax.cache.Cache) {
             Spliterator<javax.cache.Cache.Entry<Object, Object>> spliterator = ((javax.cache.Cache<Object, Object>) nativeCache).spliterator();
             Set<Object> keysToRemove = StreamSupport.stream(spliterator, true)
+                // if entry is compositeKey and first param is the same filter it to be removed or
+                // if key is not composite key (unknown for evict) evict record (as failover)
                 .filter(e -> !(e.getKey() instanceof  CompositeKey) || keyPredicate.test((CompositeKey) e.getKey()))
                 .map(javax.cache.Cache.Entry::getKey)
                 .collect(Collectors.toSet());
