@@ -12,9 +12,9 @@ package org.zowe.apiml.gateway.config;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.ehcache.EhCacheCacheManager;
-import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.cache.jcache.JCacheCacheManager;
+import org.springframework.cache.jcache.JCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +23,7 @@ import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 
 /**
  * Spring configuration to use EhCache. This context is using from application and also from tests.
@@ -48,18 +49,17 @@ public class CacheConfig {
     }
 
     @Bean
-    public CacheManager cacheManager() {
-        net.sf.ehcache.CacheManager cache = ehCacheCacheManager().getObject();
-        assert cache != null;
-        return new EhCacheCacheManager(cache);
+    public JCacheManagerFactoryBean cacheManagerFactoryBean() throws IOException {
+        JCacheManagerFactoryBean jCacheManagerFactoryBean = new JCacheManagerFactoryBean();
+        jCacheManagerFactoryBean.setCacheManagerUri(new ClassPathResource("ehcache.xml").getURI());
+        return jCacheManagerFactoryBean;
     }
 
     @Bean
-    public EhCacheManagerFactoryBean ehCacheCacheManager() {
-        EhCacheManagerFactoryBean cmfb = new EhCacheManagerFactoryBean();
-        cmfb.setConfigLocation(new ClassPathResource("ehcache.xml"));
-        cmfb.setShared(true);
-        return cmfb;
+    public CacheManager cacheManager() throws IOException {
+        final JCacheCacheManager jCacheCacheManager = new JCacheCacheManager();
+        jCacheCacheManager.setCacheManager(cacheManagerFactoryBean().getObject());
+        return jCacheCacheManager;
     }
 
     @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR)

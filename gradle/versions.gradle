@@ -18,7 +18,7 @@ ext {
     commonsLang3Version = '3.12.0'
     commonsTextVersion = '1.10.0'
     commonsIoVersion = '2.11.0'
-    ehCacheVersion = '2.10.9.2'
+    ehCacheVersion = '3.10.8'
     eurekaVersion = '1.10.18'
     gradleGitPropertiesVersion = '2.2.4' // Used in classpath dependencies
     gradleNodeVersion = '3.0.1' // Used in classpath dependencies
@@ -137,7 +137,7 @@ ext {
         bcpkix                             : "org.bouncycastle:bcpkix-jdk15on:${bouncyCastleVersion}",
         bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
         commons_io                         : "commons-io:commons-io:${commonsIoVersion}",
-        eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
+        eh_cache                           : "org.ehcache:ehcache:${ehCacheVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaVersion}",
         eureka_core                        : "com.netflix.eureka:eureka-core:${eurekaVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",

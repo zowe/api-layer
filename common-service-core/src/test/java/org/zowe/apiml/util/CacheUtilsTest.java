@@ -10,34 +10,16 @@
 
 package org.zowe.apiml.util;
 
-import net.sf.ehcache.Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.zowe.apiml.cache.CompositeKey;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class CacheUtilsTest {
 
@@ -47,6 +29,25 @@ class CacheUtilsTest {
     @BeforeEach
     void setUp() {
         underTest = new CacheUtils();
+    }
+
+    private javax.cache.Cache.Entry<Object, Object> createEntry(Object key, Object value) {
+        return new javax.cache.Cache.Entry<Object, Object>() {
+            @Override
+            public Object getKey() {
+                return key;
+            }
+
+            @Override
+            public Object getValue() {
+                return value;
+            }
+
+            @Override
+            public <T> T unwrap(Class<T> clazz) {
+                return (T) value;
+            }
+        };
     }
 
     @Test
@@ -60,16 +61,22 @@ class CacheUtilsTest {
 
         Cache cache2 = mock(Cache.class);
         when(cacheManager.getCache("cache2")).thenReturn(cache2);
-        net.sf.ehcache.Cache ehCache2 = mock(net.sf.ehcache.Cache.class);
+        javax.cache.Cache ehCache2 = mock(javax.cache.Cache.class);
 
         when(cache2.getNativeCache()).thenReturn(ehCache2);
         List<Object> keys = Arrays.asList(
-            "abc", // not composite key
+            "abc",
             new CompositeKey("test", 5),
             new CompositeKey("next", 10),
             new CompositeKey("next", 15)
         );
-        when(ehCache2.getKeys()).thenReturn(keys);
+        List<javax.cache.Cache.Entry<Object, Object>> values = Arrays.asList(
+            createEntry(keys.get(0), "A"),
+            createEntry(keys.get(1), "B"),
+            createEntry(keys.get(2), "C"),
+            createEntry(keys.get(3), "D")
+        );
+        when(ehCache2.spliterator()).thenAnswer(invocation -> values.spliterator());
 
         try {
             underTest.evictSubset(cacheManager, "missing", x -> true);
@@ -79,34 +86,20 @@ class CacheUtilsTest {
             assertTrue(e.getMessage().contains("missing"));
         }
 
-        // not EhCache - clean all, dont use keyPredicate
+        // not EhCache - clean all, do not use keyPredicate
         verify(cache1, never()).clear();
         underTest.evictSubset(cacheManager, "cache1", x -> false);
         verify(cache1, times(1)).clear();
 
-        final Answer<Boolean> answer = invocation -> {
-            removeCounter++;
-            return true;
-        };
-
-        doAnswer(answer).when(ehCache2).remove(any(Serializable.class));
-        doAnswer(answer).when(ehCache2).remove((Object) any());
-
-        assertEquals(0, removeCounter);
         // in all cases remove entries without CompositeKey
         underTest.evictSubset(cacheManager, "cache2", x -> false);
-        assertEquals(1, removeCounter);
-        verify(ehCache2, times(1)).remove(keys.get(0));
+        verify(ehCache2, times(1)).removeAll(Collections.singleton(keys.get(0)));
 
         underTest.evictSubset(cacheManager, "cache2", x -> x.equals(0, "test"));
-        assertEquals(3, removeCounter);
-        verify(ehCache2, times(2)).remove(keys.get(0));
-        verify(ehCache2, times(1)).remove(keys.get(1));
+        verify(ehCache2, times(1)).removeAll(new HashSet(Arrays.asList(keys.get(0), keys.get(1))));
 
         underTest.evictSubset(cacheManager, "cache2", x -> (Integer) x.get(1) > 10);
-        assertEquals(5, removeCounter);
-        verify(ehCache2, times(3)).remove(keys.get(0));
-        verify(ehCache2, times(1)).remove(keys.get(3));
+        verify(ehCache2, times(1)).removeAll(new HashSet(Arrays.asList(keys.get(0), keys.get(3))));
     }
 
     @Test
@@ -132,30 +125,21 @@ class CacheUtilsTest {
         assertTrue(iae.getMessage().startsWith("Unsupported type of cache : "));
     }
 
-    private Map<Object, Element> convert(Map<Integer, String> in) {
-        Map<Object, Element> out = new HashMap<>();
-        for (Map.Entry<Integer, String> entry : in.entrySet()) {
-            out.put(entry.getKey(), new Element(entry.getKey(), entry.getValue()));
-        }
-        return out;
-    }
-
     @Test
     void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
-        net.sf.ehcache.Cache ehCache = mock(net.sf.ehcache.Cache.class);
+        javax.cache.Cache ehCache = mock(javax.cache.Cache.class);
 
-        Map<Integer, String> entries = new HashMap<>();
-        entries.put(1, "a");
-        entries.put(2, "b");
-        entries.put(3, "c");
-        List<Object> keys = new ArrayList<>(entries.keySet());
+        List entries = Arrays.asList(
+            createEntry(1, "a"),
+            createEntry(2, "b"),
+            createEntry(3, "c")
+        );
 
         when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
         when(cache.getNativeCache()).thenReturn(ehCache);
-        when(ehCache.getKeys()).thenReturn(keys);
-        when(ehCache.getAll(keys)).thenReturn(convert(entries));
+        when(ehCache.spliterator()).thenAnswer(invocation -> entries.spliterator());
 
         Collection<String> values = underTest.getAllRecords(cacheManager, "knownCacheName");
         assertNotNull(values);
