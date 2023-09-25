@@ -86,7 +86,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
     @PostConstruct
     public void afterPropertiesSet() {
-        meAsProxy = applicationContext.getBean(ServiceAuthenticationServiceImpl.class);
+        meAsProxy = applicationContext.getBean(ServiceAuthenticationService.class);
     }
 
 
