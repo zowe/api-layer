@@ -259,7 +259,9 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
-                    authConfigurationProperties.getEvictAccessTokensAndRules()
+                    authConfigurationProperties.getEvictAccessTokensAndRules(),
+                    // TO BE REMOVED
+                    "/gateway/zaas/ticket"
                 ).and())
                     .authorizeRequests()
                     .anyRequest().authenticated()
@@ -491,9 +493,7 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers()
                     .antMatchers("/application/**")
-                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH,
-                        // TO BE REMOVED
-                        "/gateway/api/v1/zaas/ticket"
+                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH
                     )
                     .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
                 ).authorizeRequests()

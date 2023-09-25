@@ -6,11 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 
@@ -26,9 +26,9 @@ public class ZaasController {
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     @ResponseBody
-    public TicketResponse getPassTicket(@RequestBody TicketRequest ticketRequest) throws ApplicationNameNotFoundException, IRRPassTicketGenerationException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        final String userId = (String) authentication.getPrincipal();
+    public TicketResponse getPassTicket(@RequestBody TicketRequest ticketRequest, Authentication authentication) throws ApplicationNameNotFoundException, IRRPassTicketGenerationException {
+        TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
+        final String userId = tokenAuthentication.getPrincipal();
 
         final String applicationName = ticketRequest.getApplicationName();
         if (StringUtils.isBlank(applicationName)) {
@@ -36,6 +36,6 @@ public class ZaasController {
         }
 
         String ticket = passTicketService.generate(userId, applicationName);
-        return new TicketResponse(null, userId, applicationName, ticket);
+        return new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket);
     }
 }
