@@ -30,7 +30,7 @@ describe('>>> App component tests', () => {
         expect(header).toHaveLength(0);
     });
 
-    it('should find the dashboardo-mobile div', () => {
+    it('should find the dashboard-mobile div', () => {
         process.env.REACT_APP_CA_ENV = true;
         const wrapper = shallow(
             <MemoryRouter initialEntries={['/login']}>

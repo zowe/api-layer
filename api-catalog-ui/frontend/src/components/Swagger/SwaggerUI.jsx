@@ -43,9 +43,9 @@ function setFilterBarStyle() {
     if (isAPIPortal() && !document.getElementById('filter-label')) {
         const divInfo = document.querySelector('.info');
         const searchLabel = document.createElement('span');
-        searchLabel.setAttribute('id', 'filter-label');
-        searchLabel.textContent = 'Search through Swagger';
         if (divInfo && searchLabel) {
+            searchLabel.setAttribute('id', 'filter-label');
+            searchLabel.textContent = 'Search through Swagger';
             searchLabel.style.fontWeight = 'bold';
             searchLabel.style.fontSize = '13.3px';
             divInfo.appendChild(searchLabel);
