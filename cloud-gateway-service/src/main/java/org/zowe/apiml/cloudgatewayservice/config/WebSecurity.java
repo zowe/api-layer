@@ -46,8 +46,9 @@ public class WebSecurity {
         http.x509(x509 ->
                 x509
                     .principalExtractor(principalExtractor)
-                    .authenticationManager(authenticationManager)).authorizeExchange().pathMatchers("/api/v1/registry/**").authenticated()
-            .and()
+                    .authenticationManager(authenticationManager)).authorizeExchange()
+                    .pathMatchers("/api/v1/registry/**").authenticated()
+            .and().csrf().disable()
             .authorizeExchange().anyExchange().permitAll();
 
         return http.build();
