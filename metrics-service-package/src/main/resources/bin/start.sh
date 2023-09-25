@@ -99,7 +99,8 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 METRICS_CODE=MS
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java -Xms16m -Xmx512m \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
+  -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
    ${QUICK_START} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
