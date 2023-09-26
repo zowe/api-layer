@@ -24,6 +24,7 @@ import org.zowe.apiml.cloudgatewayservice.service.model.CentralServiceInfo;
 import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
@@ -41,7 +42,8 @@ class CentralApimlInfoMapperTest {
     class WhenParametersAreInvalid {
         @Test
         void shouldThrowNPEWhenApimlIdIsNull() {
-            assertThatThrownBy(() -> centralApimlInfoMapper.buildApimlServiceInfo(null, new ArrayList<ServiceInfo>()))
+            List<ServiceInfo> serviceInfoList = new ArrayList<>();
+            assertThatThrownBy(() -> centralApimlInfoMapper.buildApimlServiceInfo(null, serviceInfoList))
                     .isExactlyInstanceOf(NullPointerException.class);
         }
 
