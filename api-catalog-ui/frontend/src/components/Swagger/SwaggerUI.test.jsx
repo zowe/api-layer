@@ -112,7 +112,6 @@ describe('>>> Swagger component tests', () => {
     });
 
     it('should transform swagger server url', async () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const endpoint = '/enabler/api/v1';
         const service = {
             serviceId: 'testservice',
@@ -157,7 +156,6 @@ describe('>>> Swagger component tests', () => {
     });
 
     it('should update swagger', async () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const endpoint1 = '/oldenabler/api/v1';
         const endpoint2 = '/newenabler/api/v2';
         const service1 = {
@@ -225,7 +223,6 @@ describe('>>> Swagger component tests', () => {
     });
 
     it('should get snippet from selectedVersion and render swagger', async () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const endpoint1 = '/oldenabler/api/v1';
         const service1 = {
             serviceId: 'oldservice',
@@ -324,7 +321,6 @@ describe('>>> Swagger component tests', () => {
     });
 
     it('should not create element if api portal disabled and element does not exist', () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
@@ -354,7 +350,6 @@ describe('>>> Swagger component tests', () => {
     });
 
     it('should not create element api portal disabled and span already exists', () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
