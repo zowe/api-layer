@@ -38,6 +38,10 @@ const match = {
 };
 
 describe('>>> ServiceNavigationBar component tests', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+    });
+
     it('should clear when unmounting', () => {
         const clear = jest.fn();
         const serviceNavigationBar = shallow(
