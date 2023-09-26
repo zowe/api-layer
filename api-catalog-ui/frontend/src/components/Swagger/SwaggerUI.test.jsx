@@ -277,7 +277,6 @@ describe('>>> Swagger component tests', () => {
             },
         };
         jest.spyOn(document, 'getElementById').mockImplementation(() => null);
-        const createElement = jest.spyOn(document, 'createElement');
         const wrapper = shallow(
             <div>
                 <SwaggerUI selectedService={service} />

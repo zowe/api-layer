@@ -271,8 +271,8 @@ describe('>>> Dashboard component tests', () => {
 
     it('should call getElementById to get product title and hide it', () => {
         process.env.REACT_APP_API_PORTAL = true;
-        const spyElementById = jest.spyOn(document, 'getElementById');
-        shallow(
+        const spyElementById = jest.spyOn(document, 'getElementById').mockReturnValue({ style: { display: 'block' } });
+        const wrapper = shallow(
             <Dashboard
                 tiles={null}
                 fetchTilesStart={jest.fn()}
@@ -283,6 +283,28 @@ describe('>>> Dashboard component tests', () => {
                 authentication={jest.fn()}
             />
         );
+        expect(spyElementById).toHaveBeenCalledWith('product-title');
+        const productLabel = wrapper.find('#product-title');
+        expect(document.getElementById('product-title').style.display).toBe('none');
+        expect(productLabel.length).toEqual(0);
+    });
+
+    it('should not hide the product label', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const spyElementById = jest.spyOn(document, 'getElementById').mockImplementation(() => false);
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        const productLabel = wrapper.find('#product-title');
+        expect(productLabel).toBeDefined();
         expect(spyElementById).toHaveBeenCalledWith('product-title');
     });
 });
