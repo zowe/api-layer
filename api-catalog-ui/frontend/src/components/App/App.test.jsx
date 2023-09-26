@@ -62,4 +62,16 @@ describe('>>> App component tests', () => {
             expect(spyCloseMobileMenu).toHaveBeenCalled();
         });
     });
+
+    it('should not resize window', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        // eslint-disable-next-line global-require
+        const utils = require('../../utils/utilFunctions');
+        const spyCloseMobileMenu = jest.spyOn(utils, 'closeMobileMenu');
+        window.innerWidth = 500;
+        fireEvent(window, new Event('resize'));
+        waitFor(() => {
+            expect(spyCloseMobileMenu).not.toHaveBeenCalled();
+        });
+    });
 });

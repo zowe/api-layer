@@ -17,6 +17,10 @@ describe('>>> Swagger component tests', () => {
         document.body.innerHTML = '';
     });
 
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+    });
+
     it('should not render swagger if apiDoc is null', () => {
         const service = {
             serviceId: 'testservice',
@@ -289,6 +293,68 @@ describe('>>> Swagger component tests', () => {
 
     it('should not create element if span already exists', () => {
         process.env.REACT_APP_API_PORTAL = true;
+        const service = {
+            serviceId: 'testservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/enabler/',
+            basePath: '/enabler/api/v1',
+            apiDoc: null,
+        };
+        service.apis = {
+            codeSnippet: {
+                codeBlock: 'code',
+                endpoint: '/test',
+                language: 'java',
+            },
+        };
+        jest.spyOn(document, 'getElementById').mockImplementation(() => <span id="filter-label" />);
+        const createElement = jest.spyOn(document, 'createElement');
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service} />
+            </div>
+        );
+        const swaggerDiv = wrapper.find('span');
+
+        expect(swaggerDiv.length).toEqual(0);
+        expect(createElement).not.toHaveBeenCalled();
+    });
+
+    it('should not create element if api portal disabled and element does not exist', () => {
+        process.env.REACT_APP_API_PORTAL = false;
+        const service = {
+            serviceId: 'testservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/enabler/',
+            basePath: '/enabler/api/v1',
+            apiDoc: null,
+        };
+        service.apis = {
+            codeSnippet: {
+                codeBlock: 'code',
+                endpoint: '/test',
+                language: 'java',
+            },
+        };
+        jest.spyOn(document, 'getElementById').mockImplementation(() => null);
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service} />
+            </div>
+        );
+        const swaggerDiv = wrapper.find('span');
+
+        expect(swaggerDiv).toBeDefined();
+    });
+
+    it('should not create element api portal disabled and span already exists', () => {
+        process.env.REACT_APP_API_PORTAL = false;
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
