@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { shallow } from 'enzyme';
+import { fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
@@ -48,5 +49,17 @@ describe('>>> App component tests', () => {
         const header = wrapper.find('.dashboard-mobile-menu mobile-view');
 
         expect(header.exists()).toEqual(false);
+    });
+
+    it('should resize window', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        // eslint-disable-next-line global-require
+        const utils = require('../../utils/utilFunctions');
+        const spyCloseMobileMenu = jest.spyOn(utils, 'closeMobileMenu');
+        window.innerWidth = 800;
+        fireEvent(window, new Event('resize'));
+        waitFor(() => {
+            expect(spyCloseMobileMenu).toHaveBeenCalled();
+        });
     });
 });
