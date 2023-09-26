@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class WebSecurity {
                 x509
                     .principalExtractor(principalExtractor)
                     .authenticationManager(authenticationManager)).authorizeExchange()
-                    .pathMatchers("/api/v1/registry/**").authenticated()
+                  .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
             .and().csrf().disable()
             .authorizeExchange().anyExchange().permitAll();
 

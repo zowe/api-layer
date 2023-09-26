@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
@@ -44,7 +45,7 @@ import static org.hamcrest.Matchers.is;
 @DiscoverableClientDependentTest
 @Tag("CloudGatewayCentralRegistry")
 class CentralRegistryTest implements TestWithStartedInstances {
-    static final String CENTRAL_REGISTRY_PATH = "/api/v1/registry/";
+    static final String CENTRAL_REGISTRY_PATH = CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/";
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 

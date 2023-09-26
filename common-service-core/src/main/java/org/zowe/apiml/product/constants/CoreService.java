@@ -10,14 +10,18 @@
 
 package org.zowe.apiml.product.constants;
 
+import lombok.Getter;
+
 /**
  * Api Mediation Layer core service enumeration
  */
+@Getter
 public enum CoreService {
     GATEWAY("gateway"),
     DISCOVERY("discovery"),
     API_CATALOG("apicatalog"),
-    AUTH("auth");
+    AUTH("auth"),
+    CLOUD_GATEWAY("cloud-gateway");
 
     private final String serviceId;
 
@@ -25,7 +29,4 @@ public enum CoreService {
         this.serviceId = serviceId;
     }
 
-    public String getServiceId() {
-        return serviceId;
-    }
 }
