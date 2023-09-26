@@ -12,6 +12,8 @@
         "@material-ui/icons": "4.11.2",
         "@mui/icons-material": "5.1.0",
         "@mui/material": "5.1.0",
+        "@types/enzyme": "^3.10.14",
+        "@types/jest": "^29.5.5",
         "@types/react": "17.0.31",
         "@wojtekmaj/enzyme-adapter-react-17": "0.6.7",
         "agentkeepalive": "4.1.4",
