@@ -99,4 +99,16 @@ describe('>>> ServiceNavigationBar component tests', () => {
         expect(storeCurrentTileId).toHaveBeenCalled();
         localStorage.removeItem('serviceId');
     });
+
+    it('should display display mobile view if api portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const clear = jest.fn();
+        const serviceNavigationBar = shallow(
+            <ServicesNavigationBar match={match} clear={clear} services={[tile]} currentTileId="apicatalog" />
+        );
+        expect(serviceNavigationBar.find('.mobile-view mobile-menu-close-ctn')).toBeDefined();
+        expect(serviceNavigationBar.find('.title')).toBeDefined();
+        expect(serviceNavigationBar.find('.mobile-menu-close-btn icon-btn')).toBeDefined();
+        expect(serviceNavigationBar.find('.mobile-menu-close')).toBeDefined();
+    });
 });
