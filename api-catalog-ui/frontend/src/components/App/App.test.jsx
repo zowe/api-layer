@@ -37,8 +37,6 @@ describe('>>> App component tests', () => {
     it('should find the dashboard-mobile div', () => {
         process.env.REACT_APP_API_PORTAL = 'true';
         const wrapper = shallow(<App />);
-        // eslint-disable-next-line no-console
-        console.log(`wrapper.debug: ${wrapper.debug({ verbose: true })}`);
         const header = wrapper.find('.dashboard-mobile-menu');
 
         expect(header.exists()).toEqual(true);
