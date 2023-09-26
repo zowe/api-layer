@@ -23,8 +23,7 @@ apiml:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
         x509:
-#            users: # List of users
-            serviceList.allowedUsers:
+            registry.allowedUsers:
     cloudGateway:
         serviceRegistryEnabled: false
 

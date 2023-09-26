@@ -28,7 +28,7 @@ import java.util.List;
 @Configuration
 public class WebSecurity {
 
-    @Value("${apiml.security.x509.serviceList.allowedUsers:-}")
+    @Value("${apiml.security.x509.registry.allowedUsers:-}")
     private List<String> usersWhiteList = new ArrayList<>();
 
     @Bean

@@ -254,7 +254,7 @@ jobs:
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_CLOUDGATEWAY_SERVICEREGISTRYENABLED: true
-                    APIML_SECURITY_X509_SERVICELIST_ALLOWEDUSERS: USER,UNKNOWNUSER,apimtst,user,apimtst
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER,apimtst,user,apimtst
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:

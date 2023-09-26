@@ -1,0 +1,42 @@
+{
+    "groups": [
+        {
+            "name": "apiml",
+            "type": "java.util.Map",
+            "description": "API Mediation Layer configuration option."
+        },
+        {
+            "name": "apiml.security",
+            "type": "java.util.Map",
+            "description": "API Mediation Layer security configuration."
+        },
+        {
+            "name": "apiml.security.x509",
+            "type": "java.util.Map",
+            "description": "Client certificate configuration."
+        },
+        {
+            "name": "apiml.security.x509.registry",
+            "type": "java.util.Map",
+            "description": "Client certificate configuration of /registry endpoint."
+        },
+        {
+            "name": "apiml.cloudGateway",
+            "type": "java.util.Map",
+            "description": "Cloud Gateway configuration."
+        }
+    ],
+    "properties": [
+        {
+            "name": "apiml.security.x509.registry.allowedUsers",
+            "type": "java.lang.String",
+            "description": "Specifies the comma-separated list of users that are permitted to use /registry endpoints. The user is obtained from the common name in the provided client certificate."
+        },
+        {
+            "name": "apiml.cloudGateway.serviceRegistryEnabled",
+            "type": "java.lang.Boolean",
+            "defaultValue": false,
+            "description": "Specifies whether the /registry endpoint is enabled."
+        }
+    ]
+}
