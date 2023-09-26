@@ -136,7 +136,7 @@ describe('>>> Tile component tests', () => {
         expect(instance.find('media-labels')).not.toBeNull();
     });
 
-    it('should display desktop view', () => {
+    it('should display swagger image', () => {
         process.env.REACT_APP_API_PORTAL = true;
         sampleTile.services[0].apis = [{ v1: { apiId: 'zowe.apiml.gateway' }, swaggerUrl: 'url' }];
         const instance = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
