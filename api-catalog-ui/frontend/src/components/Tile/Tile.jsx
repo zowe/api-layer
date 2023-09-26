@@ -90,7 +90,7 @@ export default class Tile extends Component {
                                 <>
                                     <div id="swagger" className="desktop-view">
                                         {hasSwagger ? (
-                                            <img alt="Swagger" src={swaggerImg} />
+                                            <img data-testid="swagger-img" alt="Swagger" src={swaggerImg} />
                                         ) : (
                                             <div style={{ height: '24px', width: '24px' }} />
                                         )}
