@@ -257,7 +257,7 @@ describe('>>> Swagger component tests', () => {
         expect(container).not.toBeNull();
     });
 
-    it('should create element if api portal enabled', () => {
+    it('should create element if does not exist', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const service = {
             serviceId: 'testservice',
@@ -276,6 +276,8 @@ describe('>>> Swagger component tests', () => {
                 language: 'java',
             },
         };
+        jest.spyOn(document, 'getElementById').mockImplementation(() => null);
+        const createElement = jest.spyOn(document, 'createElement');
         const wrapper = shallow(
             <div>
                 <SwaggerUI selectedService={service} />
@@ -284,5 +286,37 @@ describe('>>> Swagger component tests', () => {
         const swaggerDiv = wrapper.find('span');
 
         expect(swaggerDiv).toBeDefined();
+    });
+
+    it('should not create element if span already exists', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const service = {
+            serviceId: 'testservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/enabler/',
+            basePath: '/enabler/api/v1',
+            apiDoc: null,
+        };
+        service.apis = {
+            codeSnippet: {
+                codeBlock: 'code',
+                endpoint: '/test',
+                language: 'java',
+            },
+        };
+        jest.spyOn(document, 'getElementById').mockImplementation(() => <span id="filter-label" />);
+        const createElement = jest.spyOn(document, 'createElement');
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service} />
+            </div>
+        );
+        const swaggerDiv = wrapper.find('span');
+
+        expect(swaggerDiv.length).toEqual(0);
+        expect(createElement).not.toHaveBeenCalled();
     });
 });
