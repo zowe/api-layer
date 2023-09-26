@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContents, { customUIStyle } from './utilFunctions';
+import countAdditionalContents, { closeMobileMenu, customUIStyle, openMobileMenu } from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
     function mockFetch() {
@@ -165,5 +165,17 @@ describe('>>> Util Functions tests', () => {
 
         global.fetch = () => Promise.resolve({ ok: false, status: 404 });
         await expect(customUIStyle(uiConfig)).rejects.toThrow('Network response was not ok');
+    });
+
+    it('should open mobile menu', async () => {
+        const spyToggle = jest.spyOn(document.body.classList, 'toggle');
+        openMobileMenu();
+        expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
+    });
+
+    it('should close mobile menu', async () => {
+        const spyToggle = jest.spyOn(document.body.classList, 'remove');
+        closeMobileMenu();
+        expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
     });
 });
