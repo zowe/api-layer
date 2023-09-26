@@ -36,14 +36,14 @@ public class CentralApimlInfoMapper {
     private static final List<String> METADATA_KEYS_WHITELIST = Arrays.asList("zos.sysname", "zos.system", "zos.sysplex", "zos.cpcName", "zos.zosName", "zos.lpar");
 
     public ApimlInfo buildApimlServiceInfo(@NonNull String apimlId, List<ServiceInfo> gatewayServices) {
-        if (gatewayServices == null) {
-            return ApimlInfo.builder().apimlId(apimlId).services(Collections.emptyList()).build();
-        }
+        List<CentralServiceInfo> services = Optional.ofNullable(gatewayServices).else(Collection.emptyList()).stream()
+            .filter(Objects::nonNull)
+            .map(this::mapServices)
+            .collect(Collectors.toList()));
 
         return ApimlInfo.builder()
                 .apimlId(apimlId)
-                .services(gatewayServices.stream().filter(Objects::nonNull)
-                        .map(this::mapServices).collect(Collectors.toList()))
+                .services(services)
                 .build();
     }
 
@@ -57,22 +57,18 @@ public class CentralApimlInfoMapper {
     }
 
     private Map<String, String> extractMetadata(ServiceInfo gws) {
-        if (!isEmpty(gws.getInstances())) {
-            ServiceInfo.Instances firstInstance = gws.getInstances().entrySet().stream().findFirst()
-                    .map(Map.Entry::getValue).orElse(null);
-            if (firstInstance != null && !isEmpty(firstInstance.getCustomMetadata())) {
-                return firstInstance.getCustomMetadata().entrySet().stream()
-                        .filter(entry -> METADATA_KEYS_WHITELIST.contains(entry.getKey()))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            }
-        }
-        return Collections.emptyMap();
+        return ServiceInfo.Instances firstInstance = gws.getInstances().entrySet().stream().findFirst()
+                    .map(Map.Entry::getValue)
+                    .filter(i -> !isEmpty(i.getCustomMetadata()))
+                    .map(ServiceInfo.Instances::getCustomMetadata)
+                    .map(Map::entrySet)
+                    .map(Collection::stream)
+                    .filter(entry -> METADATA_KEYS_WHITELIST.contains(entry.getKey()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    .orElse(Collections.emptyMap());
     }
 
     private Optional<String> extractApiId(ServiceInfo.Apiml apiml) {
-        if (apiml != null && !isEmpty(apiml.getApiInfo())) {
-            return Optional.ofNullable(emptyToNull(apiml.getApiInfo().get(0).getApiId()));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(apiml).map(ServiceInfo.Apiml::getApiInfo).map(x -> x.get(0)).map(ApiInfo::getApiId);
     }
 }
