@@ -13,13 +13,9 @@ package org.zowe.apiml.cloudgatewayservice.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.cloudgatewayservice.service.CentralApimlInfoMapper;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.model.ApimlInfo;
@@ -38,6 +34,7 @@ import static com.google.common.base.Strings.emptyToNull;
 @RestController
 @Tag(name = "Central Registry")
 @RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
+@ConditionalOnProperty(value = "apiml.cloudGateway.serviceRegistryEnabled", havingValue = "true")
 public class RegistryController {
 
     @InjectApimlLogger
@@ -45,18 +42,10 @@ public class RegistryController {
     private final CentralApimlInfoMapper centralApimlInfoMapper;
     private final GatewayIndexService gatewayIndexService;
 
-    @Value("${apiml.cloudGateway.serviceRegistryEnabled:false}")
-    private boolean serviceRegistryEnabled;
-
     @GetMapping(value = {"/registry/", "/registry", "/registry/{apimlId}"})
     public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId, @RequestParam(name = "serviceId", required = false) String serviceId) {
-
-        if (serviceRegistryEnabled) {
-            Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
-            return Flux.fromIterable(apimlList.entrySet()).map(this::buildEntry).onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));
-        }
-        apimlLog.log("org.zowe.apiml.gateway.serviceRegistryDisabled");
-        return Flux.empty();
+        Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
+        return Flux.fromIterable(apimlList.entrySet()).map(this::buildEntry).onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));
     }
 
     private ApimlInfo buildEntry(Map.Entry<String, List<ServiceInfo>> entry) {

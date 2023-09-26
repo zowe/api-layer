@@ -1,4 +1,5 @@
 apiml:
+    cloudGateway.serviceRegistryEnabled: true
     service:
         hostname: localhost
 eureka:
