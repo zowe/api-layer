@@ -7,3 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import { Component } from 'react';
+
+// Component provided as placeholder
+// NOSONAR
+export default class FeedbackButton extends Component {
+    render() {
+        return (
+            <div id="feedbackButton" className="feedback-button">
+                Feedback Button
+            </div>
+        );
+    }
+}
