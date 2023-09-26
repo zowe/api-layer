@@ -100,7 +100,7 @@ describe('>>> ServiceNavigationBar component tests', () => {
         localStorage.removeItem('serviceId');
     });
 
-    it('should display display mobile view if api portal enabled', () => {
+    it('should display mobile view if api portal enabled', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const clear = jest.fn();
         const serviceNavigationBar = shallow(
