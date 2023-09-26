@@ -41,7 +41,7 @@ dependencyResolutionManagement {
                 prefer '2.7'
             }
             version('commonsFileUpload', '1.5')
-            version('ehCache', '2.10.9.2')
+            version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
             version('githubClassgraph', '4.8.154')
@@ -222,7 +222,7 @@ dependencyResolutionManagement {
             library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk15on').versionRef('bouncyCastle')
             library('bootstrap', 'org.webjars', 'bootstrap').versionRef('bootstrap')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
-            library('eh_cache', 'net.sf.ehcache', 'ehcache').versionRef('ehCache')
+            library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
             library('findbugs', 'com.google.code.findbugs', 'jsr305').versionRef('findBugs')

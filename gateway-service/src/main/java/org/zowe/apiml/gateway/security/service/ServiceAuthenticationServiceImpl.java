@@ -13,11 +13,12 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -30,18 +31,19 @@ import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationServi
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.util.CacheUtils;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * This bean is responsible for "translating" security to specific service. It decorate request with security data for
+ * This bean is responsible for "translating" security to specific service. It decorates request with security data for
  * specific service. Implementation of security updates are defined with beans extending
  * {@link IAuthenticationScheme}.
  * <p>
  * The main idea of this bean is to create command
  * {@link AuthenticationCommand}. Command is object which update the
  * request for specific scheme (defined by service). This bean is responsible for getting the right command. If it is
- * possible to decide now for just one scheme type, bean return this command to update request immediatelly.
+ * possible to decide now for just one scheme type, bean return this command to update request immediately.
  * This command write in the ZUUL context
  * UniversalAuthenticationCommand, which is used in Ribbon loadbalancer. There is a listener which work with this value.
  * After load balancer will decide which instance will be used, universal command is called and update the request.
@@ -54,17 +56,26 @@ import java.util.Optional;
  * also in loadbalancer
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationService {
 
     private static final String CACHE_BY_SERVICE_ID = "serviceAuthenticationByServiceId";
-    private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
+    static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
+    private final ApplicationContext applicationContext;
     private final EurekaClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
+
+    // to force calling inside methods with aspects - ie. ehCache aspect
+    private ServiceAuthenticationService meAsProxy;
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        meAsProxy = applicationContext.getBean(ServiceAuthenticationService.class);
+    }
 
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
         return eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
@@ -90,8 +101,9 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     }
 
     @Override
+    @RetryIfExpired
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
-    @Cacheable(CACHE_BY_AUTHENTICATION)
+    @Cacheable(value = CACHE_BY_AUTHENTICATION, unless = "#result == null")
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, AuthSource authSource) {
         final IAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         return scheme.createCommand(authentication, authSource);
@@ -104,12 +116,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         condition = "#result != null && #result.isExpired()",
         keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
     )
-    @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
+    @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR, unless = "#result == null")
     public AuthenticationCommand getAuthenticationCommand(String serviceId, Authentication found, AuthSource authSource) {
         // if no instance exist or no metadata found, do nothing
         if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
-        return getAuthenticationCommand(found, authSource);
+        return meAsProxy.getAuthenticationCommand(found, authSource);
     }
 
     public Optional<AuthSource> getAuthSourceByAuthentication(Authentication authentication) {

@@ -10,14 +10,16 @@
 
 package org.zowe.apiml.util;
 
-import net.sf.ehcache.Element;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.zowe.apiml.cache.CompositeKey;
 
 import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * This utils offer base operation with cache, which can be shared to multiple codes.
@@ -61,18 +63,15 @@ public class CacheUtils {
         final Cache cache = cacheManager.getCache(cacheName);
         if (cache == null) throw new IllegalArgumentException("Unknown cache " + cacheName);
         final Object nativeCache = cache.getNativeCache();
-        if (nativeCache instanceof net.sf.ehcache.Cache) {
-            final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
-
-            for (final Object key : ehCache.getKeys()) {
-                if (key instanceof CompositeKey) {
-                    // if entry is compositeKey and first param is different, skip it (be sure this is not to evict)
-                    final CompositeKey compositeKey = ((CompositeKey) key);
-                    if (!keyPredicate.test(compositeKey)) continue;
-                }
-                // if key is not composite key (unknown for evict) or has same serviceId, evict record
-                ehCache.remove(key);
-            }
+        if (nativeCache instanceof javax.cache.Cache) {
+            Spliterator<javax.cache.Cache.Entry<Object, Object>> spliterator = ((javax.cache.Cache<Object, Object>) nativeCache).spliterator();
+            Set<Object> keysToRemove = StreamSupport.stream(spliterator, true)
+                    // if entry is compositeKey and first param is the same filter it to be removed or
+                    // if key is not composite key (unknown for evict) evict record (as failover)
+                    .filter(e -> !(e.getKey() instanceof  CompositeKey) || keyPredicate.test((CompositeKey) e.getKey()))
+                    .map(javax.cache.Cache.Entry::getKey)
+                    .collect(Collectors.toSet());
+            ((javax.cache.Cache<Object, Object>) nativeCache).removeAll(keysToRemove);
         } else {
             // in case of using different cache manager, evict all records for sure
             cache.clear();
@@ -93,14 +92,9 @@ public class CacheUtils {
         if (cache == null) throw new IllegalArgumentException("Unknown cache " + cacheName);
 
         final Object nativeCache = cache.getNativeCache();
-        if (nativeCache instanceof net.sf.ehcache.Cache) {
-            final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
-
-            return (List<T>) ehCache.getAll(ehCache.getKeys())
-                .values()
-                .stream()
-                .map(Element::getObjectValue)
-                .collect(Collectors.toList());
+        if (nativeCache instanceof javax.cache.Cache) {
+            Spliterator<javax.cache.Cache.Entry<Object, T>> spliterator = ((javax.cache.Cache<Object, T>) nativeCache).spliterator();
+            return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Unsupported type of cache : " + nativeCache.getClass());
         }

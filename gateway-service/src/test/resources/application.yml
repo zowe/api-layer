@@ -78,9 +78,6 @@ spring:
     output:
         ansi:
             enabled: detect
-    cache:
-        ehcache:
-            config: classpath:ehcache.xml
     main:
         allow-bean-definition-overriding: true
         allow-circular-references: true
