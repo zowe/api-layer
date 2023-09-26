@@ -1,5 +1,5 @@
 ext {
-    springBootVersion = '2.7.15'
+    springBootVersion = '2.7.16'
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE'
     springCloudLoadBalancerVersion = '2.2.9.RELEASE'
@@ -84,6 +84,7 @@ ext {
         spring_boot_configuration_processor: "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}",
         spring_boot_starter                : "org.springframework.boot:spring-boot-starter:${springBootVersion}",
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
+        spring_boot_starter_freemarker     : "org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
         spring_boot_starter_validation     : "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
@@ -282,7 +283,8 @@ ext {
         log4j_to_slf4j                     : "org.apache.logging.log4j:log4j-to-slf4j:2.19.0",
         javax_validation_api               : "javax.validation:validation-api:2.0.1.Final",
 
-        junit                              : "junit:junit:4.12"
+        junit                              : "junit:junit:4.13.2",
+        jackson_mapper_asl                 : "org.codehaus.jackson:jackson-mapper-asl:1.9.16-TALEND"
     ]
 
     // for node projects
