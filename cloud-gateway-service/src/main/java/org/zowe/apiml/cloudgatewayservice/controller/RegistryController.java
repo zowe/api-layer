@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.cloudgatewayservice.service.CentralApimlInfoMapper;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.model.ApimlInfo;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 
@@ -37,8 +35,6 @@ import static com.google.common.base.Strings.emptyToNull;
 @ConditionalOnProperty(value = "apiml.cloudGateway.serviceRegistryEnabled", havingValue = "true")
 public class RegistryController {
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
     private final CentralApimlInfoMapper centralApimlInfoMapper;
     private final GatewayIndexService gatewayIndexService;
 
