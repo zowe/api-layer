@@ -35,7 +35,6 @@ dependencies {
     testImplementation project(':zaas-client')
 
     testImplementation libs.hamcrest
-    // testImplementation libs.assertj
     testImplementation libs.awaitility
     testImplementation libs.logback.classic
     testCompileOnly libs.lombok
