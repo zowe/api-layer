@@ -2,60 +2,18 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `1.28.24 (2023-12-12)`
+## `1.28.24 (2023-09-27)`
 
-* Feature:  Generate SAF ID token based on x509 (#2361) ([8e88201](https://github.com/zowe/api-layer/commit/8e88201)), closes [#2361](https://github.com/zowe/api-layer/issues/2361)
-* Feature:  Fix SAF IDT scheme and service (#2223) ([e3f54d2](https://github.com/zowe/api-layer/commit/e3f54d2)), closes [#2223](https://github.com/zowe/api-layer/issues/2223)
-* Feature:  Create endpoint to retrieve default API doc for service (#2327) ([502ba3c](https://github.com/zowe/api-layer/commit/502ba3c)), closes [#2327](https://github.com/zowe/api-layer/issues/2327)
-* Feature:  Discovery service health check (#2312) ([2f167ff](https://github.com/zowe/api-layer/commit/2f167ff)), closes [#2312](https://github.com/zowe/api-layer/issues/2312)
-* Feature:  functionality for error message in HttpBasicPassTicketScheme (#2301) ([9eb006f](https://github.com/zowe/api-layer/commit/9eb006f)), closes [#2301](https://github.com/zowe/api-layer/issues/2301)
-* Feature:  minor update in authentication schemes  (#2319) ([fae3a86](https://github.com/zowe/api-layer/commit/fae3a86)), closes [#2319](https://github.com/zowe/api-layer/issues/2319)
-* Feature:  TLSv1.3 configuration (#2314) ([e96135a](https://github.com/zowe/api-layer/commit/e96135a)), closes [#2314](https://github.com/zowe/api-layer/issues/2314) [#2269](https://github.com/zowe/api-layer/issues/2269)
-* Feature:  use default expiration time in Zosmf scheme for auth. source without expiration (#2298) ([122837e](https://github.com/zowe/api-layer/commit/122837e)), closes [#2298](https://github.com/zowe/api-layer/issues/2298)
-* Feature:  Enhance x509 authentication scheme to support client certificates (part 3) (#2285) ([a053b00](https://github.com/zowe/api-layer/commit/a053b00)), closes [#2285](https://github.com/zowe/api-layer/issues/2285)
-* Feature:  zowe jwt from x509 (update) (#2292) ([c602080](https://github.com/zowe/api-layer/commit/c602080)), closes [#2292](https://github.com/zowe/api-layer/issues/2292)
-* Feature:  Enhance x509 authentication scheme to support client certificates (part 2) (#2260) ([d888a11](https://github.com/zowe/api-layer/commit/d888a11)), closes [#2260](https://github.com/zowe/api-layer/issues/2260)
-* Feature:  zowe jwt from x509 (#2245) ([aedbbda](https://github.com/zowe/api-layer/commit/aedbbda)), closes [#2245](https://github.com/zowe/api-layer/issues/2245)
-* Feature:  Enhance x509 authentication scheme to support client certificates (part 1) (#2244) ([615badf](https://github.com/zowe/api-layer/commit/615badf)), closes [#2244](https://github.com/zowe/api-layer/issues/2244)
-* Feature:  Enhance zosmf authentication scheme to support client certificates (#2207) ([5750072](https://github.com/zowe/api-layer/commit/5750072)), closes [#2207](https://github.com/zowe/api-layer/issues/2207)
-* Feature:  publish jacococ results (#2177) ([f88a90b](https://github.com/zowe/api-layer/commit/f88a90b)), closes [#2177](https://github.com/zowe/api-layer/issues/2177)
-* Feature:  Add ApimlX509Filter to default filterchain. (#2146) ([b8dd509](https://github.com/zowe/api-layer/commit/b8dd509)), closes [#2146](https://github.com/zowe/api-layer/issues/2146)
+* Bugfix:  Fix processing of Open API docs by API Catalog (JavaTimeModule) which was the cause of missing tiles. (#3040) ([09f5095](https://github.com/zowe/api-layer/commit/09f5095)), closes [#3040](https://github.com/zowe/api-layer/issues/3040)
 
+## `1.28.22 (2023-06-21)`
 
-* Bugfix:  Fix processing of Open API docs by API Catalog (JavaTimeModule) (#3040) ([09f5095](https://github.com/zowe/api-layer/commit/09f5095)), closes [#3040](https://github.com/zowe/api-layer/issues/3040)
-* Bugfix:  mitigate storing passwords in the memory (v1) (#2862) ([60293f9](https://github.com/zowe/api-layer/commit/60293f9)), closes [#2862](https://github.com/zowe/api-layer/issues/2862)
-* Bugfix:  swagger UI button alignment  (#2861) ([7c01a5b](https://github.com/zowe/api-layer/commit/7c01a5b)), closes [#2861](https://github.com/zowe/api-layer/issues/2861)
-* Bugfix:  broken swagger ui (#2857) ([1f04b97](https://github.com/zowe/api-layer/commit/1f04b97)), closes [#2857](https://github.com/zowe/api-layer/issues/2857)
-* Bugfix:  failing unit tests (#2712) ([4ae662a](https://github.com/zowe/api-layer/commit/4ae662a)), closes [#2712](https://github.com/zowe/api-layer/issues/2712)
-* Bugfix:  disable x509  (#2659) ([5f32c09](https://github.com/zowe/api-layer/commit/5f32c09)), closes [#2659](https://github.com/zowe/api-layer/issues/2659) [#2565](https://github.com/zowe/api-layer/issues/2565)
-* Bugfix:  enable hsts (#2565) (#2575) ([decf6fe](https://github.com/zowe/api-layer/commit/decf6fe)), closes [#2565](https://github.com/zowe/api-layer/issues/2565) [#2575](https://github.com/zowe/api-layer/issues/2575)
-* Bugfix:  Add getIgnoredUiTasks fucntion (#2477) ([de08df3](https://github.com/zowe/api-layer/commit/de08df3)), closes [#2477](https://github.com/zowe/api-layer/issues/2477)
-* Bugfix:  Install dev dependencies in images (#2466) ([abf018b](https://github.com/zowe/api-layer/commit/abf018b)), closes [#2466](https://github.com/zowe/api-layer/issues/2466)
-* Bugfix:  Use valid localca.cer (#2384) ([8dec2b3](https://github.com/zowe/api-layer/commit/8dec2b3)), closes [#2384](https://github.com/zowe/api-layer/issues/2384)
-* Bugfix:  Externalize index location to work with zowe env (#2374) ([e1e5303](https://github.com/zowe/api-layer/commit/e1e5303)), closes [#2374](https://github.com/zowe/api-layer/issues/2374)
-* Bugfix:  Add jgroups_bind_address value (#2364) ([b3e2995](https://github.com/zowe/api-layer/commit/b3e2995)), closes [#2364](https://github.com/zowe/api-layer/issues/2364)
-* Bugfix:  API Catalog swagger link (#2345) ([5cd3af5](https://github.com/zowe/api-layer/commit/5cd3af5)), closes [#2345](https://github.com/zowe/api-layer/issues/2345)
-* Bugfix:  Normalize swagger paths (#2331) ([2a3d2a2](https://github.com/zowe/api-layer/commit/2a3d2a2)), closes [#2331](https://github.com/zowe/api-layer/issues/2331)
-* Bugfix:  use same key and record lengths as jcl (#2340) ([7c8b677](https://github.com/zowe/api-layer/commit/7c8b677)), closes [#2340](https://github.com/zowe/api-layer/issues/2340)
-* Bugfix:  Add server side logging for swagger handling code (#2328) ([7b0455d](https://github.com/zowe/api-layer/commit/7b0455d)), closes [#2328](https://github.com/zowe/api-layer/issues/2328)
-* Bugfix:  documentation for apidoc endpoints (#2326) ([1b10098](https://github.com/zowe/api-layer/commit/1b10098)), closes [#2326](https://github.com/zowe/api-layer/issues/2326)
-* Bugfix:  replication of data for infinispan nodes (#2308) ([5b5880c](https://github.com/zowe/api-layer/commit/5b5880c)), closes [#2308](https://github.com/zowe/api-layer/issues/2308) [#2269](https://github.com/zowe/api-layer/issues/2269)
-* Bugfix:  verify ssl certs takes precedence over nonstrict verify (#2330) ([9265a33](https://github.com/zowe/api-layer/commit/9265a33)), closes [#2330](https://github.com/zowe/api-layer/issues/2330)
-* Bugfix:  preserve request cookies (#2293) ([71c6649](https://github.com/zowe/api-layer/commit/71c6649)), closes [#2293](https://github.com/zowe/api-layer/issues/2293) [#2269](https://github.com/zowe/api-layer/issues/2269)
-* Bugfix:  API Catalog heading changed #1555 (#2263) ([d4d3c1e](https://github.com/zowe/api-layer/commit/d4d3c1e)), closes [#1555](https://github.com/zowe/api-layer/issues/1555) [#2263](https://github.com/zowe/api-layer/issues/2263)
-* Bugfix:  Improve metrics in mocked-backend for metrics service (#2274) ([f12ebe8](https://github.com/zowe/api-layer/commit/f12ebe8)), closes [#2274](https://github.com/zowe/api-layer/issues/2274)
-* Bugfix:  caching service logging (#2221) ([6cb121a](https://github.com/zowe/api-layer/commit/6cb121a)), closes [#2221](https://github.com/zowe/api-layer/issues/2221)
-* Bugfix:  zaas client supports v2 compatibility with both gateway endpoint base Url paths (#2227) ([abdf995](https://github.com/zowe/api-layer/commit/abdf995)), closes [#2227](https://github.com/zowe/api-layer/issues/2227)
-* Bugfix:  Add BearerContent filter to enable bearer auth (#2197) ([1d41704](https://github.com/zowe/api-layer/commit/1d41704)), closes [#2197](https://github.com/zowe/api-layer/issues/2197)
-* Bugfix:  Type in image setup input name (#2184) ([e001dc3](https://github.com/zowe/api-layer/commit/e001dc3)), closes [#2184](https://github.com/zowe/api-layer/issues/2184)
-* Bugfix:  use unique artifacts for gha (#2191) ([576fd72](https://github.com/zowe/api-layer/commit/576fd72)), closes [#2191](https://github.com/zowe/api-layer/issues/2191)
-* Bugfix:  configure southbound timeout with APIML_GATEWAY_TIMEOUT_MILLIS (#2154) ([6af5d6f](https://github.com/zowe/api-layer/commit/6af5d6f)), closes [#2154](https://github.com/zowe/api-layer/issues/2154)
-* Bugfix:  Improve error handling for API diff endpoint (#2178) ([1581e39](https://github.com/zowe/api-layer/commit/1581e39)), closes [#2178](https://github.com/zowe/api-layer/issues/2178)
-* Bugfix:  update data model for infinispan (#2156) ([38a1348](https://github.com/zowe/api-layer/commit/38a1348)), closes [#2156](https://github.com/zowe/api-layer/issues/2156)
-* Bugfix:  Versioning in image publishing workflow (#2159) ([db52527](https://github.com/zowe/api-layer/commit/db52527)), closes [#2159](https://github.com/zowe/api-layer/issues/2159)
-* Bugfix:  Add x509 auth info to gw api doc (#2142) ([0205470](https://github.com/zowe/api-layer/commit/0205470)), closes [#2142](https://github.com/zowe/api-layer/issues/2142)
-* Bugfix:  Properly remove services when instances are removed from Discovery Service (#2128) ([c675b91](https://github.com/zowe/api-layer/commit/c675b91)), closes [#2128](https://github.com/zowe/api-layer/issues/2128)
-* Bugfix:  use ribbon LB (#2147) ([4751dbc](https://github.com/zowe/api-layer/commit/4751dbc)), closes [#2147](https://github.com/zowe/api-layer/issues/2147)
+* Bugfix:  Mitigate storing passwords in the memory (v1) (#2862) ([60293f9](https://github.com/zowe/api-layer/commit/60293f9)), closes [#2862](https://github.com/zowe/api-layer/issues/2862)
+* Bugfix:  Align button in swagger UI (#2861) ([7c01a5b](https://github.com/zowe/api-layer/commit/7c01a5b)), closes [#2861](https://github.com/zowe/api-layer/issues/2861)
+
+## `1.28.20 (2023-04-04)`
+
+* Bugfix:  Prevent null pointer exception in Swagger UI when buffer is missing. (#2857) ([1f04b97](https://github.com/zowe/api-layer/commit/1f04b97)), closes [#2857](https://github.com/zowe/api-layer/issues/2857)
 
 ## `1.28.16 (2022-11-28)`
 
