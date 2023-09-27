@@ -99,7 +99,7 @@ class CentralApimlInfoMapperTest {
 
             assertThat(centralService.getServiceId()).isEqualTo("serviceId");
             assertThat(centralService.getStatus()).isEqualTo(InstanceInfo.InstanceStatus.UP);
-            assertThat(centralService.getApiId()).isEqualTo("zowe.apiml.apicatalog");
+            assertThat(centralService.getApiId()).containsOnly("zowe.apiml.apicatalog");
             assertThat(centralService.getCustomMetadata()).containsOnlyKeys("zos.sysname", "zos.sysplex");
         }
 
@@ -117,7 +117,7 @@ class CentralApimlInfoMapperTest {
 
             CentralServiceInfo minimalService = info.getServices().get(1);
             assertThat(minimalService.getServiceId()).isEqualTo("minimal");
-            assertThat(minimalService.getApiId()).isNull();
+            assertThat(minimalService.getApiId()).isEmpty();
             assertThat(minimalService.getCustomMetadata()).isEmpty();
             assertThat(minimalService.getStatus()).isEqualTo(InstanceInfo.InstanceStatus.UNKNOWN);
         }

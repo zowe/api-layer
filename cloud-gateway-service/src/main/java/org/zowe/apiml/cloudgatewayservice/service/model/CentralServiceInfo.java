@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Map;
+import java.util.Set;
 
 @Data
 @Builder
@@ -22,7 +23,7 @@ public class CentralServiceInfo {
 
     private final InstanceInfo.InstanceStatus status;
     private final Map<String,String> customMetadata;
-    private final String apiId;
+    private final Set<String> apiId;
     private final String serviceId;
 
 }
