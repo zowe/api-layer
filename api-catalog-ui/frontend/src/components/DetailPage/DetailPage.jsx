@@ -116,11 +116,7 @@ export default class DetailPage extends Component {
         }
         return (
             <div className="main">
-                {apiPortalEnabled && (
-                    <Suspense>
-                        <FeedbackButton leftPlacement="80vw" />
-                    </Suspense>
-                )}
+                {apiPortalEnabled && <FeedbackButton leftPlacement="80vw" />}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
