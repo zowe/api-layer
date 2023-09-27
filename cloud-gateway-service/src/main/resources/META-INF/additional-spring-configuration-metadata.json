@@ -24,19 +24,30 @@
             "name": "apiml.cloudGateway",
             "type": "java.util.Map",
             "description": "Cloud Gateway configuration."
+        },
+        {
+            "name": "apiml.cloudGateway.registry",
+            "type": "java.util.Map",
+            "description": "Cloud Gateway configuration of a service registry endpoint."
         }
     ],
     "properties": [
         {
             "name": "apiml.security.x509.registry.allowedUsers",
-            "type": "java.lang.String",
+            "type": "java.util.List",
             "description": "Specifies the comma-separated list of users that are permitted to use /registry endpoints. The user is obtained from the common name in the provided client certificate."
         },
         {
-            "name": "apiml.cloudGateway.serviceRegistryEnabled",
+            "name": "apiml.cloudGateway.registry.enabled",
             "type": "java.lang.Boolean",
             "defaultValue": false,
             "description": "Specifies whether the /registry endpoint is enabled."
+        },
+        {
+            "name": "apiml.cloudGateway.registry.metadata-key-allow-list",
+            "type": "java.util.Set",
+            "defaultValue": false,
+            "description": "Specifies what custom metadata are displayed in the /registry endpoint."
         }
     ]
 }

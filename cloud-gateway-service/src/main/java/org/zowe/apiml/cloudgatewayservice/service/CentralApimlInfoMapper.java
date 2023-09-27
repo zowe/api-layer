@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.service;
 
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.cloudgatewayservice.service.model.ApimlInfo;
 import org.zowe.apiml.cloudgatewayservice.service.model.CentralServiceInfo;
@@ -28,7 +29,9 @@ import static org.springframework.util.CollectionUtils.isEmpty;
  */
 @Component
 public class CentralApimlInfoMapper {
-    private static final List<String> METADATA_KEYS_WHITELIST = Arrays.asList("zos.sysname", "zos.system", "zos.sysplex", "zos.cpcName", "zos.zosName", "zos.lpar");
+
+    @Value("${apiml.cloudGateway.registry.metadata-key-allow-list:}")
+    Set<String> metadataKeysAllowList = new HashSet<>();
 
     public ApimlInfo buildApimlServiceInfo(@NonNull String apimlId, List<ServiceInfo> gatewayServices) {
         List<CentralServiceInfo> services = Optional.ofNullable(gatewayServices).orElse(Collections.emptyList()).stream()
@@ -60,7 +63,7 @@ public class CentralApimlInfoMapper {
             .map(ServiceInfo.Instances::getCustomMetadata)
             .orElse(Collections.emptyMap())
             .entrySet().stream()
-            .filter(entry -> METADATA_KEYS_WHITELIST.contains(entry.getKey()))
+            .filter(entry -> metadataKeysAllowList.contains(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

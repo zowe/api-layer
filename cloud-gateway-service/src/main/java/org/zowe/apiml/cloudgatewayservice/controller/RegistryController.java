@@ -32,13 +32,13 @@ import static com.google.common.base.Strings.emptyToNull;
 @RestController
 @Tag(name = "Central Registry")
 @RequestMapping(value = "cloud-gateway/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
-@ConditionalOnProperty(value = "apiml.cloudGateway.serviceRegistryEnabled", havingValue = "true")
+@ConditionalOnProperty(value = "apiml.cloudGateway.registry.enabled", havingValue = "true")
 public class RegistryController {
 
     private final CentralApimlInfoMapper centralApimlInfoMapper;
     private final GatewayIndexService gatewayIndexService;
 
-    @GetMapping(value = {"/registry/", "/registry", "/registry/{apimlId}"})
+    @GetMapping(value = {"/registry", "/registry/{apimlId}"})
     public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId, @RequestParam(name = "serviceId", required = false) String serviceId) {
         Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
         return Flux.fromIterable(apimlList.entrySet()).map(this::buildEntry).onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));

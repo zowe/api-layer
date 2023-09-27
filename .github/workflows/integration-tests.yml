@@ -247,29 +247,24 @@ jobs:
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service
             cloud-gateway-service:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
-                    APIML_CLOUDGATEWAY_SERVICEREGISTRYENABLED: true
+                    APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER,apimtst,user,apimtst
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: central-apiml
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: central-apiml
 
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
-                    APIML_SERVICE_APIMLID: node-apiml
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_SERVICE_PORT: 10031
             gateway-service-2:

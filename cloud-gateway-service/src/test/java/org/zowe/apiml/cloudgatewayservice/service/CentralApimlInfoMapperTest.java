@@ -13,6 +13,7 @@ package org.zowe.apiml.cloudgatewayservice.service;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.apache.groovy.util.Maps;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,8 @@ class CentralApimlInfoMapperTest {
 
         @BeforeEach
         public void setUp() {
+            centralApimlInfoMapper.metadataKeysAllowList = Sets.set("zos.sysname", "zos.system", "zos.sysplex", "zos.cpcName", "zos.zosName", "zos.lpar");
+
             apiml = new ServiceInfo.Apiml();
             apiInfo = ServiceInfo.ApiInfoExtended.builder().apiId("zowe.apiml.apicatalog").build();
             apiml.setApiInfo(singletonList(apiInfo));

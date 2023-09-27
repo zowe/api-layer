@@ -22,10 +22,10 @@ apiml:
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
-        x509:
-            registry.allowedUsers:
     cloudGateway:
-        serviceRegistryEnabled: false
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
 
 server:
     port: ${apiml.service.port}

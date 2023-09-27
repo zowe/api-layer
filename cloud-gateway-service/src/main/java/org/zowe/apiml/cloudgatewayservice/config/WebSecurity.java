@@ -29,8 +29,8 @@ import java.util.List;
 @Configuration
 public class WebSecurity {
 
-    @Value("${apiml.security.x509.registry.allowedUsers:-}")
-    private List<String> usersWhiteList = new ArrayList<>();
+    @Value("${apiml.security.x509.registry.allowedUsers:}")
+    private List<String> usersAllowList = new ArrayList<>();
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -38,7 +38,7 @@ public class WebSecurity {
         SubjectDnX509PrincipalExtractor principalExtractor = new SubjectDnX509PrincipalExtractor();
 
         ReactiveAuthenticationManager authenticationManager = authentication -> {
-            authentication.setAuthenticated(usersWhiteList.contains(authentication.getName()));
+            authentication.setAuthenticated(usersAllowList.contains(authentication.getName()));
             return Mono.just(authentication);
         };
 

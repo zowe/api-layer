@@ -1,5 +1,5 @@
 apiml:
-    cloudGateway.serviceRegistryEnabled: true
+    cloudGateway.registry.enabled: true
     security.x509.registry.allowedUsers: Zowe Service
     service:
         hostname: localhost
