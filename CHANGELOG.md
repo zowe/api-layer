@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `1.28.24 (2023-09-27)`
+
+
+
+
+
+
 ## `1.28.16 (2022-11-28)`
 
 * Bugfix: Use the APIML_SECURITY_X509_ENABLED flag to properly disable client certificate authentication for SSO (#2645) ([5f32c09](https://github.com/zowe/api-layer/commit/5f32c09)), closes [#2645](https://github.com/zowe/api-layer/issues/2645)
