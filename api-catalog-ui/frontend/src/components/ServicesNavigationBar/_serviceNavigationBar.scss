@@ -8,6 +8,9 @@ $red-selected-bx: 0 0 0 2px var( --criticalShade10 ) inset;
     margin: auto;
     color: var( --criticalShade10 );
 }
+input.MuiInputBase-input.MuiInput-input.MuiInputBase-inputAdornedStart.MuiInputBase-inputAdornedEnd {
+    border: none;
+}
 .MuiTab-wrapper {
     width: 100%;
     text-align: initial;

@@ -1,6 +1,4 @@
 .dashboard-content {
-  overflow: hidden;
-
   .header, .header > * {
     align-items: center;
   }
@@ -27,6 +25,30 @@
       bottom: 0;
       left: calc(50% - #{calc(var( --headerLineWidth ) / 2)});
     }
+  }//end h1
+
+  .tile-ctn,
+  .dashboard-grid-header {
+    display: flex;
+    margin: 0 var( --spaceSmaller );
+    flex: 1 1 100%;
+
+    > * {
+      display: flex;
+      flex: 1 1;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty, .tile-title {
+      flex: 4 1;
+      justify-content: flex-start;
+    }
+  }
+
+  .dashboard-grid-header {
+    flex-basis: content;
+    padding: 0 var( --spaceMedium );
+    padding-right: calc( #{var( --spaceMedium )} + #{var( --scrollPadding )});
   }
 
   #search {
@@ -36,11 +58,12 @@
     margin-left: auto;
     margin-right: auto;
     background: var( --surface05 );
-    border: 1px solid var( --divider15 );
     display: flex;
 
     .MuiInput-root {
       width: 100%;
+      border: 1px solid var( --divider15 );
+
       &.Mui-focused, &:hover {
         border: 1px solid var(--linkHover);
       }
@@ -54,9 +77,29 @@
 
   #grid-container,
   .apis {
-    height: 100%;
     display: flex;
     flex-direction: column;
+  }
+  .tile-container {
+    height: 100%;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      width: 0px;
+    }
+
+
+  }
+  .zowe-styling {
+    grid-gap: 20px !important;
+    display: grid !important;
+
+    height: 100%;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      width: 0px;
+    }
   }
   .scrollable-flex-content {
     border-top: 1px solid var( --criticalShade00 );
@@ -114,4 +157,25 @@
     height: var( --spaceTinier );
     width: 99%;
     display: block;
+    border-color: var( --criticalShade10 );
 }
+
+.floating-button {
+  position: fixed;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  flex-direction: row-reverse;
+  z-index: 1000;
+  .MuiButtonBase-root, &.MuiFab-root, &.MuiFab-extended {
+    background-color: var( --criticalShade10 ) !important;
+    color: white;
+
+  }
+}
+
+@media (max-width: 800px) {
+  .floating-button {
+    display: none;
+  }
+}
+

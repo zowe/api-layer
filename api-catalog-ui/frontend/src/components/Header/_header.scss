@@ -6,7 +6,10 @@ body {
         }
     }
   #product-title {
-    display: none;
+      font-size: var( --spaceLarger );
+      font-family: var( --fontFamily00 );
+      font-weight: 600;
+      margin-left: 20px;
   }
   #user-info-text {
     padding: var( --spaceSmaller ) var( --spaceSmaller ) 0px;
@@ -16,7 +19,7 @@ body {
     border: 1px solid var( --divider00 );
   }
   .header {
-    padding: var( --spaceSmall) var( --spaceSmall );
+    padding: var( --headerVPadding) var( --spaceSmall );
 
     &, > * {
       display: flex;
@@ -26,16 +29,28 @@ body {
       height: 26px;
     }
     #auth {
-        width: 177px;
+        height: 18px;
+    }
+    #doc {
+        height: 18px;
     }
 
-    #doc {
-        margin-right: 31px;
-        width: 120px;
-    }
     .right-icons {
       margin-left: auto;
-      margin-right: 52px;
+      margin-right: var( --spaceSmall );
+
+      .MuiLink-root:hover .ext{
+        color: var(--controlText15Hover);
+        filter: invert(28%) sepia(93%) saturate(1803%) hue-rotate(190deg) brightness(96%) contrast(101%);
+      }
+      a, #zowe-links {
+        display: flex;
+        align-items: center;
+
+        img:first-child {
+          margin-right: var( --spaceSmallest );
+        }
+      }
 
       .logout-container > button {
         min-width: 50px;
@@ -54,29 +69,50 @@ body {
         margin-left: var( --spaceSmall);
       }
     }
-      #internal-link {
-          margin-right: var( --spaceSmall );
-          margin-top: 1px;
-          color: black;
-          text-align: center;
-          font-size: 14px;
-          font-style: normal;
-          font-weight: 400;
-          line-height: 22.653px;
-          letter-spacing: 1.01px;
-      }
 
       #img-internal-link {
-          margin-right: 20px;
+          margin-right: var( --spaceLarger );
           margin-left: var( --spaceSmall );
           height: 15px;
           width: 15px;
       }
-      img:hover {
-
-        border-radius: 3px;
-        border: 1px solid var(--light-primary-color-060052-cc-default, #0052CC);
-        background: var(--light-primary-alternate-shade-ffffff, #FFF);
-      }
   }//end header
+
+  .dashboard-mobile-menu {
+    --sideNavWidth: var( --sideNavMobileWidth );
+    @include mobileNav();
+
+    .mobile-menu-trigger-btn,
+    .product-name {
+      display: none;
+    }
+    .mobile-menu-close-ctn {
+      align-self: flex-end;
+    }
+    .header {
+      &, .right-icons, #zowe-links, .feedback-ctn {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      a {
+        padding: var( --spaceSmall );
+        border-radius: 3px;
+        background: var(--tile-bg, #FFF);
+        box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.25);
+        margin-bottom: var( --spaceSmall );
+      }
+      .feedback-ctn .MuiFab-extended{
+        width: 100%;
+        border-radius: var( --borderRadius1 );
+        background-color: var( --surface05 );
+        justify-content: flex-start;
+      }
+    }
+
+    #internal-link {
+      margin-right: 0 !important;
+  }
+  }
 }
