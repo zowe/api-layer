@@ -10,6 +10,7 @@
 import { act } from 'react-dom/test-utils';
 import { render } from 'react-dom';
 import { shallow } from 'enzyme';
+import { describe, expect, it, jest } from '@jest/globals';
 import SwaggerUI from './SwaggerUI';
 
 describe('>>> Swagger component tests', () => {
@@ -258,6 +259,10 @@ describe('>>> Swagger component tests', () => {
         expect(container).not.toBeNull();
     });
 
+    const divInfo = {
+        appendChild: jest.fn(),
+    };
+
     it('should create element if does not exist', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const service = {
@@ -277,15 +282,24 @@ describe('>>> Swagger component tests', () => {
                 language: 'java',
             },
         };
-        jest.spyOn(document, 'getElementById').mockImplementation(() => null);
-        const wrapper = shallow(
-            <div>
-                <SwaggerUI selectedService={service} />
-            </div>
-        );
-        const swaggerDiv = wrapper.find('span');
+        const querySelectorSpy = jest.spyOn(document, 'querySelector');
+        const createElementSpy = jest.spyOn(document, 'createElement');
+        const elementsByClassNameSpy = jest.spyOn(document, 'getElementsByClassName');
+        const divInfoSpy = jest.spyOn(divInfo, 'appendChild');
 
-        expect(swaggerDiv).toBeDefined();
+        // eslint-disable-next-line no-unused-vars
+        querySelectorSpy.mockImplementation((element) => divInfo);
+
+        const wrapper = shallow(<SwaggerUI selectedService={service} />);
+
+        wrapper.setProps({ selectedVersion: 'v2' });
+
+        expect(elementsByClassNameSpy).toHaveBeenCalled();
+        expect(querySelectorSpy).toHaveBeenCalled();
+        expect(querySelectorSpy).toHaveBeenCalledWith('.info');
+        expect(createElementSpy).toHaveBeenCalled();
+        expect(createElementSpy).toHaveBeenCalledWith('span');
+        expect(divInfoSpy).toHaveBeenCalled();
     });
 
     it('should not create element if span already exists', () => {
@@ -307,17 +321,24 @@ describe('>>> Swagger component tests', () => {
                 language: 'java',
             },
         };
-        jest.spyOn(document, 'getElementById').mockImplementation(() => <span id="filter-label" />);
-        const createElement = jest.spyOn(document, 'createElement');
-        const wrapper = shallow(
-            <div>
-                <SwaggerUI selectedService={service} />
-            </div>
-        );
-        const swaggerDiv = wrapper.find('span');
+        const querySelectorSpy = jest.spyOn(document, 'querySelector');
+        const createElementSpy = jest.spyOn(document, 'createElement');
+        const elementsByClassNameSpy = jest.spyOn(document, 'getElementsByClassName');
+        const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+        const divInfoSpy = jest.spyOn(divInfo, 'appendChild');
 
-        expect(swaggerDiv.length).toEqual(0);
-        expect(createElement).not.toHaveBeenCalled();
+        // eslint-disable-next-line no-unused-vars
+        getElementByIdSpy.mockImplementation((elementId) => <span id="filter-label" />);
+
+        const wrapper = shallow(<SwaggerUI selectedService={service} />);
+
+        wrapper.setProps({ selectedVersion: 'v2' });
+
+        expect(elementsByClassNameSpy).toHaveBeenCalled();
+        expect(getElementByIdSpy).toHaveBeenCalledWith('filter-label');
+        expect(querySelectorSpy).not.toHaveBeenCalled();
+        expect(createElementSpy).not.toHaveBeenCalled();
+        expect(divInfoSpy).not.toHaveBeenCalled();
     });
 
     it('should not create element if api portal disabled and element does not exist', () => {

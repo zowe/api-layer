@@ -328,8 +328,7 @@ describe('>>> Dashboard component tests', () => {
                     assertAuthorization={jest.fn()}
                     authentication={jest.fn()}
                 />
-            </Suspense>,
-            { suspenseFallback: false }
+            </Suspense>
         );
 
         await waitFor(() => {

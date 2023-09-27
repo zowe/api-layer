@@ -106,12 +106,21 @@ export default class DetailPage extends Component {
         const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         const showSideBar = false;
-        if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+        if (
+            hasTiles &&
+            'customStyleConfig' in tiles[0] &&
+            tiles[0].customStyleConfig &&
+            Object.keys(tiles[0].customStyleConfig).length > 0
+        ) {
             customUIStyle(tiles[0].customStyleConfig);
         }
         return (
             <div className="main">
-                {apiPortalEnabled && <FeedbackButton leftPlacement="80vw" />}
+                {apiPortalEnabled && (
+                    <Suspense>
+                        <FeedbackButton leftPlacement="80vw" />
+                    </Suspense>
+                )}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
