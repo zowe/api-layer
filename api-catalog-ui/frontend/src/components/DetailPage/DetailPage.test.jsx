@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { shallow } from 'enzyme';
+import { describe, expect, it, jest } from '@jest/globals';
 import DetailPage from './DetailPage';
 
 const tile = {
@@ -46,6 +47,10 @@ const history = {
 };
 
 describe('>>> Detailed Page component tests', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+    });
+
     it('should start epic on mount', () => {
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
@@ -307,5 +312,38 @@ describe('>>> Detailed Page component tests', () => {
         );
         const instance = wrapper.instance();
         instance.componentDidMount();
+    });
+
+    const productLabel = {
+        style: {
+            display: 'none',
+            removeProperty: jest.fn(),
+        },
+    };
+
+    it('should call getElementById to get product title and hide it', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const spyElementById = jest.spyOn(document, 'getElementById');
+        const removePropSpy = jest.spyOn(productLabel.style, 'removeProperty');
+
+        // eslint-disable-next-line no-unused-vars
+        spyElementById.mockImplementation((_elementId) => productLabel);
+
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+            />
+        );
+        expect(spyElementById).toHaveBeenCalledWith('product-title');
+        expect(removePropSpy).toHaveBeenCalled();
     });
 });
