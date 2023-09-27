@@ -24,6 +24,7 @@ import org.zowe.apiml.cloudgatewayservice.service.model.CentralServiceInfo;
 import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -68,11 +69,13 @@ class CentralApimlInfoMapperTest {
     class WhenMappingServiceInfo {
 
         private ServiceInfo serviceOne;
+        private ServiceInfo.Apiml apiml;
+        private ServiceInfo.ApiInfoExtended apiInfo;
 
         @BeforeEach
         public void setUp() {
-            ServiceInfo.Apiml apiml = new ServiceInfo.Apiml();
-            ServiceInfo.ApiInfoExtended apiInfo = ServiceInfo.ApiInfoExtended.builder().apiId("zowe.apiml.apicatalog").build();
+            apiml = new ServiceInfo.Apiml();
+            apiInfo = ServiceInfo.ApiInfoExtended.builder().apiId("zowe.apiml.apicatalog").build();
             apiml.setApiInfo(singletonList(apiInfo));
             ServiceInfo.Instances instance = ServiceInfo.Instances.builder()
                     .customMetadata(Maps.of("zos.sysname", "MD20",
@@ -91,7 +94,6 @@ class CentralApimlInfoMapperTest {
 
         @Test
         void shouldMapServiceInfoWithFilteredMetadata() {
-
             ApimlInfo info = centralApimlInfoMapper.buildApimlServiceInfo("apiml1", singletonList(serviceOne));
 
             assertThat(info.getApimlId()).isEqualTo("apiml1");
@@ -101,6 +103,17 @@ class CentralApimlInfoMapperTest {
             assertThat(centralService.getStatus()).isEqualTo(InstanceInfo.InstanceStatus.UP);
             assertThat(centralService.getApiId()).containsOnly("zowe.apiml.apicatalog");
             assertThat(centralService.getCustomMetadata()).containsOnlyKeys("zos.sysname", "zos.sysplex");
+        }
+
+        @Test
+        void shouldMapServiceInfoWithMultipleAPIs() {
+            ServiceInfo.ApiInfoExtended apiInfo2 = ServiceInfo.ApiInfoExtended.builder().apiId("zowe.apiml.gateway").build();
+            apiml.setApiInfo(Arrays.asList(apiInfo, apiInfo2));
+
+            ApimlInfo info = centralApimlInfoMapper.buildApimlServiceInfo("apiml1", singletonList(serviceOne));
+
+            CentralServiceInfo centralService = info.getServices().get(0);
+            assertThat(centralService.getApiId()).containsOnly("zowe.apiml.apicatalog", "zowe.apiml.gateway");
         }
 
         @Test
