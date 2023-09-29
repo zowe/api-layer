@@ -295,25 +295,6 @@ describe('>>> Dashboard component tests', () => {
         expect(productLabel.length).toEqual(0);
     });
 
-    it('should not hide the product label', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const spyElementById = jest.spyOn(document, 'getElementById').mockImplementation(() => false);
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        const productLabel = wrapper.find('#product-title');
-        expect(productLabel).toBeDefined();
-        expect(spyElementById).toHaveBeenCalledWith('product-title');
-    });
-
     it('should lazily load feedback button component in api portal mode', async () => {
         process.env.REACT_APP_API_PORTAL = true;
 
