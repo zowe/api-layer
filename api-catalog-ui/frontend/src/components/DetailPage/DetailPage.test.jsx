@@ -321,7 +321,7 @@ describe('>>> Detailed Page component tests', () => {
         },
     };
 
-    it('should call getElementById to get product title and hide it', () => {
+    it('should call getElementById to get go back button and hide it', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const spyElementById = jest.spyOn(document, 'getElementById');
         const removePropSpy = jest.spyOn(productLabel.style, 'removeProperty');
@@ -343,7 +343,7 @@ describe('>>> Detailed Page component tests', () => {
                 history={history}
             />
         );
-        expect(spyElementById).toHaveBeenCalledWith('product-title');
+        expect(spyElementById).toHaveBeenCalledWith('go-back-button-portal');
         expect(removePropSpy).toHaveBeenCalled();
     });
 });

@@ -5,6 +5,23 @@ body {
             display: contents;
         }
     }
+  #go-back-button-portal {
+      background-color: #CC092F;
+      margin-right: 25px;
+      border-radius: 3px;
+      width: 42%;
+      height: 40px;
+      &, > span {
+          &, > a {
+              text-decoration: none;
+              color: white;
+              font-size: var( --fontMedium );
+          }
+          &, > a:hover {
+              color: var(--linkHover);
+          }
+      }
+  }
   #product-title {
       font-size: var( --spaceLarger );
       font-family: var( --fontFamily00 );

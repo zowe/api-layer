@@ -275,7 +275,7 @@ describe('>>> Dashboard component tests', () => {
         expect(button.length).toEqual(1);
     });
 
-    it('should call getElementById to get product title and hide it', () => {
+    it('should call getElementById to get go back button and hide it', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const spyElementById = jest.spyOn(document, 'getElementById').mockReturnValue({ style: { display: 'block' } });
         const wrapper = shallow(
@@ -289,29 +289,10 @@ describe('>>> Dashboard component tests', () => {
                 authentication={jest.fn()}
             />
         );
-        expect(spyElementById).toHaveBeenCalledWith('product-title');
-        const productLabel = wrapper.find('#product-title');
-        expect(document.getElementById('product-title').style.display).toBe('none');
+        expect(spyElementById).toHaveBeenCalledWith('go-back-button-portal');
+        const productLabel = wrapper.find('#go-back-button-portal');
+        expect(document.getElementById('go-back-button-portal').style.display).toBe('none');
         expect(productLabel.length).toEqual(0);
-    });
-
-    it('should not hide the product label', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const spyElementById = jest.spyOn(document, 'getElementById').mockImplementation(() => false);
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        const productLabel = wrapper.find('#product-title');
-        expect(productLabel).toBeDefined();
-        expect(spyElementById).toHaveBeenCalledWith('product-title');
     });
 
     it('should lazily load feedback button component in api portal mode', async () => {
