@@ -36,8 +36,12 @@ export default class Dashboard extends Component {
     componentDidMount() {
         if (isAPIPortal()) {
             const productLabel = document.getElementById('product-title');
+            const goBackButton = document.getElementById('go-back-button-portal');
             if (productLabel) {
                 productLabel.style.display = 'none';
+            }
+            if (goBackButton) {
+                goBackButton.style.display = 'none';
             }
         }
         const { fetchTilesStart, clearService } = this.props;
