@@ -33,11 +33,7 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default class DetailPage extends Component {
     componentDidMount() {
         if (isAPIPortal()) {
-            const productLabel = document.getElementById('product-title');
             const goBackButton = document.getElementById('go-back-button-portal');
-            if (productLabel) {
-                productLabel.style.removeProperty('display');
-            }
             if (goBackButton) {
                 goBackButton.style.removeProperty('display');
             }
