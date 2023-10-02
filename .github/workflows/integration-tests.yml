@@ -254,7 +254,7 @@ jobs:
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
-                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER,apimtst,user,apimtst
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: user,apimtst
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
@@ -270,7 +270,6 @@ jobs:
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SERVICE_APIMLID: node-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_PORT: 10037
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
