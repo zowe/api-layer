@@ -2,20 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `1.28.23 (2023-09-27)`
+## `1.28.5 (2023-09-27)`
 
 * Bugfix:  Fix processing of Open API docs by API Catalog (JavaTimeModule) which was the cause of missing tiles. (#3040) ([09f5095](https://github.com/zowe/api-layer/commit/09f5095)), closes [#3040](https://github.com/zowe/api-layer/issues/3040)
-
-## `1.28.22 (2023-06-21)`
-
 * Bugfix:  Mitigate storing passwords in the memory (v1) (#2862) ([60293f9](https://github.com/zowe/api-layer/commit/60293f9)), closes [#2862](https://github.com/zowe/api-layer/issues/2862)
 * Bugfix:  Align button in swagger UI (#2861) ([7c01a5b](https://github.com/zowe/api-layer/commit/7c01a5b)), closes [#2861](https://github.com/zowe/api-layer/issues/2861)
-
-## `1.28.20 (2023-04-04)`
-
 * Bugfix:  Prevent null pointer exception in Swagger UI when buffer is missing. (#2857) ([1f04b97](https://github.com/zowe/api-layer/commit/1f04b97)), closes [#2857](https://github.com/zowe/api-layer/issues/2857)
 
-## `1.28.16 (2022-11-28)`
+## `1.28.1 (2022-11-28)`
 
 * Bugfix: Use the APIML_SECURITY_X509_ENABLED flag to properly disable client certificate authentication for SSO (#2645) ([5f32c09](https://github.com/zowe/api-layer/commit/5f32c09)), closes [#2645](https://github.com/zowe/api-layer/issues/2645)
 * Bugfix: Enable Strict Transport Security HTTP on the Gateway service as the default (#2552) ([decf6fe](https://github.com/zowe/api-layer/commit/decf6fe)), closes [#2575](https://github.com/zowe/api-layer/issues/2552)
