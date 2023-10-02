@@ -2,7 +2,7 @@
 <config
         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
         xmlns='http://www.ehcache.org/v3'
-        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd">
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.6.xsd">
 
     <persistence directory="${ehcache.disk.store.dir}"/>
 
@@ -20,6 +20,7 @@
             <heap unit="MB">1</heap>
             <disk unit="MB" persistent="true">10</disk>
         </resources>
+        <disk-store-settings writer-concurrency="1" disk-segments="1"></disk-store-settings>
     </cache>
 
     <cache alias="validationJwtToken">

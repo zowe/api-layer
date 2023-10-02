@@ -42,18 +42,13 @@ import java.util.Optional;
  * <p>
  * The main idea of this bean is to create command
  * {@link AuthenticationCommand}. Command is object which update the
- * request for specific scheme (defined by service). This bean is responsible for getting the right command. If it is
- * possible to decide now for just one scheme type, bean return this command to update request immediately.
- * This command write in the ZUUL context
- * UniversalAuthenticationCommand, which is used in Ribbon loadbalancer. There is a listener which work with this value.
- * After load balancer will decide which instance will be used, universal command is called and update the request.
+ * request for specific scheme (defined by service). This bean is responsible for getting the right command. It finds
+ * just first authentication definition (there is an assumption that all instances of one service have the same
+ * authentication scheme).
  * <p>
  * All those operation are cached:
- * - serviceAuthenticationByAuthentication
- * - it caches command which can be deside only by serviceId (in pre filter)
- * - serviceAuthenticationByAuthentication
- * - it caches commands by {@link Authentication}, it could be in pre filters and
- * also in loadbalancer
+ * - serviceAuthenticationByAuthentication (by authentication scheme and the source)
+ * - serviceAuthenticationByServiceId (by serviceId, authentication scheme and the source)
  */
 @Service
 @RequiredArgsConstructor
