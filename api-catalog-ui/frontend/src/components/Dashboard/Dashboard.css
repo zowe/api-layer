@@ -18,6 +18,17 @@ a {
     margin-right: auto;
 }
 
+.tile-container {
+    width : 100%;
+    height: 100%;
+    justify-items: center;
+    padding: 0 3rem 3rem 36px;
+    display: grid;
+    grid-gap: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .api-heading {
     color: #58606e ;
     text-align: center;

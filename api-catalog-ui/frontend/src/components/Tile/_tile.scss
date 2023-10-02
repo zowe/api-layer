@@ -20,16 +20,12 @@ body {
   .dashboard-grid-header {
     display: flex;
     align-items: center;
-
-    &, &:last-child {
-      padding: var( --spaceLarge );
-    }
+    &,
     > * {
-      margin-left: var( --spaceLarge );
 
       &.tile-description,
       &.description-header {
-        margin-left: 80px;
+        flex: 1;
       }
       &#grid-tile-sso {
         flex: unset;
@@ -40,32 +36,27 @@ body {
         text-align: left;
       }
       &:last-child {
-        text-align: right;
+        text-align: center;
       }
     }
   }//end card content
 
   .dashboard-grid-header {
-    position: relative;
     font-size: var( --fontSmall );
     padding: 0;
-    margin-right: var( --spaceLargest );
-    margin-left: auto;
     padding-top: 0;
     padding-bottom: 0;
 
     > *:not(:last-child) {
-      text-align: left;
+      text-align: center;
     }
   }
 
     #videos {
-        margin-right: var( --spaceMedium );
         width: 30px;
         height: 20px;
     }
     #tutorials {
-        margin-right: 90px;
         height: 20px;
     }
 
@@ -81,15 +72,13 @@ body {
     }
     #use-cases-counter {
         color: #D61A00;
-        margin-right: 120px;
     }
     #tutorials-counter {
         color: #9B51E0;
         margin-right: 5px;
     }
-    #swagger {
-      margin-right: 130px;
-
+    .imageCounter {
+      display: flex
     }
 }
 
@@ -112,6 +101,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin-left: auto;
+    flex: 1 1 0;
 }
 

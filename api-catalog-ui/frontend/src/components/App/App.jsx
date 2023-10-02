@@ -16,13 +16,18 @@ import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
-import Footer from '../Footer/Footer';
+import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
 
 class App extends Component {
     componentDidMount() {
         // workaround for missing process polyfill in webpack 5
         window.process = { ...window.process };
+        window.onresize = () => {
+            if (document.body.offsetWidth > 767) {
+                closeMobileMenu();
+            }
+        };
     }
 
     render() {
@@ -35,9 +40,17 @@ class App extends Component {
                     <ErrorContainer />
                     <Suspense fallback={<Spinner isLoading={isLoading} />}>
                         <Router history={history}>
+                            {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
                             <>
                                 <div className="content">
                                     <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+
+                                    {isAPIPortal() && (
+                                        <div className="dashboard-mobile-menu mobile-view">
+                                            <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+                                        </div>
+                                    )}
+
                                     <Switch>
                                         <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                         <Route
@@ -71,7 +84,6 @@ class App extends Component {
                                         />
                                     </Switch>
                                 </div>
-                                <Route path="/(dashboard|service/.*)/" component={Footer} />
                             </>
                         </Router>
                     </Suspense>
