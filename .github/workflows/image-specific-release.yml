@@ -25,7 +25,7 @@ jobs:
     publish-images:
         needs:
             - build-test-services
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v1.x.x
         with:
             version: ${{ github.event.inputs.release_version }}
         secrets:
