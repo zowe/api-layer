@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
@@ -46,7 +48,7 @@ public class WebSecurity {
                 x509
                     .principalExtractor(principalExtractor)
                     .authenticationManager(authenticationManager)).authorizeExchange()
-                  .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
+            .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
             .and().csrf().disable()
             .authorizeExchange().anyExchange().permitAll();
 
@@ -57,9 +59,13 @@ public class WebSecurity {
     @Primary
     ReactiveUserDetailsService userDetailsService() {
 
-        return username -> Mono.just(User.withUsername(username).password("")
-            .authorities("user") // should be enhanced for user roles
-            .build());
+        return username -> {
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            if (usersAllowList.stream().anyMatch(allowedUser -> allowedUser != null && allowedUser.equalsIgnoreCase(username))) {
+                authorities.add(new SimpleGrantedAuthority("REGISTRY"));
+            }
+            return Mono.just(User.withUsername(username).authorities(authorities).build());
+        };
     }
 
 }
