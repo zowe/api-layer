@@ -14,7 +14,7 @@ logging:
         org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
-        net.sf.ehcache: WARN
+        org.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
@@ -295,7 +295,7 @@ logging:
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
-        net.sf.ehcache: INFO
+        org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
