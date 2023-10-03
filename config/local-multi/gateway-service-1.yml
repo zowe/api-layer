@@ -28,9 +28,6 @@ spring:
     output:
         ansi:
             enabled: always
-    cache:
-        ehcache:
-            config: classpath:ehcache.xml
 
 server:
     internal:

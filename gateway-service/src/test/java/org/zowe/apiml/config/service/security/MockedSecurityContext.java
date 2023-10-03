@@ -14,6 +14,7 @@ import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -55,8 +56,9 @@ public class MockedSecurityContext {
     }
 
     @Bean
-    public ServiceAuthenticationService getServiceAuthenticationService(@Autowired CacheManager cacheManager, CacheUtils cacheUtils) {
+    public ServiceAuthenticationService getServiceAuthenticationService(ApplicationContext applicationContext, @Autowired CacheManager cacheManager, CacheUtils cacheUtils) {
         return new ServiceAuthenticationServiceImpl(
+                applicationContext,
                 getDiscoveryClient(),
                 getEurekaMetadataParser(),
                 getAuthenticationSchemeFactory(),
