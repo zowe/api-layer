@@ -1,20 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd" updateCheck="true" monitoring="autodetect" dynamicConfig="true">
+<config
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.6.xsd">
 
-    <diskStore path="ehcache.disk.store.dir" />
+    <persistence directory="${ehcache.disk.store.dir}"/>
 
-    <defaultCache maxEntriesLocalHeap="0" eternal="false" timeToIdleSeconds="60" timeToLiveSeconds="60" />
+    <thread-pools>
+        <thread-pool alias="defaultDiskPool" min-size="1" max-size="3" default="true"/>
+    </thread-pools>
 
-    <cache name="invalidatedJwtTokens" diskPersistent="true" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" maxBytesLocalHeap="1048576" />
-    <cache name="validationJwtToken" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="serviceAuthenticationByServiceId" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="serviceAuthenticationByAuthentication" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="zosmfInfo" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="zosmfServiceImplementation" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="zosmfAuthenticationEndpoint" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="60" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="zosmfJwtEndpoint" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="60" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="validationOIDCToken" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="20" timeToLiveSeconds="20" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="parseOIDCToken" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="20" timeToLiveSeconds="20" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="trustedCertificates" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
+    <cache alias="invalidatedJwtTokens">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.Boolean</value-type>
+        <expiry>
+            <ttl unit="days">1</ttl>
+        </expiry>
+        <resources>
+            <heap unit="MB">1</heap>
+            <disk unit="MB" persistent="true">10</disk>
+        </resources>
+        <disk-store-settings writer-concurrency="1" disk-segments="1"></disk-store-settings>
+    </cache>
 
-</ehcache>
+    <cache alias="validationJwtToken">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
+        <value-type copier="org.ehcache.impl.copy.SerializingCopier">org.zowe.apiml.security.common.token.TokenAuthentication</value-type>
+        <expiry>
+            <ttl unit="days">1</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+    <cache alias="serviceAuthenticationByServiceId">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.cache.CompositeKey</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand</value-type>
+        <expiry>
+            <ttl unit="days">1</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+    <cache alias="serviceAuthenticationByAuthentication">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.springframework.cache.interceptor.SimpleKey</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand</value-type>
+        <expiry>
+            <ttl unit="days">1</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+    <cache alias="zosmfInfo">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</value-type>
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <heap unit="entries">10</heap>
+    </cache>
+
+    <cache alias="zosmfAuthenticationEndpoint">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.Boolean</value-type>
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <heap unit="entries">10</heap>
+    </cache>
+
+    <cache alias="zosmfJwtEndpoint">
+        <key-type copier="org.ehcache.impl.copy.SerializingCopier">org.springframework.http.HttpHeaders</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.Boolean</value-type>
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <heap unit="entries">10</heap>
+    </cache>
+
+    <cache alias="validationOIDCToken">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.source.AuthSource</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.Boolean</value-type>
+        <expiry>
+            <ttl unit="seconds">20</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+    <cache alias="parseOIDCToken">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.source.AuthSource</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed</value-type>
+        <expiry>
+            <ttl unit="seconds">20</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+    <cache alias="trustedCertificates">
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.util.List</value-type>
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <heap unit="entries">1000</heap>
+    </cache>
+
+</config>
