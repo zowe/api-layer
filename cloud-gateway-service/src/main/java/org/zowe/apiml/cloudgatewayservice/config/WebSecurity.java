@@ -20,6 +20,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.zowe.apiml.product.constants.CoreService;
@@ -64,7 +65,8 @@ public class WebSecurity {
             if (usersAllowList.stream().anyMatch(allowedUser -> allowedUser != null && allowedUser.equalsIgnoreCase(username))) {
                 authorities.add(new SimpleGrantedAuthority("REGISTRY"));
             }
-            return Mono.just(User.withUsername(username).authorities(authorities).build());
+            UserDetails userDetails = User.withUsername(username).authorities(authorities).password("pass").build();
+            return Mono.just(userDetails);
         };
     }
 
