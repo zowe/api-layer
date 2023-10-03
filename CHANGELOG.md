@@ -2,19 +2,25 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `1.28.5 (2023-09-27)`
+## `APIML 1.28.23 / Zowe 1.28.5 (2023-10-02)`
 
 * Bugfix:  Fix processing of Open API docs by API Catalog (JavaTimeModule) which was the cause of missing tiles. (#3040) ([09f5095](https://github.com/zowe/api-layer/commit/09f5095)), closes [#3040](https://github.com/zowe/api-layer/issues/3040)
+
+## `APIML 1.28.22 / Zowe 1.28.4 (2023-06-21)`
+
 * Bugfix:  Mitigate storing passwords in the memory (v1) (#2862) ([60293f9](https://github.com/zowe/api-layer/commit/60293f9)), closes [#2862](https://github.com/zowe/api-layer/issues/2862)
 * Bugfix:  Align button in swagger UI (#2861) ([7c01a5b](https://github.com/zowe/api-layer/commit/7c01a5b)), closes [#2861](https://github.com/zowe/api-layer/issues/2861)
+
+## `APIML 1.28.20 / Zowe 1.28.3 (2023-04-04)` 
+
 * Bugfix:  Prevent null pointer exception in Swagger UI when buffer is missing. (#2857) ([1f04b97](https://github.com/zowe/api-layer/commit/1f04b97)), closes [#2857](https://github.com/zowe/api-layer/issues/2857)
 
-## `1.28.1 (2022-11-28)`
+## `APIML 1.28.16 / Zowe 1.28.2 (2022-11-28)`
 
 * Bugfix: Use the APIML_SECURITY_X509_ENABLED flag to properly disable client certificate authentication for SSO (#2645) ([5f32c09](https://github.com/zowe/api-layer/commit/5f32c09)), closes [#2645](https://github.com/zowe/api-layer/issues/2645)
 * Bugfix: Enable Strict Transport Security HTTP on the Gateway service as the default (#2552) ([decf6fe](https://github.com/zowe/api-layer/commit/decf6fe)), closes [#2575](https://github.com/zowe/api-layer/issues/2552)
 
-## `1.28.0 (2022-05-11)`
+## `APIML 1.28.1 / Zowe 1.28.0 (2022-05-11)`
 
 * Feature:  Enhance SAF IDT authentication scheme to support client certificates and APPL keyword (#2223) ([e3f54d2](https://github.com/zowe/api-layer/commit/e3f54d2)), closes [#2223](https://github.com/zowe/api-layer/issues/2223)
 * Feature:  New endpoint to retrieve default API doc for service (#2327) ([502ba3c](https://github.com/zowe/api-layer/commit/502ba3c)), closes [#2327](https://github.com/zowe/api-layer/issues/2327)
@@ -43,7 +49,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Do not require keyAlias for SSL configuration (#2110) ([03bee79](https://github.com/zowe/api-layer/commit/03bee79)), closes [#2110](https://github.com/zowe/api-layer/issues/2110)
 * Bugfix:  Add log masking class for sensitive logs (#2003) ([994b483](https://github.com/zowe/api-layer/commit/994b483)), closes [#2003](https://github.com/zowe/api-layer/issues/2003)
 
-## `1.27.0 (2022-01-14)`
+## `APIML 1.27.4 / Zowe 1.27.0 (2022-01-14)`
 
 * Feature:  Enable Discovery Service class path extensions and Gateway native library extensions (#1987) ([fd03db5](https://github.com/zowe/api-layer/commit/fd03db5)), closes [#1987](https://github.com/zowe/api-layer/issues/1987)
 * Feature:  Add Zaas methods for password change support (#1991) ([7597bd7](https://github.com/zowe/api-layer/commit/7597bd7)), closes [#1991](https://github.com/zowe/api-layer/issues/1991)
@@ -54,7 +60,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Build conformant images properly (#2009) ([5f07073](https://github.com/zowe/api-layer/commit/5f07073)), closes [#2009](https://github.com/zowe/api-layer/issues/2009)
 * Bugfix:  Add log masking class for sensitive logs (#2003) ([994b483](https://github.com/zowe/api-layer/commit/994b483)), closes [#2003](https://github.com/zowe/api-layer/issues/2003)
 
-## `1.26.0 (apiml: 1.26.16 2021-13-12)`
+## `APIML 1.26.16 / Zowe 1.26.0 (2021-13-12)`
 
 * Feature: Enable hystrix metrics stream for core APIML services (#1899) ([0734f4d8](https://github.com/zowe/api-layer/commit/0734f4d8)), closes [#1858](https://github.com/zowe/api-layer/issues/1858)
 
@@ -72,7 +78,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Handles the JWT token expiration correctly (#1836) ([90a887d](https://github.com/zowe/api-layer/commit/90a887d)), closes [#1836](https://github.com/zowe/api-layer/issues/1836)
 * Bugfix:  SSE no longer adds a trailing slash to an endpoint provided after the Gateway route (#1839) ([5f7ba56](https://github.com/zowe/api-layer/commit/5f7ba56)), closes [#1839](https://github.com/zowe/api-layer/issues/1839)
 
-## `1.25.0 (apiml: 1.25.4 2021-10-25)`
+## `APIML 1.25.4 / Zowe 1.25.0 (2021-10-25)`
 
 * Feature:  Add controller for public key provisioning. This feature makes it possible to retrieve public keys to verify JWT tokens. (#1824) ([5acb9e9](https://github.com/zowe/api-layer/commit/5acb9e9)), closes [#1824](https://github.com/zowe/api-layer/issues/1824)
 * Feature:  Per service configuration to direct the API Gateway to add headers. This feature enables APIML to add or override headers in responses.  (#1812) ([25bbdbe](https://github.com/zowe/api-layer/commit/25bbdbe)), closes [#1812](https://github.com/zowe/api-layer/issues/1812)
@@ -103,7 +109,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix: API Catalog static definition file generation (#1761) ([b6790cb](https://github.com/zowe/api-layer/commit/b6790cb)), closes [#1761](https://github.com/zowe/api-layer/issues/1761)
 * Bugfix: ZAAS client to not send a certificate during authentication requests (#1763) ([691036a](https://github.com/zowe/api-layer/commit/691036a)), closes [#1763](https://github.com/zowe/api-layer/issues/1763)
 
-## `1.24.0 (apiml: 1.24.4 2021-09-01)`
+## `APIML 1.24.4 / Zowe 1.24.0 (2021-09-01)`
 
 * Feature:  SAF resource access controller that allows the authorized user to query the SAF resource access levels (#1734) ([680f4b9](https://github.com/zowe/api-layer/commit/680f4b9)), closes [#1734](https://github.com/zowe/api-layer/issues/1734)
 * Feature:  Compress routed response with GZIP based on the routed service's preference (#1728) ([85b5948](https://github.com/zowe/api-layer/commit/85b5948)), closes [#1728](https://github.com/zowe/api-layer/issues/1728)
@@ -132,7 +138,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Reuse jetty client (#1658) ([11d575a](https://github.com/zowe/api-layer/commit/11d575a)), closes [#1658](https://github.com/zowe/api-layer/issues/1658)
 * Bugfix:  Publish spring onboarding enabler in format consistent with other projects (#1608) ([dac35b1](https://github.com/zowe/api-layer/commit/dac35b1)), closes [#1608](https://github.com/zowe/api-layer/issues/1608)
 
-## `1.23.0 (2021-07-26)`
+## `APIML 1.23.5 / Zowe 1.23.0 (2021-07-26)`
 
 * Feature:  Authentication based server-side load balancing. A service can now configure itself with the Authentication based load balancing scheme whereby a user is directed to the same instance of a service for a given period of time (#1576) ([4ad382e](https://github.com/zowe/api-layer/commit/4ad382e)), closes [#1576](https://github.com/zowe/api-layer/issues/1576).
 * Feature:  Catalog: authenticate with client certificate for /apidoc/** endpoints (#1568) ([79dedfd](https://github.com/zowe/api-layer/commit/79dedfd)), closes [#1568](https://github.com/zowe/api-layer/issues/1568)
@@ -148,7 +154,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Change order of authentication filters on Login endpoint (#1526) ([3b93e9b](https://github.com/zowe/api-layer/commit/3b93e9b)), closes [#1526](https://github.com/zowe/api-layer/issues/1526)
 * Bugfix:  Wrong use of certificates in ZAAS client (#1514) ([964c4fa](https://github.com/zowe/api-layer/commit/964c4fa)), closes [#1514](https://github.com/zowe/api-layer/issues/1514)
 
-## `1.22.0 (2021-06-14)`
+## `APIML 1.22.4 / Zowe 1.22.0 (2021-06-14)`
 
 * Feature: Deterministic routing based on the provided headers is now available. Clients can now specify which instance of a service the user should be routed to. This enables reusability of underlying resources such as LPARs associated with a specific service instance (#1496) ([ed91f25](https://github.com/zowe/api-layer/commit/ed91f25)), closes [#1496](https://github.com/zowe/api-layer/issues/1496).
 * Feature: Basic authentication via Websocket is now fully supported (#1482) ([112da99](https://github.com/zowe/api-layer/commit/112da99)), closes [#1482](https://github.com/zowe/api-layer/issues/1482).
@@ -164,7 +170,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix: Distinguish lib and fat jars (#1398) ([f771a40](https://github.com/zowe/api-layer/commit/f771a40)), closes [#1398](https://github.com/zowe/api-layer/issues/1398)
 * Bugfix: Accept list of Discovery services in the Catalog. If the Catalog fails to contact to the Discovery service, the Catalog tries to contact another service from the list (#1376) ([42ae70d](https://github.com/zowe/api-layer/commit/42ae70d)), closes [#1376](https://github.com/zowe/api-layer/issues/1376)
 
-## `1.21.1 (2021-04-26)`
+## `APIML 1.21.11 / Zowe 1.21.1 (2021-04-26)`
 
 * Feature: Configuration of the API ML run is now permitted where the hostname in the certificate is not verified in a strict manner. The certificate Common Name or Subject Alternate Name (SAN) are NOT checked. This facilitates deployment to Marist when certificates are valid but do not contain a valid hostname. This is for development purposes only and should not be used for production. (#1334) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1334](https://github.com/zowe/api-layer/issues/1355) 
 * Feature: Caching service: The alphanumeric constraint for keys stored in the service has been removed. (#1317) ([237420](https://github.com/zowe/api-layer/commit/23742017fb37815dc40b5e7c8645acfac5a92ccb))
@@ -177,7 +183,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix: Swagger v2 yaml parsed and rendered (#1269) ([a1f2cc0](https://github.com/zowe/api-layer/commit/a1f2cc0c3580e6d36a878e0fff23b943857b38e4)), closes [1229](https://github.com/zowe/api-layer/issues/1229)
 
 
-## `1.20.0 (2021-03-11)`
+## `APIML 1.20.16 / Zowe 1.20.0 (2021-03-11)`
 * Bugfix (authentication): Support specific z/OSMF version. This fix allows the user to force the authentication token that is used. (#1241) ([2da761a](https://github.com/zowe/api-layer/commit/2da761a)), closes [#1241](https://github.com/zowe/api-layer/issues/1241)
 * Bugfix (authentication): Ignore wrong or non-existing SAF classes when SAF is not used (#1216) ([c5ea311](https://github.com/zowe/api-layer/commit/c5ea311)), closes [#1216](https://github.com/zowe/api-layer/issues/1216)
 * Bugfix (enabler): Add unregistration method to the the Node.js enabler. (#1214) ([1ecd5c7](https://github.com/zowe/api-layer/commit/1ecd5c7)), closes [#1214](https://github.com/zowe/api-layer/issues/1214)
@@ -191,7 +197,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix: Accept `swagger/openapi` in yaml format (#1202) ([0c412b0](https://github.com/zowe/api-layer/commit/0c412b0)), closes [#1202](https://github.com/zowe/api-layer/issues/1202)
 * Feature (Caching Service): Production logging for the Caching Service. This feature limits messages sent to Spool to the bare minimum, thereby improving the information returned to the caller. (#1185) ([7adffb1](https://github.com/zowe/api-layer/commit/7adffb1)), closes [#1185](https://github.com/zowe/api-layer/issues/1185)
 
-## `1.19.0`
+## `APIML 1.19.2 / Zowe 1.19.0 (2021-01-22)`
 
 - Feature: The connection limit of the Gateway has been configured to support multiple long-running requests by service. [#843](https://github.com/zowe/api-layer/issues/843)
 - Feature: The size of API Mediation Layer has been reduced to fit within 150MB. [#909](https://github.com/zowe/api-layer/issues/909)
@@ -207,7 +213,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Feature: The 'Reject eviction' strategy to Caching service has been implemented to limit the volume of data in the cache.[#998](https://github.com/zowe/api-layer/issues/998)
 - Feature: Debug logging to x509 Client certificate authentication classes has been added. This feature enables users to determine the cause of system problems during client certificate authentication setup.
 
-## `1.18.0`
+## `APIML 1.18.1 / Zowe 1.18.0 (2020-012-08)`
 
 - Feature: Configure more detailed logging outside of Spool. [#709](https://github.com/zowe/api-layer/issues/709)
 - Feature: HA: Componentize the start script per API ML service. Individual API Mediation Layer components can be launched and restarted individually. [#862](https://github.com/zowe/api-layer/issues/862)
@@ -217,14 +223,14 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Bugfix: ZaasJwtService enhancement on JWT parsing and error handling. [#897](https://github.com/zowe/api-layer/issues/897)
 - Bugfix: Upgrade dependencies for the Enablers [#933](https://github.com/zowe/api-layer/issues/933)
 
-## `1.17.0`
+## `APIML 1.17.1 / Zowe 1.17.0 (2020-11-10)`
 
 - Feature: Multiple versions of one API are now presented in the Catalog if configured to do so. Users can now switch between different versions within the Catalog to see differences in API documentation between versions. [#844](https://github.com/zowe/api-layer/issues/844)
 - Feature: Setting `APIML_DEBUG_MODE_ENABLED` in `instance.env` is properly passed on to the all API ML services. [#901](https://github.com/zowe/api-layer/issues/901)
 - Bugfix: Improved returned information while logging out via logout on Gateway. [#831](https://github.com/zowe/api-layer/issues/831) 
 - Bugfix: Updated API paths for the API ML in the API Catalog to use the service id in front. [#853](https://github.com/zowe/api-layer/issues/853) 
 
-## `1.16.0`
+## `APIML 1.16.0 / Zowe 1.16.0 (2020-09-25)`
 
 - Feature: ZAAS Client can now use HTTP so that the Application Transparent Transport Layer Security (AT-TLS) can be used for communication to ZAAS. [#813](https://github.com/zowe/api-layer/issues/813)
 - Feature: Implemented the logout functionality in ZAAS Client. [#808](https://github.com/zowe/api-layer/issues/808)
@@ -236,7 +242,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Bugfix: API ML was previously not reporting SSL certificate errors when servers were unable to communicate. Now, if a SSLException occurs, SSL certificate errors are reported.  [#698](https://github.com/zowe/api-layer/issues/698)
 - Bugfix: Fixed language in log messages for consistency. [#830](https://github.com/zowe/api-layer/issues/830)
 
-## `1.15.0`
+## `APIML 1.15.0 / Zowe 1.15.0 (2020-08-28)`
 
 - Feature: The API Path Pattern now supports serviceId as the first element. This improves the consistency of the URL when processing through the Gateway or outside of the Gateway. [#688](https://github.com/zowe/api-layer/issues/688)
 - Feature: The SAF Provider can now be used as a possible authentication provider. This removes the API ML dependency on z/OSMF for authentication enabling SAF to obtain the JWT. [#472](https://github.com/zowe/api-layer/issues/472)
@@ -245,20 +251,20 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Bugfix: SSL validation when Eureka is running in HTTP mode has been fixed. When the scheme is HTTP, SSL configuration is not verified since it not used. [#792](https://github.com/zowe/api-layer/issues/792)
 - Bugfix: A problem in error handling has been fixed when no api-doc is available. Now a specific return code and message is generated when a problem occurs when obtaining or transforming the api-doc. [#571](https://github.com/zowe/api-layer/issues/571)
 
-## `1.14.0`
+## `APIML 1.14.0 / Zowe 1.14.0 (2020-07-31)`
 
 - Bugfix: Prevent crashing of API ML when null routes are set. [#767](https://github.com/zowe/api-layer/pull/767)
 - Feature: Add support to the X-Forwarded-* Headers. [#769](https://github.com/zowe/api-layer/pull/769)
 - Feature: Improve the configuration validator for the enablers to improve message specificity when one or more parameters required for setup are missing. [#760](https://github.com/zowe/api-layer/pull/760)
 
-## `1.13.0`
+## `APIML 1.13.0 / Zowe 1.13.0 (2020-06-22)`
 
 - Feature: Add CORS Headers Support [#384](https://github.com/zowe/api-layer/issues/384)
 - Feature: Option to set connection timeout for service [#683](https://github.com/zowe/api-layer/issues/683)
 - Bugfix: SAF Keyrings support for ZAAS Client [#656](https://github.com/zowe/api-layer/issues/656)
 - Feature: Spring Boot enabler configuration validation [#570](https://github.com/zowe/api-layer/issues/570)
 
-## `1.12.0`
+## `APIML 1.12.2 / Zowe 1.12.0 (2020-06-05)`
 
 - Feature: Provide Zowe Authentication and Authorization Service (ZAAS) client [#425](https://github.com/zowe/api-layer/issues/425)
 - Feature: Refresh the static client definitions from the API Catalog UI [#57](https://github.com/zowe/api-layer/issues/57)
@@ -268,7 +274,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Bugfix: Fix order of fetching JWT from request [#661](https://github.com/zowe/api-layer/pull/661) 
 - Feature: Implement request retrying for service instances [#401](https://github.com/zowe/api-layer/issues/401)
 
-## `1.11.0`
+## `APIML 1.11.0 / Zowe 1.11.0 (2020-04-23)`
 
 - Feature: Allow users of the API Catalog to test public and private endpoints directly from the UI [#258](https://github.com/zowe/api-layer/issues/258)
 - Feature: Provide Endpoints to get public keys for JWT verification (z/OSMF and Zowe) [#566](https://github.com/zowe/api-layer/pull/566) 
