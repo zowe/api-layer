@@ -14,7 +14,7 @@ logging:
         org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
-        net.sf.ehcache: WARN
+        org.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -268,7 +268,7 @@ logging:
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
-        net.sf.ehcache: INFO
+        org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
