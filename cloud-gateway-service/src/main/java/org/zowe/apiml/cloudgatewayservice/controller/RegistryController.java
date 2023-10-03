@@ -15,7 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.cloudgatewayservice.service.CentralApimlInfoMapper;
 import org.zowe.apiml.cloudgatewayservice.service.GatewayIndexService;
 import org.zowe.apiml.cloudgatewayservice.service.model.ApimlInfo;
@@ -41,7 +45,9 @@ public class RegistryController {
     @GetMapping(value = {"/registry", "/registry/{apimlId}"})
     public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId, @RequestParam(name = "serviceId", required = false) String serviceId) {
         Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
-        return Flux.fromIterable(apimlList.entrySet()).map(this::buildEntry).onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));
+        return Flux.fromIterable(apimlList.entrySet())
+            .map(this::buildEntry)
+            .onErrorContinue(RuntimeException.class, (ex, consumer) -> log.debug("Unexpected mapping error", ex));
     }
 
     private ApimlInfo buildEntry(Map.Entry<String, List<ServiceInfo>> entry) {

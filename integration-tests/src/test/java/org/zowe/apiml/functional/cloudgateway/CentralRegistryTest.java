@@ -91,10 +91,19 @@ class CentralRegistryTest implements TestWithStartedInstances {
     }
 
     @Test
-        //@Disabled("This test should be enabled after the x509 projection is implemented")
     void shouldRejectUnauthorizedAccessToCentralRegistry() {
         URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
         given()
+            .get(cloudGatewayEndpoint)
+            .then()
+            .statusCode(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    void shouldRejectUntrustedX509CertificateToAccessCentralRegistry() {
+        URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
+        given()
+            .config(SslContext.selfSignedUntrusted)
             .get(cloudGatewayEndpoint)
             .then()
             .statusCode(HttpStatus.UNAUTHORIZED.value());
