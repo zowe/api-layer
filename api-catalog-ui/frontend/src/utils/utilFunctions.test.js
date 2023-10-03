@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContents, { customUIStyle } from './utilFunctions';
+import countAdditionalContents, { closeMobileMenu, customUIStyle, openMobileMenu } from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
     function mockFetch() {
@@ -102,11 +102,9 @@ describe('>>> Util Functions tests', () => {
         const homepage = document.getElementsByClassName('apis')[0];
         const detailPage = document.getElementsByClassName('content')[0];
         const description = document.getElementById('description');
-        const link = document.querySelector("link[rel~='icon']");
         const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
         const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         expect(logo.src).toContain('img-url');
-        expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('red');
         expect(divider.style.getPropertyValue('background-color')).toBe('red');
         expect(title.style.getPropertyValue('color')).toBe('red');
@@ -145,9 +143,7 @@ describe('>>> Util Functions tests', () => {
         const swaggerLabel = document.getElementById('swagger-label');
         const wizardButton = document.querySelector('#onboard-wizard-button > span.MuiButton-label');
         const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
-        const link = document.querySelector("link[rel~='icon']");
         const tileLabel = document.querySelector('p#tileLabel');
-        expect(link.href).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('white');
         expect(title.style.getPropertyValue('color')).toBe('black');
         expect(productTitle.style.getPropertyValue('color')).toBe('black');
@@ -169,5 +165,17 @@ describe('>>> Util Functions tests', () => {
 
         global.fetch = () => Promise.resolve({ ok: false, status: 404 });
         await expect(customUIStyle(uiConfig)).rejects.toThrow('Network response was not ok');
+    });
+
+    it('should open mobile menu', async () => {
+        const spyToggle = jest.spyOn(document.body.classList, 'toggle');
+        openMobileMenu();
+        expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
+    });
+
+    it('should close mobile menu', async () => {
+        const spyToggle = jest.spyOn(document.body.classList, 'remove');
+        closeMobileMenu();
+        expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
     });
 });

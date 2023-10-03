@@ -7,10 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component, Suspense } from 'react';
+import React, { Component, Suspense } from 'react';
 import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -20,8 +21,23 @@ import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNav
 import Shield from '../ErrorBoundary/Shield/Shield';
 import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
+const loadFeedbackButton = () => {
+    if (isAPIPortal()) {
+        return import('../FeedbackButton/FeedbackButton');
+    }
+    return Promise.resolve(null);
+};
+
+const FeedbackButton = React.lazy(loadFeedbackButton);
+
 export default class DetailPage extends Component {
     componentDidMount() {
+        if (isAPIPortal()) {
+            const goBackButton = document.getElementById('go-back-button-portal');
+            if (goBackButton) {
+                goBackButton.style.removeProperty('display');
+            }
+        }
         const { fetchTilesStart, currentTileId, fetchNewTiles, history } = this.props;
         fetchNewTiles();
         if (currentTileId) {
@@ -91,11 +107,18 @@ export default class DetailPage extends Component {
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
-        if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
+        const showSideBar = false;
+        if (
+            hasTiles &&
+            'customStyleConfig' in tiles[0] &&
+            tiles[0].customStyleConfig &&
+            Object.keys(tiles[0].customStyleConfig).length > 0
+        ) {
             customUIStyle(tiles[0].customStyleConfig);
         }
         return (
             <div className="main">
+                {apiPortalEnabled && <FeedbackButton leftPlacement="80vw" />}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
@@ -150,13 +173,15 @@ export default class DetailPage extends Component {
                                         </h2>
                                     )}
                                 </div>
-                                <div className="paragraph-description-container">
-                                    {tiles !== undefined && tiles.length > 0 && (
-                                        <p id="description" className="text-block-12">
-                                            {tiles[0].description}
-                                        </p>
-                                    )}
-                                </div>
+                                {!apiPortalEnabled && (
+                                    <div className="paragraph-description-container">
+                                        {tiles !== undefined && tiles.length > 0 && (
+                                            <p id="description" className="text-block-12">
+                                                {tiles[0].description}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             {apiPortalEnabled && !onlySwaggerPresent && (
                                 <div id="right-resources-menu">
@@ -235,9 +260,11 @@ export default class DetailPage extends Component {
                         )}
                         {apiPortalEnabled && <Divider light id="footer-divider" />}
                     </div>
+
+                    <Footer />
                 </div>
 
-                <div className="side-bar" />
+                {showSideBar && <div className="side-bar" />}
             </div>
         );
     }

@@ -14,6 +14,7 @@ import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -34,6 +35,24 @@ function transformSwaggerToCurrentHost(swagger) {
     return swagger;
 }
 
+function setFilterBarStyle() {
+    const filterInput = document.getElementsByClassName('operation-filter-input');
+    if (filterInput && filterInput.length > 0) {
+        filterInput.item(0).placeholder = 'Filter APIs';
+    }
+    if (isAPIPortal() && !document.getElementById('filter-label')) {
+        const divInfo = document.querySelector('.info');
+        const searchLabel = document.createElement('span');
+        if (divInfo && searchLabel) {
+            searchLabel.setAttribute('id', 'filter-label');
+            searchLabel.textContent = 'Search through Swagger';
+            searchLabel.style.fontWeight = 'bold';
+            searchLabel.style.fontSize = '13.3px';
+            divInfo.appendChild(searchLabel);
+        }
+    }
+}
+
 export default class SwaggerUI extends Component {
     constructor(props) {
         super(props);
@@ -48,6 +67,7 @@ export default class SwaggerUI extends Component {
     }
 
     componentDidUpdate(prevProps) {
+        setFilterBarStyle();
         const { selectedService, selectedVersion } = this.props;
         if (
             selectedService.serviceId !== prevProps.selectedService.serviceId ||
@@ -83,12 +103,17 @@ export default class SwaggerUI extends Component {
             // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
             operations: (Original, { React }) => props => { // NOSONAR
                 const { selectedService, selectedVersion, tiles } = this.props;
+
                 return (
                     <div>
-                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
+                        {!isAPIPortal() &&
+                        (
+                            <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
+                        )
+                        }
                         <Original {...props} />
                     </div>
-                );
+                )
             },
         },
     });
@@ -150,7 +175,6 @@ export default class SwaggerUI extends Component {
                         presets: [SwaggerUi.presets.apis],
                         requestSnippetsEnabled: true,
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
-                        filter: true,
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
                             const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
