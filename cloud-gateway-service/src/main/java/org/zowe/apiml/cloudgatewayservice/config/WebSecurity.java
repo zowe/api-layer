@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,14 +27,39 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 
 @Configuration
 public class WebSecurity {
 
-    @Value("${apiml.security.x509.registry.allowedUsers:}")
-    private List<String> usersAllowList = new ArrayList<>();
+    @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
+    private String allowedUsers;
+
+    private Predicate<String> usernameAuthorizationTester;
+
+    @PostConstruct
+    void initScopes() {
+        boolean authorizeAnyUsers = "*".equals(allowedUsers);
+
+        Set<String> users = Optional.ofNullable(allowedUsers)
+            .map(line -> line.split("[,;]"))
+            .map(Arrays::asList)
+            .orElse(Collections.emptyList())
+            .stream().map(String::trim)
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet());
+
+        usernameAuthorizationTester = user -> authorizeAnyUsers || users.contains(StringUtils.lowerCase(user));
+    }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -41,7 +67,7 @@ public class WebSecurity {
         SubjectDnX509PrincipalExtractor principalExtractor = new SubjectDnX509PrincipalExtractor();
 
         ReactiveAuthenticationManager authenticationManager = authentication -> {
-            authentication.setAuthenticated(usersAllowList.contains(authentication.getName()));
+            authentication.setAuthenticated(true);
             return Mono.just(authentication);
         };
 
@@ -62,10 +88,10 @@ public class WebSecurity {
 
         return username -> {
             List<GrantedAuthority> authorities = new ArrayList<>();
-            if (usersAllowList.stream().anyMatch(allowedUser -> allowedUser != null && allowedUser.equalsIgnoreCase(username))) {
+            if (usernameAuthorizationTester.test(username)) {
                 authorities.add(new SimpleGrantedAuthority("REGISTRY"));
             }
-            UserDetails userDetails = User.withUsername(username).authorities(authorities).password("pass").build();
+            UserDetails userDetails = User.withUsername(username).authorities(authorities).password("").build();
             return Mono.just(userDetails);
         };
     }

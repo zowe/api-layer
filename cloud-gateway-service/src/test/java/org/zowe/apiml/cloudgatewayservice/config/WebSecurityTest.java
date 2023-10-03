@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,48 +22,94 @@ import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class WebSecurityTest {
-    private final String username = "registryUser";
+
     private ReactiveUserDetailsService reactiveUserDetailsService;
 
-    @BeforeEach
-    void setUp() {
-        WebSecurity webSecurity = new WebSecurity();
-        ReflectionTestUtils.setField(webSecurity, "usersAllowList", Collections.singletonList(username));
-        reactiveUserDetailsService = webSecurity.userDetailsService();
+    @Nested
+    class WhenListOfAllowedUserDefined {
+        @BeforeEach
+        void setUp() {
+            WebSecurity webSecurity = new WebSecurity();
+            ReflectionTestUtils.setField(webSecurity, "allowedUsers", "registryUser,registryAdmin");
+            webSecurity.initScopes();
+            reactiveUserDetailsService = webSecurity.userDetailsService();
+        }
+
+        @Test
+        void shouldAddRegistryAuthorityToAllowedUser() {
+            Mono<UserDetails> userDetailsMono = reactiveUserDetailsService.findByUsername("registryUser");
+
+            StepVerifier.create(userDetailsMono)
+                .assertNext(details -> {
+                    assertThat(details.getUsername()).isEqualTo("registryUser");
+                    assertThat(details.getAuthorities()).hasSize(1);
+                    assertThat(details.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
+                        .containsExactly("REGISTRY");
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void shouldAddRegistryAuthorityToAllowedUserIgnoringCase() {
+            Mono<UserDetails> userDetailsMono = reactiveUserDetailsService.findByUsername("registryadmin");
+
+            StepVerifier.create(userDetailsMono)
+                .assertNext(details -> {
+                    assertThat(details.getUsername()).isEqualTo("registryadmin");
+                    assertThat(details.getAuthorities()).hasSize(1);
+                    assertThat(details.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
+                        .containsExactly("REGISTRY");
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void shouldNotAddRegistryAuthorityToUnknownUser() {
+            Mono<UserDetails> userDetailsMono = reactiveUserDetailsService.findByUsername("unknownUser");
+
+            StepVerifier.create(userDetailsMono)
+                .assertNext(details -> {
+                    assertThat(details.getUsername()).isEqualTo("unknownUser");
+                    assertThat(details.getAuthorities()).isEmpty();
+                })
+                .verifyComplete();
+        }
     }
 
-    @Test
-    void shouldAddRegistryAuthorityToAllowedUser() {
-        Mono<UserDetails> userDetailsMono = reactiveUserDetailsService.findByUsername(username);
+    @Nested
+    class WhenAnyUsersWildcardDefined {
+        @BeforeEach
+        void setUp() {
+            WebSecurity webSecurity = new WebSecurity();
+            ReflectionTestUtils.setField(webSecurity, "allowedUsers", "*");
+            webSecurity.initScopes();
+            reactiveUserDetailsService = webSecurity.userDetailsService();
+        }
 
-        StepVerifier.create(userDetailsMono)
-            .assertNext(details -> {
-                assertThat(details.getUsername()).isEqualTo(username);
-                assertThat(details.getAuthorities()).hasSize(1);
-                assertThat(details.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList()))
-                    .containsExactly("REGISTRY");
-            })
-            .verifyComplete();
-    }
+        @Test
+        void shouldAddRegistryAuthorityToAnyUser() {
+            Mono<UserDetails> userDetailsMono = reactiveUserDetailsService.findByUsername("guest");
 
-    @Test
-    void shouldNotAddRegistryAuthorityToUnknownUser() {
-        Mono<UserDetails> userDetailsMono = reactiveUserDetailsService.findByUsername("unknownUser");
-
-        StepVerifier.create(userDetailsMono)
-            .assertNext(details -> {
-                assertThat(details.getUsername()).isEqualTo("unknownUser");
-                assertThat(details.getAuthorities()).isEmpty();
-            })
-            .verifyComplete();
+            StepVerifier.create(userDetailsMono)
+                .assertNext(details -> {
+                    assertThat(details.getUsername()).isEqualTo("guest");
+                    assertThat(details.getAuthorities()).hasSize(1);
+                    assertThat(details.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
+                        .containsExactly("REGISTRY");
+                })
+                .verifyComplete();
+        }
     }
 }
