@@ -105,7 +105,6 @@ public class NewSecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     private final CertificateValidator certificateValidator;
     private final X509AuthenticationProvider x509AuthenticationProvider;
-    // TO BE REMOVED
     private final OIDCAuthSourceService oidcAuthSourceService;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
@@ -310,7 +309,7 @@ public class NewSecurityConfiguration {
             private final CompoundAuthProvider compoundAuthProvider;
 
             @Bean
-            public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+            public SecurityFilterChain authZaasTicketEndpointFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
                     authConfigurationProperties.getEvictAccessTokensAndRules(),
