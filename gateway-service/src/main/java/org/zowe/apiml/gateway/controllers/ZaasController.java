@@ -4,10 +4,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -22,20 +25,31 @@ public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
 
     private final PassTicketService passTicketService;
+    private final MessageService messageService;
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     @ResponseBody
-    public TicketResponse getPassTicket(@RequestBody TicketRequest ticketRequest, Authentication authentication) throws ApplicationNameNotFoundException, IRRPassTicketGenerationException {
+    public ResponseEntity<TicketResponse> getPassTicket(@RequestBody TicketRequest ticketRequest, Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         final String userId = tokenAuthentication.getPrincipal();
 
         final String applicationName = ticketRequest.getApplicationName();
         if (StringUtils.isBlank(applicationName)) {
-            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        String ticket = passTicketService.generate(userId, applicationName);
-        return new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket);
+        String ticket = null;
+        try {
+            ticket = passTicketService.generate(userId, applicationName);
+        } catch (IRRPassTicketGenerationException e) {
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
+                e.getErrorCode().getMessage()).mapToView();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket));
     }
 }
