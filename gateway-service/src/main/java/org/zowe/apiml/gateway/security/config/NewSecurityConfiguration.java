@@ -263,8 +263,57 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
+                    authConfigurationProperties.getEvictAccessTokensAndRules()
+                ).and())
+                    .authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .x509().userDetailsService(x509UserDetailsService())
+                    .and()
+                    .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                    .apply(new CustomSecurityFilters());
+                return http.build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<AccessToken.CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) {
+                    http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                }
+
+                private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
+                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                    return new BasicAuthFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        securityObjectMapper,
+                        authenticationManager,
+                        handlerInitializer.getResourceAccessExceptionHandler());
+                }
+
+                private X509AuthenticationFilter x509AuthenticationFilter() {
+                    return new X509AuthAwareFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        x509AuthenticationProvider);
+                }
+
+            }
+
+        }
+
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(9)
+        class ZaasTicketEndpoint {
+
+            private final CompoundAuthProvider compoundAuthProvider;
+
+            @Bean
+            public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
+                    authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
                     authConfigurationProperties.getEvictAccessTokensAndRules(),
-                    // TO BE REMOVED
                     "/gateway/zaas/ticket"
                 ).and())
                     .authorizeRequests()
@@ -283,7 +332,6 @@ public class NewSecurityConfiguration {
                     http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        // TO BE REMOVED
                         .addFilterBefore(oidcAuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 }
 
@@ -505,8 +553,7 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers()
                     .antMatchers("/application/**")
-                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH
-                    )
+                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
                     .antMatchers(ServicesInfoController.SERVICES_URL + "/**").and()
                 ).authorizeRequests()
                     .anyRequest().authenticated()
