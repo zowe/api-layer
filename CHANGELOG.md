@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 1.28.23 / Zowe 1.28.5 (2023-10-02)`
+## `APIML 1.28.23 / Zowe 1.28.5 (2023-10-04)`
 
 * Bugfix:  Fix processing of Open API docs by API Catalog (JavaTimeModule) which was the cause of missing tiles. (#3040) ([09f5095](https://github.com/zowe/api-layer/commit/09f5095)), closes [#3040](https://github.com/zowe/api-layer/issues/3040)
 
