@@ -56,7 +56,8 @@ class GatewayIndexServiceTest {
     };
     private ServiceInfo serviceInfoA, serviceInfoB;
     private WebClient webClient;
-    private final String apiCatalogApiId = "zowe.apiml.apicatalog";
+    private final static String API_CATALOG_API_ID = "zowe.apiml.apicatalog";
+    private final static String SERVICE_ID = "mockzosmf";
     @Mock
     private ClientResponse clientResponse;
     @Mock
@@ -75,7 +76,8 @@ class GatewayIndexServiceTest {
 
         serviceInfoB.setApiml(new ServiceInfo.Apiml());
         ServiceInfo.ApiInfoExtended sysviewApiInfo = new ServiceInfo.ApiInfoExtended();
-        sysviewApiInfo.setApiId(apiCatalogApiId);
+        sysviewApiInfo.setApiId(API_CATALOG_API_ID);
+        serviceInfoB.setServiceId(SERVICE_ID);
 
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
@@ -89,7 +91,7 @@ class GatewayIndexServiceTest {
         @BeforeEach
         void setUp() {
             lenient().when(exchangeFunction.exchange(any(ClientRequest.class)))
-                    .thenReturn(Mono.just(clientResponse));
+                .thenReturn(Mono.just(clientResponse));
 
             lenient().when(clientResponse.bodyToMono(serviceInfoType)).thenReturn(Mono.just(Arrays.asList(serviceInfoA, serviceInfoB)));
         }
@@ -100,12 +102,12 @@ class GatewayIndexServiceTest {
             StepVerifier.FirstStep<List<ServiceInfo>> servicesVerifier = StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance));
 
             servicesVerifier
-                    .expectNext(asList(serviceInfoA, serviceInfoB))
-                    .verifyComplete();
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
 
             verify(exchangeFunction).exchange(any());
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null, null);
 
             assertThat(allServices).containsOnlyKeys("testApimlIdA");
             assertThat(allServices.get("testApimlIdA")).containsExactlyInAnyOrder(serviceInfoA, serviceInfoB);
@@ -119,10 +121,10 @@ class GatewayIndexServiceTest {
             StepVerifier.FirstStep<List<ServiceInfo>> servicesVerifier = StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance));
 
             servicesVerifier
-                    .expectNext(asList(serviceInfoA, serviceInfoB))
-                    .verifyComplete();
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null, null);
 
             assertThat(allServices).containsOnlyKeys("SUBSTITUTE_testInstanceIdA");
         }
@@ -131,19 +133,55 @@ class GatewayIndexServiceTest {
         void shouldFilterCachedServicesByApiId() {
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                    .expectNext(asList(serviceInfoA, serviceInfoB))
-                    .verifyComplete();
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, apiCatalogApiId);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, API_CATALOG_API_ID, null);
 
             assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
         }
 
         @Test
+        void shouldFilterCachedServicesByServiceId() {
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
+
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null, SERVICE_ID);
+
+            assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
+        }
+
+        @Test
+        void shouldFilterOutEmptyApimlEntriesServiceId() {
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
+
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null, "not_existing_serviceId");
+
+            assertThat(allServices).isEmpty();
+        }
+
+        @Test
+        void shouldFilterOutEmptyApimlEntriesApiId() {
+
+            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
+
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, "not_existing_apiId", null);
+
+            assertThat(allServices).isEmpty();
+        }
+
+        @Test
         void shouldReturnEmptyMapForNotExistingApimlId() {
-            assertThat(gatewayIndexService.listRegistry("unknownId", null)).isEmpty();
-            assertThat(gatewayIndexService.listRegistry(null, "unknownApiId")).isEmpty();
-            assertThat(gatewayIndexService.listRegistry("unknownId", "unknownApiId")).isEmpty();
+            assertThat(gatewayIndexService.listRegistry("unknownId", null, null)).isEmpty();
+            assertThat(gatewayIndexService.listRegistry(null, "unknownApiId", null)).isEmpty();
+            assertThat(gatewayIndexService.listRegistry("unknownId", "unknownApiId", null)).isEmpty();
         }
     }
 
@@ -165,7 +203,7 @@ class GatewayIndexServiceTest {
             gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD, "PKCS12");
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                    .verifyComplete();
+                .verifyComplete();
 
             verifyNoInteractions(webClient);
         }
@@ -185,7 +223,7 @@ class GatewayIndexServiceTest {
             gatewayIndexService = new GatewayIndexService(webClient, 60, null, null, null);
 
             StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                    .verifyComplete();
+                .verifyComplete();
 
             verify(webClient).mutate();
         }
