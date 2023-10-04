@@ -32,9 +32,11 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class DetailPage extends Component {
     componentDidMount() {
-        const productLabel = document.getElementById('product-title');
-        if (productLabel) {
-            productLabel.style.removeProperty('display');
+        if (isAPIPortal()) {
+            const goBackButton = document.getElementById('go-back-button-portal');
+            if (goBackButton) {
+                goBackButton.style.removeProperty('display');
+            }
         }
         const { fetchTilesStart, currentTileId, fetchNewTiles, history } = this.props;
         fetchNewTiles();
