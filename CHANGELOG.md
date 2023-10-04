@@ -9,7 +9,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `APIML 1.28.22 / Zowe 1.28.4 (2023-06-21)`
 
 * Bugfix:  Mitigate storing passwords in the memory (v1) (#2862) ([60293f9](https://github.com/zowe/api-layer/commit/60293f9)), closes [#2862](https://github.com/zowe/api-layer/issues/2862)
-* Bugfix:  Align button in swagger UI (#2861) ([7c01a5b](https://github.com/zowe/api-layer/commit/7c01a5b)), closes [#2861](https://github.com/zowe/api-layer/issues/2861)
+* Bugfix:  Correct the position of the Align button in Swagger UI (#2861) ([7c01a5b](https://github.com/zowe/api-layer/commit/7c01a5b)), closes [#2861](https://github.com/zowe/api-layer/issues/2861)
 
 ## `APIML 1.28.20 / Zowe 1.28.3 (2023-04-04)` 
 
