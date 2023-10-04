@@ -56,8 +56,8 @@ class GatewayIndexServiceTest {
     };
     private ServiceInfo serviceInfoA, serviceInfoB;
     private WebClient webClient;
-    private final static String apiCatalogApiId = "zowe.apiml.apicatalog";
-    private final static String serviceId = "mockzosmf";
+    private final static String API_CATALOG_API_ID = "zowe.apiml.apicatalog";
+    private final static String SERVICE_ID = "mockzosmf";
     @Mock
     private ClientResponse clientResponse;
     @Mock
@@ -76,8 +76,8 @@ class GatewayIndexServiceTest {
 
         serviceInfoB.setApiml(new ServiceInfo.Apiml());
         ServiceInfo.ApiInfoExtended sysviewApiInfo = new ServiceInfo.ApiInfoExtended();
-        sysviewApiInfo.setApiId(apiCatalogApiId);
-        serviceInfoB.setServiceId(serviceId);
+        sysviewApiInfo.setApiId(API_CATALOG_API_ID);
+        serviceInfoB.setServiceId(SERVICE_ID);
 
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
@@ -136,7 +136,7 @@ class GatewayIndexServiceTest {
                 .expectNext(asList(serviceInfoA, serviceInfoB))
                 .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, apiCatalogApiId, null);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, API_CATALOG_API_ID, null);
 
             assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
         }
@@ -148,7 +148,7 @@ class GatewayIndexServiceTest {
                 .expectNext(asList(serviceInfoA, serviceInfoB))
                 .verifyComplete();
 
-            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null, serviceId);
+            Map<String, List<ServiceInfo>> allServices = gatewayIndexService.listRegistry(null, null, SERVICE_ID);
 
             assertThat(allServices).containsOnly(new AbstractMap.SimpleEntry<>("testApimlIdA", Collections.singletonList(serviceInfoB)));
         }

@@ -68,7 +68,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @Test
     @SneakyThrows
     void shouldFindRegisteredGatewayInCentralApiml() {
-        ValidatableResponse response = listCentralRegistry("domain-apiml", "zowe.apiml.gateway", null);
+        ValidatableResponse response = listCentralRegistry("central-apiml", "zowe.apiml.gateway", null);
 
         List<Map<String, Object>> services = response.extract().jsonPath().getObject("[0].services", new TypeRef<List<Map<String, Object>>>() {
         });
@@ -87,7 +87,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
         List<String> apimlIds = listCentralRegistry(null, null, null)
             .extract().jsonPath().getList("apimlId");
 
-        assertThat(apimlIds, Matchers.hasItems(Matchers.equalTo("domain-apiml"), Matchers.equalTo("node-apiml")));
+        assertThat(apimlIds, Matchers.hasItems(Matchers.equalTo("central-apiml"), Matchers.equalTo("domain-apiml")));
     }
 
     @Test

@@ -240,19 +240,18 @@ jobs:
         timeout-minutes: 10
 
         services:
+            # First group of services represents central apiml instance with central gateway registry
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: domain-apiml
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SERVICE_APIMLID: domain-apiml
+                    APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service
             cloud-gateway-service:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SERVICE_APIMLID: domain-apiml
+                    APIML_SERVICE_APIMLID: central-apiml
                     APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
             discoverable-client:
@@ -260,6 +259,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
+            # Second group of services represents domain apiml instance which registers it's gateway in central's discovery service
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -270,7 +270,7 @@ jobs:
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SERVICE_APIMLID: node-apiml
+                    APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_PORT: 10037
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
