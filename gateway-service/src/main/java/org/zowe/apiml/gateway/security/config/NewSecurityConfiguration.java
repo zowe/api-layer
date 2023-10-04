@@ -43,6 +43,7 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
+import org.zowe.apiml.gateway.filters.pre.JWTAuthenticationFilter;
 import org.zowe.apiml.gateway.filters.pre.OIDCAuthenticationFilter;
 import org.zowe.apiml.gateway.security.login.FailedAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
@@ -52,6 +53,7 @@ import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSourceService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
@@ -106,6 +108,7 @@ public class NewSecurityConfiguration {
     private final CertificateValidator certificateValidator;
     private final X509AuthenticationProvider x509AuthenticationProvider;
     private final OIDCAuthSourceService oidcAuthSourceService;
+    private final JwtAuthSourceService jwtAuthSourceService;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
@@ -331,7 +334,8 @@ public class NewSecurityConfiguration {
                     http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(oidcAuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                        .addFilterBefore(oidcAuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterBefore(jwtAuthenticationFilter(),org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 }
 
                 private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
@@ -353,6 +357,12 @@ public class NewSecurityConfiguration {
                     return new OIDCAuthenticationFilter("/**",
                         handlerInitializer.getAuthenticationFailureHandler(),
                         oidcAuthSourceService);
+                }
+
+                private JWTAuthenticationFilter jwtAuthenticationFilter() {
+                    return new JWTAuthenticationFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        jwtAuthSourceService);
                 }
 
             }
