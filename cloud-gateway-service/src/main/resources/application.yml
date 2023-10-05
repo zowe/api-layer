@@ -23,7 +23,9 @@ apiml:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
     cloudGateway:
-        serviceRegistryEnabled: false
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
 
 server:
     port: ${apiml.service.port}
@@ -66,3 +68,4 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
+

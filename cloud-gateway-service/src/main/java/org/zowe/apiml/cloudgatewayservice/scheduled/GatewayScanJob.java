@@ -51,7 +51,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 @EnableScheduling
 @Slf4j
 @Component
-@ConditionalOnExpression("${apiml.cloudGateway.serviceRegistryEnabled:false}")
+@ConditionalOnExpression("${apiml.cloudGateway.registry.enabled:false}")
 @RequiredArgsConstructor
 public class GatewayScanJob {
 

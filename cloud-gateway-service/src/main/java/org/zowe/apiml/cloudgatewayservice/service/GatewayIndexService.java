@@ -81,18 +81,18 @@ public class GatewayIndexService {
         if (this.customClientSslContext != null) {
             SslProvider sslProvider = SslProvider.builder().sslContext(customClientSslContext).build();
             HttpClient httpClient = HttpClient.create()
-                    .secure(sslProvider);
+                .secure(sslProvider);
 
             return WebClient.builder()
-                    .baseUrl(baseUrl)
-                    .clientConnector(new ReactorClientHttpConnector(httpClient))
-                    .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-                    .build();
+                .baseUrl(baseUrl)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .build();
         }
 
         return defaultWebClient.mutate()
-                .baseUrl(baseUrl)
-                .build();
+            .baseUrl(baseUrl)
+            .build();
     }
 
     public Mono<List<ServiceInfo>> indexGatewayServices(ServiceInstance registration) {
@@ -100,9 +100,9 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
         apimlGatewayLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
-                .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex.getMessage()))
-                .onErrorComplete()
-                .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
+            .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex.getMessage()))
+            .onErrorComplete()
+            .doFinally(signal -> log.debug("\t {} completed with {}", apimlIdKey, signal));
     }
 
     /**
@@ -121,9 +121,9 @@ public class GatewayIndexService {
         };
 
         return webClient.get().uri("/gateway/services")
-                .retrieve()
-                .bodyToMono(serviceInfoType)
-                .doOnNext(foreignServices -> apimlServicesCache.put(apimlId, foreignServices));
+            .retrieve()
+            .bodyToMono(serviceInfoType)
+            .doOnNext(foreignServices -> apimlServicesCache.put(apimlId, foreignServices));
     }
 
     private String buildAlternativeApimlIdKey(ServiceInstance registration) {
@@ -137,26 +137,29 @@ public class GatewayIndexService {
     /**
      * list currently cached apiml registry with option to filter by the <code>apimlId</code> and <code>apiId</code>
      *
-     * @param apimlId - filter for only services from the particular apiml instance, NULL - filter not applied
-     * @param apiId   - filter for only services of particular type e.g. <code>zowe.apiml.apicatalog</code>
+     * @param apimlId   - filter for only services from the particular apiml instance, NULL - filter not applied
+     * @param apiId     - filter for only services of particular type e.g. <code>zowe.apiml.apicatalog</code>
+     * @param serviceId - filter for only services of the same serviceId e.g. <code>gateway</code>
      * @return full of filter immutable map of the registry
      */
-    public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId) {
+    public Map<String, List<ServiceInfo>> listRegistry(String apimlId, String apiId, String serviceId) {
 
         Map<String, List<ServiceInfo>> allServices = ImmutableMap.<String, List<ServiceInfo>>builder()
-                .putAll(apimlServicesCache.asMap()).build();
+            .putAll(apimlServicesCache.asMap()).build();
         return allServices.entrySet().stream()
-                .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
-                .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiId(entry.getValue(), apiId)))
-                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+            .filter(entry -> apimlId == null || StringUtils.equals(apimlId, entry.getKey()))
+            .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), filterServicesByApiIdAndServiceId(entry.getValue(), apiId, serviceId)))
+            .filter(entry -> !CollectionUtils.isEmpty(entry.getValue()))
+            .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
-    List<ServiceInfo> filterServicesByApiId(List<ServiceInfo> apimlIdServices, String apiId) {
+    List<ServiceInfo> filterServicesByApiIdAndServiceId(List<ServiceInfo> apimlIdServices, String apiId, String serviceId) {
         if (!CollectionUtils.isEmpty(apimlIdServices)) {
             return apimlIdServices.stream()
-                    .filter(Objects::nonNull)
-                    .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
-                    .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
+                .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
+                .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
@@ -166,5 +169,9 @@ public class GatewayIndexService {
             return StringUtils.equals(apiId, serviceInfo.getApiml().getApiInfo().get(0).getApiId());
         }
         return false;
+    }
+
+    private boolean hasSameServiceId(ServiceInfo serviceInfo, String serviceId) {
+        return StringUtils.equals(serviceId, serviceInfo.getServiceId());
     }
 }
