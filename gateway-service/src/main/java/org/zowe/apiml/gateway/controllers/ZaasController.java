@@ -40,14 +40,23 @@ public class ZaasController {
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     @ResponseBody
-    public ResponseEntity<TicketResponse> getPassTicket(@RequestBody TicketRequest ticketRequest, Authentication authentication) {
+    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, Authentication authentication) {
+
+        if (!authentication.isAuthenticated()) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .build();
+        }
+
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         final String userId = tokenAuthentication.getPrincipal();
 
         final String applicationName = ticketRequest.getApplicationName();
         if (StringUtils.isBlank(applicationName)) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(messageView);
         }
 
         String ticket = null;
@@ -56,7 +65,9 @@ public class ZaasController {
         } catch (IRRPassTicketGenerationException e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getErrorCode().getMessage()).mapToView();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(messageView);
         }
         return ResponseEntity
             .status(HttpStatus.OK)

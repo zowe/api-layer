@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
@@ -29,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 public class JWTAuthenticationFilter extends NonCompulsoryAuthenticationProcessingFilter {
@@ -45,19 +45,16 @@ public class JWTAuthenticationFilter extends NonCompulsoryAuthenticationProcessi
     }
         @Override
         public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-
-           RequestContext context =  (RequestContext)request;
-
-            String jwtToken = String.valueOf(jwtAuthSourceService.getToken(context));
+            Optional<String> jwtToken = jwtAuthSourceService.getToken(request);
 
 
-            if (jwtToken != null && !jwtToken.isEmpty()) {
+            if (jwtToken.isPresent()) {
                 log.debug("jwt access token found in the request");
-                AuthSource authSource = new JwtAuthSource(jwtToken);
+                AuthSource authSource = new JwtAuthSource(jwtToken.get());
 
                 AuthSource.Parsed parsedToken = jwtAuthSourceService.parse(authSource);
                 if (parsedToken != null && StringUtils.isNotEmpty(parsedToken.getUserId())) {
-                    return TokenAuthentication.createAuthenticated(parsedToken.getUserId(), jwtToken);
+                    return TokenAuthentication.createAuthenticated(parsedToken.getUserId(), jwtToken.get());
                 }
             }
 
