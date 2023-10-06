@@ -1,5 +1,5 @@
 {
-    "properties": [
+    "groups": [
         {
             "name": "apiml",
             "type": "java.util.Map",
@@ -14,7 +14,9 @@
             "name": "apiml.security.oidc",
             "type": "java.util.Map",
             "description": "Identity mapping configuration."
-        },
+        }
+    ],
+    "properties": [
         {
             "name": "apiml.security.oidc.registry",
             "type": "java.lang.String",

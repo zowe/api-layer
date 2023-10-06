@@ -1,4 +1,4 @@
-name: CI Testing
+name: Verify that all services can register
 
 on:
     push:

@@ -92,7 +92,7 @@ public class AuthConfigurationProperties {
         private int expirationInSeconds = 8 * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
-        private long shortTtlExpirationInSeconds = 1;
+        private long shortTtlExpirationInSeconds = 50;
     }
 
     //Cookie properties
