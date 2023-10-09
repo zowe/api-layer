@@ -45,7 +45,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
+//@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
     @Value("${apiml.security.oidc.introspectUrl:}")
