@@ -76,7 +76,7 @@ export default class Tile extends Component {
                                     {!apiPortalEnabled && this.getTileStatus(tile)}
                                     {!apiPortalEnabled && this.getTileStatusText(tile)}
                                 </Typography>
-                                <Typography id="service-title" variant="subtitle1">
+                                <Typography className="service-title" variant="subtitle1">
                                     {service.title}
                                 </Typography>
                                 {!apiPortalEnabled && service.sso && (
