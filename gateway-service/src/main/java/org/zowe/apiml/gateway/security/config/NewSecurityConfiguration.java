@@ -319,9 +319,8 @@ public class NewSecurityConfiguration {
                     .anyRequest().authenticated()
                     .and()
                     .x509().userDetailsService(x509UserDetailsService())
-                    .and()
-                    .authenticationProvider(compoundAuthProvider) // for authenticating credentials
-                    .apply(new CustomSecurityFilters());
+                    .and().apply(new CustomSecurityFilters());
+
                 return http.build();
             }
 
