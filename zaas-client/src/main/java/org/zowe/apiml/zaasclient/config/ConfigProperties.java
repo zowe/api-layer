@@ -14,8 +14,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
 
-import java.util.Objects;
-
 @Data
 @Builder
 public class ConfigProperties {
@@ -32,7 +30,10 @@ public class ConfigProperties {
     private boolean httpOnly;
     private boolean nonStrictVerifySslCertificatesOfServices;
 
-    private static final String GATEWAY_SERVICE_ID = "gateway";
+    @SuppressWarnings("squid:S1075")
+    private static final String OLD_PATH_FORMAT = "/api/v1/gateway";
+    @SuppressWarnings("squid:S1075")
+    private static final String NEW_PATH_FORMAT = "/gateway/api/v1";
 
     @Builder.Default
     private String tokenPrefix = "apimlAuthenticationToken";
@@ -58,22 +59,22 @@ public class ConfigProperties {
     }
 
     public void setApimlBaseUrl(String baseUrl) {
-        if (baseUrl == null) { // default path
-            apimlBaseUrl = "/gateway/api/v1/auth";
-        } else if (baseUrl.contains("/") && baseUrl.contains(GATEWAY_SERVICE_ID)) {
-            String[] baseUrlParts = baseUrl.split("/");
-            if (Objects.equals(baseUrlParts[2], GATEWAY_SERVICE_ID)) {
-                apimlBaseUrl = "/gateway/" + baseUrlParts[0] + "/" + baseUrlParts[1] + "/auth";
-            } else if (Objects.equals(baseUrlParts[3], GATEWAY_SERVICE_ID)) {
-                apimlBaseUrl = "/gateway/" + baseUrlParts[1] + "/" + baseUrlParts[2] + "/auth";
-            } else if (!baseUrl.startsWith("/")) { // starts with gateway/..
-                apimlBaseUrl = "/" + baseUrl;
-            } else {
-                apimlBaseUrl = baseUrl;
-            }
-        } else {
-            apimlBaseUrl = baseUrl;
+        // set default path if it is missing
+        if (baseUrl == null) {
+            baseUrl = "/gateway/api/v1/auth";
         }
+
+        // if path does not start with / add it
+        if (!baseUrl.startsWith("/")) {
+            baseUrl = "/" + baseUrl;
+        }
+
+        // replace old path format with the new one
+        if (baseUrl.startsWith(OLD_PATH_FORMAT)) {
+            baseUrl = NEW_PATH_FORMAT + baseUrl.substring(OLD_PATH_FORMAT.length());
+        }
+
+        apimlBaseUrl = baseUrl;
     }
 
 }
