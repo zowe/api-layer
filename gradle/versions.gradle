@@ -12,8 +12,7 @@ ext {
     attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
     awsSdkVersion = '1.12.565'
-    bouncyCastleVersion = '1.70'
-    bouncyCastle18Version = '1.76'
+    bouncyCastleVersion = '1.76'
     bootstrapVersion = '4.3.1'
     commonsCodecVersion = '1.15'
     commonsLang3Version = '3.12.0'
@@ -135,8 +134,8 @@ ext {
         apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
         awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
         aws_sdk_core                       : "com.amazonaws:aws-java-sdk-core:${awsSdkVersion}",
-        bcprov                             : "org.bouncycastle:bcprov-jdk15on:${bouncyCastleVersion}",
-        bcpkix                             : "org.bouncycastle:bcpkix-jdk15on:${bouncyCastleVersion}",
+        bcprov                             : "org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}",
+        bcpkix                             : "org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}",
         bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
         commons_io                         : "commons-io:commons-io:${commonsIoVersion}",
         eh_cache                           : "org.ehcache:ehcache:${ehCacheVersion}",

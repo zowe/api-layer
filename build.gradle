@@ -80,8 +80,10 @@ allprojects {
             substitute(module('javax.activation:javax.activation-api:1.0')).using(module('jakarta.activation:jakarta.activation-api:1.2.2'))
 
             // upgrade Bouncy Castle from 1.5 to 1.8
-            substitute(module('org.bouncycastle:bcprov-jdk15on:1.70')).using(module("org.bouncycastle:bcprov-jdk18on:${bouncyCastle18Version}"))
-            substitute(module('org.bouncycastle:bcpkix-jdk15on:1.70')).using(module("org.bouncycastle:bcpkix-jdk18on:${bouncyCastle18Version}"))
+            substitute(module('org.bouncycastle:bcprov-jdk15on:1.64')).using(module("org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}"))
+            substitute(module('org.bouncycastle:bcprov-jdk15on:1.70')).using(module("org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}"))
+            substitute(module('org.bouncycastle:bcpkix-jdk15on:1.64')).using(module("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}"))
+            substitute(module('org.bouncycastle:bcpkix-jdk15on:1.70')).using(module("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}"))
         }
 
         resolutionStrategy.force "org.slf4j:slf4j-api:${slf4jVersion}"
