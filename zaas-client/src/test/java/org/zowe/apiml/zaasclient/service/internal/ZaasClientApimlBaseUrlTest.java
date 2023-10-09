@@ -12,6 +12,7 @@ package org.zowe.apiml.zaasclient.service.internal;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
@@ -31,11 +32,26 @@ class ZaasClientApimlBaseUrlTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/v1/zaasClient/auth", "api.v1.zaasClient.auth"})
-    void givenBaseUrl_thenDontChangeBaseUrl(String baseUrl) {
+    @CsvSource({
+        "/api/v1/zaasClient/auth,/api/v1/zaasClient/auth",
+        "api/v1/zaasClient/auth,/api/v1/zaasClient/auth",
+        "anyUrl,/anyUrl",
+        "anyUrl/,/anyUrl/",
+        "/api/v1/gateway,/gateway/api/v1",
+        "api/v1/gateway,/gateway/api/v1",
+        "/api/v1/gateway/x,/gateway/api/v1/x",
+        "api/v1/gateway/x,/gateway/api/v1/x",
+        "/gateway/api/v1,/gateway/api/v1",
+        "gateway/api/v1,/gateway/api/v1",
+        "/gateway/api/v1/x,/gateway/api/v1/x",
+        "gateway/api/v1/x,/gateway/api/v1/x",
+        "/anyOther/gateway/doNotChange,/anyOther/gateway/doNotChange",
+        "anyOther/gateway/doNotChange,/anyOther/gateway/doNotChange"
+    })
+    void givenBaseUrl_thenNormalizeIt(String input, String normalized) {
         ConfigProperties configProperties = new ConfigProperties();
-        configProperties.setApimlBaseUrl(baseUrl);
-        assertThat(configProperties.getApimlBaseUrl(), is(baseUrl));
+        configProperties.setApimlBaseUrl(input);
+        assertThat(configProperties.getApimlBaseUrl(), is(normalized));
     }
 
     @Test
