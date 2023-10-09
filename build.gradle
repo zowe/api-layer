@@ -103,7 +103,7 @@ allprojects {
 
             // upgrade Bouncy Castle from 1.5 to 1.8
             substitute(module('org.bouncycastle:bcprov-jdk15on')).using(module("org.bouncycastle:bcprov-jdk18on:${libs.versions.bouncyCastle.get()}"))
-            substitute(module('org.bouncycastle:bcprov-jdk15on')).using(module("org.bouncycastle:bcprov-jdk18on:${libs.versions.bouncyCastle.get()}"))
+            substitute(module('org.bouncycastle:bcpkix-jdk15on')).using(module("org.bouncycastle:bcpkix-jdk18on:${libs.versions.bouncyCastle.get()}"))
         }
 
         resolutionStrategy.force libs.slf4j.api
