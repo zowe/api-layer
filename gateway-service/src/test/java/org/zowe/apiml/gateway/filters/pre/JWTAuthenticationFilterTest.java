@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,16 +25,13 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
 public class JWTAuthenticationFilterTest {
 
@@ -45,12 +41,10 @@ public class JWTAuthenticationFilterTest {
     private AuthenticationFailureHandler failureHandler;
     private JWTAuthenticationFilter filter;
 
-    private RequestContext context;
     @BeforeEach
     void setUp() {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
-        context = mock(RequestContext.class);
         jwtAuthSourceService = mock(JwtAuthSourceService.class);
         failureHandler = mock(AuthenticationFailureHandler.class);
         filter = new JWTAuthenticationFilter("/**", failureHandler, jwtAuthSourceService);
@@ -64,7 +58,7 @@ public class JWTAuthenticationFilterTest {
         @BeforeEach
         void setUp() {
             Optional<String> accessToken = Optional.of("token_value");
-            when(jwtAuthSourceService.getToken(context)).thenReturn(accessToken);
+            when(jwtAuthSourceService.getToken(request)).thenReturn(accessToken);
         }
 
         @Test
@@ -72,7 +66,8 @@ public class JWTAuthenticationFilterTest {
             parsedToken = new ParsedTokenAuthSource("user", new Date(111), new Date(222), AuthSource.Origin.ZOSMF);
             when(jwtAuthSourceService.parse(any())).thenReturn(parsedToken);
 
-            Authentication authentication = filter.attemptAuthentication(context.getRequest(), response);
+            Authentication authentication = filter.attemptAuthentication(request, response);
+            assertNotNull(authentication);
             assertEquals(parsedToken.getUserId(), authentication.getPrincipal());
             assertTrue(authentication.isAuthenticated());
         }
@@ -82,7 +77,7 @@ public class JWTAuthenticationFilterTest {
             parsedToken = new ParsedTokenAuthSource("", new Date(111), new Date(222), AuthSource.Origin.ZOSMF);
             when(jwtAuthSourceService.parse(any())).thenReturn(parsedToken);
 
-            Authentication authentication = filter.attemptAuthentication(context.getRequest(), response);
+            Authentication authentication = filter.attemptAuthentication(request, response);
             assertNull(authentication);
         }
 
@@ -90,7 +85,7 @@ public class JWTAuthenticationFilterTest {
         void whenInvalidAccessToken_thenNotAuthenticated() {
             when(jwtAuthSourceService.parse(any())).thenReturn(null);
 
-            Authentication authentication = filter.attemptAuthentication(context.getRequest(), response);
+            Authentication authentication = filter.attemptAuthentication(request, response);
             assertNull(authentication);
         }
     }
