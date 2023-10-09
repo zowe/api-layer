@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
@@ -51,10 +50,6 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public Optional<String> getToken(RequestContext context) {
-        return getToken(context.getRequest());
-    }
-
     public Optional<String> getToken(HttpServletRequest request) {
         Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
         if (tokenOptional.isPresent()) {

@@ -43,8 +43,7 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
-import org.zowe.apiml.gateway.filters.pre.JWTAuthenticationFilter;
-import org.zowe.apiml.gateway.filters.pre.OIDCAuthenticationFilter;
+import org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter;
 import org.zowe.apiml.gateway.security.login.FailedAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -53,8 +52,7 @@ import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -107,8 +105,7 @@ public class NewSecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     private final CertificateValidator certificateValidator;
     private final X509AuthenticationProvider x509AuthenticationProvider;
-    private final OIDCAuthSourceService oidcAuthSourceService;
-    private final JwtAuthSourceService jwtAuthSourceService;
+    private final AuthSourceService authSourceService;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
@@ -332,37 +329,11 @@ public class NewSecurityConfiguration {
                 @Override
                 public void configure(HttpSecurity http) {
                     http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(loginFilter(http), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterAfter(x509AuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(oidcAuthenticationFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(jwtAuthenticationFilter(),org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                        .addFilterBefore(extractAuthSourceFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 }
 
-                private NonCompulsoryAuthenticationProcessingFilter loginFilter(HttpSecurity http) {
-                    AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                    return new BasicAuthFilter("/**",
-                        handlerInitializer.getAuthenticationFailureHandler(),
-                        securityObjectMapper,
-                        authenticationManager,
-                        handlerInitializer.getResourceAccessExceptionHandler());
-                }
-
-                private X509AuthenticationFilter x509AuthenticationFilter() {
-                    return new X509AuthAwareFilter("/**",
-                        handlerInitializer.getAuthenticationFailureHandler(),
-                        x509AuthenticationProvider);
-                }
-
-                private OIDCAuthenticationFilter oidcAuthenticationFilter() {
-                    return new OIDCAuthenticationFilter("/**",
-                        handlerInitializer.getAuthenticationFailureHandler(),
-                        oidcAuthSourceService);
-                }
-
-                private JWTAuthenticationFilter jwtAuthenticationFilter() {
-                    return new JWTAuthenticationFilter("/**",
-                        handlerInitializer.getAuthenticationFailureHandler(),
-                        jwtAuthSourceService);
+                private ExtractAuthSourceFilter extractAuthSourceFilter() {
+                    return new ExtractAuthSourceFilter(authSourceService);
                 }
 
             }

@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-//@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -54,10 +54,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public Optional<String> getToken(RequestContext context) {
-        return getToken(context.getRequest());
-    }
-
     public Optional<String> getToken(HttpServletRequest request) {
         Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
         if (tokenOptional.isPresent()) {

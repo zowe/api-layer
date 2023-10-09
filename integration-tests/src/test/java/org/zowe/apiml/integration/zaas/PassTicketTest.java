@@ -114,19 +114,19 @@ class PassTicketTest implements TestWithStartedInstances {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
             }
 
-//            @Test
-//            void givenNoToken() {
-//                String expectedMessage = "No authorization token provided for URL '" + url.getPath() + "'";
-//
-//                given()
-//                    .contentType(JSON)
-//                    .body(ticketRequest)
-//                .when()
-//                    .post(url)
-//                .then()
-//                    .statusCode(is(SC_UNAUTHORIZED))
-//                    .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
-//            }
+            @Test
+            void givenNoToken() {
+                String expectedMessage = "No authorization token provided for URL '" + url.getPath() + "'";
+
+                given()
+                    .contentType(JSON)
+                    .body(ticketRequest)
+                .when()
+                    .post(url)
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED))
+                    .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
+            }
 
             @Test
             void givenInvalidTokenInCookie() {

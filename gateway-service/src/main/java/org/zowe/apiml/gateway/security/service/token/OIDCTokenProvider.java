@@ -29,6 +29,7 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-//@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
     @Value("${apiml.security.oidc.introspectUrl:}")
