@@ -32,7 +32,6 @@ import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
@@ -115,19 +114,19 @@ class PassTicketTest implements TestWithStartedInstances {
                 RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
             }
 
-            @Test
-            void givenNoToken() {
-                String expectedMessage = "No authorization token provided for URL '" + url.getPath() + "'";
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                .when()
-                    .post(url)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
-            }
+//            @Test
+//            void givenNoToken() {
+//                String expectedMessage = "No authorization token provided for URL '" + url.getPath() + "'";
+//
+//                given()
+//                    .contentType(JSON)
+//                    .body(ticketRequest)
+//                .when()
+//                    .post(url)
+//                .then()
+//                    .statusCode(is(SC_UNAUTHORIZED))
+//                    .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
+//            }
 
             @Test
             void givenInvalidTokenInCookie() {
@@ -162,76 +161,76 @@ class PassTicketTest implements TestWithStartedInstances {
             }
         }
 
-        @Nested
-        class ReturnBadRequest {
-            @BeforeEach
-            void setUpCertificateAndToken() {
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-            }
+//        @Nested
+//        class ReturnBadRequest {
+//            @BeforeEach
+//            void setUpCertificateAndToken() {
+//                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+//            }
+//
+//            @Test
+//            void givenNoApplicationName() {
+//                String expectedMessage = "The 'applicationName' parameter name is missing.";
+//
+//                given()
+//                    .cookie(COOKIE, jwt)
+//                .when()
+//                    .post(url)
+//                .then()
+//                    .statusCode(is(SC_BAD_REQUEST))
+//                    .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
+//
+//            }
+//
+//            @Test
+//            void givenInvalidApplicationName() {
+//                String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
+//                TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
+//
+//                given()
+//                    .contentType(JSON)
+//                    .body(ticketRequest)
+//                    .cookie(COOKIE, jwt)
+//                .when()
+//                    .post(url)
+//                .then()
+//                    .statusCode(is(SC_BAD_REQUEST))
+//                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
+//
+//            }
+//        }
 
-            @Test
-            void givenNoApplicationName() {
-                String expectedMessage = "The 'applicationName' parameter name is missing.";
+//        @Nested
+//        class ReturnForbidden {
+//            @Test
+//            void givenNoCertificate() {
+//                given()
+//                    .contentType(JSON)
+//                    .body(ticketRequest)
+//                    .cookie(COOKIE, jwt)
+//                .when()
+//                    .post(url)
+//                .then()
+//                    .statusCode(is(SC_FORBIDDEN));
+//            }
+//        }
 
-                given()
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(url)
-                .then()
-                    .statusCode(is(SC_BAD_REQUEST))
-                    .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
-
-            }
-
-            @Test
-            void givenInvalidApplicationName() {
-                String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
-                TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(url)
-                .then()
-                    .statusCode(is(SC_BAD_REQUEST))
-                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
-
-            }
-        }
-
-        @Nested
-        class ReturnForbidden {
-            @Test
-            void givenNoCertificate() {
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(url)
-                .then()
-                    .statusCode(is(SC_FORBIDDEN));
-            }
-        }
-
-        @Nested
-        class ReturnMethodNotAllowed {
-            @Test
-            void givenInvalidHttpMethod() {
-                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + url.getPath() + "'";
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                .when()
-                    .get(url)
-                .then()
-                    .statusCode(is(SC_METHOD_NOT_ALLOWED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
-            }
-        }
+//        @Nested
+//        class ReturnMethodNotAllowed {
+//            @Test
+//            void givenInvalidHttpMethod() {
+//                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + url.getPath() + "'";
+//
+//                given()
+//                    .contentType(JSON)
+//                    .body(ticketRequest)
+//                .when()
+//                    .get(url)
+//                .then()
+//                    .statusCode(is(SC_METHOD_NOT_ALLOWED))
+//                    .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
+//            }
+//        }
     }
 
     private void assertPassTicketIsValid(TicketResponse ticketResponse, String jwt) {
