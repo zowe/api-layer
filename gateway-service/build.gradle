@@ -116,33 +116,6 @@ dependencies {
     implementation libraries.jetty_websocket_api
     implementation libraries.jjwt
     implementation libraries.nimbusJoseJwt
-    implementation libraries.netty
-    implementation libraries.netty_buffer
-    implementation libraries.netty_codec
-    implementation libraries.netty_codec_dns
-    implementation libraries.netty_codec_haproxy
-    implementation libraries.netty_codec_http
-    implementation libraries.netty_codec_http2
-    implementation libraries.netty_codec_memcache
-    implementation libraries.netty_codec_mqtt
-    implementation libraries.netty_codec_redis
-    implementation libraries.netty_codec_socks
-    implementation libraries.netty_codec_smtp
-    implementation libraries.netty_codec_stomp
-    implementation libraries.netty_codec_xml
-    implementation libraries.netty_common
-    implementation libraries.netty_handler
-    implementation libraries.netty_handler_proxy
-    implementation libraries.netty_resolver
-    implementation libraries.netty_resolver_dns
-    implementation libraries.netty_resolver_dns_native_macos
-    implementation libraries.netty_transport
-    implementation libraries.netty_transport_native_epoll
-    implementation libraries.netty_transport_native_kqueue
-    implementation libraries.netty_transport_native_unix_common
-    implementation libraries.netty_transport_rxtx
-    implementation libraries.netty_transport_sctp
-    implementation libraries.netty_transport_udt
     implementation libraries.thymeleaf
     implementation libraries.thymeleafSpring
     implementation libraries.logback_core

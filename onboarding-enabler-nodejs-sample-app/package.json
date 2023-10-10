@@ -17,6 +17,9 @@
     "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
     "express": "^4.16.4"
   },
+  "overrides": {
+    "tough-cookie": "4.1.3"
+  },
   "engines": {
     "npm": "=8.19.3",
     "node": "=16.19.0"
