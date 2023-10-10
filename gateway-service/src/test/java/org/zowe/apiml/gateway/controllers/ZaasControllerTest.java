@@ -15,14 +15,17 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
+
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,7 +40,7 @@ class ZaasControllerTest {
     private MessageService messageService;
     private ZaasController zaasController;
 
-    private TokenAuthentication authentication;
+    private AuthSource.Parsed authSource;
 
     private static final String PASSTICKET = "test_passticket";
 
@@ -53,31 +56,28 @@ class ZaasControllerTest {
     class GivenAuthenticated {
 
         private static final String USER = "test_user";
-        private static final String TOKEN = "test_token";
 
         @BeforeEach
         void setUp() {
-            authentication = new TokenAuthentication(USER, TOKEN);
-            authentication.setAuthenticated(true);
+            authSource = new ParsedTokenAuthSource(USER, new Date(111), new Date(222), AuthSource.Origin.ZOSMF);
         }
 
         @Test
         void whenApplNameProvided_thenPassTicketInResponse() {
             TicketRequest request = new TicketRequest("applid_test");
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authentication);
+            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             TicketResponse ticketResponse = (TicketResponse) response.getBody();
             assertNotNull(ticketResponse);
             assertEquals(PASSTICKET, ticketResponse.getTicket());
             assertEquals("applid_test", ticketResponse.getApplicationName());
             assertEquals(USER, ticketResponse.getUserId());
-            assertEquals(TOKEN, ticketResponse.getToken());
         }
 
         @Test
         void whenNoApplNameProvided_thenBadRequest() {
             TicketRequest request = new TicketRequest("");
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authentication);
+            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
             assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
             ApiMessageView errorMessage = (ApiMessageView) response.getBody();
             assertNotNull(errorMessage);
@@ -89,7 +89,7 @@ class ZaasControllerTest {
         void whenErrorGeneratingPassticket_thenInternalServerError() throws IRRPassTicketGenerationException {
             TicketRequest request = new TicketRequest("applid_test");
             when(passTicketService.generate(anyString(), anyString())).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authentication);
+            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
             ApiMessageView errorMessage = (ApiMessageView) response.getBody();
             assertNotNull(errorMessage);
@@ -103,14 +103,13 @@ class ZaasControllerTest {
 
         @BeforeEach
         void setUp() {
-            authentication = new TokenAuthentication("Anonymous", null);
-            authentication.setAuthenticated(false);
+            authSource = new ParsedTokenAuthSource(null, null, null, null);
         }
 
         @Test
         void thenRespondUnauthorized() {
             TicketRequest request = new TicketRequest("applid_test");
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authentication);
+            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
             assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 
         }
