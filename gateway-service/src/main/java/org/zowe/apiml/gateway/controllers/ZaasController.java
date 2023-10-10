@@ -41,7 +41,7 @@ public class ZaasController {
     @ResponseBody
     public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute("zaas.auth.source") AuthSource.Parsed authSource) {
 
-        if (StringUtils.isNotEmpty(authSource.getUserId())) {
+        if (StringUtils.isEmpty(authSource.getUserId())) {
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .build();
