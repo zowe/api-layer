@@ -21,15 +21,6 @@ import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNav
 import Shield from '../ErrorBoundary/Shield/Shield';
 import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 
-const loadFeedbackButton = () => {
-    if (isAPIPortal()) {
-        return import('../FeedbackButton/FeedbackButton');
-    }
-    return Promise.resolve(null);
-};
-
-const FeedbackButton = React.lazy(loadFeedbackButton);
-
 export default class DetailPage extends Component {
     componentDidMount() {
         if (isAPIPortal()) {
@@ -118,7 +109,6 @@ export default class DetailPage extends Component {
         }
         return (
             <div className="main">
-                {apiPortalEnabled && <FeedbackButton leftPlacement="80vw" />}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
