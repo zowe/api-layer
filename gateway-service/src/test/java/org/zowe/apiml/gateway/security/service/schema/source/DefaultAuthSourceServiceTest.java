@@ -17,6 +17,7 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Optional;
@@ -35,6 +36,8 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     private OIDCAuthSourceService oidcAuthSourceService;
     private DefaultAuthSourceService serviceUnderTest;
 
+    private HttpServletRequest request;
+
     @BeforeEach
     void init() {
         jwtAuthSourceService = mock(JwtAuthSourceService.class);
@@ -43,6 +46,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
         oidcAuthSourceService = mock(OIDCAuthSourceService.class);
         serviceUnderTest = new DefaultAuthSourceService(jwtAuthSourceService, x509MFAuthSourceService, true, patAuthSourceService, true, oidcAuthSourceService, true);
         x509Certificate = mock(X509Certificate.class);
+        request = mock(HttpServletRequest.class);
     }
 
     @Nested
@@ -53,11 +57,11 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
         @Test
         void thenJwtAuthSourceIsPresent() {
-            when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(jwtAuthSource));
+            when(jwtAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.of(jwtAuthSource));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest(request);
             verifyNoInteractions(x509MFAuthSourceService);
             verifyNoInteractions(patAuthSourceService);
             verifyNoInteractions(oidcAuthSourceService);
@@ -116,12 +120,12 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
         @Test
         void thenX509AuthSourceIsPresent() {
-            when(x509MFAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(x509AuthSource));
+            when(x509MFAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.of(x509AuthSource));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
-            verify(x509MFAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest(request);
+            verify(x509MFAuthSourceService, times(1)).getAuthSourceFromRequest(request);
 
             assertTrue(authSource.isPresent());
             assertTrue(authSource.get() instanceof X509AuthSource);
@@ -161,7 +165,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
             @Test
             void thenAuthSourceIsEmpty() {
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
                 verifyNoInteractions(x509MFAuthSourceService);
                 assertFalse(authSource.isPresent());
@@ -176,11 +180,11 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
         @Test
         void thenJwtAuthSourceIsPresent() {
-            when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(jwtAuthSource));
+            when(jwtAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.of(jwtAuthSource));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest(request);
             verifyNoInteractions(x509MFAuthSourceService);
 
             assertTrue(authSource.isPresent());
@@ -197,11 +201,11 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
         @Test
         void thenJwtAuthSourceIsPresent() {
-            when(patAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(patAuthSource));
+            when(patAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.of(patAuthSource));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-            verify(patAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(patAuthSourceService, times(1)).getAuthSourceFromRequest(request);
             verifyNoInteractions(oidcAuthSourceService);
             verifyNoInteractions(x509MFAuthSourceService);
             assertTrue(authSource.isPresent());
@@ -256,7 +260,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
             @Test
             void thenAuthSourceIsEmpty() {
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
                 verifyNoInteractions(patAuthSourceService);
                 assertFalse(authSource.isPresent());
@@ -272,11 +276,11 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
         @Test
         void thenJwtAuthSourceIsPresent() {
-            when(oidcAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(oidcAuthSource));
+            when(oidcAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.of(oidcAuthSource));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-            verify(oidcAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(oidcAuthSourceService, times(1)).getAuthSourceFromRequest(request);
             verifyNoInteractions(x509MFAuthSourceService);
             assertTrue(authSource.isPresent());
             assertTrue(authSource.get() instanceof OIDCAuthSource);
@@ -330,7 +334,7 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
 
             @Test
             void thenAuthSourceIsEmpty() {
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
                 verifyNoInteractions(oidcAuthSourceService);
                 assertFalse(authSource.isPresent());
@@ -343,17 +347,17 @@ public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest
     class WhenNoAuthenticationInRequest {
         @Test
         void thenNoAuthSourceIsPresent() {
-            when(jwtAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
-            when(x509MFAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
-            when(patAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
-            when(oidcAuthSourceService.getAuthSourceFromRequest()).thenReturn(Optional.empty());
+            when(jwtAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.empty());
+            when(x509MFAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.empty());
+            when(patAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.empty());
+            when(oidcAuthSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.empty());
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest();
-            verify(x509MFAuthSourceService, times(1)).getAuthSourceFromRequest();
-            verify(patAuthSourceService, times(1)).getAuthSourceFromRequest();
-            verify(oidcAuthSourceService, times(1)).getAuthSourceFromRequest();
+            verify(jwtAuthSourceService, times(1)).getAuthSourceFromRequest(request);
+            verify(x509MFAuthSourceService, times(1)).getAuthSourceFromRequest(request);
+            verify(patAuthSourceService, times(1)).getAuthSourceFromRequest(request);
+            verify(oidcAuthSourceService, times(1)).getAuthSourceFromRequest(request);
 
             assertFalse(authSource.isPresent());
         }
