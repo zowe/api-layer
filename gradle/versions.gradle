@@ -13,22 +13,22 @@ dependencyResolutionManagement {
             version('springCloudGateway', '3.1.7')
             version('springSecurity') {
                 // older versions are vulnerable to CVE-2023-20862
-                strictly '[5.7.10,6.0.0['
-                prefer '5.7.10'
+                strictly '[5.7.11,6.0.0['
+                prefer '5.7.11'
             }
             version('springFramework') {
                 // older versions are vulnerable to CVE-2023-20863
                 strictly '[5.3.29,6.0.0['
-                prefer '5.3.29'
+                prefer '5.3.30'
             }
             version('springRetry', '1.2.5.RELEASE')
             version('springWebTestClient', '5.3.0')
 
-            version('awsJavaSdk', '1.12.466')
+            version('awsJavaSdk', '1.12.565')
             version('attls', '1.21.3')
             version('archaius', '0.7.7')
             version('awaitility', '4.0.3')
-            version('bouncyCastle', '1.70')
+            version('bouncyCastle', '1.76')
             version('bootstrap', '4.3.1')
             version('commonsCodec', '1.15')
             version('commonsConfiguration', '1.10')
@@ -53,7 +53,7 @@ dependencyResolutionManagement {
             version('httpClient', '4.5.14')
             version('httpCore', '4.4.16')
             version('hystrix', '1.5.18')
-            version('infinispan', '13.0.15.Final')
+            version('infinispan', '13.0.18.Final')
             version('jacksonCore', '2.15.2')
             version('jacksonDatabind', '2.15.2')
             version('jacksonDataformatYaml', '2.15.2')
@@ -66,7 +66,7 @@ dependencyResolutionManagement {
             version('jaxbApi', '2.3.1')
             version('jersey', '2.39.1')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '9.4.51.v20230217')
+            version('jettyWebSocketClient', '9.4.52.v20230823')
             version('jettison', '1.5.4')
             version('jjwt', '0.11.5')
             version('jjwtFull', '0.9.1')
@@ -93,7 +93,7 @@ dependencyResolutionManagement {
             version('mockitoInline', '4.5.1')
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.94.Final')
+            version('netty', '4.1.99.Final')
             version('nettyReactor', '1.1.7')
             version('nimbusJoseJwt', '9.31')
             version('openApiDiff', '2.0.1')
@@ -218,8 +218,8 @@ dependencyResolutionManagement {
 
             library('apache_velocity', 'org.apache.velocity', 'velocity-engine-core').versionRef('velocity')
             library('awaitility', 'org.awaitility', 'awaitility').versionRef('awaitility')
-            library('bcprov', 'org.bouncycastle', 'bcprov-jdk15on').versionRef('bouncyCastle')
-            library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk15on').versionRef('bouncyCastle')
+            library('bcprov', 'org.bouncycastle', 'bcprov-jdk18on').versionRef('bouncyCastle')
+            library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk18on').versionRef('bouncyCastle')
             library('bootstrap', 'org.webjars', 'bootstrap').versionRef('bootstrap')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
