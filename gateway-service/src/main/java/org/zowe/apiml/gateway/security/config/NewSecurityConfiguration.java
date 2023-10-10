@@ -319,22 +319,11 @@ public class NewSecurityConfiguration {
                     .anyRequest().authenticated()
                     .and()
                     .x509().userDetailsService(x509UserDetailsService())
-                    .and().apply(new CustomSecurityFilters());
+                    .and()
+                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(new ExtractAuthSourceFilter(authSourceService), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
 
                 return http.build();
-            }
-
-            private class CustomSecurityFilters extends AbstractHttpConfigurer<AccessToken.CustomSecurityFilters, HttpSecurity> {
-                @Override
-                public void configure(HttpSecurity http) {
-                    http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                        .addFilterBefore(extractAuthSourceFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                }
-
-                private ExtractAuthSourceFilter extractAuthSourceFilter() {
-                    return new ExtractAuthSourceFilter(authSourceService);
-                }
-
             }
 
         }
