@@ -62,7 +62,7 @@ public class ZaasController {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getErrorCode().getMessage()).mapToView();
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(e.getHttpStatus())
                 .body(messageView);
         }
         return ResponseEntity

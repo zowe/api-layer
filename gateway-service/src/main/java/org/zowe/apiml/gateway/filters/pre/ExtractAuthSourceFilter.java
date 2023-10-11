@@ -12,9 +12,11 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -29,17 +31,23 @@ public class ExtractAuthSourceFilter extends OncePerRequestFilter {
     private static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
 
     private final AuthSourceService authSourceService;
+    private final AuthExceptionHandler authExceptionHandler;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        extractAuthSource(request);
-        filterChain.doFilter(request, response);
-    }
-
-    private void extractAuthSource(HttpServletRequest request) {
-        Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-        if (authSource.isPresent()) {
-            AuthSource.Parsed parsed = authSourceService.parse(authSource.get());
-            request.setAttribute(AUTH_SOURCE_ATTR, parsed);
+        try {
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
+            if (authSource.isPresent()) {
+                AuthSource.Parsed parsed = authSourceService.parse(authSource.get());
+                request.setAttribute(AUTH_SOURCE_ATTR, parsed);
+                filterChain.doFilter(request, response);
+            } else {
+                throw new InsufficientAuthenticationException("No authentication source found in the request.");
+            }
         }
+        catch (RuntimeException ex) {
+            authExceptionHandler.handleException(request, response, ex);
+        }
+
     }
 }
