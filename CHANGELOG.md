@@ -12,7 +12,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 * Bugfix:  Fix normalization of baseUrl in ZAAS client (#3123) ([c8a23a8](https://github.com/zowe/api-layer/commit/c8a23a8)), closes [#3123](https://github.com/zowe/api-layer/issues/3123)
 * Bugfix:  JVM heap configuration from zowe.yaml (#3087) ([59ead89](https://github.com/zowe/api-layer/commit/59ead89)), closes [#3087](https://github.com/zowe/api-layer/issues/3087)
-* Bugfix:  Fixes for API Catalog standalone mode (#3050) ([30ec8df](https://github.com/zowe/api-layer/commit/30ec8df)), closes [#3050](https://github.com/zowe/api-layer/issues/3050)
+* Bugfix:  Bugfix: Fix error preventing the Catalog UI to load when a service does not have some required parameter. (#3050) ([30ec8df](https://github.com/zowe/api-layer/commit/30ec8df)), closes [#3050](https://github.com/zowe/api-layer/issues/3050)
 
 ## `APIML 2.11.0 / Zowe 2.11.0 (2023-08-30)`
 
