@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -73,7 +74,7 @@ class OIDCTokenProviderTest {
         when(response.getStatusLine()).thenReturn(responseStatusLine);
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
-        oidcTokenProvider = new OIDCTokenProvider(httpClient);
+        oidcTokenProvider = new OIDCTokenProvider(httpClient, new ObjectMapper(), 1L);
         oidcTokenProvider.introspectUrl = "https://acme.com/introspect";
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
