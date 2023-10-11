@@ -47,7 +47,31 @@ body {
   .MuiTab-textColorInherit {
     opacity: 1;
   }
+  .header-primary {
+    color: var( --criticalShade10 );
+    font-weight: var( --fontWeightMedium );
+  }
+  .button-cta {
+    background: var( --criticalShade10 );
+    padding: var( --spaceSmaller ) var( --spaceSmall );
+    border-radius: 3px;
+
+    &:hover {
+      background: var( --criticalShade00 );
+    }
+    &, * {
+      color: var( --text100 );
+      text-transform: none;
+      line-height: 100%;
+      font-size: var( --fontMedium );
+    }
+  }
   .MuiButton-root {
+    &:not(:disabled) {
+      &:hover {
+        cursor: pointer;
+      }
+    }
     &.icon-btn {
       min-width: 0px;
 
@@ -261,7 +285,7 @@ body {
     }
   }
 
-  #service-title {
+  .service-title {
       font-family: var( --fontFamily00 );
       font-size: var(--spaceLarger);
       font-weight: var( --fontWeightBold);

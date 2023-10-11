@@ -102,7 +102,7 @@ export default class Dashboard extends Component {
         }
         return (
             <div className="main-content dashboard-content">
-                {isAPIPortal() && <FeedbackButton leftPlacement="80vw" />}
+                {isAPIPortal() && <FeedbackButton />}
                 {!apiPortalEnabled && (
                     <div id="dash-buttons">
                         <DialogDropdown
