@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -59,6 +60,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.CACHE_BY_AUTHENTICATION;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -68,6 +70,9 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_S
 })
 @EnableAspectJAutoProxy
 class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private EurekaClient discoveryClient;
@@ -97,11 +102,13 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         serviceAuthenticationService.evictCacheAllService();
 
         serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(
+            applicationContext,
             discoveryClient,
             new EurekaMetadataParser(),
             authenticationSchemeFactory,
             cacheManager,
             new CacheUtils());
+        serviceAuthenticationServiceImpl.afterPropertiesSet();
     }
 
     @AfterEach
@@ -299,13 +306,13 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), authSource1));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
 
-        // new entry - expired, dont cache that
+        // new entry - expired, dont cache that (+ retry aspect)
         assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), authSource2));
-        verify(schemeBeanMock, times(2)).createCommand(any(), any());
+        verify(schemeBeanMock, times(3)).createCommand(any(), any());
         // replace result (to know that expired record is removed and get new one)
         when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), authSource2)).thenReturn(acValid);
         assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), authSource2));
-        verify(schemeBeanMock, times(3)).createCommand(any(), any());
+        verify(schemeBeanMock, times(4)).createCommand(any(), any());
     }
 
     @Test
@@ -362,7 +369,8 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         when(schemeBeanMock.createCommand(eq(authentication), any())).thenReturn(ac1);
 
         assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", authentication, authSource));
-        verify(schemeBeanMock, times(2)).createCommand(authentication, authSource);
+        // two cached method, if response is expired then retry - there for 4 instances - just for test, normally it is not generated as expired
+        verify(schemeBeanMock, times(4)).createCommand(authentication, authSource);
 
         serviceAuthenticationService.evictCacheAllService();
         Mockito.reset(schemeBeanMock);
@@ -400,28 +408,30 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource2));
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth1, authSource1));
-        verify(baypassSchemeMock, times(2)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(1)).createCommand(auth1, authSource1);
         verify(baypassSchemeMock, times(1)).createCommand(auth1, authSource2);
 
         serviceAuthenticationService.evictCacheService("service0001");
+        cacheManager.getCache(CACHE_BY_AUTHENTICATION).clear();
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource1));
-        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(2)).createCommand(auth1, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource2));
         verify(baypassSchemeMock, times(2)).createCommand(auth1, authSource2);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth2, authSource1));
         verify(baypassSchemeMock, times(2)).createCommand(auth2, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth1, authSource1));
-        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(2)).createCommand(auth1, authSource1);
 
         serviceAuthenticationService.evictCacheAllService();
+        cacheManager.getCache(CACHE_BY_AUTHENTICATION).clear();
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource1));
-        verify(baypassSchemeMock, times(4)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth1, authSource2));
         verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource2);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", auth2, authSource2));
         verify(baypassSchemeMock, times(1)).createCommand(auth2, authSource2);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth1, authSource1));
-        verify(baypassSchemeMock, times(5)).createCommand(auth1, authSource1);
+        verify(baypassSchemeMock, times(3)).createCommand(auth1, authSource1);
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", auth2, authSource1));
         verify(baypassSchemeMock, times(3)).createCommand(auth2, authSource1);
     }

@@ -86,10 +86,10 @@ class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         @Test
         void testGetAuthSource() {
-            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest(any());
 
             zosmfScheme.getAuthSource();
-            verify(authSourceService, times(1)).getAuthSourceFromRequest();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest(any());
         }
 
         @Test

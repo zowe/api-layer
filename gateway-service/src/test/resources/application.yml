@@ -78,9 +78,6 @@ spring:
     output:
         ansi:
             enabled: detect
-    cache:
-        ehcache:
-            config: classpath:ehcache.xml
     main:
         allow-bean-definition-overriding: true
         allow-circular-references: true
@@ -244,7 +241,7 @@ logging:
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
-        net.sf.ehcache: INFO
+        org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---

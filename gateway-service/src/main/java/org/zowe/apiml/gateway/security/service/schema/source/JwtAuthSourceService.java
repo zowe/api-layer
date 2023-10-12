@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
@@ -23,6 +22,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -50,8 +50,8 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public Optional<String> getToken(RequestContext context) {
-        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(context.getRequest());
+    public Optional<String> getToken(HttpServletRequest request) {
+        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
         if (tokenOptional.isPresent()) {
             AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
             if (Origin.ZOSMF == origin || Origin.ZOWE == origin) {

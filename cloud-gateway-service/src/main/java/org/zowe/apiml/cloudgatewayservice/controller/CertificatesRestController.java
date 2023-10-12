@@ -11,12 +11,11 @@
 package org.zowe.apiml.cloudgatewayservice.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.cloudgatewayservice.service.CertificateChainService;
+import reactor.core.publisher.Mono;
 
 /**
  * This simple controller provides a public endpoint with the client certificate chain.
@@ -30,7 +29,7 @@ public class CertificatesRestController {
     private final CertificateChainService certificateChainService;
 
     @GetMapping
-    public ResponseEntity<String> getCertificates() {
-        return new ResponseEntity<>(certificateChainService.getCertificatesInPEMFormat(), HttpStatus.OK);
+    public Mono<String> getCertificates() {
+        return Mono.just(certificateChainService.getCertificatesInPEMFormat());
     }
 }

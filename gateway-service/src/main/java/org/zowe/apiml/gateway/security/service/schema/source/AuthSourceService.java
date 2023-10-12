@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 /**
@@ -21,7 +22,7 @@ public interface AuthSourceService {
      * in case if more than one source is present.
      * @return AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
      */
-    Optional<AuthSource> getAuthSourceFromRequest();
+    Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request);
 
     /**
      * Implements validation logic for specific source of authentication.

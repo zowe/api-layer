@@ -64,10 +64,10 @@ class ZoweJwtSchemeTest {
     class AuthSourceIndependentTests {
         @Test
         void testGetAuthSource() {
-            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest(any());
 
             scheme.getAuthSource();
-            verify(authSourceService, times(1)).getAuthSourceFromRequest();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest(any());
         }
 
         @Test
@@ -154,7 +154,7 @@ class ZoweJwtSchemeTest {
         void setup() {
             X509Certificate cert = mock(X509Certificate.class);
             authSource = new X509AuthSource(cert);
-            when(authSourceService.getAuthSourceFromRequest()).thenReturn(Optional.of(authSource));
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
             when(authSourceService.getJWT(authSource)).thenReturn("jwtToken");
 
             scheme = new ZoweJwtScheme(authSourceService, configurationProperties);
