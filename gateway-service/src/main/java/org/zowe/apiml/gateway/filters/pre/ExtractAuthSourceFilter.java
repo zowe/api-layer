@@ -28,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class ExtractAuthSourceFilter extends OncePerRequestFilter {
-    private static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
+    static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
 
     private final AuthSourceService authSourceService;
     private final AuthExceptionHandler authExceptionHandler;
