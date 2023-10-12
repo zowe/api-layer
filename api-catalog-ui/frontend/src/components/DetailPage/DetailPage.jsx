@@ -56,7 +56,11 @@ export default class DetailPage extends Component {
     // eslint-disable-next-line react/sort-comp
     handleGoBack = () => {
         const { history } = this.props;
-        history.push('/dashboard');
+        let path = '/dashboard';
+        if (isAPIPortal()) {
+            path = '/homepage';
+        }
+        history.push(path);
     };
 
     handleLinkClick = (e, id) => {

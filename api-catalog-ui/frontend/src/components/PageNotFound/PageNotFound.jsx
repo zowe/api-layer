@@ -10,11 +10,16 @@
 import { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import { isAPIPortal } from '../../utils/utilFunctions';
 
 export default class PageNotFound extends Component {
     handleGoToHome = () => {
         const { history } = this.props;
-        history.push('/dashboard');
+        let path = '/dashboard';
+        if (isAPIPortal()) {
+            path = '/homepage';
+        }
+        history.push(path);
     };
 
     render() {

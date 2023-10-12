@@ -91,7 +91,7 @@ body {
 
     .mobile-menu-trigger-btn {
       padding: 0px;
-  
+
       &.MuiButton-root:hover {
         background-color: transparent;
       }
@@ -121,7 +121,7 @@ body {
       box-shadow: 0 0 1px 1px var( --criticalShade10 ) inset;
     }
   }
-  
+
   .MuiTab-root {
     overflow: visible;
   }
@@ -285,7 +285,7 @@ body {
     }
   }
 
-  .service-title {
+  #tiles-service-title {
       font-family: var( --fontFamily00 );
       font-size: var(--spaceLarger);
       font-weight: var( --fontWeightBold);

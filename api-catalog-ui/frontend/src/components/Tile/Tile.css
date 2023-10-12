@@ -113,7 +113,7 @@ a {
     transition: z-index .7s, box-shadow .7s;
 }
 
-#service-title {
+#tiles-service-title {
     color: rgb(88, 96, 110);
     font-weight: bold;
 }

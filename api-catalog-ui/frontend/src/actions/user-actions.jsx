@@ -11,6 +11,7 @@
 import userConstants from '../constants/user-constants';
 import { userService } from '../services';
 import history from '../helpers/history';
+import { isAPIPortal } from '../utils/utilFunctions';
 
 function login(credentials) {
     function request(user) {
@@ -41,7 +42,11 @@ function login(credentials) {
                     showUpdatePassSuccess = true;
                 }
                 dispatch(success(token, showUpdatePassSuccess));
-                history.push('/dashboard');
+                let path = '/dashboard';
+                if (isAPIPortal) {
+                    path = '/homepage';
+                }
+                history.push(path);
             },
             (error) => {
                 if (error.messageNumber === 'ZWEAT413E') {
