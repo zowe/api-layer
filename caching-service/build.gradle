@@ -101,33 +101,6 @@ dependencies {
     implementation libs.jackson.core
     implementation libs.jackson.databind
 
-    implementation libs.netty
-    implementation libs.netty.buffer
-    implementation libs.netty.codec
-    implementation libs.netty.codec.dns
-    implementation libs.netty.codec.haproxy
-    implementation libs.netty.codec.http
-    implementation libs.netty.codec.http2
-    implementation libs.netty.codec.memcache
-    implementation libs.netty.codec.mqtt
-    implementation libs.netty.codec.redis
-    implementation libs.netty.codec.socks
-    implementation libs.netty.codec.smtp
-    implementation libs.netty.codec.stomp
-    implementation libs.netty.codec.xml
-    implementation libs.netty.common
-    implementation libs.netty.handler
-    implementation libs.netty.handler.proxy
-    implementation libs.netty.resolver
-    implementation libs.netty.resolver.dns
-    implementation libs.netty.resolver.dns.native.macos
-    implementation libs.netty.transport
-    implementation libs.netty.transport.native.epoll
-    implementation libs.netty.transport.native.kqueue
-    implementation libs.netty.transport.native.unix.common
-    implementation libs.netty.transport.rxtx
-    implementation libs.netty.transport.sctp
-    implementation libs.netty.transport.udt
     implementation libs.logback.core
     implementation libs.logback.classic
 
