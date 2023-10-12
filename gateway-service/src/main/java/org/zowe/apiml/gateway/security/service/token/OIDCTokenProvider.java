@@ -82,14 +82,6 @@ public class OIDCTokenProvider implements OIDCProvider {
     private final Long jwkRefreshInterval;
 
     private final Map<String, JwkKeys> jwks = new ConcurrentHashMap<>();
-/*
- * TODO
- * - review te oidc samples, create a toen and parse it.
- * - Have a controller endpoint to refresh the jwk cache?
- * - webfinger implementation, should I use it?
- * - Will user configure the url for the keys directly? or retrieved from metadata?
- */
-
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -97,9 +89,6 @@ public class OIDCTokenProvider implements OIDCProvider {
         Executors.newSingleThreadScheduledExecutor(r -> new Thread("OIDC JWK Refresh"))
             .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval.longValue(), jwkRefreshInterval.longValue(), TimeUnit.HOURS);
     }
-
-// https://dev-95727686.okta.com/.well-known/openid-configuration
-// https://dev-95727686.okta.com/oauth2/v1/keys
 
     void fetchJwksUrls() {
         if (StringUtils.isBlank(jwksUri)) {
