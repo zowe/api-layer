@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,13 +20,14 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+
+import java.util.Optional;
 
 /**
  * This schema adds requested information about client certificate. This information is added
@@ -80,7 +80,7 @@ public class X509Scheme implements IAuthenticationScheme {
 
     @Override
     public Optional<AuthSource> getAuthSource() {
-        return authSourceService.getAuthSourceFromRequest();
+        return authSourceService.getAuthSourceFromRequest(RequestContext.getCurrentContext().getRequest());
     }
 
     public class X509Command extends AuthenticationCommand {

@@ -90,7 +90,7 @@ public class SafIdtScheme implements IAuthenticationScheme {
 
     @Override
     public Optional<AuthSource> getAuthSource() {
-        return authSourceService.getAuthSourceFromRequest();
+        return authSourceService.getAuthSourceFromRequest(RequestContext.getCurrentContext().getRequest());
     }
 
     private String getApplId(Authentication authentication) {

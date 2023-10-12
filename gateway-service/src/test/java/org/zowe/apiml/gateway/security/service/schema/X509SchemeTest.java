@@ -11,9 +11,6 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,16 +24,16 @@ import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource.Parsed;
-
-import javax.servlet.http.HttpServletRequest;
-import java.security.cert.X509Certificate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -86,10 +83,10 @@ class X509SchemeTest {
 
         @Test
         void testGetAuthSource() {
-            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+            doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest(any());
 
             x509Scheme.getAuthSource();
-            verify(authSourceService, times(1)).getAuthSourceFromRequest();
+            verify(authSourceService, times(1)).getAuthSourceFromRequest(any());
         }
 
         @Test

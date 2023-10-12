@@ -78,10 +78,9 @@ class OIDCAuthSourceServiceTest {
         @Test
         void givenOidcTokenInRequestContext_thenReturnTheToken() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
             when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
             when(authenticationService.getTokenOrigin(TOKEN)).thenReturn(AuthSource.Origin.OIDC);
-            Optional<String> tokenResult = service.getToken(context);
+            Optional<String> tokenResult = service.getToken(request);
             assertTrue(tokenResult.isPresent());
             assertEquals(TOKEN, tokenResult.get());
         }
@@ -89,10 +88,9 @@ class OIDCAuthSourceServiceTest {
         @Test
         void givenPatTokenInRequestContext_thenReturnEmpty() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
             when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
             when(authenticationService.getTokenOrigin(TOKEN)).thenReturn(AuthSource.Origin.ZOWE_PAT);
-            Optional<String> tokenResult = service.getToken(context);
+            Optional<String> tokenResult = service.getToken(request);
             assertFalse(tokenResult.isPresent());
         }
 
@@ -199,22 +197,20 @@ class OIDCAuthSourceServiceTest {
         @Test
         void whenTokenIsExpired_thenThrow() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
             when(authenticationService.getTokenOrigin(TOKEN)).thenThrow(new TokenExpireException("token expired"));
 
-            assertThrows(TokenExpireException.class, () -> service.getToken(context));
+            assertThrows(TokenExpireException.class, () -> service.getToken(request));
             verify(authenticationService, times(1)).getTokenOrigin(TOKEN);
         }
 
         @Test
         void whenTokenIsNotValid_thenThrow() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(TOKEN));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(TOKEN));
             when(authenticationService.getTokenOrigin(TOKEN)).thenThrow(new TokenNotValidException("token not valid"));
 
-            assertThrows(TokenNotValidException.class, () -> service.getToken(context));
+            assertThrows(TokenNotValidException.class, () -> service.getToken(request));
             verify(authenticationService, times(1)).getTokenOrigin(TOKEN);
         }
     }
