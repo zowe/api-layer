@@ -43,7 +43,7 @@ function login(credentials) {
                 }
                 dispatch(success(token, showUpdatePassSuccess));
                 let path = '/dashboard';
-                if (isAPIPortal) {
+                if (isAPIPortal()) {
                     path = '/homepage';
                 }
                 history.push(path);
