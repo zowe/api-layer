@@ -96,7 +96,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             return;
         }
         log.debug("Refreshing JWK endpoints {}", jwksUri);
-        HttpGet getRequest = new HttpGet(jwksUri);
+        HttpGet getRequest = new HttpGet(jwksUri + "?client_id=" + clientId);
         try {
             CloseableHttpResponse response = httpClient.execute(getRequest);
             final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
@@ -108,10 +108,10 @@ public class OIDCTokenProvider implements OIDCProvider {
             if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
                 jwks.put(registry, mapper.readValue(responseBody, JwkKeys.class));
             } else {
-                log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode); // TODO documented message?
+                log.error("Failed to obtain JWKs from URI {}. Unexpected response: {}, response text: {}", jwksUri, statusCode, responseBody);
             }
         } catch (IOException e) {
-            log.error("", e.getMessage()); // TODO documented error message
+            log.error("Error processing response from URI {}", jwksUri, e.getMessage());
         }
     }
 
