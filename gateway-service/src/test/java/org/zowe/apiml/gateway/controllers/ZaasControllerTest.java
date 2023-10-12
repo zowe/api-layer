@@ -10,46 +10,61 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
-import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.ticket.TicketRequest;
-import org.zowe.apiml.ticket.TicketResponse;
 
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(SpringExtension.class)
 class ZaasControllerTest {
 
+    @Mock
     private PassTicketService passTicketService;
 
-    private MessageService messageService;
-    private ZaasController zaasController;
+    private MockMvc mockMvc;
+
+    private JSONObject body;
 
     private AuthSource.Parsed authSource;
 
+    private static final String URL = "/gateway/zaas/ticket";
+
     private static final String PASSTICKET = "test_passticket";
+    private static final String APPLID = "test_applid";
 
     @BeforeEach
-    void setUp() throws IRRPassTicketGenerationException {
-        messageService = new YamlMessageService("/gateway-messages.yml");
-        passTicketService = mock(PassTicketService.class);
+    void setUp() throws IRRPassTicketGenerationException, JSONException {
+        MessageService messageService = new YamlMessageService("/gateway-messages.yml");
+
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
-        zaasController = new ZaasController(passTicketService, messageService);
+        ZaasController zaasController = new ZaasController(passTicketService, messageService);
+        mockMvc = MockMvcBuilders.standaloneSetup(zaasController).build();
+        body = new JSONObject()
+            .put("applicationName", APPLID);
     }
 
     @Nested
@@ -63,38 +78,45 @@ class ZaasControllerTest {
         }
 
         @Test
-        void whenApplNameProvided_thenPassTicketInResponse() {
-            TicketRequest request = new TicketRequest("applid_test");
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            TicketResponse ticketResponse = (TicketResponse) response.getBody();
-            assertNotNull(ticketResponse);
-            assertEquals(PASSTICKET, ticketResponse.getTicket());
-            assertEquals("applid_test", ticketResponse.getApplicationName());
-            assertEquals(USER, ticketResponse.getUserId());
+        void whenApplNameProvided_thenPassTicketInResponse() throws Exception {
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body.toString())
+                    .requestAttr("zaas.auth.source", authSource))
+                .andExpect(status().is(SC_OK))
+                .andExpect(jsonPath("$.ticket", is(PASSTICKET)))
+                .andExpect(jsonPath("$.userId", is(USER)))
+                .andExpect(jsonPath("$.applicationName", is(APPLID)));
         }
 
         @Test
-        void whenNoApplNameProvided_thenBadRequest() {
-            TicketRequest request = new TicketRequest("");
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
-            assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-            ApiMessageView errorMessage = (ApiMessageView) response.getBody();
-            assertNotNull(errorMessage);
-            assertEquals(1, errorMessage.getMessages().size());
-            assertEquals("The 'applicationName' parameter name is missing.", errorMessage.getMessages().get(0).getMessageContent());
+        void whenNoApplNameProvided_thenBadRequest() throws Exception {
+            body.put("applicationName", "");
+
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body.toString())
+                    .requestAttr("zaas.auth.source", authSource))
+                .andExpect(status().is(SC_BAD_REQUEST))
+                .andExpect(jsonPath("$.messages", hasSize(1)))
+                .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG140E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The 'applicationName' parameter name is missing.")));
         }
 
         @Test
-        void whenErrorGeneratingPassticket_thenInternalServerError() throws IRRPassTicketGenerationException {
-            TicketRequest request = new TicketRequest("applid_test");
+        void whenErrorGeneratingPassticket_thenInternalServerError() throws Exception {
             when(passTicketService.generate(anyString(), anyString())).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
-            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-            ApiMessageView errorMessage = (ApiMessageView) response.getBody();
-            assertNotNull(errorMessage);
-            assertEquals(1, errorMessage.getMessages().size());
-            assertEquals("The generation of the PassTicket failed. Reason: An internal error was encountered.", errorMessage.getMessages().get(0).getMessageContent());
+
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body.toString())
+                    .requestAttr("zaas.auth.source", authSource))
+                .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                .andExpect(jsonPath("$.messages", hasSize(1)))
+                .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG141E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The generation of the PassTicket failed. Reason: An internal error was encountered.")));
         }
     }
 
@@ -107,11 +129,12 @@ class ZaasControllerTest {
         }
 
         @Test
-        void thenRespondUnauthorized() {
-            TicketRequest request = new TicketRequest("applid_test");
-            ResponseEntity<Object> response = zaasController.getPassTicket(request, authSource);
-            assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-
+        void thenRespondUnauthorized() throws Exception {
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body.toString())
+                    .requestAttr("zaas.auth.source", authSource))
+                .andExpect(status().is(SC_UNAUTHORIZED));
         }
     }
 }
