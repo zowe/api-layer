@@ -21,52 +21,64 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
+import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
 
+
+    private static final String BODY = "{\n" +
+    "    \"active\": true,\n" +
+    "    \"scope\": \"scope\",\n" +
+    "    \"exp\": 1664538493,\n" +
+    "    \"iat\": 1664534893,\n" +
+    "    \"sub\": \"sub\",\n" +
+    "    \"aud\": \"aud\",\n" +
+    "    \"iss\": \"iss\",\n" +
+    "    \"jti\": \"jti\",\n" +
+    "    \"token_type\": \"Bearer\",\n" +
+    "    \"client_id\": \"id\"\n" +
+    "}";
+
+    private static final String NOT_VALID_BODY = "{\n" +
+    "    \"active\": false\n" +
+    "}";
+
+    private static final String TOKEN = "token";
+
     private OIDCTokenProvider oidcTokenProvider;
+    @Mock
     private CloseableHttpClient httpClient;
+    @Mock
+    private CloseableHttpResponse response;
 
     private StatusLine responseStatusLine;
     private BasicHttpEntity responseEntity;
 
-    private static final String BODY = "{\n" +
-        "    \"active\": true,\n" +
-        "    \"scope\": \"scope\",\n" +
-        "    \"exp\": 1664538493,\n" +
-        "    \"iat\": 1664534893,\n" +
-        "    \"sub\": \"sub\",\n" +
-        "    \"aud\": \"aud\",\n" +
-        "    \"iss\": \"iss\",\n" +
-        "    \"jti\": \"jti\",\n" +
-        "    \"token_type\": \"Bearer\",\n" +
-        "    \"client_id\": \"id\"\n" +
-        "}";
-
-    private static final String NOT_VALID_BODY = "{\n" +
-        "    \"active\": false\n" +
-        "}";
-
-    private static final String TOKEN = "token";
+    private ObjectMapper mapper = new ObjectMapper();
 
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
-        httpClient = mock(CloseableHttpClient.class);
-        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
         responseStatusLine = mock(StatusLine.class);
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
@@ -74,10 +86,36 @@ class OIDCTokenProviderTest {
         when(response.getStatusLine()).thenReturn(responseStatusLine);
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
-        oidcTokenProvider = new OIDCTokenProvider(httpClient, new ObjectMapper(), 1L);
+        oidcTokenProvider = new OIDCTokenProvider(httpClient, mapper, "https://jwksurl", 1L);
         oidcTokenProvider.introspectUrl = "https://acme.com/introspect";
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
+    }
+
+    @Nested
+    class GivenInitializationWithJwks {
+
+        @BeforeEach
+        void setup() throws ClientProtocolException, IOException {
+            responseEntity.setContent(IOUtils.toInputStream(mapper.writeValueAsString(getJwkKeys()), StandardCharsets.UTF_8));
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void initialized_thenJwksFullfilled() {
+            Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
+            ReflectionTestUtils.setField(oidcTokenProvider, "registry", "https://acme.com");
+            oidcTokenProvider.afterPropertiesSet();
+            assertTrue(jwks.containsKey("https://acme.com"));
+            assertEquals(getJwkKeys(), jwks.get("https://acme.com"));
+        }
+
+        private JwkKeys getJwkKeys() {
+            return new JwkKeys(
+                singletonList(new JwkKeys.Key("kty", "alg", "kid", "use", "e", "n"))
+            );
+        }
+
     }
 
     @Nested

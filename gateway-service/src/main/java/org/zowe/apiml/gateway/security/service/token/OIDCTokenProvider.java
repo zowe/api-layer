@@ -75,13 +75,13 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Autowired
     private final ObjectMapper mapper;
 
-    @Value("${apiml.security.oidc.jwk.list}")
-    private final List<String> jwksUrlList = new ArrayList<>();
+    @Value("${apiml.security.oidc.jwks.uri}")
+    private final String jwksUri;
 
-    @Value("${apiml.security.oidc.jwk.refreshInternalHours:1}")
+    @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private final Long jwkRefreshInterval;
 
-    private final Map<String, JwkKeys> Jwks = new ConcurrentHashMap<>();
+    private final Map<String, JwkKeys> jwks = new ConcurrentHashMap<>();
 /*
  * TODO
  * - review te oidc samples, create a toen and parse it.
@@ -93,36 +93,37 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @PostConstruct
     public void afterPropertiesSet() {
+        this.fetchJwksUrls();
         Executors.newSingleThreadScheduledExecutor(r -> new Thread("OIDC JWK Refresh"))
-            .scheduleAtFixedRate(this::fetchUrls , 0L, jwkRefreshInterval.longValue(), TimeUnit.HOURS);
+            .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval.longValue(), jwkRefreshInterval.longValue(), TimeUnit.HOURS);
     }
 
 // https://dev-95727686.okta.com/.well-known/openid-configuration
 // https://dev-95727686.okta.com/oauth2/v1/keys
 
-    private void fetchUrls() {
-        jwksUrlList.stream()
-            .forEach(url -> {
-                log.debug("Refreshing JWK endpoints {}", StringUtils.join(jwksUrlList, ", "));
-                HttpGet getRequest = new HttpGet(url);
-                try {
-                    CloseableHttpResponse response = httpClient.execute(getRequest);
-                    final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
-                    final HttpEntity responseEntity = response.getEntity();
-                    String responseBody = "";
-                    if (responseEntity != null) {
-                        responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-                    }
-                    if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
-                        Jwks.put(registry, mapper.readValue(responseBody, JwkKeys.class));
-                    } else {
-                        log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode); // TODO documented message?
-                    }
-                } catch (IOException e) {
-                    log.error(url, e); // TODO documented error message
-                }
-
-            });
+    void fetchJwksUrls() {
+        if (StringUtils.isBlank(jwksUri)) {
+            log.debug("OIDC JWK URI not provided, JWK refresh not performed");
+            return;
+        }
+        log.debug("Refreshing JWK endpoints {}", jwksUri);
+        HttpGet getRequest = new HttpGet(jwksUri);
+        try {
+            CloseableHttpResponse response = httpClient.execute(getRequest);
+            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+            final HttpEntity responseEntity = response.getEntity();
+            String responseBody = "";
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+            if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
+                jwks.put(registry, mapper.readValue(responseBody, JwkKeys.class));
+            } else {
+                log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode); // TODO documented message?
+            }
+        } catch (IOException e) {
+            log.error("", e.getMessage()); // TODO documented error message
+        }
     }
 
     @Override
