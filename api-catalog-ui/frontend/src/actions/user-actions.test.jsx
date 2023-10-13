@@ -10,6 +10,8 @@
 
 import userConstants from '../constants/user-constants';
 import { userActions } from './user-actions';
+import { userService } from '../services';
+import history from '../helpers/history';
 
 describe('>>> User actions tests', () => {
     const credentials = { username: 'user', password: 'password' };
@@ -49,8 +51,17 @@ describe('>>> User actions tests', () => {
         const dispatch = jest.fn();
         const expectedAction = { type: 'USERS_LOGIN_REQUEST', user: { password: 'password', username: 'user' } };
 
+        userService.login = jest.fn().mockResolvedValue('token');
+
+        const pushSpy = jest.spyOn(history, 'push');
+
         await userActions.login(credentials)(dispatch);
+
         expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
+
+        expect(pushSpy).toHaveBeenCalledWith('/homepage');
+
+        pushSpy.mockRestore();
     });
 
     it('should logout', async () => {
