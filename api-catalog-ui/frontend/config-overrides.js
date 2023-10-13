@@ -7,6 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 module.exports = {
     webpack(config, env) {
         // New config, e.g. config.plugins.push...
@@ -23,6 +26,18 @@ module.exports = {
                 },
             },
         ];
+
+        config.plugins.push(
+            new HtmlWebpackPlugin({
+                title: 'Caching',
+            })
+        );
+
+        config.output = {
+            filename: '[name].[contenthash].js',
+            path: path.resolve(__dirname, 'dist'),
+            clean: true,
+        };
 
         return config;
     },
