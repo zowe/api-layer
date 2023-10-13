@@ -71,6 +71,27 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStart).toHaveBeenCalled();
     });
 
+    it('should start epic on mount when portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        const wrapper = shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+            />
+        );
+        const instance = wrapper.instance();
+        instance.componentDidMount();
+        expect(fetchTilesStart).toHaveBeenCalled();
+    });
+
     it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
         const wrapper = shallow(

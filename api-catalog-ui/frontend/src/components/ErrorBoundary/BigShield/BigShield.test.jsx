@@ -35,4 +35,22 @@ describe('>>> BigShield component tests', () => {
         });
         expect(container.textContent).toMatch(errorMessageMatch);
     });
+
+    it('Should catches error and renders message if portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const errorMessageMatch = new RegExp(
+            'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n' +
+                '    at Child\n.*'
+        );
+        const container = document.createElement('div');
+        act(() => {
+            render(
+                <BigShield>
+                    <Child />
+                </BigShield>,
+                container
+            );
+        });
+        expect(container.textContent).toMatch(errorMessageMatch);
+    });
 });

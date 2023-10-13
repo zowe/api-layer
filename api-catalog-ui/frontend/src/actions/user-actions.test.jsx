@@ -44,6 +44,15 @@ describe('>>> User actions tests', () => {
         expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
     });
 
+    it('should login when portal enabled', async () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const dispatch = jest.fn();
+        const expectedAction = { type: 'USERS_LOGIN_REQUEST', user: { password: 'password', username: 'user' } };
+
+        await userActions.login(credentials)(dispatch);
+        expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
+    });
+
     it('should logout', async () => {
         const dispatch = jest.fn();
         const expectedAction = { type: 'USERS_LOGOUT_REQUEST' };
