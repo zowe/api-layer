@@ -19,7 +19,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import countAdditionalContents, { customUIStyle, isAPIPortal, closeMobileMenu } from '../../utils/utilFunctions';
 
 const loadFeedbackButton = () => {
     if (isAPIPortal()) {
@@ -33,6 +33,7 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default class DetailPage extends Component {
     componentDidMount() {
         if (isAPIPortal()) {
+            closeMobileMenu();
             const goBackButton = document.getElementById('go-back-button-portal');
             if (goBackButton) {
                 goBackButton.style.removeProperty('display');
