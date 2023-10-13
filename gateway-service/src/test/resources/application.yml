@@ -16,7 +16,7 @@ apiml:
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
-        centralRegistryUrls: # List of additional Discovery Services URLs to register with
+        additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
     loadBalancer:
         distribute: false
     gateway:
