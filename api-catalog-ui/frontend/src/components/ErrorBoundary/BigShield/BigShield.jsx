@@ -151,5 +151,8 @@ export default class BigShield extends Component {
 BigShield.propTypes = {
     history: PropTypes.shape({
         push: PropTypes.func.isRequired,
+        location: PropTypes.shape({
+            pathname: PropTypes.string,
+        }),
     }).isRequired,
 };
