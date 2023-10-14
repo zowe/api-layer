@@ -19,6 +19,9 @@ const Child = () => {
 };
 
 describe('>>> BigShield component tests', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+    });
     it('Should catches error and renders message', () => {
         const errorMessageMatch = new RegExp(
             'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n' +
@@ -54,7 +57,7 @@ describe('>>> BigShield component tests', () => {
         expect(container.textContent).toMatch(errorMessageMatch);
     });
 
-    it('Should catches error and renders message', () => {
+    it('Should go back to portal homepage when enabled', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const historyMock = { push: jest.fn() };
 
@@ -77,5 +80,29 @@ describe('>>> BigShield component tests', () => {
         });
 
         expect(historyMock.push).toHaveBeenCalledWith('/homepage');
+    });
+
+    it('Should go back to dashboard', () => {
+        const historyMock = { push: jest.fn() };
+
+        const container = document.createElement('div');
+        act(() => {
+            render(
+                <BigShield history={historyMock}>
+                    <Child history={historyMock} />
+                </BigShield>,
+                container
+            );
+        });
+
+        const button = container.querySelector('button');
+
+        expect(button.textContent).toBe('Go to Dashboard');
+
+        act(() => {
+            button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        });
+
+        expect(historyMock.push).toHaveBeenCalledWith('/dashboard');
     });
 });
