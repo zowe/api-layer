@@ -10,6 +10,7 @@
 import { Component } from 'react';
 import { Typography, Button } from '@material-ui/core';
 import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
+import PropTypes from 'prop-types';
 import './BigShield.css';
 import { isAPIPortal } from '../../../utils/utilFunctions';
 
@@ -71,6 +72,7 @@ export default class BigShield extends Component {
                             <div>
                                 <Button
                                     id="go-back-button"
+                                    data-testid="go-home-button"
                                     primary
                                     onClick={this.handleGoToHome}
                                     size="medium"
@@ -145,3 +147,9 @@ export default class BigShield extends Component {
         return this.props.children;
     }
 }
+
+BigShield.propTypes = {
+    history: PropTypes.shape({
+        push: PropTypes.func.isRequired,
+    }).isRequired,
+};
