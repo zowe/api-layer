@@ -50,7 +50,7 @@ class X509CNAuthSourceServiceTest {
             when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("client.auth.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
             verify(request, times(1)).getAttribute("client.auth.X509Certificate");
             verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
@@ -66,7 +66,7 @@ class X509CNAuthSourceServiceTest {
             when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
 
-            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+            Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
             verify(request, times(1)).getAttribute("client.auth.X509Certificate");
             verify(request, times(1)).getAttribute("javax.servlet.request.X509Certificate");

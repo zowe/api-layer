@@ -66,10 +66,9 @@ class PATAuthSourceServiceTest {
         @Test
         void givenPatTokenInRequestContext_thenReturnTheToken() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
             when(authenticationService.getPATFromRequest(request)).thenReturn(Optional.of(token));
             when(authenticationService.getTokenOrigin(token)).thenReturn(AuthSource.Origin.ZOWE_PAT);
-            Optional<String> tokenResult = patAuthSourceService.getToken(context);
+            Optional<String> tokenResult = patAuthSourceService.getToken(request);
             assertTrue(tokenResult.isPresent());
             assertEquals(token, tokenResult.get());
         }
@@ -77,10 +76,9 @@ class PATAuthSourceServiceTest {
         @Test
         void givenZoweTokenInRequestContext_thenReturnEmpty() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
             when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
             when(authenticationService.getTokenOrigin(token)).thenReturn(AuthSource.Origin.ZOWE);
-            assertFalse(patAuthSourceService.getToken(context).isPresent());
+            assertFalse(patAuthSourceService.getToken(request).isPresent());
         }
 
         @Test
@@ -111,24 +109,22 @@ class PATAuthSourceServiceTest {
         @Test
         void whenTokenIsExpired_thenThrow() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(token));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
             when(authenticationService.getTokenOrigin(token)).thenThrow(new TokenExpireException("token expired"));
             PATAuthSourceService patAuthSourceService = new PATAuthSourceService(authenticationService, tokenProvider, tokenCreationService);
 
-            assertThrows(TokenExpireException.class, () -> patAuthSourceService.getToken(context));
+            assertThrows(TokenExpireException.class, () -> patAuthSourceService.getToken(request));
             verify(authenticationService, times(1)).getTokenOrigin(token);
         }
 
         @Test
         void whenTokenIsNotValid_thenThrow() {
             HttpServletRequest request = new MockHttpServletRequest();
-            when(context.getRequest()).thenReturn(request);
-            when(authenticationService.getJwtTokenFromRequest(context.getRequest())).thenReturn(Optional.of(token));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
             when(authenticationService.getTokenOrigin(token)).thenThrow(new TokenNotValidException("token not valid"));
             PATAuthSourceService patAuthSourceService = new PATAuthSourceService(authenticationService, tokenProvider, tokenCreationService);
 
-            assertThrows(TokenNotValidException.class, () -> patAuthSourceService.getToken(context));
+            assertThrows(TokenNotValidException.class, () -> patAuthSourceService.getToken(request));
             verify(authenticationService, times(1)).getTokenOrigin(token);
         }
 

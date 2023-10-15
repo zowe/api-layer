@@ -22,6 +22,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -50,11 +51,11 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public Optional<String> getToken(RequestContext context) {
-        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(context.getRequest());
+    public Optional<String> getToken(HttpServletRequest request) {
+        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
         if (!tokenOptional.isPresent()) {
             // try to get token also from PAT specific cookie or header
-            tokenOptional = authenticationService.getPATFromRequest(context.getRequest());
+            tokenOptional = authenticationService.getPATFromRequest(request);
         }
         if (tokenOptional.isPresent()) {
             AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());

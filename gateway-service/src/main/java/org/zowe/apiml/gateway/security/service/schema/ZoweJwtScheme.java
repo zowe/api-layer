@@ -55,7 +55,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
 
     @Override
     public Optional<AuthSource> getAuthSource() {
-        return authSourceService.getAuthSourceFromRequest();
+        return authSourceService.getAuthSourceFromRequest(RequestContext.getCurrentContext().getRequest());
     }
 
     @Override
