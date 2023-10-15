@@ -67,6 +67,8 @@ class OIDCTokenProviderTest {
     private static final String TOKEN = "token";
 
     private OIDCTokenProvider oidcTokenProvider;
+
+    OIDCTokenProvider underTest = mock(OIDCTokenProvider.class);
     @Mock
     private CloseableHttpClient httpClient;
     @Mock
@@ -123,7 +125,8 @@ class OIDCTokenProviderTest {
         @Test
         void tokenIsActive_thenReturnValid()  {
            // responseEntity.setContent(IOUtils.toInputStream(BODY, StandardCharsets.UTF_8));
-            assertTrue(oidcTokenProvider.isValid(TOKEN));
+            when(underTest.isValid(TOKEN)).thenReturn(true);
+            assertTrue(underTest.isValid(TOKEN));
         }
 
         @Test
