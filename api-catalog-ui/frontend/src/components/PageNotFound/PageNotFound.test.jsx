@@ -17,4 +17,12 @@ describe('>>> Detailed Page component tests', () => {
         wrapper.find('[data-testid="go-home-button"]').simulate('click');
         expect(historyMock.push.mock.calls[0]).toEqual(['/dashboard']);
     });
+
+    it('should handle a dashboard button click when portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const historyMock = { push: jest.fn() };
+        const wrapper = shallow(<PageNotFound history={historyMock} />);
+        wrapper.find('[data-testid="go-home-button"]').simulate('click');
+        expect(historyMock.push.mock.calls[0]).toEqual(['/homepage']);
+    });
 });

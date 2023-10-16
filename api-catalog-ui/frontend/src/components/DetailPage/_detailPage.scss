@@ -175,7 +175,7 @@ body .detail-content {
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: #CC092F; /* Change the icon color to red */
+        background-color: var( --criticalShade10 ); /* Change the icon color to red */
         pointer-events: none;
     }
 

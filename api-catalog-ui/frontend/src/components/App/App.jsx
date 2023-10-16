@@ -33,6 +33,12 @@ class App extends Component {
     render() {
         const { history } = this.props;
         const isLoading = true;
+        let headerPath = '/(dashboard|service/.*)/';
+        let dashboardPath = '/dashboard';
+        if (isAPIPortal()) {
+            headerPath = '/(homepage|service/.*)/';
+            dashboardPath = '/homepage';
+        }
         return (
             <div className="App">
                 <BigShield history={history}>
@@ -43,16 +49,16 @@ class App extends Component {
                             {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
                             <>
                                 <div className="content">
-                                    <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+                                    <Route path={headerPath} component={HeaderContainer} />
 
                                     {isAPIPortal() && (
                                         <div className="dashboard-mobile-menu mobile-view">
-                                            <Route path="/(dashboard|service/.*)/" component={HeaderContainer} />
+                                            <Route path={headerPath} component={HeaderContainer} />
                                         </div>
                                     )}
 
                                     <Switch>
-                                        <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
+                                        <Route path="/" exact render={() => <Redirect replace to={dashboardPath} />} />
                                         <Route
                                             path="/login"
                                             exact
@@ -60,7 +66,7 @@ class App extends Component {
                                         />
                                         <Route
                                             exact
-                                            path="/dashboard"
+                                            path={dashboardPath}
                                             render={(props, state) => (
                                                 <BigShield>
                                                     <AsyncDashboardContainer {...props} {...state} />
