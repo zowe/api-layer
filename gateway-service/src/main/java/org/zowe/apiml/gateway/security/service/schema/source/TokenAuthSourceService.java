@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -23,7 +23,7 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
 
     public abstract Function<String, AuthSource> getMapper();
 
-    public abstract Optional<String> getToken(RequestContext context);
+    public abstract Optional<String> getToken(HttpServletRequest request);
 
     /**
      * Core method of the interface. Gets source of authentication (JWT token) from request.
@@ -32,10 +32,9 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
      * @return Optional<AuthSource> which hold original source of authentication (JWT token)
      * or Optional.empty() when no authentication source found.
      */
-    public Optional<AuthSource> getAuthSourceFromRequest() {
-        final RequestContext context = RequestContext.getCurrentContext();
+    public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
         getLogger().log(MessageType.DEBUG, "Getting JWT token from request.");
-        Optional<String> authToken = getToken(context);
+        Optional<String> authToken = getToken(request);
         getLogger().log(MessageType.DEBUG, String.format("JWT token %s in request.", authToken.isPresent() ? "found" : "not found"));
         return authToken.map(getMapper());
 

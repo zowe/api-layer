@@ -94,11 +94,8 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
         class GivenNullAuthSource {
             @Test
             void whenNoClientCertInRequest_thenThrows() {
-                context = spy(RequestContext.class);
                 request = mock(HttpServletRequest.class);
-                RequestContext.testSetCurrentContext(context);
-                when(context.getRequest()).thenReturn(request);
-                assertFalse(serviceUnderTest.getAuthSourceFromRequest().isPresent());
+                assertFalse(serviceUnderTest.getAuthSourceFromRequest(request).isPresent());
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
                 verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
             }
@@ -147,14 +144,10 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             @Test
             void whenClientCertInRequest_thenAuthSourceIsPresent() {
                 x509Certificates[0] = x509Certificate;
-                context = spy(RequestContext.class);
-                request = mock(HttpServletRequest.class);
-                RequestContext.testSetCurrentContext(context);
-                when(context.getRequest()).thenReturn(request);
                 when(request.getAttribute("client.auth.X509Certificate")).thenReturn(x509Certificates);
                 doReturn(true).when(serviceUnderTest).isValid(any(X509Certificate.class));
 
-                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+                Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
                 verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
@@ -202,10 +195,9 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
 
             @Test
             void whenInternalApimlCertInRequestInStandardAttribute_thenThrows() {
-                when(context.getRequest()).thenReturn(request);
                 doReturn(new X509Certificate[0]).when(request).getAttribute("client.auth.X509Certificate");
 
-                assertFalse(serviceUnderTest.getAuthSourceFromRequest().isPresent());
+                assertFalse(serviceUnderTest.getAuthSourceFromRequest(request).isPresent());
 
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
                 verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");

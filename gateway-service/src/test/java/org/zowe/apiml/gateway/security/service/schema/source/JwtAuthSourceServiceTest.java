@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,12 +24,12 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -40,7 +39,7 @@ class JwtAuthSourceServiceTest {
     private AuthenticationService authenticationService;
 
     @Mock
-    private RequestContext requestContext;
+    private HttpServletRequest request;
 
     @InjectMocks
     private JwtAuthSourceService serviceUnderTest;
@@ -59,12 +58,12 @@ class JwtAuthSourceServiceTest {
 
     @Test
     void givenZosmfTokenInRequest_thenAuthSourceIsPresent() {
-        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(token));
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
         when(authenticationService.getTokenOrigin(token)).thenReturn(Origin.ZOSMF);
 
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-        verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
+        verify(authenticationService, times(1)).getJwtTokenFromRequest(request);
         Assertions.assertTrue(authSource.isPresent());
         Assertions.assertTrue(authSource.get() instanceof JwtAuthSource);
         Assertions.assertEquals(token, authSource.get().getRawSource());
@@ -72,12 +71,12 @@ class JwtAuthSourceServiceTest {
 
     @Test
     void givenZoweTokenInRequest_thenAuthSourceIsPresent() {
-        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(token));
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
         when(authenticationService.getTokenOrigin(token)).thenReturn(Origin.ZOWE);
 
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-        verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
+        verify(authenticationService, times(1)).getJwtTokenFromRequest(request);
         Assertions.assertTrue(authSource.isPresent());
         Assertions.assertTrue(authSource.get() instanceof JwtAuthSource);
         Assertions.assertEquals(token, authSource.get().getRawSource());
@@ -85,22 +84,22 @@ class JwtAuthSourceServiceTest {
 
     @Test
     void givenPatTokenInRequest_thenAuthSourceIsNotPresent() {
-        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(token));
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
         when(authenticationService.getTokenOrigin(token)).thenReturn(Origin.ZOWE_PAT);
 
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-        verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
+        verify(authenticationService, times(1)).getJwtTokenFromRequest(request);
         Assertions.assertFalse(authSource.isPresent());
     }
 
     @Test
     void givenNoTokenInRequest_thenAuthSourceIsPresent() {
-        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.empty());
 
-        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest();
+        Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
-        verify(authenticationService, times(1)).getJwtTokenFromRequest(any());
+        verify(authenticationService, times(1)).getJwtTokenFromRequest(request);
         Assertions.assertFalse(authSource.isPresent());
     }
 
@@ -246,10 +245,10 @@ class JwtAuthSourceServiceTest {
 
         @Test
         void whenGetToken_thenThrow() {
-            when(authenticationService.getJwtTokenFromRequest(requestContext.getRequest())).thenReturn(Optional.of(token));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
             when(authenticationService.getTokenOrigin(token)).thenThrow(exception);
 
-            assertThrows(TokenNotValidException.class, () -> serviceUnderTest.getToken(requestContext));
+            assertThrows(TokenNotValidException.class, () -> serviceUnderTest.getToken(request));
             verify(authenticationService, times(1)).getTokenOrigin(token);
         }
     }
@@ -284,10 +283,10 @@ class JwtAuthSourceServiceTest {
 
         @Test
         void whenGetToken_thenThrow() {
-            when(authenticationService.getJwtTokenFromRequest(requestContext.getRequest())).thenReturn(Optional.of(token));
+            when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of(token));
             when(authenticationService.getTokenOrigin(token)).thenThrow(exception);
 
-            assertThrows(TokenExpireException.class, () -> serviceUnderTest.getToken(requestContext));
+            assertThrows(TokenExpireException.class, () -> serviceUnderTest.getToken(request));
             verify(authenticationService, times(1)).getTokenOrigin(token);
         }
     }

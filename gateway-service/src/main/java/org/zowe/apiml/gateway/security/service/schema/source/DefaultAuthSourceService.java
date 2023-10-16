@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.AuthSourceType;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
@@ -90,20 +91,20 @@ public class DefaultAuthSourceService implements AuthSourceService {
      * or Optional.empty() when no authentication source found.
      */
     @Override
-    public Optional<AuthSource> getAuthSourceFromRequest() {
+    public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
         AuthSourceService service = getService(AuthSourceType.JWT);
-        Optional<AuthSource> authSource = service.getAuthSourceFromRequest();
+        Optional<AuthSource> authSource = service.getAuthSourceFromRequest(request);
         if (!authSource.isPresent() && isPATEnabled) {
             service = getService(AuthSourceType.PAT);
-            authSource = service.getAuthSourceFromRequest();
+            authSource = service.getAuthSourceFromRequest(request);
         }
         if (!authSource.isPresent() && isOIDCEnabled) {
             service = getService(AuthSourceType.OIDC);
-            authSource = service.getAuthSourceFromRequest();
+            authSource = service.getAuthSourceFromRequest(request);
         }
         if (!authSource.isPresent() && isX509Enabled) {
             service = getService(AuthSourceType.CLIENT_CERT);
-            authSource = service.getAuthSourceFromRequest();
+            authSource = service.getAuthSourceFromRequest(request);
         }
         return authSource;
     }

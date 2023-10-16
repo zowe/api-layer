@@ -43,6 +43,7 @@ import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
+import org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter;
 import org.zowe.apiml.gateway.security.login.FailedAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
@@ -51,6 +52,7 @@ import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -60,6 +62,7 @@ import org.zowe.apiml.security.common.config.SimpleUserDetailService;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
@@ -103,6 +106,9 @@ public class NewSecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     private final CertificateValidator certificateValidator;
     private final X509AuthenticationProvider x509AuthenticationProvider;
+    private final AuthSourceService authSourceService;
+    private final AuthExceptionHandler authExceptionHandler;
+
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
@@ -294,6 +300,33 @@ public class NewSecurityConfiguration {
                         x509AuthenticationProvider);
                 }
 
+            }
+
+        }
+
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(9)
+        class ZaasTicketEndpoint {
+
+            private final CompoundAuthProvider compoundAuthProvider;
+
+            @Bean
+            public SecurityFilterChain authZaasTicketEndpointFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
+                    authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
+                    authConfigurationProperties.getEvictAccessTokensAndRules(),
+                    "/gateway/zaas/ticket"
+                ).and())
+                    .authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .x509().userDetailsService(x509UserDetailsService())
+                    .and()
+                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+
+                return http.build();
             }
 
         }
