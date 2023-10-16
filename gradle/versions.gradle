@@ -70,7 +70,7 @@ ext {
     swagger3ParserVersion = '2.1.15'
     swaggerCoreVersion = '1.6.11'
     thymeleafVersion = '3.1.2.RELEASE'
-    tomcatVersion = '9.0.80'
+    tomcatVersion = '9.0.81'
     velocityVersion = '2.3'
     woodstoxVersion = '6.5.1'
     xstreamVersion = '1.4.20'
