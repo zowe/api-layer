@@ -110,11 +110,9 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Override
     public boolean isValid(String token) {
-        // Should validate againts the provider
-        boolean isValid = false;
-        if (token==null || token.isEmpty()) {
+        if (StringUtils.isBlank(token)) {
             log.debug("No token has been provided.");
-            return isValid;
+            return false;
         }
         try {
             Claims claims = null;
@@ -127,12 +125,13 @@ public class OIDCTokenProvider implements OIDCProvider {
                     .parseClaimsJws(token)
                     .getBody();
 
-                isValid = (claims != null) ? true : isValid;
-                return isValid;
+                if (claims != null) {
+                    return true;
+                }
             }
+            return false;
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }
-        return isValid;
     }
 }
