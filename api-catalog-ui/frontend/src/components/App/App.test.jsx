@@ -24,6 +24,14 @@ describe('>>> App component tests', () => {
         expect(instance).not.toBeNull();
     });
 
+    it('should call render when portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const history = { push: jest.fn() };
+        const wrapper = shallow(<App history={history} />);
+        const instance = wrapper.instance();
+        expect(instance).not.toBeNull();
+    });
+
     it('should not show header on login route', () => {
         const wrapper = shallow(
             <MemoryRouter initialEntries={['/login']}>
