@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -45,20 +44,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
-
-
-    private static final String BODY = "{\n" +
-    "    \"active\": true,\n" +
-    "    \"scope\": \"scope\",\n" +
-    "    \"exp\": 1664538493,\n" +
-    "    \"iat\": 1664534893,\n" +
-    "    \"sub\": \"sub\",\n" +
-    "    \"aud\": \"aud\",\n" +
-    "    \"iss\": \"iss\",\n" +
-    "    \"jti\": \"jti\",\n" +
-    "    \"token_type\": \"Bearer\",\n" +
-    "    \"client_id\": \"id\"\n" +
-    "}";
 
     private static final String NOT_VALID_BODY = "{\n" +
     "    \"active\": false\n" +
@@ -137,7 +122,6 @@ class OIDCTokenProviderTest {
 
         @Test
         void whenClientThrowsException_thenReturnInvalid() throws IOException {
-            ClientProtocolException exception = new ClientProtocolException("http error");
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
