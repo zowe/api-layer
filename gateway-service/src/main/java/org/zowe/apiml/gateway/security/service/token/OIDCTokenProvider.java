@@ -14,6 +14,7 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,11 +35,18 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import javax.annotation.PostConstruct;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserException;
 
@@ -74,7 +82,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private final Long jwkRefreshInterval;
 
-    private final Map<String, JwkKeys> jwks = new ConcurrentHashMap<>();
+    private Map<String, Key> jwks = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -99,13 +107,36 @@ public class OIDCTokenProvider implements OIDCProvider {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
             if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
-                jwks.put(registry, mapper.readValue(responseBody, JwkKeys.class));
+                jwks.clear();
+                JwkKeys jwkKeys = mapper.readValue(responseBody, JwkKeys.class);
+                jwks.putAll(processKeys(jwkKeys));
             } else {
                 log.error("Failed to obtain JWKs from URI {}. Unexpected response: {}, response text: {}", jwksUri, statusCode, responseBody);
             }
         } catch (IOException e) {
             log.error("Error processing response from URI {}", jwksUri, e.getMessage());
         }
+    }
+
+    private Map<String, Key> processKeys(JwkKeys jwkKeys) {
+        return jwkKeys.getKeys().stream()
+            .filter(jwkKey -> "sig".equals(jwkKey.getUse()))
+            .filter(jwkKey -> "RSA".equals(jwkKey.getKty()))
+            .collect(Collectors.toMap(JwkKeys.Key::getKid, jwkKey -> {
+                BigInteger modulus = base64ToBigInteger(jwkKey.getN());
+                BigInteger exponent = base64ToBigInteger(jwkKey.getE());
+                RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(modulus, exponent);
+                try {
+                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    return keyFactory.generatePublic(rsaPublicKeySpec);
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    throw new IllegalStateException("Failed to parse public key");
+                }
+           }));
+    }
+
+    private BigInteger base64ToBigInteger(String value) {
+        return new BigInteger(1, Decoders.BASE64URL.decode(value));
     }
 
     @Override
@@ -116,11 +147,9 @@ public class OIDCTokenProvider implements OIDCProvider {
         }
         try {
             Claims claims = null;
-
-            Set<String> keySet = jwks.keySet();
-            for(String key: keySet) {
+            for (Map.Entry<String, Key> entry : jwks.entrySet()) {
                 claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(entry.getValue())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -129,6 +158,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                     return true;
                 }
             }
+
             return false;
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
