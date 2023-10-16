@@ -56,9 +56,6 @@ import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserEx
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oidc.introspectUrl:}")
-    String introspectUrl;
-
     @Value("${apiml.security.oidc.registry:}")
     String registry;
 

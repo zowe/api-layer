@@ -49,7 +49,6 @@
 # - ZWE_configs_apiml_security_oidc_enabled
 # - ZWE_configs_apiml_security_oidc_clientId
 # - ZWE_configs_apiml_security_oidc_clientSecret
-# - ZWE_configs_apiml_security_oidc_introspectUrl
 # - ZWE_configs_apiml_security_oidc_registry
 # - ZWE_configs_apiml_security_oidc_identityMapperUrl
 # - ZWE_configs_apiml_security_oidc_identityMapperUser
@@ -269,7 +268,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-false} \
     -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-} \
     -Dapiml.security.oidc.clientSecret=${ZWE_configs_apiml_security_oidc_clientSecret:-} \
-    -Dapiml.security.oidc.introspectUrl=${ZWE_configs_apiml_security_oidc_introspectUrl:-} \
     -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/dn"} \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \

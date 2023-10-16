@@ -24,7 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -70,7 +69,6 @@ class OIDCTokenProviderTest {
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
         oidcTokenProvider = new OIDCTokenProvider(httpClient, mapper, "https://jwksurl", 1L);
-        oidcTokenProvider.introspectUrl = "https://acme.com/introspect";
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
     }
@@ -109,7 +107,6 @@ class OIDCTokenProviderTest {
     class GivenTokenForValidation {
         @Test
         void tokenIsActive_thenReturnValid()  {
-           // responseEntity.setContent(IOUtils.toInputStream(BODY, StandardCharsets.UTF_8));
             when(underTest.isValid(TOKEN)).thenReturn(true);
             assertTrue(underTest.isValid(TOKEN));
         }
@@ -133,7 +130,7 @@ class OIDCTokenProviderTest {
 
         @Test
         void whenResponseStatusIsNotOk_thenReturnInvalid() {
- //           when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
@@ -153,15 +150,6 @@ class OIDCTokenProviderTest {
     }
     @Nested
     class GivenInvalidConfiguration {
-
-        @ParameterizedTest
-        @NullSource
-        @EmptySource
-        @ValueSource(strings = {"not_an_URL", "https//\\:"})
-        void whenInvalidIntrospectUrl_thenReturnInvalid(String url) {
-            oidcTokenProvider.introspectUrl = url;
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
 
         @ParameterizedTest
         @NullSource
