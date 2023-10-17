@@ -17,7 +17,12 @@ import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 
 export default class ServicesNavigationBar extends Component {
+    componentDidMount() {
+        window.addEventListener('popstate', this.handlePopstate);
+    }
+
     componentWillUnmount() {
+        window.removeEventListener('popstate', this.handlePopstate);
         const { clear } = this.props;
         clear();
     }
@@ -38,6 +43,21 @@ export default class ServicesNavigationBar extends Component {
         if (correctTile) {
             storeCurrentTileId(correctTile.id);
             closeMobileMenu();
+        }
+    };
+
+    handlePopstate = () => {
+        const { services, storeCurrentTileId } = this.props;
+        const url = window.location.href;
+        if (url && url.includes('/service')) {
+            const parts = url.split('/');
+            const serviceId = parts[parts.length - 1];
+            const correctTile = services.find((tile) =>
+                tile.services.some((service) => service.serviceId === serviceId)
+            );
+            if (correctTile) {
+                storeCurrentTileId(correctTile.id);
+            }
         }
     };
 
