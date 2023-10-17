@@ -40,7 +40,7 @@ export default class DetailPage extends Component {
                 goBackButton.style.removeProperty('display');
             }
         }
-        const { fetchTilesStart, currentTileId, fetchNewTiles, history } = this.props;
+        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
         fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);
