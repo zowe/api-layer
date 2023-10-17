@@ -92,7 +92,7 @@ class OIDCTokenProviderTest {
         responseStatusLine = mock(StatusLine.class);
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
-        oidcTokenProvider = new OIDCTokenProvider(httpClient, mapper, "https://jwksurl", 1L);
+        oidcTokenProvider = new OIDCTokenProvider(httpClient, mapper);
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
     }
