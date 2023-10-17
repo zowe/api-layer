@@ -19,6 +19,9 @@ const Child = () => {
 };
 
 describe('>>> BigShield component tests', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+    });
     it('Should catches error and renders message', () => {
         const errorMessageMatch = new RegExp(
             'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n' +
@@ -34,5 +37,47 @@ describe('>>> BigShield component tests', () => {
             );
         });
         expect(container.textContent).toMatch(errorMessageMatch);
+    });
+
+    it('Should catches error and renders message if portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const errorMessageMatch = new RegExp(
+            'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n' +
+                '    at Child\n.*'
+        );
+        const container = document.createElement('div');
+        act(() => {
+            render(
+                <BigShield>
+                    <Child />
+                </BigShield>,
+                container
+            );
+        });
+        expect(container.textContent).toMatch(errorMessageMatch);
+    });
+
+    it('Should go back to dashboard', () => {
+        const historyMock = { push: jest.fn() };
+
+        const container = document.createElement('div');
+        act(() => {
+            render(
+                <BigShield history={historyMock}>
+                    <Child history={historyMock} />
+                </BigShield>,
+                container
+            );
+        });
+
+        const button = container.querySelector('button');
+
+        expect(button.textContent).toBe('Go to Dashboard');
+
+        act(() => {
+            button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        });
+
+        expect(historyMock.push).toHaveBeenCalledWith('/dashboard');
     });
 });

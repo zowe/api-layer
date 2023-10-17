@@ -11,6 +11,7 @@ import React, { Component, Suspense } from 'react';
 import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
@@ -19,7 +20,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import countAdditionalContents, { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import countAdditionalContents, { customUIStyle, isAPIPortal, closeMobileMenu } from '../../utils/utilFunctions';
 
 const loadFeedbackButton = () => {
     if (isAPIPortal()) {
@@ -33,6 +34,7 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default class DetailPage extends Component {
     componentDidMount() {
         if (isAPIPortal()) {
+            closeMobileMenu();
             const goBackButton = document.getElementById('go-back-button-portal');
             if (goBackButton) {
                 goBackButton.style.removeProperty('display');
@@ -118,7 +120,7 @@ export default class DetailPage extends Component {
         }
         return (
             <div className="main">
-                {apiPortalEnabled && <FeedbackButton leftPlacement="80vw" />}
+                {apiPortalEnabled && <FeedbackButton />}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
@@ -269,3 +271,9 @@ export default class DetailPage extends Component {
         );
     }
 }
+
+DetailPage.propTypes = {
+    history: PropTypes.shape({
+        push: PropTypes.func.isRequired,
+    }).isRequired,
+};

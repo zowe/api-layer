@@ -10,6 +10,7 @@
 import { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import PropTypes from 'prop-types';
 
 export default class PageNotFound extends Component {
     handleGoToHome = () => {
@@ -40,3 +41,9 @@ export default class PageNotFound extends Component {
         );
     }
 }
+
+PageNotFound.propTypes = {
+    history: PropTypes.shape({
+        push: PropTypes.func.isRequired,
+    }).isRequired,
+};

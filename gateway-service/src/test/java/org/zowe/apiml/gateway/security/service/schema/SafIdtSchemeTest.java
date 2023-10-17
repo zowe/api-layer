@@ -64,10 +64,10 @@ class SafIdtSchemeTest {
 
     @Test
     void testGetAuthSource() {
-        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest();
+        doReturn(Optional.empty()).when(authSourceService).getAuthSourceFromRequest(any());
 
         underTest.getAuthSource();
-        verify(authSourceService, times(1)).getAuthSourceFromRequest();
+        verify(authSourceService, times(1)).getAuthSourceFromRequest(any());
     }
 
     @Nested

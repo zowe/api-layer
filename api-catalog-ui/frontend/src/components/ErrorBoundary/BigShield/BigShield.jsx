@@ -10,6 +10,7 @@
 import { Component } from 'react';
 import { Typography, Button } from '@material-ui/core';
 import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
+import PropTypes from 'prop-types';
 import './BigShield.css';
 
 export default class BigShield extends Component {
@@ -37,13 +38,14 @@ export default class BigShield extends Component {
     render() {
         const iconBack = <ArrowBackIosNewIcon />;
         const { history } = this.props;
+        const path = '/dashboard';
         let disableButton = true;
         if (history !== undefined && history !== null) {
             if (
                 history.location === undefined ||
                 (history.location !== undefined &&
                     history.location.pathname !== undefined &&
-                    history.location.pathname !== '/dashboard')
+                    history.location.pathname !== path)
             ) {
                 disableButton = false;
             }
@@ -62,6 +64,7 @@ export default class BigShield extends Component {
                             <div>
                                 <Button
                                     id="go-back-button"
+                                    data-testid="go-home-button"
                                     primary
                                     onClick={this.handleGoToHome}
                                     size="medium"
@@ -136,3 +139,12 @@ export default class BigShield extends Component {
         return this.props.children;
     }
 }
+
+BigShield.propTypes = {
+    history: PropTypes.shape({
+        push: PropTypes.func.isRequired,
+        location: PropTypes.shape({
+            pathname: PropTypes.string,
+        }),
+    }).isRequired,
+};
