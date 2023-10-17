@@ -101,7 +101,6 @@ describe('>>> ServiceNavigationBar component tests', () => {
         const instance = serviceNavigationBar.instance();
         instance.handleTabClick('apicatalog');
         expect(storeCurrentTileId).toHaveBeenCalled();
-        localStorage.removeItem('serviceId');
     });
 
     it('should display mobile view if api portal enabled', () => {

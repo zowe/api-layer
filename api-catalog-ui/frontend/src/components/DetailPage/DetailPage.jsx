@@ -45,10 +45,6 @@ export default class DetailPage extends Component {
         if (currentTileId) {
             fetchTilesStart(currentTileId);
         }
-        if (!localStorage.getItem('serviceId')) {
-            const id = history.location.pathname.split('/service/')[1];
-            localStorage.setItem('serviceId', id);
-        }
     }
 
     componentWillUnmount() {

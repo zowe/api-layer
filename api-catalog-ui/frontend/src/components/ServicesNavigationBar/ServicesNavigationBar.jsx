@@ -32,10 +32,6 @@ export default class ServicesNavigationBar extends Component {
         filterText(value);
     };
 
-    handleTabChange = () => {
-        localStorage.removeItem('serviceId');
-    };
-
     handleTabClick = (id) => {
         const { storeCurrentTileId, services } = this.props;
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
@@ -79,16 +75,8 @@ export default class ServicesNavigationBar extends Component {
         const serviceId = parts[parts.length - 1];
         let selectedTab;
         let allServices;
-        let allServiceIds;
         if (hasTiles) {
             allServices = services.flatMap((tile) => tile.services);
-            allServiceIds = allServices.map((service) => service.serviceId);
-            if (localStorage.getItem('serviceId')) {
-                const id = localStorage.getItem('serviceId');
-                if (allServiceIds.includes(id)) {
-                    selectedTab = allServiceIds.indexOf(id);
-                }
-            }
             const index = allServices.findIndex((item) => item.serviceId === serviceId);
             selectedTab = Number(index);
         }
