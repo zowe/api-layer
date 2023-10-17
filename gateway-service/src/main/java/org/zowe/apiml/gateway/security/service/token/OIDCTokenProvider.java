@@ -69,8 +69,8 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.uri}")
     private String jwksUri;
 
-    @Value("${apiml.security.oidc.jwks.refreshInternalHours:#{1L}}")
-    private Long jwkRefreshInterval;
+    @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
+    private int jwkRefreshInterval;
 
     @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
@@ -85,7 +85,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     public void afterPropertiesSet() {
         this.fetchJwksUrls();
         Executors.newSingleThreadScheduledExecutor(r -> new Thread("OIDC JWK Refresh"))
-            .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval.longValue(), jwkRefreshInterval.longValue(), TimeUnit.HOURS);
+            .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval, jwkRefreshInterval, TimeUnit.HOURS);
     }
 
     @Retryable
