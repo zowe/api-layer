@@ -12,7 +12,6 @@ import { Typography, Button } from '@material-ui/core';
 import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
 import PropTypes from 'prop-types';
 import './BigShield.css';
-import { isAPIPortal } from '../../../utils/utilFunctions';
 
 export default class BigShield extends Component {
     constructor(props) {
@@ -33,20 +32,13 @@ export default class BigShield extends Component {
     handleGoToHome = () => {
         const { history } = this.props;
         this.setState({ error: null });
-        let path = '/dashboard';
-        if (isAPIPortal()) {
-            path = '/homepage';
-        }
-        history.push(path);
+        history.push('/dashboard');
     };
 
     render() {
         const iconBack = <ArrowBackIosNewIcon />;
         const { history } = this.props;
-        let path = '/dashboard';
-        if (isAPIPortal()) {
-            path = '/homepage';
-        }
+        const path = '/dashboard';
         let disableButton = true;
         if (history !== undefined && history !== null) {
             if (
