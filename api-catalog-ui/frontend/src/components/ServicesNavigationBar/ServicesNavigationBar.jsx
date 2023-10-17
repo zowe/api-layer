@@ -32,9 +32,8 @@ export default class ServicesNavigationBar extends Component {
         filterText(value);
     };
 
-    handleTabChange = (event, selectedTab) => {
+    handleTabChange = () => {
         localStorage.removeItem('serviceId');
-        localStorage.setItem('selectedTab', selectedTab);
     };
 
     handleTabClick = (id) => {
@@ -75,7 +74,10 @@ export default class ServicesNavigationBar extends Component {
         const { match, services, searchCriteria } = this.props;
         const hasTiles = services && services.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
-        let selectedTab = Number(localStorage.getItem('selectedTab'));
+        const url = window.location.href;
+        const parts = url.split('/');
+        const serviceId = parts[parts.length - 1];
+        let selectedTab;
         let allServices;
         let allServiceIds;
         if (hasTiles) {
@@ -87,6 +89,8 @@ export default class ServicesNavigationBar extends Component {
                     selectedTab = allServiceIds.indexOf(id);
                 }
             }
+            const index = allServices.findIndex((item) => item.serviceId === serviceId);
+            selectedTab = Number(index);
         }
         const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
             <Tooltip title={label} placement="bottom">

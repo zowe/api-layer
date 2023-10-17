@@ -49,7 +49,6 @@ export default class DetailPage extends Component {
             const id = history.location.pathname.split('/service/')[1];
             localStorage.setItem('serviceId', id);
         }
-        localStorage.removeItem('selectedTab');
     }
 
     componentWillUnmount() {
