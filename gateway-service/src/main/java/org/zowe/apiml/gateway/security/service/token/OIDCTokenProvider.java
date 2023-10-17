@@ -16,6 +16,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +51,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserException;
 
 @RequiredArgsConstructor
 @Service
@@ -114,7 +113,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             } else {
                 log.error("Failed to obtain JWKs from URI {}. Unexpected response: {}, response text: {}", jwksUri, statusCode, responseBody);
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             log.error("Error processing response from URI {}", jwksUri, e.getMessage());
         }
     }
@@ -164,7 +163,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        } catch (TokenNotValidException | MalformedJwtException e) {
+        } catch (TokenNotValidException | MalformedJwtException | SignatureException e) {
             log.debug("OIDC Token is not valid: {}", e.getMessage());
             return null;
         }
