@@ -4,13 +4,13 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `APIML 2.12.0 / Zowe 2.12.0 (2023-10-10)`
 
-* Feature:  Add central API ML registry endpoint to the Cloud Gateway (#3076) ([ff8ee9b](https://github.com/zowe/api-layer/commit/ff8ee9b)), closes [#3076](https://github.com/zowe/api-layer/issues/3076)
-* Feature:  Forward client certificate from central gateway to domain gateway in request header (#3046) ([eda4750](https://github.com/zowe/api-layer/commit/eda4750)), closes [#3046](https://github.com/zowe/api-layer/issues/3046)
-* Feature:  Register gateway to additional discovery service (#3068) ([e988df3](https://github.com/zowe/api-layer/commit/e988df3)), closes [#3068](https://github.com/zowe/api-layer/issues/3068) [#3044](https://github.com/zowe/api-layer/issues/3044)
+* Feature:  Add Central API ML registry endpoint to the Cloud Gateway (#3076) ([ff8ee9b](https://github.com/zowe/api-layer/commit/ff8ee9b)), closes [#3076](https://github.com/zowe/api-layer/issues/3076)
+* Feature:  Forward client certificate from Central Gateway to Domain Gateway in request header (#3046) ([eda4750](https://github.com/zowe/api-layer/commit/eda4750)), closes [#3046](https://github.com/zowe/api-layer/issues/3046)
+* Feature:  Register Gateway to additional Discovery service (#3068) ([e988df3](https://github.com/zowe/api-layer/commit/e988df3)), closes [#3068](https://github.com/zowe/api-layer/issues/3068) [#3044](https://github.com/zowe/api-layer/issues/3044)
 * Feature:  Verify service SSO support from API ML (#3054) ([3c1bb91](https://github.com/zowe/api-layer/commit/3c1bb91)), closes [#3054](https://github.com/zowe/api-layer/issues/3054)
 
 
-* Bugfix:  Fix normalization of baseUrl in ZAAS client (#3123) ([c8a23a8](https://github.com/zowe/api-layer/commit/c8a23a8)), closes [#3123](https://github.com/zowe/api-layer/issues/3123)
+* Bugfix:  Fix normalization of `baseUrl` in ZAAS client (#3123) ([c8a23a8](https://github.com/zowe/api-layer/commit/c8a23a8)), closes [#3123](https://github.com/zowe/api-layer/issues/3123)
 * Bugfix:  JVM heap configuration from zowe.yaml (#3087) ([59ead89](https://github.com/zowe/api-layer/commit/59ead89)), closes [#3087](https://github.com/zowe/api-layer/issues/3087)
 * Bugfix:  Fix error preventing the Catalog UI to load when a service does not have some required parameter. (#3050) ([30ec8df](https://github.com/zowe/api-layer/commit/30ec8df)), closes [#3050](https://github.com/zowe/api-layer/issues/3050)
 
