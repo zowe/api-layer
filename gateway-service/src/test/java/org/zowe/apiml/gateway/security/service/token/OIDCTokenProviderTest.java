@@ -53,10 +53,18 @@ class OIDCTokenProviderTest {
     + "        {\n"
     + "           \"kty\": \"RSA\",\n"
     + "           \"alg\": \"RS256\",\n"
-    + "           \"kid\": \"mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0\",\n"
+    + "           \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n"
     + "           \"use\": \"sig\",\n"
     + "           \"e\": \"AQAB\",\n"
-    + "           \"n\": \"hU4h--6LTL7SfdjV7rbQThGCiO8gQOMzboxqVjExH5UCj-tvTceTtx7FdVM5NV_hNhPc3aOO2ItkzYCmk8f9VNGSH4UBNcdCSlni3d4ZEkL2lyLxDFf3l_8gUs8Ev-Jh48WJSBcfjTH5RXsVRrjqS3_yjj9ZfTLHEG-a7tKo4J6NNrH0kbwQQu0cJPA1shU_AX23Yny8MbtzcmZaIwYmYLC4JKKAGgtg49Kyk6JYIwvklqPTHXoHQuWJLS32tV_ZaXKATW0vtFzyZnKkQ09cYXU260jWxLfVCBJA_5Lj0sVga7p-NygwzfQXlrHPx4ZsHrmkjkibzMH-18RQrMs38w\"\n"
+    + "           \"n\": \"v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw\"\n"
+    + "       },\n"
+    + "       {\n"
+    + "           \"kty\": \"RSA\",\n"
+    + "           \"alg\": \"RS256\",\n"
+    + "           \"kid\": \"-716sp3XBB_v30lGj2mu5MdXkdh8poa9zJQlAwC46n4\",\n"
+    + "           \"use\": \"sig\",\n"
+    + "           \"e\": \"AQAB\",\n"
+    + "           \"n\": \"5rYyqFsxel0Pv-xRDHPbg3IfumE4ks9ffLvJrfZVgrTQyiFmFfBnyD3r7y6626Yr5-68Pj0I5SHlCBPkkgTU_e9Z3tCYiegtIOeJdSdumWR2JDVAsbpwFJDG_kxP9czgX7HL0T2BPSapx7ba0ZBXd2-SfSDDL-c1Q0rJ1uQEJwDXAGZV4qy_oXuQf5DuV65Xj8y2Qn1DtVEBThxita-kis_H35CTWgW2zyyaS_08wa00R98mnQ2SHfmO5fZABITmH0DO0coDHqKZ429VNNpELLX9e95dirQ1jfngDbBCmy-XsT8yc6NpAaXmd8P2NHdsO2oK46EQEaFRyMcoDTs3-w\"\n"
     + "       }\n"
     + "    ]\n"
     + "}";
@@ -107,9 +115,10 @@ class OIDCTokenProviderTest {
             when(httpClient.execute(any())).thenReturn(response);
             oidcTokenProvider.afterPropertiesSet();
             assertFalse(jwks.isEmpty());
-            assertTrue(jwks.containsKey("mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0"));
-            assertNotNull(jwks.get("mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0"));
-            assertInstanceOf(Key.class, jwks.get("mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0"));
+            assertTrue(jwks.containsKey("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
+            assertTrue(jwks.containsKey("-716sp3XBB_v30lGj2mu5MdXkdh8poa9zJQlAwC46n4"));
+            assertNotNull(jwks.get("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
+            assertInstanceOf(Key.class, jwks.get("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
         }
 
         @Test
@@ -141,12 +150,11 @@ class OIDCTokenProviderTest {
             assertFalse(jwks.isEmpty());
         }
 
-        // @Test
-        // void whenValidTokenExpired_thenReturnInvalid() throws ClientProtocolException, IOException {
-        //     initJwks();
-        //     // TODO verify a valid signed token and expired
-        //     assertTrue(oidcTokenProvider.isValid(VALID_TOKEN));
-        // }
+        @Test
+        void whenValidTokenExpired_thenReturnInvalid() throws ClientProtocolException, IOException {
+            initJwks();
+            assertFalse(oidcTokenProvider.isValid(EXPIRED_TOKEN));
+        }
 
         @Test
         void whenInvalidToken_thenReturnInvalid() throws ClientProtocolException, IOException {

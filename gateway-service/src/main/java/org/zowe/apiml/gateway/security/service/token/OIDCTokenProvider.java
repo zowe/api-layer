@@ -13,10 +13,9 @@ package org.zowe.apiml.gateway.security.service.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.SignatureException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -163,7 +162,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        } catch (TokenNotValidException | MalformedJwtException | SignatureException e) {
+        } catch (TokenNotValidException | JwtException e) {
             log.debug("OIDC Token is not valid: {}", e.getMessage());
             return null;
         }
