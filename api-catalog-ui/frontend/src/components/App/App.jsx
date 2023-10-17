@@ -33,12 +33,8 @@ class App extends Component {
     render() {
         const { history } = this.props;
         const isLoading = true;
-        let headerPath = '/(dashboard|service/.*)/';
-        let dashboardPath = '/dashboard';
-        if (isAPIPortal()) {
-            headerPath = '/(homepage|service/.*)/';
-            dashboardPath = '/homepage';
-        }
+        const headerPath = '/(dashboard|service/.*)/';
+        const dashboardPath = '/dashboard';
         return (
             <div className="App">
                 <BigShield history={history}>
