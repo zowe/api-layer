@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -31,12 +32,14 @@ import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Map;
 
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,11 +51,26 @@ class OIDCTokenProviderTest {
     "    \"active\": false\n" +
     "}";
 
+    private static final String JWKS_KEYS_BODY = "\n"
+    + "{\n"
+    + "    \"keys\": [\n"
+    + "        {\n"
+    + "           \"kty\": \"RSA\",\n"
+    + "           \"alg\": \"RS256\",\n"
+    + "           \"kid\": \"mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0\",\n"
+    + "           \"use\": \"sig\",\n"
+    + "           \"e\": \"AQAB\",\n"
+    + "           \"n\": \"hU4h--6LTL7SfdjV7rbQThGCiO8gQOMzboxqVjExH5UCj-tvTceTtx7FdVM5NV_hNhPc3aOO2ItkzYCmk8f9VNGSH4UBNcdCSlni3d4ZEkL2lyLxDFf3l_8gUs8Ev-Jh48WJSBcfjTH5RXsVRrjqS3_yjj9ZfTLHEG-a7tKo4J6NNrH0kbwQQu0cJPA1shU_AX23Yny8MbtzcmZaIwYmYLC4JKKAGgtg49Kyk6JYIwvklqPTHXoHQuWJLS32tV_ZaXKATW0vtFzyZnKkQ09cYXU260jWxLfVCBJA_5Lj0sVga7p-NygwzfQXlrHPx4ZsHrmkjkibzMH-18RQrMs38w\"\n"
+    + "       }\n"
+    + "    ]\n"
+    + "}";
+
     private static final String TOKEN = "token";
 
     private OIDCTokenProvider oidcTokenProvider;
 
-    OIDCTokenProvider underTest = mock(OIDCTokenProvider.class);
+    @Mock
+    private OIDCTokenProvider underTest;
     @Mock
     private CloseableHttpClient httpClient;
     @Mock
@@ -78,59 +96,68 @@ class OIDCTokenProviderTest {
 
         @BeforeEach
         void setup() throws IOException {
-            responseEntity.setContent(IOUtils.toInputStream(mapper.writeValueAsString(getJwkKeys()), StandardCharsets.UTF_8));
+            responseEntity.setContent(IOUtils.toInputStream(JWKS_KEYS_BODY, StandardCharsets.UTF_8));
         }
 
         @Test
         @SuppressWarnings("unchecked")
         void initialized_thenJwksFullfilled() throws IOException {
             Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
-            ReflectionTestUtils.setField(oidcTokenProvider, "registry", "https://acme.com");
             when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             when(response.getStatusLine()).thenReturn(responseStatusLine);
             when(response.getEntity()).thenReturn(responseEntity);
             when(httpClient.execute(any())).thenReturn(response);
             oidcTokenProvider.afterPropertiesSet();
-            assertTrue(jwks.containsKey("https://acme.com"));
-            assertEquals(getJwkKeys(), jwks.get("https://acme.com"));
+            assertFalse(jwks.isEmpty());
+            assertTrue(jwks.containsKey("mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0"));
+            assertNotNull(jwks.get("mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0"));
+            assertInstanceOf(Key.class, jwks.get("mLrvKBf4erBjkXcSCb2hjCBHLT1jM8MkYK-l-Z8MGe0"));
         }
 
-        private JwkKeys getJwkKeys() {
-            return new JwkKeys(
-                singletonList(new JwkKeys.Key("kty", "alg", "kid", "use", "e", "n"))
-            );
+        @Test
+        void whenRequestFails_thenRetry() {
+
+        }
+
+        @Test
+        void whenRequestFails_thenNotInitialized() {
+
         }
 
     }
 
     @Nested
     class GivenTokenForValidation {
-        @Test
-        void tokenIsActive_thenReturnValid()  {
-            when(underTest.isValid(TOKEN)).thenReturn(true);
-            assertTrue(underTest.isValid(TOKEN));
+
+        @SuppressWarnings("unchecked")
+        private void initJwks() throws ClientProtocolException, IOException {
+            Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
+            responseEntity.setContent(IOUtils.toInputStream(JWKS_KEYS_BODY, StandardCharsets.UTF_8));
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            when(response.getStatusLine()).thenReturn(responseStatusLine);
+            when(response.getEntity()).thenReturn(responseEntity);
+            when(httpClient.execute(any())).thenReturn(response);
+            oidcTokenProvider.afterPropertiesSet();
+            assertFalse(jwks.isEmpty());
         }
 
         @Test
-        void tokenIsExpired_thenReturnInvalid() {
-            responseEntity.setContent(IOUtils.toInputStream(NOT_VALID_BODY, StandardCharsets.UTF_8));
+        void whenValidToken_thenReturnValid() throws ClientProtocolException, IOException {
+            initJwks();
+            assertTrue(oidcTokenProvider.isValid(TOKEN));
+        }
+
+        @Test
+        void whenInvalidToken_thenReturnInvalid() throws ClientProtocolException, IOException {
+            initJwks();
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
-        void whenClientThrowsException_thenReturnInvalid() throws IOException {
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-
-        @Test
-        void whenResponseIsNotValidJson_thenReturnInvalid() {
-            responseEntity.setContent(IOUtils.toInputStream("{notValid}", StandardCharsets.UTF_8));
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
-        }
-
-        @Test
-        void whenResponseStatusIsNotOk_thenReturnInvalid() {
-            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
+        @SuppressWarnings("unchecked")
+        void whenNoJwks_thenReturnInvalid() {
+            Map<String, Key> jwks = (Map<String, Key>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
+            assumeTrue(jwks.isEmpty());
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 

@@ -14,6 +14,7 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.security.common.token.OIDCProvider;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 
@@ -88,6 +91,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval.longValue(), jwkRefreshInterval.longValue(), TimeUnit.HOURS);
     }
 
+    @Retryable
     void fetchJwksUrls() {
         if (StringUtils.isBlank(jwksUri)) {
             log.debug("OIDC JWK URI not provided, JWK refresh not performed");
@@ -142,23 +146,27 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.debug("No token has been provided.");
             return false;
         }
-        try {
-            Claims claims = null;
-            for (Map.Entry<String, Key> entry : jwks.entrySet()) {
-                claims = Jwts.parserBuilder()
-                    .setSigningKey(entry.getValue())
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-                if (claims != null) {
-                    return true;
-                }
+        Claims claims = null;
+        for (Map.Entry<String, Key> entry : jwks.entrySet()) {
+            claims = validate(token, entry.getValue());
+            if (claims != null && !claims.isEmpty()) {
+                return true;
             }
+        }
 
-            return false;
-        } catch (RuntimeException exception) {
-            throw handleJwtParserException(exception);
+        return false;
+    }
+
+    private Claims validate(String token, Key key) {
+        try {
+            return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        } catch (TokenNotValidException | MalformedJwtException e) {
+            log.debug("OIDC Token is not valid: {}", e.getMessage());
+            return null;
         }
     }
 }
