@@ -66,6 +66,12 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.clientSecret:}")
     String clientSecret;
 
+    @Value("${apiml.security.oidc.jwks.uri}")
+    private String jwksUri;
+
+    @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
+    private Long jwkRefreshInterval;
+
     @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
     @NonNull
@@ -73,12 +79,6 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Autowired
     private final ObjectMapper mapper;
-
-    @Value("${apiml.security.oidc.jwks.uri}")
-    private final String jwksUri;
-
-    @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
-    private final Long jwkRefreshInterval;
 
     private Map<String, Key> jwks = new ConcurrentHashMap<>();
 
