@@ -135,7 +135,7 @@ dependencyResolutionManagement {
             version('jgit') {
                 strictly '5.13.1.202206130422-r'
             }
-            version('gradleNode', '3.5.0')
+            version('gradleNode', '7.0.1')
             version('sonarGradlePlugin', '4.0.0.2929')
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
