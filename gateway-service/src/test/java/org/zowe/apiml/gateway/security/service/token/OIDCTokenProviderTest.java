@@ -90,7 +90,7 @@ class OIDCTokenProviderTest {
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
         oidcTokenProvider = new OIDCTokenProvider(httpClient);
-        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", "1");
+        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval",1);
         ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
