@@ -69,7 +69,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.uri}")
     private String jwksUri;
 
-    @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
+    @Value("${apiml.security.oidc.jwks.refreshInternalHours:#{1L}}")
     private Long jwkRefreshInterval;
 
     @Autowired
@@ -77,8 +77,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     @NonNull
     private final CloseableHttpClient httpClient;
 
-    @Autowired
-    private final ObjectMapper mapper;
+    private ObjectMapper mapper = new ObjectMapper();
 
     private Map<String, Key> jwks = new ConcurrentHashMap<>();
 

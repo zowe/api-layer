@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -85,14 +84,14 @@ class OIDCTokenProviderTest {
     private StatusLine responseStatusLine;
     private BasicHttpEntity responseEntity;
 
-    private ObjectMapper mapper = new ObjectMapper();
-
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
         responseStatusLine = mock(StatusLine.class);
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
-        oidcTokenProvider = new OIDCTokenProvider(httpClient, mapper);
+        oidcTokenProvider = new OIDCTokenProvider(httpClient);
+        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1L);
+        ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
     }
