@@ -54,7 +54,6 @@
 # - ZWE_configs_apiml_security_oidc_identityMapperUrl
 # - ZWE_configs_apiml_security_oidc_identityMapperUser
 # - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
-# - ZWE_configs_apiml_service_centralRegistryUrls - List of additional Discovery Services URLs to register with
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
@@ -210,9 +209,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
-    -Dapiml.service.centralRegistryUrls=${ZWE_configs_apiml_service_centralRegistryUrls:-} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
-    -Dapiml.service.centralRegistryUrls=${ZWE_configs_apiml_service_centralRegistryUrls:-} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
