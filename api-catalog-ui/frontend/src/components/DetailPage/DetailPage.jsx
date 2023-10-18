@@ -40,16 +40,11 @@ export default class DetailPage extends Component {
                 goBackButton.style.removeProperty('display');
             }
         }
-        const { fetchTilesStart, currentTileId, fetchNewTiles, history } = this.props;
+        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
         fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);
         }
-        if (!localStorage.getItem('serviceId')) {
-            const id = history.location.pathname.split('/service/')[1];
-            localStorage.setItem('serviceId', id);
-        }
-        localStorage.removeItem('selectedTab');
     }
 
     componentWillUnmount() {
