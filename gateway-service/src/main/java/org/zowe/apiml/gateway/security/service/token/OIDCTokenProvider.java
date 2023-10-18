@@ -32,6 +32,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -57,6 +60,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
+
+    @InjectApimlLogger
+    protected final ApimlLogger logger = ApimlLogger.empty();
 
     @Value("${apiml.security.oidc.registry:}")
     String registry;
@@ -145,6 +151,8 @@ public class OIDCTokenProvider implements OIDCProvider {
             return false;
         }
 
+        logger.log(MessageType.DEBUG, "Checking the sizew of the map "+ jwks.size());
+
         String kid = getKeyId(token);
         return Optional.ofNullable(jwks.get(kid))
             .map(key -> validate(token, key))
@@ -167,6 +175,9 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     private Claims validate(String token, Key key) {
         try {
+            logger.log(MessageType.DEBUG, "token is  "+ token);
+            logger.log(MessageType.DEBUG, "key is  "+ key);
+
             return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
