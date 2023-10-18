@@ -100,7 +100,7 @@ export default class Tile extends Component {
                                         </div>
                                         <span className="expanded-icon-title">Swagger</span>
                                     </div>
-                                    <div className={useCasesCounter === 0 ? 'disabled-counter' : ''} title="Use Cases">
+                                    <div className={useCasesCounter === 0 ? 'disabled-counter desktop-view' : 'desktop-view'} title="Use Cases">
                                         <div className="icon-img-ctn">
                                             <Typography
                                                 className="media-labels"
@@ -113,7 +113,7 @@ export default class Tile extends Component {
                                         </div>
                                         <span className="expanded-icon-title">Use Cases</span>
                                     </div>
-                                    <div className={tutorialsCounter === 0 ? 'disabled-counter' : ''} title="Tutorials">
+                                    <div className={tutorialsCounter === 0 ? 'disabled-counter desktop-view' : 'desktop-view'} title="Tutorials">
                                         <div className="icon-img-ctn">
                                             <Typography
                                                 className="media-labels"
@@ -127,7 +127,7 @@ export default class Tile extends Component {
                                         </div>
                                         <span className="expanded-icon-title">Tutorials</span>
                                     </div>
-                                    <div className={videosCounter === 0 ? 'disabled-counter' : ''} title="Videos">
+                                    <div className={videosCounter === 0 ? 'disabled-counter desktop-view' : 'desktop-view'} title="Videos">
                                         <div className="icon-img-ctn">
                                             <Typography
                                                 className="media-labels"
