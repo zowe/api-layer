@@ -68,6 +68,20 @@ class OIDCTokenProviderTest {
     + "    ]\n"
     + "}";
 
+    private static final String JWKS_KEYS_BODY_INVALID = "\n"
+    + "{\n"
+    + "    \"keys\": [\n"
+    + "        {\n"
+    + "           \"kty\": \"RSA\",\n"
+    + "           \"alg\": \"RS256\",\n"
+    + "           \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n"
+    + "           \"use\": \"sig\",\n"
+    + "           \"e\": \"AQAB\",\n"
+    + "           \"n\": \"invalid\"\n"
+    + "       }\n"
+    + "    ]\n"
+    + "}";
+
     private static final String EXPIRED_TOKEN = "eyJraWQiOiJMY3hja2tvcjk0cWtydW54SFA3VGtpYjU0N3J6bWtYdnNZVi1uYzZVLU40IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULlExakp2UkZ0dUhFUFpGTXNmM3A0enQ5aHBRRHZrSU1CQ3RneU9IcTdlaEkiLCJpc3MiOiJodHRwczovL2Rldi05NTcyNzY4Ni5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE2OTcwNjA3NzMsImV4cCI6MTY5NzA2NDM3MywiY2lkIjoiMG9hNmE0OG1uaVhBcUVNcng1ZDciLCJ1aWQiOiIwMHU5OTExOGgxNmtQT1dBbTVkNyIsInNjcCI6WyJvcGVuaWQiXSwiYXV0aF90aW1lIjoxNjk3MDYwMDY0LCJzdWIiOiJzajg5NTA5MkBicm9hZGNvbS5uZXQiLCJncm91cHMiOlsiRXZlcnlvbmUiXX0.Cuf1JVq_NnfBxaCwiLsR5O6DBmVV1fj9utAfKWIF1hlek2hCJsDLQM4ii_ucQ0MM1V3nVE1ZatPB-W7ImWPlGz7NeNBv7jEV9DkX70hchCjPHyYpaUhAieTG75obdufiFpI55bz3qH5cPRvsKv0OKKI9T8D7GjEWsOhv6CevJJZZvgCFLGFfnacKLOY5fEBN82bdmCulNfPVrXF23rOregFjOBJ1cKWfjmB0UGWgI8VBGGemMNm3ACX3OYpTOek2PBfoCIZWOSGnLZumFTYA0F_3DsWYhIJNoFv16_EBBJcp_C0BYE_fiuXzeB0fieNUXASsKp591XJMflDQS_Zt1g";
 
     private static final String TOKEN = "token";
@@ -132,6 +146,27 @@ class OIDCTokenProviderTest {
             assertTrue(jwks.isEmpty());
         }
 
+        @Test
+        @SuppressWarnings("unchecked")
+        void whenUriNotProvided_thenNotInitialized() {
+            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "");
+            Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
+            oidcTokenProvider.afterPropertiesSet();
+            assertTrue(jwks.isEmpty());
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void whenInvalidKey_thenNotInitialized() throws ClientProtocolException, IOException {
+            responseEntity.setContent(IOUtils.toInputStream(JWKS_KEYS_BODY_INVALID, StandardCharsets.UTF_8));
+            Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
+            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            when(response.getStatusLine()).thenReturn(responseStatusLine);
+            when(response.getEntity()).thenReturn(responseEntity);
+            when(httpClient.execute(any())).thenReturn(response);
+            oidcTokenProvider.afterPropertiesSet();
+            assertTrue(jwks.isEmpty());
+        }
     }
 
     @Nested
