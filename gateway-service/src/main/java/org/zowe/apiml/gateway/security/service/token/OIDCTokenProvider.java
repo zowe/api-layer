@@ -48,6 +48,7 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -151,9 +152,11 @@ public class OIDCTokenProvider implements OIDCProvider {
             return false;
         }
 
-        logger.log(MessageType.DEBUG, "Checking the sizew of the map "+ jwks.size());
+        logger.log(MessageType.DEBUG, "Checking the size of the map {}. Key Ids: {}", jwks.size(), Arrays.toString(jwks.keySet().toArray()));
 
         String kid = getKeyId(token);
+
+        logger.log(MessageType.DEBUG, "Token siged by key {}", kid);
         return Optional.ofNullable(jwks.get(kid))
             .map(key -> validate(token, key))
             .map(claims -> claims != null && !claims.isEmpty())
