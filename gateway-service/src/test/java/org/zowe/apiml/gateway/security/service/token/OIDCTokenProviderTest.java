@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.impl.DefaultClock;
+import io.jsonwebtoken.impl.FixedClock;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -32,6 +35,8 @@ import org.zowe.apiml.gateway.cache.CachingServiceClientException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -103,7 +108,7 @@ class OIDCTokenProviderTest {
         responseStatusLine = mock(StatusLine.class);
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
-        oidcTokenProvider = new OIDCTokenProvider(httpClient);
+        oidcTokenProvider = new OIDCTokenProvider(httpClient, new DefaultClock(), new ObjectMapper());
         ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval",1);
         ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
         oidcTokenProvider.clientId = "client_id";
@@ -188,6 +193,13 @@ class OIDCTokenProviderTest {
         void whenValidTokenExpired_thenReturnInvalid() throws ClientProtocolException, IOException {
             initJwks();
             assertFalse(oidcTokenProvider.isValid(EXPIRED_TOKEN));
+        }
+
+        @Test
+        void whenValidtoken_thenReturnValid() throws ClientProtocolException, IOException {
+            initJwks();
+            ReflectionTestUtils.setField(oidcTokenProvider, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
+            assertTrue(oidcTokenProvider.isValid(EXPIRED_TOKEN));
         }
 
         @Test

@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.security.service.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -84,7 +85,12 @@ public class OIDCTokenProvider implements OIDCProvider {
     @NonNull
     private final CloseableHttpClient httpClient;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private final Clock clock;
+
+    @Autowired
+    @Qualifier("oidcMapper")
+    private final ObjectMapper mapper;
 
     private Map<String, Key> jwks = new ConcurrentHashMap<>();
 
@@ -162,6 +168,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     private String getKeyId(String token) {
         try {
             return String.valueOf(Jwts.parserBuilder()
+                    .setClock(clock)
                     .build()
                     .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
                     .getHeader()
@@ -176,6 +183,7 @@ public class OIDCTokenProvider implements OIDCProvider {
         try {
             return Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setClock(clock)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
