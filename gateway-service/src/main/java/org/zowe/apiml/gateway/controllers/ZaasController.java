@@ -18,7 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.zaas.ZosmfTokensResponse;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -32,14 +35,17 @@ import org.zowe.apiml.ticket.TicketResponse;
 @Slf4j
 public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
+    static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
 
     private final PassTicketService passTicketService;
+    private final TokenCreationService tokenCreationService;
+    private final AuthenticationService authenticationService;
     private final MessageService messageService;
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     @ResponseBody
-    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute("zaas.auth.source") AuthSource.Parsed authSource) {
+    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_ATTR) AuthSource.Parsed authSource) {
 
         if (StringUtils.isEmpty(authSource.getUserId())) {
             return ResponseEntity
@@ -68,5 +74,32 @@ public class ZaasController {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(new TicketResponse(null, authSource.getUserId(), applicationName, ticket));
+    }
+
+    @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Provides z/OSMF LTPA and JWT token for authenticated user.")
+    @ResponseBody
+    public ResponseEntity<Object> getZosmfTokens(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource.Parsed authSource) {
+
+        if (StringUtils.isEmpty(authSource.getUserId())) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .build();
+        }
+
+        String jwtToken = null;
+        String ltpaToken = null;
+        try {
+            jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(authSource.getUserId());
+            ltpaToken = authenticationService.getLtpaToken(jwtToken);
+        } catch (Exception e) {
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.security.token.authenticationFailed").mapToView();
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(messageView);
+        }
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(new ZosmfTokensResponse(jwtToken, ltpaToken));
     }
 }

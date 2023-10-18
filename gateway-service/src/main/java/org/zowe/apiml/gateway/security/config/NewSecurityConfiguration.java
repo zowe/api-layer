@@ -307,16 +307,16 @@ public class NewSecurityConfiguration {
         @Configuration
         @RequiredArgsConstructor
         @Order(9)
-        class ZaasTicketEndpoint {
+        class ZaasEndpoints {
 
             private final CompoundAuthProvider compoundAuthProvider;
 
             @Bean
-            public SecurityFilterChain authZaasTicketEndpointFilterChain(HttpSecurity http) throws Exception {
+            public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
                     authConfigurationProperties.getEvictAccessTokensAndRules(),
-                    "/gateway/zaas/ticket"
+                    "/gateway/zaas/**"
                 ).and())
                     .authorizeRequests()
                     .anyRequest().authenticated()
