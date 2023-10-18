@@ -51,6 +51,10 @@ body {
     color: var( --criticalShade10 );
     font-weight: var( --fontWeightMedium );
   }
+  #onetrust-button-group-parent {
+    margin-left: 2% !important;
+  }
+  
   .button-cta {
     background: var( --criticalShade10 );
     padding: var( --spaceSmaller ) var( --spaceSmall );
@@ -59,11 +63,18 @@ body {
     &:hover {
       background: var( --criticalShade00 );
     }
+    &.feedback-button {
+      border-radius: 24px;
+    }
     &, * {
-      color: var( --text100 );
+      color: var( --text100 ) !important;
       text-transform: none;
       line-height: 100%;
       font-size: var( --fontMedium );
+
+      &:hover {
+        text-decoration: none;
+      }
     }
   }
   .MuiButton-root {
