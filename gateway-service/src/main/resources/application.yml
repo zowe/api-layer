@@ -79,7 +79,6 @@ apiml:
             identityMapperUser:
             jwks:
                 uri:
-                refreshInternalHours: 1
         auth:
             jwt:
                 customAuthHeader:

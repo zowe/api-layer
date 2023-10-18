@@ -16,7 +16,6 @@ apiml:
             identityMapperUser:
             jwks:
                 uri:
-                refreshInternalHours:
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id

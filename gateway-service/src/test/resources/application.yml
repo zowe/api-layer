@@ -40,7 +40,6 @@ apiml:
             identityMapperUser: validUserForMap
             jwks:
                 uri:
-                refreshInternalHours: 1
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5
