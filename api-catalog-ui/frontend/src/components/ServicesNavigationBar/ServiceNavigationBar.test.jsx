@@ -101,7 +101,6 @@ describe('>>> ServiceNavigationBar component tests', () => {
         const instance = serviceNavigationBar.instance();
         instance.handleTabClick('apicatalog');
         expect(storeCurrentTileId).toHaveBeenCalled();
-        localStorage.removeItem('serviceId');
     });
 
     it('should display mobile view if api portal enabled', () => {
@@ -114,5 +113,32 @@ describe('>>> ServiceNavigationBar component tests', () => {
         expect(serviceNavigationBar.find('.title')).toBeDefined();
         expect(serviceNavigationBar.find('.mobile-menu-close-btn icon-btn')).toBeDefined();
         expect(serviceNavigationBar.find('.mobile-menu-close')).toBeDefined();
+    });
+
+    it('should handle browser go back event', () => {
+        const mockHref = 'https://localhost/service/apicatalog';
+        Object.defineProperty(window, 'location', {
+            value: {
+                href: mockHref,
+            },
+            writable: true,
+        });
+        const storeCurrentTileId = jest.fn();
+        const clear = jest.fn();
+
+        const serviceNavigationBar = shallow(
+            <ServicesNavigationBar
+                match={match}
+                clear={clear}
+                services={[tile]}
+                storeCurrentTileId={storeCurrentTileId}
+                currentTileId="apicatalog"
+            />
+        );
+
+        const instance = serviceNavigationBar.instance();
+        instance.handlePopstate();
+
+        expect(storeCurrentTileId).toHaveBeenCalledWith(expect.any(String));
     });
 });
