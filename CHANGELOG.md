@@ -6,7 +6,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 * Feature:  Added a Central API ML registry endpoint to the Cloud Gateway to access an aggregated view of all services from all domains. (#3076) ([ff8ee9b](https://github.com/zowe/api-layer/commit/ff8ee9b)), closes [#3076](https://github.com/zowe/api-layer/issues/3076)
 * Feature:  It is now possible to forward the client certificate from Central Gateway to Domain Gateway in the request header (#3046) ([eda4750](https://github.com/zowe/api-layer/commit/eda4750)), closes [#3046](https://github.com/zowe/api-layer/issues/3046)
-* Feature:  Register Gateway to an additional Discovery service. Clients outide of the API ML cluster can now know about other gateways to facilitate routing to cluster and domains. (#3068) ([e988df3](https://github.com/zowe/api-layer/commit/e988df3)), closes [#3068](https://github.com/zowe/api-layer/issues/3068) [#3044](https://github.com/zowe/api-layer/issues/3044)
+* Feature: Register Gateway to an additional Discovery service. Clients outside of the API ML cluster can now know about other gateways to facilitate routing to clusters and domains. (#3068) ([e988df3](https://github.com/zowe/api-layer/commit/e988df3)), closes [#3068](https://github.com/zowe/api-layer/issues/3068) [#3044](https://github.com/zowe/api-layer/issues/3044)
 * Feature:  You can now verify service SSO support from API ML (#3054) ([3c1bb91](https://github.com/zowe/api-layer/commit/3c1bb91)), closes [#3054](https://github.com/zowe/api-layer/issues/3054)
 
 
