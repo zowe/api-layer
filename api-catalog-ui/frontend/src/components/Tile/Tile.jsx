@@ -94,9 +94,9 @@ export default class Tile extends Component {
                             {apiPortalEnabled && (
                                 <div className='icon-ctn'>
                                     <div className="expanded-spacer" />
-                                    <div id="swagger" title="Swagger" className={hasSwagger ? 'link-counter' : 'disabled-counter'} onClick={this.handleClick}>
+                                    <div id="swagger" title="Swagger" className={hasSwagger ? 'link-counter' : 'disabled-counter'}>
                                         <div className="icon-img-ctn">
-                                            <SwaggerIcon className='icon-img' alt="" />
+                                            <SwaggerIcon className='icon-img' alt="" onClick={this.handleClick} />
                                         </div>
                                         <span className="expanded-icon-title">Swagger</span>
                                     </div>

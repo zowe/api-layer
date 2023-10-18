@@ -48,7 +48,7 @@ body {
         .swagger-img {
           background-image: url(../../assets/images/swagger.svg);
         }
-        &.link-counter:hover svg path {
+        &.link-counter .icon-img-ctn:hover svg path {
           fill: var( --linkHover );
         }
         &.disabled-counter {
@@ -80,7 +80,7 @@ body {
     }//end icon-ctn
 
     &.expanded {
-      .tile-ctn {
+      .tile-ctn, #swagger {
         flex-direction: column;
       }
       .expanded-icon-title {
