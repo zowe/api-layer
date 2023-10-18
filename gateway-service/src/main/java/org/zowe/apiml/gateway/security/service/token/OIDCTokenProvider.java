@@ -163,7 +163,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                 .getBody();
         } catch (TokenNotValidException | JwtException e) {
             log.debug("OIDC Token is not valid: {}", e.getMessage());
-            return null;
+            return null; // NOSONAR
         }
     }
 }
