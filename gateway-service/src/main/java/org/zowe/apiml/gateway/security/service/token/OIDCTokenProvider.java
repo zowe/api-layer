@@ -46,6 +46,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -143,15 +144,25 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.debug("No token has been provided.");
             return false;
         }
-        Claims claims = null;
-        for (Map.Entry<String, Key> entry : jwks.entrySet()) {
-            claims = validate(token, entry.getValue());
-            if (claims != null && !claims.isEmpty()) {
-                return true;
-            }
-        }
 
-        return false;
+        String kid = getKeyId(token);
+        return Optional.ofNullable(jwks.get(kid))
+            .map(key -> validate(token, key))
+            .map(claims -> claims != null && !claims.isEmpty())
+            .orElse(false);
+    }
+
+    private String getKeyId(String token) {
+        try {
+            return String.valueOf(Jwts.parserBuilder()
+                    .build()
+                    .parseClaimsJwt(token)
+                    .getHeader()
+                    .get("kid"));
+        } catch (JwtException e) {
+            log.debug("OIDC Token is not valid: {}", e.getMessage());
+            return "";
+        }
     }
 
     private Claims validate(String token, Key key) {
