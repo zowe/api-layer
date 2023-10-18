@@ -32,6 +32,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -46,6 +49,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +60,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
+
+    @InjectApimlLogger
+    protected final ApimlLogger logger = ApimlLogger.empty();
 
     @Value("${apiml.security.oidc.registry:}")
     String registry;
@@ -143,15 +150,26 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.debug("No token has been provided.");
             return false;
         }
-        Claims claims = null;
-        for (Map.Entry<String, Key> entry : jwks.entrySet()) {
-            claims = validate(token, entry.getValue());
-            if (claims != null && !claims.isEmpty()) {
-                return true;
-            }
-        }
 
-        return false;
+        String kid = getKeyId(token);
+        logger.log(MessageType.DEBUG, "Token siged by key {}", kid);
+        return Optional.ofNullable(jwks.get(kid))
+            .map(key -> validate(token, key))
+            .map(claims -> claims != null && !claims.isEmpty())
+            .orElse(false);
+    }
+
+    private String getKeyId(String token) {
+        try {
+            return String.valueOf(Jwts.parserBuilder()
+                    .build()
+                    .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                    .getHeader()
+                    .get("kid"));
+        } catch (JwtException e) {
+            log.error("OIDC Token is not valid: {}", e.getMessage());
+            return "";
+        }
     }
 
     private Claims validate(String token, Key key) {
