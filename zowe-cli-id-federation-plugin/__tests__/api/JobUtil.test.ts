@@ -28,7 +28,9 @@ describe("JobUtil unit tests", () => {
         isDefaultProfile: true
     };
 
-    it("should return default value when no default profile found", async () => {
+    it("should return default value when no TSO profile found", async () => {
+        jest.spyOn(ProfileInfo.prototype, 'getDefaultProfile').mockReturnValue(null);
+
         expect(await getAccount()).toBe("account");
     });
 
