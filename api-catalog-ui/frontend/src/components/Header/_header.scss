@@ -6,8 +6,23 @@ body {
         }
     }
   #go-back-button-portal {
-      margin-right: var( --spaceLarger );
-      height: 40px;
+      margin-right: var( --spaceMedium );
+      background-image: url(../../assets/images/angles-left.svg);
+      background-repeat: no-repeat;
+      background-size: 16px;
+      background-position: 8px 50%;
+      padding: var(--spaceSmaller ) var(--spaceMedium ) 6px var( --spaceLargest );
+      background-color: var( --surface05 );
+      border: 1px solid var( --divider20 );
+
+      &, * {
+        color: var( --link20 );
+        font-size: var( --fontSmall );
+      }
+      &:hover, &:focus-visible {
+        background-color: var( --surface15 );
+        border-color: var( --divider15 );
+      }
   }
   .dashboard-develop-link {
     margin-right: var( --spaceLarger );
