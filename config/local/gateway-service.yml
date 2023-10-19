@@ -5,7 +5,6 @@ apiml:
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
-        additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
         discoveryServiceUrls: https://localhost:10011/eureka/
 
     security:
