@@ -150,8 +150,8 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.debug("No token has been provided.");
             return false;
         }
-
         String kid = getKeyId(token);
+        log.debug("JWT token is signed by the key "+ kid);
         return Optional.ofNullable(jwks.get(kid))
             .map(key -> validate(token, key))
             .map(claims -> claims != null && !claims.isEmpty())
