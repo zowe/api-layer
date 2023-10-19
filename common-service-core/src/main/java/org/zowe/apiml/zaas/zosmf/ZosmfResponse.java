@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas;
+package org.zowe.apiml.zaas.zosmf;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +17,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ZosmfTokensResponse {
+public class ZosmfResponse {
 
-    private String jwtToken;
-    private String ltpaToken;
+    private String cookieName;
+    private String token;
 }

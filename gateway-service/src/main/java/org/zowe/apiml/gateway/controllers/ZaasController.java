@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.ZosmfTokensResponse;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -87,11 +88,20 @@ public class ZaasController {
                 .build();
         }
 
-        String jwtToken = null;
-        String ltpaToken = null;
+        String token = null;
+        String cookieName = null;
         try {
-            jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(authSource.getUserId());
-            ltpaToken = authenticationService.getLtpaToken(jwtToken);
+            token = tokenCreationService.createJwtTokenWithoutCredentials(authSource.getUserId());
+            AuthSource.Origin origin = authenticationService.getTokenOrigin(token);
+            switch (origin) {
+                case ZOSMF:
+                    cookieName = ZosmfService.TokenType.JWT.getCookieName();
+                    break;
+                case ZOWE:
+                    token = authenticationService.getLtpaToken(token);
+                    cookieName = ZosmfService.TokenType.LTPA.getCookieName();
+                    break;
+            }
         } catch (Exception e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.security.token.authenticationFailed").mapToView();
             return ResponseEntity
@@ -100,6 +110,6 @@ public class ZaasController {
         }
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new ZosmfTokensResponse(jwtToken, ltpaToken));
+            .body(new ZosmfResponse(cookieName, token));
     }
 }

@@ -27,6 +27,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -77,6 +78,7 @@ class ZaasControllerTest {
 
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
         when(tokenCreationService.createJwtTokenWithoutCredentials(USER)).thenReturn(JWT_TOKEN);
+        when(authenticationService.getTokenOrigin(JWT_TOKEN)).thenReturn(AuthSource.Origin.ZOSMF);
         when(authenticationService.getLtpaToken(JWT_TOKEN)).thenReturn(LTPA_TOKEN);
         ZaasController zaasController = new ZaasController(passTicketService, tokenCreationService, authenticationService, messageService);
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).build();
@@ -93,12 +95,22 @@ class ZaasControllerTest {
         }
 
         @Test
-        void whenRequestZosmfTokens_thenResonseOK() throws Exception {
+        void whenRequestZosmfToken_thenResonseOK() throws Exception {
             mockMvc.perform(post(ZOSMF_TOKEN_URL)
                 .requestAttr(ZaasController.AUTH_SOURCE_ATTR, authSource))
                 .andExpect(status().is(SC_OK))
-                .andExpect(jsonPath("$.jwtToken", is(JWT_TOKEN)))
-                .andExpect(jsonPath("$.ltpaToken", is(LTPA_TOKEN)));
+                .andExpect(jsonPath("$.cookieName", is(ZosmfService.TokenType.JWT.getCookieName())))
+                .andExpect(jsonPath("$.token", is(JWT_TOKEN)));
+        }
+
+        @Test
+        void whenRequestZoweToken_thenResonseOK() throws Exception {
+            when(authenticationService.getTokenOrigin(JWT_TOKEN)).thenReturn(AuthSource.Origin.ZOWE);
+            mockMvc.perform(post(ZOSMF_TOKEN_URL)
+                    .requestAttr(ZaasController.AUTH_SOURCE_ATTR, authSource))
+                .andExpect(status().is(SC_OK))
+                .andExpect(jsonPath("$.cookieName", is(ZosmfService.TokenType.LTPA.getCookieName())))
+                .andExpect(jsonPath("$.token", is(LTPA_TOKEN)));
         }
 
         @Test

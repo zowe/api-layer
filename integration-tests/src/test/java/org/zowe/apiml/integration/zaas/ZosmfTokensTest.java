@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.zaas.ZosmfTokensResponse;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -62,28 +62,30 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
             @Test
             void givenValidTokenInCookieAndCertificate() {
-                ZosmfTokensResponse zosmfResponse = given()
+                ZosmfResponse zosmfResponse = given()
                     .cookie(COOKIE, jwt)
                 .when()
                     .post(zosmfTokens_URL)
                 .then()
                     .statusCode(is(SC_OK))
-                    .extract().body().as(ZosmfTokensResponse.class);
+                    .extract().body().as(ZosmfResponse.class);
 
-                assertNotNull(zosmfResponse.getJwtToken());
+                assertNotNull(zosmfResponse.getCookieName());
+                assertNotNull(zosmfResponse.getToken());
             }
 
             @Test
             void givenValidTokenInHeaderAndCertificate() {
-                ZosmfTokensResponse zosmfResponse = given()
+                ZosmfResponse zosmfResponse = given()
                     .header("Authorization", "Bearer " + jwt)
                 .when()
                     .post(zosmfTokens_URL)
                 .then()
                     .statusCode(is(SC_OK))
-                    .extract().body().as(ZosmfTokensResponse.class);
+                    .extract().body().as(ZosmfResponse.class);
 
-                assertNotNull(zosmfResponse.getJwtToken());
+                assertNotNull(zosmfResponse.getCookieName());
+                assertNotNull(zosmfResponse.getToken());
             }
         }
 
