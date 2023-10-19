@@ -1,4 +1,12 @@
+<!-- omit in toc -->
 # IDE Setup
+
+- [IntelliJ Idea setup](#intellij-idea-setup)
+  - [Code Development](#code-development)
+  - [Running of the services](#running-of-the-services)
+    - [If using IDEA Ultimate Edition 2023](#if-using-idea-ultimate-edition-2023)
+    - [If using IDEA Community Edition](#if-using-idea-community-edition)
+- [Visual Studio Code setup](#visual-studio-code-setup)
 
 ## IntelliJ Idea setup
 
@@ -91,3 +99,26 @@ You can use Visual Studio Code to develop and debug.
 
 4. Launch either of the services in debug mode (see `package.json` for launch scripts in debug mode). Then attach the debugger by running the appropriate launch configuration.
 5. To debug unit tests, use the shortcuts that are created by the Java Test Runner extension.
+
+Example to launch Gateway application in `launch.json`:
+
+```json
+{
+    "type": "java",
+    "name": "Launch GatewayApplication",
+    "request": "launch",
+    "mainClass": "org.zowe.apiml.gateway.GatewayApplication",
+    "projectName": "gateway-service",
+    "vmArgs": [
+        "-Dspring.config.additional-location=file:../config/local/gateway-service.yml",
+        "-Dspring.profiles.active=https"
+    ],
+    "args": [
+        "--apiml.security.ssl.verifySslCertificatesOfServices=true",
+        "--server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
+        "--server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
+        "--server.internal.ssl.keyStore=../keystore/localhost/localhost-multi.keystore.p12",
+        "--apiml.security.auth.provider=dummy"
+    ]
+}
+```
