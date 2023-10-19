@@ -63,7 +63,6 @@ configs:
         enabled: false
         clientId:
         clientSecret:
-        introspectUrl:
         registry:
         # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/certificate/dn
         identityMapperUrl:
