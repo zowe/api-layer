@@ -17,28 +17,26 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.util.CollectionUtils;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
-import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class AdditionalRegistrationConfig {
 
-    public static final String DISCOVERY_SERVICE_URLS_KEY = "DISCOVERYSERVICEURLS";
-    public static final String GATEWAY_URL_KEY = "GATEWAYURL";
-    public static final String COMMON_PREFIX = "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_";
-    public static final String SERVICE_URL_KEY = "SERVICEURL";
-    private static final int EXPECTED_ROUTE_PART_INDEX = 2;
+    public static final Pattern DISCOVERYSERVICEURLS_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_DISCOVERYSERVICEURLS$");
+    public static final Pattern ROUTE_SERVICEURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_SERVICEURL");
+    public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL");
 
     @Bean
     public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
@@ -47,90 +45,85 @@ public class AdditionalRegistrationConfig {
         return additionalRegistrations;
     }
 
-    static List<AdditionalRegistration> extractAdditionalRegistrations(Map<String, String> allProperties) {
-
-        if (CollectionUtils.isEmpty(allProperties)) {
-            return Collections.emptyList();
+    public static List<AdditionalRegistration> extractAdditionalRegistrations(Map<String, String> allProperties) {
+        if (allProperties == null) {
+            return new ArrayList<>();
+        }
+        final Map<Integer, AdditionalRegistration> map = new TreeMap<>();
+        for (Map.Entry<String, String> entry : allProperties.entrySet()) {
+            matchDiscoveryUrl(entry.getKey()).ifPresent(index -> putAdditionalRegistration(map, index, entry.getValue()));
+        }
+        for (Map.Entry<String, String> entry : allProperties.entrySet()) {
+            parseServiceUrl(entry.getKey()).ifPresent(pair -> putRouteServiceUrl(map, pair, entry.getValue()));
         }
 
-        Map<String, String> additionalProperties = allProperties.entrySet().stream().filter(entry -> entry.getKey().startsWith(COMMON_PREFIX))
-            .filter(entry -> StringUtils.isNotBlank(entry.getValue()))
-            .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey().replace(COMMON_PREFIX, ""), entry.getValue()))
-            .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, (previous, current) -> current, TreeMap::new));
-
-        for (Map.Entry<String, String> prp : additionalProperties.entrySet()) {
-            log.debug("Additional property: {}={}", prp.getKey(), prp.getValue());
+        for (Map.Entry<String, String> entry : allProperties.entrySet()) {
+            parseGatewayUrl(entry.getKey()).ifPresent(pair -> putRouteGatewayUrl(map, pair, entry.getValue()));
         }
-
-        Integer listSize = additionalProperties.keySet().stream().map(key -> parsePropertyName(key).getKey())
-            .max(Integer::compareTo).map(maxIndex -> maxIndex + 1).orElse(0);
-
-        List<AdditionalRegistration> additionalRegistrations = IntStream.range(0, listSize)
-            .mapToObj(index -> AdditionalRegistration.builder().routes(new ArrayList<>()).build())
-            .collect(Collectors.toList());
-
-        mapProperties(additionalRegistrations, additionalProperties);
-        for (AdditionalRegistration registration : additionalRegistrations) {
-            List<AdditionalRegistration.Route> definedRoutes = registration.getRoutes().stream().filter(route -> !AdditionalRegistrationConfig.isRouteDefined(route)).collect(Collectors.toList());
-            registration.setRoutes(definedRoutes);
-        }
-
-        return additionalRegistrations.stream()
-            .filter(registration -> StringUtils.isNotBlank(registration.getDiscoveryServiceUrls()))
-            .collect(Collectors.toList());
+        map.values().forEach(registration -> registration.setRoutes(registration.getRoutes().stream()
+            .filter(AdditionalRegistrationConfig::isRouteDefined).collect(Collectors.toList())));
+        return new ArrayList<>(map.values());
     }
 
-    private static void mapProperties(List<AdditionalRegistration> additionalRegistrations, Map<String, String> properties) {
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            String propertyKey = entry.getKey();
-            Pair<Integer, String> property = parsePropertyName(propertyKey);
-            if (property.getKey() == -1) {
-                continue;
-            }
-            final String propertyValue = entry.getValue();
-            switch (StringUtils.upperCase(property.getValue())) {
-                case DISCOVERY_SERVICE_URLS_KEY:
-                    additionalRegistrations.get(property.getKey()).setDiscoveryServiceUrls(propertyValue);
-                    break;
-                case GATEWAY_URL_KEY:
-                    setRouteProperty(additionalRegistrations.get(property.getKey()), parseRouteIndex(propertyKey), (AdditionalRegistration.Route route) -> route.setGatewayUrl(propertyValue));
-                    break;
-                case SERVICE_URL_KEY:
-                    setRouteProperty(additionalRegistrations.get(property.getKey()), parseRouteIndex(propertyKey), (AdditionalRegistration.Route route) -> route.setServiceUrl(propertyValue));
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private static void setRouteProperty(AdditionalRegistration registration, int routeIndex, Consumer<AdditionalRegistration.Route> setter) {
-        if (routeIndex > -1) {
-            if (registration.getRoutes().size() <= routeIndex) {
+    private static void putRouteServiceUrl(Map<Integer, AdditionalRegistration> map, Pair<Integer, Long> pair, String value) {
+        AdditionalRegistration registration = map.get(pair.getKey());
+        if (registration != null && StringUtils.isNoneBlank(value)) {
+            int routeIndex = pair.getValue().intValue();
+            while (registration.getRoutes().size() <= routeIndex) {
                 registration.getRoutes().add(new AdditionalRegistration.Route());
-                setRouteProperty(registration, routeIndex, setter);
             }
-            setter.accept(registration.getRoutes().get(routeIndex));
+            registration.getRoutes().get(routeIndex).setServiceUrl(value);
         }
     }
 
-    private static int parseRouteIndex(String propertyName) {
-        String[] parts = StringUtils.split(propertyName, "_.");
-        if (parts.length > EXPECTED_ROUTE_PART_INDEX && StringUtils.isNumeric(parts[EXPECTED_ROUTE_PART_INDEX])) {
-            return Integer.parseInt(parts[EXPECTED_ROUTE_PART_INDEX]);
+    private static void putRouteGatewayUrl(Map<Integer, AdditionalRegistration> map, Pair<Integer, Long> pair, String value) {
+        AdditionalRegistration registration = map.get(pair.getKey());
+        if (registration != null && StringUtils.isNoneBlank(value)) {
+            int routeIndex = pair.getValue().intValue();
+            while (registration.getRoutes().size() <= routeIndex) {
+                registration.getRoutes().add(new AdditionalRegistration.Route());
+            }
+            registration.getRoutes().get(routeIndex).setGatewayUrl(value);
         }
-        return -1;
     }
 
-    private static Pair<Integer, String> parsePropertyName(String fullPropertyName) {
-        String[] parts = StringUtils.split(fullPropertyName, "_");
-        if (StringUtils.isNumeric(parts[0])) {
-            return Pair.of(Integer.parseInt(parts[0]), parts[parts.length - 1]);
+    private static void putAdditionalRegistration(Map<Integer, AdditionalRegistration> map, Integer index, String value) {
+        if (StringUtils.isNoneBlank(value)) {
+            map.put(index, AdditionalRegistration.builder().discoveryServiceUrls(value).routes(new ArrayList<>()).build());
         }
-        return Pair.of(-1, null);
+    }
+
+    public static Optional<Integer> matchDiscoveryUrl(String line) {
+        Matcher matcher = DISCOVERYSERVICEURLS_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            String index = matcher.group("index");
+            return Optional.ofNullable(index).map(Integer::parseInt);
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<Pair<Integer, Long>> parseServiceUrl(String line) {
+        Matcher matcher = ROUTE_SERVICEURL_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            String index = matcher.group("index");
+            String routeIndex = matcher.group("routeIndex");
+            return Optional.of(Pair.of(Integer.decode(index), Long.decode(routeIndex)));
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<Pair<Integer, Long>> parseGatewayUrl(String line) {
+        Matcher matcher = ROUTE_GATEWAYURL_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            String index = matcher.group("index");
+            String routeIndex = matcher.group("routeIndex");
+            return Optional.of(Pair.of(Integer.decode(index), Long.decode(routeIndex)));
+        }
+        return Optional.empty();
     }
 
     private static boolean isRouteDefined(AdditionalRegistration.Route route) {
-        return route == null || StringUtils.isBlank(route.getGatewayUrl()) && StringUtils.isBlank(route.getServiceUrl());
+        return route != null && (isNotBlank(route.getGatewayUrl()) || isNotBlank(route.getServiceUrl()));
     }
+
 }

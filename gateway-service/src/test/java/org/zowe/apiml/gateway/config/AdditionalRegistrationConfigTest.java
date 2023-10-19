@@ -118,24 +118,22 @@ class AdditionalRegistrationConfigTest {
 
         @Test
         void shouldParseAdditionalRegistrationWithPartiallyDefinedRoutes() {
+            Map<String, String> properties = Maps.of(
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_DISCOVERYSERVICEURLS", "https://eureka-2",
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_0_SERVICEURL", "",
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_0_GATEWAYURL", null,
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_1_SERVICEURL", "/serviceUrl",
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_1_GATEWAYURL", null,
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_2_SERVICEURL", null,
+                "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_2_GATEWAYURL", "/gatewayUrl");
 
-            envProperties.putAll(
-                Maps.of(
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_DISCOVERYSERVICEURLS", "https://eureka-2",
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_0_SERVICEURL", "",
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_0_GATEWAYURL", null,
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_1_SERVICEURL", "/serviceUrl",
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_1_GATEWAYURL", null,
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_2_SERVICEURL", null,
-                    "ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_1_ROUTES_2_GATEWAYURL", "/gatewayUrl")
-            );
-
-            List<AdditionalRegistration> registrations = AdditionalRegistrationConfig.extractAdditionalRegistrations(envProperties);
+            List<AdditionalRegistration> registrations = AdditionalRegistrationConfig.extractAdditionalRegistrations(properties);
 
             AdditionalRegistration expectedSecondRegistration = new AdditionalRegistration("https://eureka-2", Arrays.asList(new AdditionalRegistration.Route(null, "/serviceUrl"), new AdditionalRegistration.Route("/gatewayUrl", null)));
 
-            assertThat(registrations).hasSize(2);
-            assertThat(registrations.get(1)).isEqualTo(expectedSecondRegistration);
+            assertThat(registrations).hasSize(1);
+            assertThat(registrations.get(0).getRoutes()).hasSize(2);
+            assertThat(registrations.get(0)).isEqualTo(expectedSecondRegistration);
         }
     }
 }

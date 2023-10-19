@@ -20,6 +20,8 @@ import org.springframework.web.context.support.StandardServletEnvironment;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.zowe.apiml.gateway.config.AdditionalRegistrationConfig.DISCOVERYSERVICEURLS_PATTERN;
+
 @Slf4j
 @RequiredArgsConstructor
 public class AdditionalRegistrationCondition implements Condition {
@@ -28,7 +30,7 @@ public class AdditionalRegistrationCondition implements Condition {
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         String dcUrls = context.getEnvironment().getProperty("apiml.service.additionalRegistration[0].discoveryServiceUrls");
         List<String> additionalKeys = ((StandardServletEnvironment) context.getEnvironment()).getSystemEnvironment()
-            .entrySet().stream().map(e -> e.getKey().toUpperCase()).filter(key -> key.startsWith(AdditionalRegistrationConfig.COMMON_PREFIX))
+            .entrySet().stream().map(e -> e.getKey().toUpperCase()).filter(key -> DISCOVERYSERVICEURLS_PATTERN.matcher(key).matches())
             .collect(Collectors.toList());
         boolean isAdditionalRegistrationsDetected = dcUrls != null || !additionalKeys.isEmpty();
         log.debug("isAdditionalRegistrationsDetected: {}", isAdditionalRegistrationsDetected);
