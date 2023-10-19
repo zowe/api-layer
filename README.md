@@ -7,24 +7,25 @@
 
 The API Mediation Layer (API ML) provides a single point of access for mainframe service REST APIs. The API ML offers enterprise, cloud-like features such as high-availability, scalability, dynamic API discovery, consistent security, a single sign-on experience, and documentation. The API ML consists of three components: the Gateway, the Discovery Service, and the API Catalog. The API ML facilitates secure communication across loosely coupled microservices through the API Gateway. The Discovery Service enables you to determine the location and status of service instances running inside the API ML ecosystem. The API Catalog provides a user-friendly, easy-to-use interface to view all discovered services, their associated APIs, and Swagger documentation.
 
-**Notes:** 
+**Notes:**
+
 * For more general information for end-users, see the API ML [Overview](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer).
 * To learn more about changes to the API ML, consult the [CHANGELOG](CHANGELOG.md).
 * For developers, review the [developer documentation](./docs) and the [Contributor guidelines](#contributor-guidelines).
 
 ## Contents
 
-  * [Run API Mediation Layer locally](#run-api-mediation-layer-locally)
-    + [Prerequisites](#prerequisites)
-    + [Quick start](#quick-start)
-  * [Security](#security)
-  * [Run integration tests](#run-integration-tests)
-  * [Certificates](#certificates)
-  * [Contributor guidelines](#contributor-guidelines)
-  * [Local configuration of services](#local-configuration-of-services)
-  * [Onboarding Services](#onboarding-services)
-  * [More Information](#more-information)
-  * [Contact Us](#contact-us)
+* [Run API Mediation Layer locally](#run-api-mediation-layer-locally)
+  * [Prerequisites](#prerequisites)
+  * [Quick start](#quick-start)
+* [Security](#security)
+* [Run integration tests](#run-integration-tests)
+* [Certificates](#certificates)
+* [Contributor guidelines](#contributor-guidelines)
+* [Local configuration of services](#local-configuration-of-services)
+* [Onboarding Services](#onboarding-services)
+* [More Information](#more-information)
+* [Contact Us](#contact-us)
 
 ## Run API Mediation Layer locally
 
@@ -39,9 +40,9 @@ The following tools are required to build and develop the API Mediation Layer:
 
 * Node.js and npm are required to be installed globally to run npm commands in project root folder.
   
-    * <https://nodejs.org/dist/>
-    
-    * During build, correct node version is automatically downloaded and built with.
+  * <https://nodejs.org/dist/>
+
+  * During build, correct node version is automatically downloaded and built with.
 
 ### Quick start
 
@@ -74,9 +75,11 @@ By default the API Mediation Layer for local development uses mock zOSMF as the 
 The API Mediation Layer can also use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.  
 <details>
   <summary>Configure dummy credentials provider</summary>
+
   ### Configure `dummy` credentials provider
 
-  Modify [gateway-service.yml](/config/local/gateway-service.yml) 
+  Modify [gateway-service.yml](/config/local/gateway-service.yml)
+
   ```yaml
         apiml:
           security:
@@ -85,6 +88,7 @@ The API Mediation Layer can also use dummy credentials for development purposes.
               provider: dummy
 
   ```
+
 </details>
 
 For more information, see [API Mediation Layer Security](https://docs.zowe.org/stable/extend/extend-apiml/zowe-api-mediation-layer-security-overview).
