@@ -37,6 +37,7 @@ dependencies {
     testImplementation libs.hamcrest
     testImplementation libs.awaitility
     testImplementation libs.logback.classic
+    testImplementation project(path: ':gateway-service')
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
     testImplementation libs.jsoup

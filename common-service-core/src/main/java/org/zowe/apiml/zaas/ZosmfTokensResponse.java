@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.zaas;
+package org.zowe.apiml.zaas;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
