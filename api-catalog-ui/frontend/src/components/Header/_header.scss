@@ -6,20 +6,11 @@ body {
         }
     }
   #go-back-button-portal {
-      background-color: #CC092F;
-      margin-right: 25px;
-      border-radius: 3px;
+      margin-right: var( --spaceLarger );
       height: 40px;
-      &, > span {
-          &, > a {
-              text-decoration: none;
-              color: white;
-              font-size: var( --fontMedium );
-          }
-          &, > a:hover {
-              color: var(--linkHover);
-          }
-      }
+  }
+  .dashboard-develop-link {
+    margin-right: var( --spaceLarger );
   }
   #product-title {
       font-size: var( --spaceLarger );

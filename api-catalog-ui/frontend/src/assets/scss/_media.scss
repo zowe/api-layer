@@ -13,6 +13,10 @@
     .feedback-dialog .form textarea {
       height: 150px;
     }
+    #swagger {
+      flex-direction: row;
+      justify-content: flex-end;
+    }
     .header {
       #doc, .product-name {
         margin-right: var( --spaceSmaller );
