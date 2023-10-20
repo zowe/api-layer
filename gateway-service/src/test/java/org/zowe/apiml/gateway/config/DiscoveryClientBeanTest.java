@@ -10,17 +10,25 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.DataCenterInfo;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
+import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 class DiscoveryClientBeanTest {
     DiscoveryClientConfig dcConfig;
@@ -29,23 +37,31 @@ class DiscoveryClientBeanTest {
     void setup() {
         ApplicationContext context = mock(ApplicationContext.class);
         EurekaJerseyClientImpl.EurekaJerseyClientBuilder builder = mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class);
-        dcConfig = new DiscoveryClientConfig(context, null, builder);
+        dcConfig = new DiscoveryClientConfig(null, new ApimlDiscoveryClientFactory(), context, builder);
     }
 
     @Test
-    void givenListOfCentralRegistryURLs_thenCreateNewDiscoveryClientForEach() {
-        String[] centralRegistryUrls = {"https://host:10021/eureka", "https://host:10011/eureka"};
-        ReflectionTestUtils.setField(dcConfig, "centralRegistryUrls", centralRegistryUrls);
+    void givenListOfAdditionalRegistrations_thenCreateNewDiscoveryClientForEach() {
+        List<AdditionalRegistration> additionalRegistrations = Arrays.asList(
+            AdditionalRegistration.builder().discoveryServiceUrls("https://host:10021/eureka").build(),
+            AdditionalRegistration.builder().discoveryServiceUrls("https://host:10011/eureka").build());
+
+
         ApplicationInfoManager manager = mock(ApplicationInfoManager.class);
-        InstanceInfo info = mock(InstanceInfo.class);
+        InstanceInfo info = new InstanceInfo.Builder(mock(InstanceInfo.class)).setAppName(GATEWAY.name()).build();
+
         when(manager.getInfo()).thenReturn(info);
         when(info.getIPAddr()).thenReturn("127.0.0.1");
+
         when(info.getDataCenterInfo()).thenReturn(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn));
         LeaseInfo leaseInfo = mock(LeaseInfo.class);
+
         when(info.getLeaseInfo()).thenReturn(leaseInfo);
+
         EurekaClientConfigBean bean = new EurekaClientConfigBean();
-        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null);
+        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null, additionalRegistrations);
         wrapper.shutdown();
-        assertEquals(2, wrapper.getDiscoveryClients().size());
+
+        assertThat(wrapper.getDiscoveryClients()).hasSize(2);
     }
 }
