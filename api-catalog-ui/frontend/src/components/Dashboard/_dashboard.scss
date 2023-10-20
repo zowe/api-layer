@@ -267,6 +267,7 @@ body {
             h5 {
               margin: var( --spaceSmaller ) 0 var( --spaceLarger );
               font-size: var( --fontSmall );
+              text-transform: none;
             }
             p {
               line-height: 130%;

@@ -33,7 +33,7 @@ body .detail-content {
     .scheme-container {
       &.information-container,
       &.filter {
-        margin-top: var( --spaceSmall );
+        margin-top: var( --spaceSmallest );
 
         a {
           @include blueLink();
@@ -68,7 +68,10 @@ body .detail-content {
         h2.title {
           @extend .MuiTypography-h4;
           margin-top: 0px;
-          visibility: hidden;
+
+          span {
+            font-weight: normal;
+          }
         }
         h2.title span {
             visibility: visible;
