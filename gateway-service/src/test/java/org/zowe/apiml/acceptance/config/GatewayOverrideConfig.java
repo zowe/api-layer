@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.acceptance.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -32,10 +34,13 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
 import java.util.HashMap;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @TestConfiguration
 public class GatewayOverrideConfig {
+
     protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     @Bean
@@ -43,7 +48,6 @@ public class GatewayOverrideConfig {
     public ServiceRouteMapper serviceRouteMapper() {
         return new SimpleServiceRouteMapper();
     }
-
 
     @MockBean
     @Qualifier("mockProxy")
@@ -63,7 +67,6 @@ public class GatewayOverrideConfig {
         when(info.getStatusCode()).thenReturn(HttpStatus.OK);
         return restTemplate;
     }
-
 
     @Bean
     public SimpleRouteLocator simpleRouteLocator() {
@@ -85,5 +88,11 @@ public class GatewayOverrideConfig {
         return applicationRegistry;
     }
 
+    @Bean
+    @Qualifier("oidcMapper")
+    public ObjectMapper mapper() {
+        return new ObjectMapper()
+            .registerModule(new JavaTimeModule());
+    }
 
 }

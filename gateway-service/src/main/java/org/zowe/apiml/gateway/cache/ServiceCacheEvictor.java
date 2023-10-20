@@ -76,7 +76,6 @@ public class ServiceCacheEvictor extends RefreshEventListener implements Service
             serviceCacheEvicts.forEach(x -> x.evictCacheService(serviceId));
         }
 
-
     }
 
 }

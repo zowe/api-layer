@@ -35,10 +35,11 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
-            introspectUrl:
             registry:
             identityMapperUrl: http://localhost:8542/certificate/dn
             identityMapperUser: validUserForMap
+            jwks:
+                uri:
         filterChainConfiguration: new
         allowTokenRefresh: true
         jwtInitializerTimeout: 5

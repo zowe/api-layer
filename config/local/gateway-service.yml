@@ -17,10 +17,11 @@ apiml:
             enabled: false
             clientId:
             clientSecret:
-            introspectUrl:
             registry:
             identityMapperUrl:
             identityMapperUser:
+            jwks:
+                uri:
         auth:
             jwt:
                 customAuthHeader:
