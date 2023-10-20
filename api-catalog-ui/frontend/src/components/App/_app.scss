@@ -67,7 +67,7 @@ body {
       border-radius: 24px;
     }
     &, * {
-      color: var( --text100 ) !important;
+      color: var( --text100 );
       text-transform: none;
       line-height: 100%;
       font-size: var( --fontMedium );
