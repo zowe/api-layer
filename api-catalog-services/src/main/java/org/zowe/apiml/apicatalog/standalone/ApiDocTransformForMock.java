@@ -30,12 +30,17 @@ public class ApiDocTransformForMock {
     @Value("${service.schema:https}")
     private String schema;
 
+    @Value("${server.servlet.contextPath:/apicatalog}")
+    private String contextPath;
+
     @Bean
     @Primary
     public GatewayConfigProperties gatewayConfigPropertiesForMock() {
+        String path = this.contextPath.endsWith("/") ? this.contextPath.substring(0, this.contextPath.lastIndexOf('/')) : this.contextPath;
+
         return GatewayConfigProperties.builder()
             .scheme(schema)
-            .hostname(String.format("%s:%s/apicatalog/mock", hostname, port))
+            .hostname(String.format("%s:%s%s/mock", hostname, port, path))
             .build();
     }
 
