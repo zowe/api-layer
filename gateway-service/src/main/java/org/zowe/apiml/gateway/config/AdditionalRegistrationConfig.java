@@ -34,6 +34,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 @RequiredArgsConstructor
 public class AdditionalRegistrationConfig {
 
+    public static final String ADDITIONAL_REGISTRATION_INDEX_GROUP_NAME = "index";
     public static final Pattern DISCOVERYSERVICEURLS_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_DISCOVERYSERVICEURLS$");
     public static final Pattern ROUTE_SERVICEURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_SERVICEURL");
     public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL");
@@ -96,7 +97,7 @@ public class AdditionalRegistrationConfig {
     public static Optional<Integer> matchDiscoveryUrl(String line) {
         Matcher matcher = DISCOVERYSERVICEURLS_PATTERN.matcher(line);
         if (matcher.matches()) {
-            String index = matcher.group("index");
+            String index = matcher.group(ADDITIONAL_REGISTRATION_INDEX_GROUP_NAME);
             return Optional.ofNullable(index).map(Integer::parseInt);
         }
         return Optional.empty();
@@ -105,7 +106,8 @@ public class AdditionalRegistrationConfig {
     public static Optional<Pair<Integer, Long>> parseServiceUrl(String line) {
         Matcher matcher = ROUTE_SERVICEURL_PATTERN.matcher(line);
         if (matcher.matches()) {
-            String index = matcher.group("index");
+
+            String index = matcher.group(ADDITIONAL_REGISTRATION_INDEX_GROUP_NAME);
             String routeIndex = matcher.group("routeIndex");
             return Optional.of(Pair.of(Integer.decode(index), Long.decode(routeIndex)));
         }
@@ -115,7 +117,7 @@ public class AdditionalRegistrationConfig {
     public static Optional<Pair<Integer, Long>> parseGatewayUrl(String line) {
         Matcher matcher = ROUTE_GATEWAYURL_PATTERN.matcher(line);
         if (matcher.matches()) {
-            String index = matcher.group("index");
+            String index = matcher.group(ADDITIONAL_REGISTRATION_INDEX_GROUP_NAME);
             String routeIndex = matcher.group("routeIndex");
             return Optional.of(Pair.of(Integer.decode(index), Long.decode(routeIndex)));
         }
