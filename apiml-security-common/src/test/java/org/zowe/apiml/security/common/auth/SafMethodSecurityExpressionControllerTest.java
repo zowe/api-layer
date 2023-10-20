@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,6 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     SafSecurityConfigurationProperties.class,
     SafMethodSecurityExpressionControllerTest.TestController.class
 })
+@ActiveProfiles("SafMethodSecurityExpressionControllerTest")
 class SafMethodSecurityExpressionControllerTest {
 
     private final static String PASSWORD = "user";
@@ -109,6 +112,7 @@ class SafMethodSecurityExpressionControllerTest {
 
     @TestConfiguration
     @EnableGlobalMethodSecurity(prePostEnabled = true)
+    @Profile("SafMethodSecurityExpressionControllerTest")
     public static class SecurityConfiguration {
 
         @Bean

@@ -11,10 +11,11 @@ apiml:
             enabled: true
             clientId:
             clientSecret:
-            introspectUrl:
             registry:
             identityMapperUrl:
             identityMapperUser:
+            jwks:
+                uri:
         auth:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
