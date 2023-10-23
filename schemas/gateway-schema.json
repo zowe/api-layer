@@ -175,11 +175,23 @@
                                                             "description": "Allow URLs on gateway to contain encoded slashes.",
                                                             "default": true
                                                         },
-                                                        "centralRegistryUrls": {
+                                                        "additionalRegistration": {
                                                             "type": "array",
-                                                            "description": "List of additional Discovery Services URLs to register with.",
+                                                            "description": "List of additional Discovery Services URLs to register with and the routing patterns.",
                                                             "minItems": 1,
-                                                            "uniqueItems": true
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "discoveryServiceUrls": {
+                                                                        "type": "string",
+                                                                        "description": "List of Discovery Services URLs in one security domain. You can separate multiple urls by comma or semicolon."
+                                                                    },
+                                                                    "routes": {
+                                                                        "$ref": "#/$defs/routes"
+                                                                    }
+                                                                },
+                                                                "required": ["discoveryServiceUrls","routes"]
+                                                            }
                                                         },
                                                         "corsEnabled": {
                                                             "type": "boolean",
@@ -286,6 +298,24 @@
             "description": "TCP network port",
             "minimum": 1024,
             "maximum": 65535
+        },
+        "routes": {
+            "type": "array",
+            "description": "Routing parameters",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "gatewayUrl": {
+                        "type": "string",
+                        "description": "The portion of the gateway URL which is replaced by the serviceUrl path."
+                    },
+                    "serviceUrl": {
+                        "type": "string",
+                        "description": "The portion of the service instance URL path which replaces the gatewayUrl part."
+                    }
+                },
+                "required": ["gatewayUrl","serviceUrl"]
+            }
         }
     }
 }

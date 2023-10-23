@@ -2,6 +2,7 @@ body {
   #pageFooter {
     > div {
       display: flex;
+      justify-content: center;
     }
   }
   #bottom-info-div {
@@ -41,22 +42,22 @@ h6#footer-message {
 }
 
 @media (max-width: 800px) {
-  body #bottom-info-div {
-    flex-direction: column;
-  }
-  .left {
-    .MuiTypography-root, .MuiTypography-subtitle2 {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-left: 0 !important;
-      #footer-logo {
-        width: auto !important;
-        margin-right: 0 !important;
-        margin-bottom: 6px !important;
+  body {
+    #bottom-info-div {
+      flex-direction: column;
+    }
+    #onetrust-banner-sdk {
+      #onetrust-accept-btn-handler,
+      #onetrust-pc-btn-handler {
+        min-width: 100%;
       }
     }
-  }
-
+    
+    #pageFooter {
+      .MuiContainer-root:not(:first-child) {
+        margin-top: var( --spaceMedium );
+      }
+    }
+  } 
 }
 

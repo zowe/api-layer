@@ -5,7 +5,6 @@ apiml:
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
-        centralRegistryUrls: https://localhost:10021/eureka/,https://localhost:10031/eureka/
         discoveryServiceUrls: https://localhost:10011/eureka/
 
     security:

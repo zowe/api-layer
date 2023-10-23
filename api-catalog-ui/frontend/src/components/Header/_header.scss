@@ -6,20 +6,26 @@ body {
         }
     }
   #go-back-button-portal {
-      background-color: #CC092F;
-      margin-right: 25px;
-      border-radius: 3px;
-      height: 40px;
-      &, > span {
-          &, > a {
-              text-decoration: none;
-              color: white;
-              font-size: var( --fontMedium );
-          }
-          &, > a:hover {
-              color: var(--linkHover);
-          }
+      margin-right: var( --spaceMedium );
+      background-image: url(../../assets/images/angles-left.svg);
+      background-repeat: no-repeat;
+      background-size: 16px;
+      background-position: 8px 50%;
+      padding: var(--spaceSmaller ) var(--spaceMedium ) 6px var( --spaceLargest );
+      background-color: var( --surface05 );
+      border: 1px solid var( --divider20 );
+
+      &, * {
+        color: var( --link20 );
+        font-size: var( --fontSmall );
       }
+      &:hover, &:focus-visible {
+        background-color: var( --surface15 );
+        border-color: var( --divider15 );
+      }
+  }
+  .dashboard-develop-link {
+    margin-right: var( --spaceLarger );
   }
   #product-title {
       font-size: var( --spaceLarger );
