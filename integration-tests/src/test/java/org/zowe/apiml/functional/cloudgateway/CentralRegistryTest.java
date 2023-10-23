@@ -53,7 +53,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @SneakyThrows
     static void setupAll() {
         //In order to avoid config customization
-        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
+        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(1);
 
         TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
         SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
@@ -87,7 +87,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
         List<String> apimlIds = listCentralRegistry(null, null, null)
             .extract().jsonPath().getList("apimlId");
 
-        assertThat(apimlIds, Matchers.hasItems(Matchers.equalTo("central-apiml"), Matchers.equalTo("domain-apiml")));
+        assertThat(apimlIds, Matchers.containsInAnyOrder("central-apiml", "domain-apiml"));
     }
 
     @Test
