@@ -80,15 +80,13 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private int jwkRefreshInterval;
 
-    @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
     @NonNull
     private final CloseableHttpClient httpClient;
 
-    @Autowired
+    @Qualifier("oidcJwtClock")
     private final Clock clock;
 
-    @Autowired
     @Qualifier("oidcMapper")
     private final ObjectMapper mapper;
 
