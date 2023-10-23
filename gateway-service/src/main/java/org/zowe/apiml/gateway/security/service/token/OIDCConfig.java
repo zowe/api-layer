@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 public class OIDCConfig {
 
     @Bean
+    @Qualifier("oidcJwtClock")
     public Clock clock() {
         return new DefaultClock();
     }
