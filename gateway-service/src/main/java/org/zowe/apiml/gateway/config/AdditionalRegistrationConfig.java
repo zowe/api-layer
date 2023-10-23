@@ -19,9 +19,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.StandardEnvironment;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,10 +42,14 @@ public class AdditionalRegistrationConfig {
     public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL");
 
     @Bean
-    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
-        List<AdditionalRegistration> additionalRegistrations = extractAdditionalRegistrations(System.getenv());
-        log.debug("Parsed {} additional regs, \t first: {}", additionalRegistrations.size(), additionalRegistrations.stream().findFirst().orElse(null));
-        return additionalRegistrations;
+    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment, Optional<AdditionalRegistrationContainer> ymlConfigRegistrations) {
+        List<AdditionalRegistration> envVariablesRegistrations = extractAdditionalRegistrations(System.getenv());
+
+        Set<AdditionalRegistration> allRegistrations = new LinkedHashSet<>(envVariablesRegistrations);
+        ymlConfigRegistrations.ifPresent(allRegistrations::addAll);
+
+        log.debug("Parsed {} additional regs, \t first: {}", allRegistrations.size(), allRegistrations.stream().findFirst().orElse(null));
+        return new ArrayList<>(allRegistrations);
     }
 
     public static List<AdditionalRegistration> extractAdditionalRegistrations(Map<String, String> allProperties) {
