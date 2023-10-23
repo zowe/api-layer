@@ -27,7 +27,7 @@ body {
       font-size: var( --fontSmall );
   
       &:hover {
-        color: var( --text15 );
+          color: var(--linkHover);
       }
     }
   }
