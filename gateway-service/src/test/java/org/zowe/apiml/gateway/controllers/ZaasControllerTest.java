@@ -21,18 +21,20 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,6 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 class ZaasControllerTest {
+
+    @Mock
+    private AuthSourceService authSourceService;
 
     @Mock
     private PassTicketService passTicketService;
@@ -52,6 +57,8 @@ class ZaasControllerTest {
     private AuthSource.Parsed authSource;
 
     private static final String URL = "/gateway/zaas/ticket";
+    private static final String ZOWE_JWT_URL = "/gateway/zaas/zoweJwt";
+    private static final String JWT_TOKEN = "jwt_test_token";
 
     private static final String PASSTICKET = "test_passticket";
     private static final String APPLID = "test_applid";
@@ -61,7 +68,7 @@ class ZaasControllerTest {
         MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
-        ZaasController zaasController = new ZaasController(passTicketService, messageService);
+        ZaasController zaasController = new ZaasController(authSourceService, passTicketService, messageService);
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).build();
         body = new JSONObject()
             .put("applicationName", APPLID);
@@ -118,6 +125,18 @@ class ZaasControllerTest {
                 .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG141E"))
                 .andExpect(jsonPath("$.messages[0].messageContent", is("The generation of the PassTicket failed. Reason: An internal error was encountered.")));
         }
+
+        @Test
+        void whenRequestZoweJwtToken_thenResponseOK() throws Exception {
+            JwtAuthSource jwtAuthSource = new JwtAuthSource(JWT_TOKEN);
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(jwtAuthSource));
+            when(authSourceService.getJWT(jwtAuthSource)).thenReturn(JWT_TOKEN);
+
+            mockMvc.perform(post(ZOWE_JWT_URL))
+                .andExpect(status().is(SC_OK))
+                .andExpect(jsonPath("$.token", is(JWT_TOKEN)));
+        }
+
     }
 
     @Nested
@@ -136,5 +155,12 @@ class ZaasControllerTest {
                     .requestAttr("zaas.auth.source", authSource))
                 .andExpect(status().is(SC_UNAUTHORIZED));
         }
+
+        @Test
+        void whenRequestZoweJwtTokenAndInvalidSource_thenResponseUnauthorized() throws Exception {
+            mockMvc.perform(post(ZOWE_JWT_URL))
+                .andExpect(status().is(SC_UNAUTHORIZED));
+        }
+
     }
 }

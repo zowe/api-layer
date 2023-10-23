@@ -19,12 +19,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,6 +38,7 @@ import org.zowe.apiml.ticket.TicketResponse;
 public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
 
+    private final AuthSourceService authSourceService;
     private final PassTicketService passTicketService;
     private final MessageService messageService;
 
@@ -69,4 +75,24 @@ public class ZaasController {
             .status(HttpStatus.OK)
             .body(new TicketResponse(null, authSource.getUserId(), applicationName, ticket));
     }
+
+    @PostMapping(path = "zoweJwt", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Provides zoweJwt for authenticated user.")
+    @ResponseBody
+    public ResponseEntity<Object> getZoweJwt(HttpServletRequest request) {
+
+        Optional<AuthSource> rawAuthSource = authSourceService.getAuthSourceFromRequest(request);
+        if (!rawAuthSource.isPresent()) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .build();
+        }
+
+        String token = authSourceService.getJWT(rawAuthSource.get());
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(Collections.singletonMap("token", token));
+    }
+
 }
