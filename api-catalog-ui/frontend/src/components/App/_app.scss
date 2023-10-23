@@ -32,10 +32,15 @@ body {
     height: var( --contentHeightAdj );
     overflow: auto;
   }
-  .title1 {
-    font-size: var( --fontLarger );
+  .title1, .title2 {
     font-weight: var( --fontWeightMedium );
     color: var( --controlText15 );
+  }
+  .title1 {
+    font-size: var( --fontLarger );
+  }
+  .title2 {
+    font-size: var( --fontLarge );
   }
   .no-content {
     padding: var( --spaceLarger );
@@ -65,6 +70,12 @@ body {
     }
     &.feedback-button {
       border-radius: 24px;
+      height: 30px;
+      box-shadow: none;
+
+      span {
+        font-size: var( --fontSmall );
+      }
     }
     &, * {
       color: var( --text100 );
@@ -107,7 +118,7 @@ body {
         background-color: transparent;
       }
       .mobile-menu-trigger {
-        margin-right: var( --spaceSmaller );
+        margin-right: var( --spaceSmall );
         padding: var( --spaceTiny );
       }
     }
