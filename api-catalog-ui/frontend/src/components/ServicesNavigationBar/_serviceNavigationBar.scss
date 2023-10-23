@@ -2,7 +2,8 @@ $red-selected-bx: 0 0 0 2px var( --criticalShade10 ) inset;
 
 #serviceIdTabs {
     margin-bottom: var( --spaceSmall );
-    font-weight: bold;
+    color: var( --criticalShade10 );
+    font-size: var( --fontLarger );
 }
 #search_no_results {
     margin: auto;
@@ -96,4 +97,24 @@ svg.MuiSvgIcon-root.clear-text-search {
 
 #search2:has(.Mui-focused, :hover) {
     border: 1px solid var(--linkHover);
+}
+
+#go-back-button-portal {
+    margin-right: var( --spaceMedium );
+    background-image: url(../../assets/images/angles-left.svg);
+    background-repeat: no-repeat;
+    background-size: 16px;
+    background-position: 8px 50%;
+    padding: var(--spaceSmaller ) var(--spaceMedium ) 6px var( --spaceLargest );
+    background-color: var( --surface05 );
+    border: 1px solid var( --divider20 );
+
+    &, * {
+      color: var( --link20 );
+      font-size: var( --fontSmall );
+    }
+    &:hover, &:focus-visible {
+      background-color: var( --surface15 );
+      border-color: var( --divider15 );
+    }
 }

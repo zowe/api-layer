@@ -165,7 +165,7 @@ export default class DetailPage extends Component {
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
-                                        <h2 id="title" className="text-block-11">
+                                        <h2 id="title" className="text-block-11 title2">
                                             {tiles[0].title}
                                         </h2>
                                     )}
