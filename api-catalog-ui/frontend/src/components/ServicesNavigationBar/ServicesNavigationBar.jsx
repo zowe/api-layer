@@ -9,15 +9,21 @@
  */
 
 import { Component } from 'react';
-import { Tab, Tabs, Tooltip, Typography, withStyles, Button } from '@material-ui/core';
+import { Tab, Tabs, Tooltip, Typography, withStyles, Button, IconButton } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 
 export default class ServicesNavigationBar extends Component {
+    componentDidMount() {
+        window.addEventListener('popstate', this.handlePopstate);
+    }
+
     componentWillUnmount() {
+        window.removeEventListener('popstate', this.handlePopstate);
         const { clear } = this.props;
         clear();
     }
@@ -27,17 +33,27 @@ export default class ServicesNavigationBar extends Component {
         filterText(value);
     };
 
-    handleTabChange = (event, selectedTab) => {
-        localStorage.removeItem('serviceId');
-        localStorage.setItem('selectedTab', selectedTab);
-    };
-
     handleTabClick = (id) => {
         const { storeCurrentTileId, services } = this.props;
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
         if (correctTile) {
             storeCurrentTileId(correctTile.id);
             closeMobileMenu();
+        }
+    };
+
+    handlePopstate = () => {
+        const { services, storeCurrentTileId } = this.props;
+        const url = window.location.href;
+        if (url?.includes('/service')) {
+            const parts = url.split('/');
+            const serviceId = parts[parts.length - 1];
+            const correctTile = services.find((tile) =>
+                tile.services.some((service) => service.serviceId === serviceId)
+            );
+            if (correctTile) {
+                storeCurrentTileId(correctTile.id);
+            }
         }
     };
 
@@ -55,18 +71,17 @@ export default class ServicesNavigationBar extends Component {
         const { match, services, searchCriteria } = this.props;
         const hasTiles = services && services.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
-        let selectedTab = Number(localStorage.getItem('selectedTab'));
+        const url = window.location.href;
+        const parts = url.split('/');
+        const serviceId = parts[parts.length - 1];
+        const dashboard = '#/dashboard';
+        const backButtonText = 'BACK';
+        let selectedTab = Number(0);
         let allServices;
-        let allServiceIds;
         if (hasTiles) {
             allServices = services.flatMap((tile) => tile.services);
-            allServiceIds = allServices.map((service) => service.serviceId);
-            if (localStorage.getItem('serviceId')) {
-                const id = localStorage.getItem('serviceId');
-                if (allServiceIds.includes(id)) {
-                    selectedTab = allServiceIds.indexOf(id);
-                }
-            }
+            const index = allServices.findIndex((item) => item.serviceId === serviceId);
+            selectedTab = Number(index);
         }
         const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
             <Tooltip title={label} placement="bottom">
@@ -75,6 +90,17 @@ export default class ServicesNavigationBar extends Component {
         ));
         return (
             <div>
+                {isAPIPortal() && (
+                    <IconButton
+                        id="go-back-button-portal"
+                        className="button-cta"
+                        onClick={closeMobileMenu}
+                        size="medium"
+                        href={dashboard}
+                    >
+                        {backButtonText}
+                    </IconButton>
+                )}
                 {isAPIPortal() && (
                     <div className="mobile-view mobile-menu-close-ctn">
                         <h2 className="title1">API Catalog</h2>
@@ -89,11 +115,7 @@ export default class ServicesNavigationBar extends Component {
                 )}
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
-                        <SearchCriteria
-                            data-testid="search-bar"
-                            placeholder="Search for APIs..."
-                            doSearch={this.handleSearch}
-                        />
+                        <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={this.handleSearch} />
                     </Shield>
                 </div>
                 <Typography id="serviceIdTabs" variant="h5">
@@ -106,7 +128,7 @@ export default class ServicesNavigationBar extends Component {
                 )}
                 {hasTiles && (
                     <Tabs
-                        value={selectedTab || 0}
+                        value={selectedTab}
                         onChange={this.handleTabChange}
                         variant="scrollable"
                         orientation="vertical"
@@ -131,3 +153,10 @@ export default class ServicesNavigationBar extends Component {
         );
     }
 }
+
+ServicesNavigationBar.propTypes = {
+    storeCurrentTileId: PropTypes.func.isRequired,
+    services: PropTypes.shape({
+        find: PropTypes.func.isRequired,
+    }).isRequired,
+};

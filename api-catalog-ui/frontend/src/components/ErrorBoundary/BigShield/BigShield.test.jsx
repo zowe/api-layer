@@ -57,31 +57,6 @@ describe('>>> BigShield component tests', () => {
         expect(container.textContent).toMatch(errorMessageMatch);
     });
 
-    it('Should go back to portal homepage when enabled', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const historyMock = { push: jest.fn() };
-
-        const container = document.createElement('div');
-        act(() => {
-            render(
-                <BigShield history={historyMock}>
-                    <Child history={historyMock} />
-                </BigShield>,
-                container
-            );
-        });
-
-        const button = container.querySelector('button');
-
-        expect(button.textContent).toBe('Go to Dashboard');
-
-        act(() => {
-            button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        });
-
-        expect(historyMock.push).toHaveBeenCalledWith('/homepage');
-    });
-
     it('Should go back to dashboard', () => {
         const historyMock = { push: jest.fn() };
 

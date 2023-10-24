@@ -40,16 +40,11 @@ export default class DetailPage extends Component {
                 goBackButton.style.removeProperty('display');
             }
         }
-        const { fetchTilesStart, currentTileId, fetchNewTiles, history } = this.props;
+        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
         fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);
         }
-        if (!localStorage.getItem('serviceId')) {
-            const id = history.location.pathname.split('/service/')[1];
-            localStorage.setItem('serviceId', id);
-        }
-        localStorage.removeItem('selectedTab');
     }
 
     componentWillUnmount() {
@@ -60,11 +55,7 @@ export default class DetailPage extends Component {
     // eslint-disable-next-line react/sort-comp
     handleGoBack = () => {
         const { history } = this.props;
-        let path = '/dashboard';
-        if (isAPIPortal()) {
-            path = '/homepage';
-        }
-        history.push(path);
+        history.push('/dashboard');
     };
 
     handleLinkClick = (e, id) => {
@@ -174,7 +165,7 @@ export default class DetailPage extends Component {
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
-                                        <h2 id="title" className="text-block-11">
+                                        <h2 id="title" className="text-block-11 title2">
                                             {tiles[0].title}
                                         </h2>
                                     )}

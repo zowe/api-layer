@@ -49,24 +49,6 @@ describe('>>> User actions tests', () => {
         expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
     });
 
-    it('should use portal routing', async () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const dispatch = jest.fn();
-        const expectedAction = { type: 'USERS_LOGIN_REQUEST', user: { password: 'password', username: 'user' } };
-
-        userService.login = jest.fn().mockResolvedValue('token');
-
-        const pushSpy = jest.spyOn(history, 'push');
-
-        await userActions.login(credentials)(dispatch);
-
-        expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
-
-        expect(pushSpy).toHaveBeenCalledWith('/homepage');
-
-        pushSpy.mockRestore();
-    });
-
     it('should use normal routing', async () => {
         const dispatch = jest.fn();
         const expectedAction = { type: 'USERS_LOGIN_REQUEST', user: { password: 'password', username: 'user' } };

@@ -12,35 +12,48 @@ package org.zowe.apiml.gateway.security.service.token;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Clock;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.util.UrlUtils;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import javax.annotation.PostConstruct;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -48,8 +61,11 @@ import java.util.List;
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
-    @Value("${apiml.security.oidc.introspectUrl:}")
-    String introspectUrl;
+    @InjectApimlLogger
+    protected final ApimlLogger logger = ApimlLogger.empty();
+
+    @Value("${apiml.security.oidc.registry:}")
+    String registry;
 
     @Value("${apiml.security.oidc.clientId:}")
     String clientId;
@@ -57,50 +73,41 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.clientSecret:}")
     String clientSecret;
 
-    @Autowired
+    @Value("${apiml.security.oidc.jwks.uri}")
+    private String jwksUri;
+
+    @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
+    private int jwkRefreshInterval;
+
     @Qualifier("secureHttpClientWithoutKeystore")
     @NonNull
     private final CloseableHttpClient httpClient;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    @Qualifier("oidcJwtClock")
+    private final Clock clock;
 
-    @Override
-    public boolean isValid(String token) {
-        OIDCTokenClaims claims = introspect(token);
-        if (claims != null) {
-            return claims.getActive();
-        }
-        return false;
+    @Qualifier("oidcMapper")
+    private final ObjectMapper mapper;
+
+    private Map<String, Key> jwks = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        this.fetchJwksUrls();
+        Executors.newSingleThreadScheduledExecutor(r -> new Thread("OIDC JWK Refresh"))
+            .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval, jwkRefreshInterval, TimeUnit.HOURS);
     }
 
-    private OIDCTokenClaims introspect(String token) {
-        if (StringUtils.isBlank(token)) {
-            log.debug("No token has been provided.");
-            return null;
+    @Retryable
+    void fetchJwksUrls() {
+        if (StringUtils.isBlank(jwksUri)) {
+            log.debug("OIDC JWK URI not provided, JWK refresh not performed");
+            return;
         }
-        if (StringUtils.isBlank(introspectUrl) || !UrlUtils.isValidUrl(introspectUrl)) {
-            log.warn("Missing or invalid introspectUrl configuration. Cannot proceed with token validation.");
-            return null;
-        }
-        if (StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)) {
-            log.warn("Missing clientId or clientSecret configuration. Cannot proceed with token validation.");
-            return null;
-        }
-        HttpPost post = new HttpPost(introspectUrl);
-        List<NameValuePair> bodyParams = new ArrayList<>();
-        bodyParams.add(new BasicNameValuePair("token", token));
-        bodyParams.add(new BasicNameValuePair("token_type_hint", "access_token"));
-        post.setEntity(new UrlEncodedFormEntity(bodyParams, StandardCharsets.UTF_8));
-
-        String credentials = clientId + ":" + clientSecret;
-        byte[] base64encoded = Base64.getEncoder().encode(credentials.getBytes());
-        final String headerValue = "Basic " + new String(base64encoded);
-        post.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, headerValue));
-        post.setHeader(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE));
-        post.setHeader(new BasicHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE));
-
+        log.debug("Refreshing JWK endpoints {}", jwksUri);
+        HttpGet getRequest = new HttpGet(jwksUri + "?client_id=" + clientId);
         try {
-            CloseableHttpResponse response = httpClient.execute(post);
+            CloseableHttpResponse response = httpClient.execute(getRequest);
             final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
             final HttpEntity responseEntity = response.getEntity();
             String responseBody = "";
@@ -108,15 +115,77 @@ public class OIDCTokenProvider implements OIDCProvider {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
             if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
-                return mapper.readValue(responseBody, OIDCTokenClaims.class);
+                jwks.clear();
+                JwkKeys jwkKeys = mapper.readValue(responseBody, JwkKeys.class);
+                jwks.putAll(processKeys(jwkKeys));
             } else {
-                log.error("Failed to validate the OIDC access token. Unexpected response: {}", statusCode);
-                return null;
+                log.error("Failed to obtain JWKs from URI {}. Unexpected response: {}, response text: {}", jwksUri, statusCode, responseBody);
             }
-        } catch (IOException e) {
-            log.error("Failed to validate the OIDC access token. ", e);
+        } catch (IOException | IllegalStateException e) {
+            log.error("Error processing response from URI {}", jwksUri, e.getMessage());
         }
-        return null;
     }
 
+    private Map<String, Key> processKeys(JwkKeys jwkKeys) {
+        return jwkKeys.getKeys().stream()
+            .filter(jwkKey -> "sig".equals(jwkKey.getUse()))
+            .filter(jwkKey -> "RSA".equals(jwkKey.getKty()))
+            .collect(Collectors.toMap(JwkKeys.Key::getKid, jwkKey -> {
+                BigInteger modulus = base64ToBigInteger(jwkKey.getN());
+                BigInteger exponent = base64ToBigInteger(jwkKey.getE());
+                RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(modulus, exponent);
+                try {
+                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    return keyFactory.generatePublic(rsaPublicKeySpec);
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    throw new IllegalStateException("Failed to parse public key");
+                }
+           }));
+    }
+
+    private BigInteger base64ToBigInteger(String value) {
+        return new BigInteger(1, Decoders.BASE64URL.decode(value));
+    }
+
+    @Override
+    public boolean isValid(String token) {
+        if (StringUtils.isBlank(token)) {
+            log.debug("No token has been provided.");
+            return false;
+        }
+        String kid = getKeyId(token);
+        logger.log(MessageType.DEBUG, "Token signed by key {}", kid);
+        return Optional.ofNullable(jwks.get(kid))
+            .map(key -> validate(token, key))
+            .map(claims -> claims != null && !claims.isEmpty())
+            .orElse(false);
+    }
+
+    private String getKeyId(String token) {
+        try {
+            return String.valueOf(Jwts.parserBuilder()
+                    .setClock(clock)
+                    .build()
+                    .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                    .getHeader()
+                    .get("kid"));
+        } catch (JwtException e) {
+            log.error("OIDC Token is not valid: {}", e.getMessage());
+            return "";
+        }
+    }
+
+    private Claims validate(String token, Key key) {
+        try {
+            return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .setClock(clock)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        } catch (TokenNotValidException | JwtException e) {
+            log.debug("OIDC Token is not valid: {}", e.getMessage());
+            return null; // NOSONAR
+        }
+    }
 }
