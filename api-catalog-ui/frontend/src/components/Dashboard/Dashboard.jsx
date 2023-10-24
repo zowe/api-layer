@@ -152,14 +152,13 @@ export default class Dashboard extends Component {
                                 {apiPortalEnabled && (
                                     <div>
                                         <h1 className="api-heading">API Catalog</h1>
-                                        <h3>Discover All Broadcom APIs in one place</h3>
                                     </div>
                                 )}
                                 <div id="search">
                                     <Shield title="Search Bar is broken !">
                                         <SearchCriteria
                                             id="search-input"
-                                            placeholder="Search for APIs..."
+                                            placeholder="Search..."
                                             doSearch={this.handleSearch}
                                         />
                                     </Shield>
