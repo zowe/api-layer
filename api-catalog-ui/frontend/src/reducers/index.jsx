@@ -31,6 +31,13 @@ const reducers = {
     wizardReducer,
 };
 
+if ('serviceWorker' in navigator) {
+    caches.keys().then((cacheNames) => {
+        cacheNames.forEach((cacheName) => {
+            caches.delete(cacheName);
+        });
+    });
+}
 async function unregisterAndClearCaches() {
     const registrations = await navigator.serviceWorker.getRegistrations();
     const unregisterPromises = registrations.map((registration) => registration.unregister());
