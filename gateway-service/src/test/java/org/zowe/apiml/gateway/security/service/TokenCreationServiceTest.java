@@ -12,9 +12,13 @@ package org.zowe.apiml.gateway.security.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
@@ -27,16 +31,27 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TokenCreationServiceTest {
+
     private TokenCreationService underTest;
 
+    @Mock
     private PassTicketService passTicketService;
+
+    @Mock
     private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
+
+    @Mock
     private Providers providers;
+
+    @Mock
     private AuthenticationService authenticationService;
+
+    @Mock
+    private ZosmfService zosmfService;
 
     private final String VALID_USER_ID = "validUserId";
     private final String VALID_ZOSMF_TOKEN = "validZosmfToken";
@@ -45,18 +60,13 @@ class TokenCreationServiceTest {
 
     @BeforeEach
     void setUp() {
-        passTicketService = mock(PassTicketService.class);
-        zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
-        providers = mock(Providers.class);
-        authenticationService = mock(AuthenticationService.class);
-
-        underTest = new TokenCreationService(providers, Optional.of(zosmfAuthenticationProvider), passTicketService, authenticationService);
+        underTest = new TokenCreationService(providers, Optional.of(zosmfAuthenticationProvider), zosmfService, passTicketService, authenticationService);
         underTest.zosmfApplId = "IZUDFLT";
     }
 
     @Test
     void givenZosmfIsUnavailable_whenTokenIsRequested_thenTokenCreatedByApiMlIsReturned() {
-        when(providers.isZosmfAvailable()).thenReturn(false);
+        when(providers.isZosfmUsed()).thenReturn(false);
         when(authenticationService.createJwtToken(eq(VALID_USER_ID), any(), any())).thenReturn(VALID_APIML_TOKEN);
         when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN));
 
@@ -66,7 +76,7 @@ class TokenCreationServiceTest {
 
     @Test
     void givenZosmfIsntPresentBecauseOfError_whenTokenIsRequested_shouldReturnTokenCreatedByApiMl() {
-        when(providers.isZosmfAvailable()).thenThrow(new AuthenticationServiceException("zOSMF id invalid"));
+        when(providers.isZosfmUsed()).thenThrow(new AuthenticationServiceException("zOSMF id invalid"));
         when(authenticationService.createJwtToken(eq(VALID_USER_ID), any(), any())).thenReturn(VALID_APIML_TOKEN);
         when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN));
 

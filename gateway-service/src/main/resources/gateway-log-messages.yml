@@ -449,3 +449,12 @@ messages:
       text: z/OSMF JWT builder endpoint call (%s) failed with %s
       reason: z/OSMF returned an error code when calling JWT endpoint.
       action: Review z/OSMF status. Contact your system administrator.
+
+    # ZAAS error messages (#600) TODO: Messaging requires clean up
+
+    - key: org.zowe.apiml.zaas.zosmf.noTokenReceived
+      number: ZWEAG600
+      type: WARNING
+      text: z/OSMF response does not contain any token.
+      reason: z/OSMF does not returned JWT or LTPA token.
+      action: Review your z/OSMF configuration. Contact your system administrator.

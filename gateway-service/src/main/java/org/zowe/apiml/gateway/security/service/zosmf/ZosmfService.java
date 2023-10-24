@@ -28,12 +28,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -44,14 +39,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 
 import javax.annotation.PostConstruct;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -127,6 +125,8 @@ public class ZosmfService extends AbstractZosmfService {
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,
+        final AuthenticationService authenticationService,
+        final TokenCreationService tokenCreationService,
         List<TokenValidationStrategy> tokenValidationStrategy
     ) {
         super(
@@ -137,9 +137,13 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.applicationContext = applicationContext;
         this.tokenValidationStrategy = tokenValidationStrategy;
+        this.authenticationService = authenticationService;
+        this.tokenCreationService = tokenCreationService;
     }
 
     private ZosmfService meAsProxy;
+    private final AuthenticationService authenticationService;
+    private final TokenCreationService tokenCreationService;
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -220,9 +224,40 @@ public class ZosmfService extends AbstractZosmfService {
         }
     }
 
+    @SuppressWarnings("java:S128") // Break in ZOWE case is intentionally written like this
+    public ZosmfResponse exchangeAuthenticationForZosmfToken(String token, AuthSource.Parsed authSource) {
+
+        String zosmfToken = token;
+        String cookieName = ZosmfService.TokenType.JWT.getCookieName();
+        switch (authSource.getOrigin()) {
+            case ZOSMF:
+                break;
+            case ZOWE:
+                zosmfToken = authenticationService.getLtpaToken(token);
+                if (zosmfToken != null) {
+                    cookieName = ZosmfService.TokenType.LTPA.getCookieName();
+                    break;
+                }
+            default:
+                Map<ZosmfService.TokenType, String> zosmfTokens = tokenCreationService.createZosmfTokensWithoutCredentials(authSource.getUserId());
+
+                if (zosmfTokens.containsKey(JWT)) {
+                    zosmfToken = zosmfTokens.get(JWT);
+                } else if (zosmfTokens.containsKey(LTPA)) {
+                    zosmfToken = zosmfTokens.get(LTPA);
+                    cookieName = ZosmfService.TokenType.LTPA.getCookieName();
+                } else {
+                    return null;
+                }
+        }
+
+        return new ZosmfResponse(cookieName, zosmfToken);
+    }
+
+
     /**
      * Verify whether the service is actually accessible.
-     *
+     * <p>
      * Note: This method uses getURI, it's also verifying eureka registration
      *
      * @return true when it's possible to access the Info endpoint via GET.
