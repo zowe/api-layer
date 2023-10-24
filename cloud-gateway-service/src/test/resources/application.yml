@@ -2,13 +2,14 @@ eureka:
     client:
         registerWithEureka: false
         serviceUrl:
-            defaultZone: https://localhost:999/eureka/
+            defaultZone: ${apiml.service.discoveryServiceUrls}
 
 apiml:
     service:
         id: cloud-gateway
         port: 10023
         hostname: localhost
+        discoveryServiceUrls: https://localhost:999/eureka/
         scheme: https
         corsEnabled: true
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
