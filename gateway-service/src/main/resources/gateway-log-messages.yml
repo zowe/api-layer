@@ -452,9 +452,9 @@ messages:
 
     # ZAAS error messages (#600) TODO: Messaging requires clean up
 
-    - key: org.zowe.apiml.zaas.zosmf.noTokenReceived
+    - key: org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived
       number: ZWEAG600
       type: WARNING
-      text: z/OSMF response does not contain any token.
-      reason: z/OSMF does not returned JWT or LTPA token.
-      action: Review your z/OSMF configuration. Contact your system administrator.
+      text: "z/OSMF is not available or z/OSMF response does not contain any token. Reason: %s"
+      reason: z/OSMF does not return JWT or LTPA tokens.
+      action: Make sure z/OSMF is available to API ML or review your z/OSMF configuration.

@@ -11,14 +11,12 @@
 package org.zowe.apiml.zaas.zosmf;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
-@Data
-@NoArgsConstructor
+@Value
 @AllArgsConstructor
 public class ZosmfResponse {
 
-    private String cookieName;
-    private String token;
+    String cookieName;
+    String token;
 }

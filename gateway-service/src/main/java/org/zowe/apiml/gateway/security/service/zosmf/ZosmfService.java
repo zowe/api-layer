@@ -50,6 +50,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 
 import javax.annotation.PostConstruct;
+import javax.management.ServiceNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -224,34 +225,27 @@ public class ZosmfService extends AbstractZosmfService {
         }
     }
 
-    @SuppressWarnings("java:S128") // Break in ZOWE case is intentionally written like this
-    public ZosmfResponse exchangeAuthenticationForZosmfToken(String token, AuthSource.Parsed authSource) {
-
-        String zosmfToken = token;
-        String cookieName = ZosmfService.TokenType.JWT.getCookieName();
+    @SuppressWarnings("java:S128") // Break in ZOWE case is left intentionally
+    public ZosmfResponse exchangeAuthenticationForZosmfToken(String token, AuthSource.Parsed authSource) throws ServiceNotFoundException {
         switch (authSource.getOrigin()) {
             case ZOSMF:
-                break;
+                return new ZosmfResponse(ZosmfService.TokenType.JWT.getCookieName(), token);
             case ZOWE:
-                zosmfToken = authenticationService.getLtpaToken(token);
-                if (zosmfToken != null) {
-                    cookieName = ZosmfService.TokenType.LTPA.getCookieName();
-                    break;
+                String ltpaToken = authenticationService.getLtpaToken(token);
+                if (ltpaToken != null) {
+                    return new ZosmfResponse(ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
                 }
             default:
                 Map<ZosmfService.TokenType, String> zosmfTokens = tokenCreationService.createZosmfTokensWithoutCredentials(authSource.getUserId());
 
                 if (zosmfTokens.containsKey(JWT)) {
-                    zosmfToken = zosmfTokens.get(JWT);
+                    return new ZosmfResponse(ZosmfService.TokenType.JWT.getCookieName(), zosmfTokens.get(JWT));
                 } else if (zosmfTokens.containsKey(LTPA)) {
-                    zosmfToken = zosmfTokens.get(LTPA);
-                    cookieName = ZosmfService.TokenType.LTPA.getCookieName();
-                } else {
-                    return null;
+                    return new ZosmfResponse(ZosmfService.TokenType.LTPA.getCookieName(), zosmfTokens.get(LTPA));
                 }
         }
 
-        return new ZosmfResponse(cookieName, zosmfToken);
+        throw new ServiceNotFoundException("Unable to obtain a token from z/OSMF service");
     }
 
 
