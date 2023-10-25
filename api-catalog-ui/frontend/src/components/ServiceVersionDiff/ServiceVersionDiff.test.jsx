@@ -13,7 +13,9 @@ import ServiceVersionDiff from './ServiceVersionDiff';
 describe('>>> ServiceVersionDiff component tests', () => {
     it('Should display all the compare items', () => {
         const getDiff = jest.fn();
-        const serviceVersionDiff = shallow(<ServiceVersionDiff getDiff={getDiff} serviceId="service" versions={['v1', 'v2']} />);
+        const serviceVersionDiff = shallow(
+            <ServiceVersionDiff getDiff={getDiff} serviceId="service" versions={['v1', 'v2']} />
+        );
 
         expect(serviceVersionDiff.find('.api-diff-container').exists()).toEqual(true);
         expect(serviceVersionDiff.find('.api-diff-form').exists()).toEqual(true);
