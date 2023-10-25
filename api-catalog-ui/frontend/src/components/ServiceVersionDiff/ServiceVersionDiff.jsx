@@ -25,13 +25,12 @@ import CloseIcon from '@material-ui/icons/Close';
 
 export default class ServiceVersionDiff extends Component {
     constructor(props) {
-        const { version1, version2, selectedVersion } = props;
+        const { versions } = props;
         super(props);
         this.state = {
-            selectedVersion1: version1 ? { text: version1 } : undefined,
-            selectedVersion2: version2 ? { text: version2 } : undefined,
+            selectedVersion1: versions?.length ? versions[versions.length - 2] : undefined,
+            selectedVersion2: versions?.length ? versions[versions.length - 1] : undefined,
             open: props.isDialogOpen,
-            defaultVersion: selectedVersion,
         };
 
         this.handleVersion1Change = this.handleVersion1Change.bind(this);
@@ -39,11 +38,12 @@ export default class ServiceVersionDiff extends Component {
     }
 
     componentDidMount() {
-        this.setState({ selectedVersion1: null, selectedVersion2: null });
+        const { serviceId, getDiff } = this.props;
+        const { selectedVersion1, selectedVersion2 } = this.state;
+        getDiff(serviceId, selectedVersion1, selectedVersion2);
     }
 
     handleVersion1Change = (event) => {
-        this.setState({ defaultVersion: null });
         this.setState({ selectedVersion1: event.target.value });
     };
 
@@ -78,7 +78,7 @@ export default class ServiceVersionDiff extends Component {
                                     label="versionSelect1"
                                     className="select-diff"
                                     displayEmpty
-                                    value={this.state.defaultVersion || selectedVersion1}
+                                    value={selectedVersion1}
                                     onChange={this.handleVersion1Change}
                                     sx={selectorStyle}
                                 >
@@ -108,11 +108,11 @@ export default class ServiceVersionDiff extends Component {
                                 </Select>
                             </FormControl>
                             <IconButton
-                                disabled={!selectedVersion2}
+                                disabled={!selectedVersion1 && !selectedVersion2}
                                 id="diff-button"
                                 data-testid="diff-button"
                                 onClick={() => {
-                                    getDiff(serviceId, this.state.defaultVersion ?? selectedVersion1, selectedVersion2);
+                                    getDiff(serviceId, selectedVersion1, selectedVersion2);
                                 }}
                             >
                                 Show

@@ -258,11 +258,17 @@ export default class ServiceTab extends Component {
                                 </Typography>
                             )}
                         </div>
-                        {containsVersion?.length > 1 && currentService && (
+                        {currentService && (
                             <div id="version-div">
                                 <Select
+                                    disabled={apiVersions.length < 2}
                                     displayEmpty
                                     id="version-menu"
+                                    style={
+                                        apiVersions.length < 2
+                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                            : { backgroundColor: '#fff', color: '#0056B3' }
+                                    }
                                     value={
                                         this.state.selectedVersion
                                             ? this.state.selectedVersion
