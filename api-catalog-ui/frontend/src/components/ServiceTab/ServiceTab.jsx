@@ -258,7 +258,7 @@ export default class ServiceTab extends Component {
                                 </Typography>
                             )}
                         </div>
-                        {!apiPortalEnabled && containsVersion && currentService && (
+                        {containsVersion?.length > 1 && currentService && (
                             <div id="version-div">
                                 <Select
                                     displayEmpty
