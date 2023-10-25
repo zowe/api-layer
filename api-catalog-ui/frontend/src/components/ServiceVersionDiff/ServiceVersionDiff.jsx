@@ -72,7 +72,7 @@ export default class ServiceVersionDiff extends Component {
                         <div className="api-diff-form">
                             <Typography data-testid="compare-label">Compare</Typography>
                             <FormControl className="formField">
-                                <InputLabel shrink>Version</InputLabel>
+                                <InputLabel shrink>Version:</InputLabel>
                                 <Select
                                     data-testid="select-1"
                                     label="versionSelect1"
@@ -91,7 +91,7 @@ export default class ServiceVersionDiff extends Component {
                             </FormControl>
                             <Typography data-testid="label-with">with</Typography>
                             <FormControl className="formField">
-                                <InputLabel shrink>Version</InputLabel>
+                                <InputLabel shrink>Version:</InputLabel>
                                 <Select
                                     data-testid="select-2"
                                     className="select-diff"

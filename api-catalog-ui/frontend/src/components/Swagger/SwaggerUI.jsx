@@ -38,7 +38,7 @@ function transformSwaggerToCurrentHost(swagger) {
 function setFilterBarStyle() {
     const filterInput = document.getElementsByClassName('operation-filter-input');
     if (filterInput && filterInput.length > 0) {
-        filterInput.item(0).placeholder = 'Filter APIs';
+        filterInput.item(0).placeholder = 'Search in endpoints...';
     }
     if (isAPIPortal() && !document.getElementById('filter-label')) {
         const divInfo = document.querySelector('.info');

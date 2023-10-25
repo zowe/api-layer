@@ -252,9 +252,9 @@ export default class ServiceTab extends Component {
                             <Typography id="swagger-label" className="title2" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
-                            {!apiPortalEnabled && containsVersion && currentService && (
+                            {containsVersion && currentService && (
                                 <Typography id="version-label" variant="subtitle2">
-                                    Version
+                                    Service ID and Version:
                                 </Typography>
                             )}
                         </div>
