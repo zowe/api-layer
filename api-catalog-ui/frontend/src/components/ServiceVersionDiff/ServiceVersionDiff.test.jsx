@@ -12,7 +12,8 @@ import ServiceVersionDiff from './ServiceVersionDiff';
 
 describe('>>> ServiceVersionDiff component tests', () => {
     it('Should display all the compare items', () => {
-        const serviceVersionDiff = shallow(<ServiceVersionDiff serviceId="service" versions={['v1', 'v2']} />);
+        const getDiff = jest.fn();
+        const serviceVersionDiff = shallow(<ServiceVersionDiff getDiff={getDiff} serviceId="service" versions={['v1', 'v2']} />);
 
         expect(serviceVersionDiff.find('.api-diff-container').exists()).toEqual(true);
         expect(serviceVersionDiff.find('.api-diff-form').exists()).toEqual(true);
@@ -49,7 +50,7 @@ describe('>>> ServiceVersionDiff component tests', () => {
         );
 
         serviceVersionDiff.find('[data-testid="diff-button"]').first().simulate('click');
-        expect(getDiff.mock.calls.length).toBe(1);
+        expect(getDiff.mock.calls.length).toBe(2);
     });
 
     it('Should call getDiff when default version', () => {
@@ -59,7 +60,7 @@ describe('>>> ServiceVersionDiff component tests', () => {
         );
 
         serviceVersionDiff.find('[data-testid="diff-button"]').first().simulate('click');
-        expect(getDiff.mock.calls.length).toBe(1);
+        expect(getDiff.mock.calls.length).toBe(2);
     });
 
     it('should call get diff once the component is mounted', () => {
