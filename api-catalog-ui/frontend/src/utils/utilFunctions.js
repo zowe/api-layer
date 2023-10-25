@@ -24,7 +24,7 @@ function checkForSwagger(service) {
             }
         }
     });
-    if (!hasSwagger && service.apiDoc?.length > 0) {
+    if (!hasSwagger && service?.apiDoc) {
         // eslint-disable-next-line no-param-reassign
         hasSwagger = true;
     }
