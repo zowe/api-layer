@@ -258,7 +258,7 @@ export default class ServiceTab extends Component {
                                 </Typography>
                             )}
                         </div>
-                        {currentService && (
+                        {currentService && apiVersions?.length && (
                             <div id="version-div">
                                 <Select
                                     disabled={apiVersions.length < 2}
