@@ -252,6 +252,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_HOSTNAME: cloud-gateway-service
                     APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
 
