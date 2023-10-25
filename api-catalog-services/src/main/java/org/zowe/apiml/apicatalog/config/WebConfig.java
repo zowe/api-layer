@@ -25,9 +25,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
-        .addResourceHandler("/resources/index.html")
-        .setCacheControl(CacheControl.noCache())
-        .addResourceLocations("/resources/index.html");
+        .addResourceHandler("/index.html")
+        .setCacheControl(CacheControl
+            .noStore()
+            .cachePrivate()
+            .mustRevalidate())
+        .addResourceLocations("/static/index.html", "classpath:/static/index.html");
 
         registry
         .addResourceHandler("/resources/**")
