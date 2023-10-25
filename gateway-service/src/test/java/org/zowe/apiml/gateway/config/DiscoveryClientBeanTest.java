@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.DataCenterInfo;
+import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.appinfo.MyDataCenterInfo;
@@ -71,5 +72,16 @@ class DiscoveryClientBeanTest {
         wrapper.shutdown();
 
         assertThat(wrapper.getDiscoveryClients()).hasSize(2);
+    }
+
+    @Test
+    void shouldCreateInstanceInfoFromEurekaConfig() {
+        EurekaInstanceConfig config = mock(EurekaInstanceConfig.class);
+        when(config.getNamespace()).thenReturn("");
+        when(config.getAppname()).thenReturn("GATEWAY");
+
+        InstanceInfo instanceInfo = new ApimlDiscoveryClientFactory().createInstanceInfo(config);
+
+        assertThat(instanceInfo.getAppName()).isEqualTo("GATEWAY");
     }
 }
