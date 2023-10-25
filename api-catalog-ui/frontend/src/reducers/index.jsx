@@ -31,23 +31,5 @@ const reducers = {
     wizardReducer,
 };
 
-if ('serviceWorker' in navigator) {
-    caches.keys().then((cacheNames) => {
-        cacheNames.forEach((cacheName) => {
-            caches.delete(cacheName);
-        });
-    });
-}
-async function unregisterAndClearCaches() {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    const unregisterPromises = registrations.map((registration) => registration.unregister());
-
-    const allCaches = await caches.keys();
-    const cacheDeletionPromises = allCaches.map((cache) => caches.delete(cache));
-
-    await Promise.all([...unregisterPromises, ...cacheDeletionPromises]);
-}
-
-unregisterAndClearCaches();
 // eslint-disable-next-line import/prefer-default-export
 export const rootReducer = combineReducers(reducers);
