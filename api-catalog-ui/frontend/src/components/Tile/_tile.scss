@@ -93,6 +93,7 @@ body {
         padding: var( --spaceLarger ) 0;
         text-align: left;
         width: 100%;
+          font-size: var( --fontMedium );
       }
       .tile-desc,
       .expanded-spacer {
@@ -154,7 +155,7 @@ body {
         font-size: 14px;
     }
     #tutorials-counter,
-    #videos-counter { 
+    #videos-counter {
       margin-right: var( --spaceSmaller );
     }
     #videos-counter {
