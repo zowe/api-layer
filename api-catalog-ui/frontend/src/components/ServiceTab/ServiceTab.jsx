@@ -244,12 +244,12 @@ export default class ServiceTab extends Component {
                             <Typography
                                 data-testid="description"
                                 variant="subtitle2"
-                                style={{ marginTop: '15px', color: 'black' }}
+                                style={{ color: 'black' }}
                             >
                                 {selectedService.description}
                             </Typography>
                             <br />
-                            <Typography id="swagger-label" className="title2" size="medium" variant="outlined">
+                            <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
                             {!apiPortalEnabled && containsVersion && currentService && (

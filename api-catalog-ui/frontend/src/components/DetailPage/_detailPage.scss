@@ -68,8 +68,11 @@ body .detail-content {
         h2.title {
           @extend .MuiTypography-h4;
           margin-top: 0px;
+          display: flex;
+          flex-direction: column;
+          font-size: var( --fontMedium );
 
-          span {
+          span, small {
             font-weight: normal;
           }
         }
@@ -88,7 +91,6 @@ body .detail-content {
     .description, .scheme-container, .info__extdocs, .info__license {
       display: none;
     }
-    
   }//end swagger-ui
 
   .header {
@@ -194,9 +196,5 @@ body .detail-content {
         padding-right: 10px;
         padding-left: 10px;
         font-size: 13px;
-    }
-    // Copied from chrome inspector
-    #swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2 > span > small:nth-child(1) > pre {
-      display: none;
     }
 }

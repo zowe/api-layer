@@ -71,6 +71,14 @@
             * {
               color: var( --text10 );
             }
+            svg {
+              rect {
+                fill: var( --text10 );
+              }
+              path {
+                fill: var( --surface05 );
+              }
+            }
           } 
           .right-icons a {
             width: 100%;

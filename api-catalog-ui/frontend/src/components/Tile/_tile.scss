@@ -7,17 +7,9 @@ body {
   }
 
   .MuiCard-root {
-    padding: var( --spaceTiny );
+    padding: 0;
     margin: var( --spaceSmallest ) var( --spaceSmaller ) var( --spaceMedium );
 
-    &:hover {
-      cursor: pointer;
-      box-shadow: 0 0 0 2px var( --linkHover ) inset;
-
-      .tile-title #tiles-service-title {
-        color: var( --linkHover );
-      }
-    }
     .MuiCardActionArea-focusHighlight,
     .MuiTouchRipple-root {
       display: none;
@@ -31,6 +23,16 @@ body {
     }
     .tile-desc {
       transition: all .5s ease;
+    }
+    .card-action {
+      &:hover, &:focus {
+        cursor: pointer;
+        box-shadow: 0 0 0 2px var( --linkHover ) inset;
+  
+        .tile-title #tiles-service-title {
+          color: var( --linkHover );
+        }
+      }
     }
 
     .icon-ctn {
@@ -48,9 +50,15 @@ body {
         .swagger-img {
           background-image: url(../../assets/images/swagger.svg);
         }
-        &.link-counter .icon-img-ctn:hover svg path {
-          fill: var( --linkHover );
-        }
+        &.link-counter .icon-img-ctn {
+          &:focus, &:hover {
+            background: transparent;
+
+            svg path {
+              fill: var( --linkHover );
+            }
+          }
+        } 
         &.disabled-counter {
           svg path {
             fill: var( --control00Disabled );
@@ -71,6 +79,7 @@ body {
           display: flex;
           align-items: center;
           height: 22px;
+          padding: 0px;
 
           svg {
             width: 100%;
