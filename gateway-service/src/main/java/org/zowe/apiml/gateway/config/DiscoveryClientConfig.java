@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
+import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
@@ -116,8 +117,9 @@ public class DiscoveryClientConfig {
         return discoveryClientClient;
     }
 
-    private static InstanceInfo getInstanceInfo(AdditionalRegistration apimlRegistration, ApplicationInfoManager bareManager) {
+    private InstanceInfo getInstanceInfo(AdditionalRegistration apimlRegistration, ApplicationInfoManager bareManager) {
         if (!CollectionUtils.isEmpty(apimlRegistration.getRoutes())) {
+            InstanceInfo newInfo = new InstanceInfoFactory().create(bareManager.getEurekaInstanceConfig());
             Map<String, String> metadataWithRoutes = bareManager.getInfo().getMetadata().entrySet().stream().filter(entry -> !entry.getKey().startsWith(ROUTES)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             int index = 0;
             for (AdditionalRegistration.Route route : apimlRegistration.getRoutes()) {
@@ -125,7 +127,7 @@ public class DiscoveryClientConfig {
                 metadataWithRoutes.put(ROUTES + "." + index + "." + ROUTES_SERVICE_URL, route.getServiceUrl());
                 index++;
             }
-            InstanceInfo.Builder builder = new InstanceInfo.Builder(bareManager.getInfo());
+            InstanceInfo.Builder builder = new InstanceInfo.Builder(newInfo);
             builder.setMetadata(metadataWithRoutes);
             return builder.build();
         }
