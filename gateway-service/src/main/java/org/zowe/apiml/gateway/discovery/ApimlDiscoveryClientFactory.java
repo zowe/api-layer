@@ -11,7 +11,10 @@
 package org.zowe.apiml.gateway.discovery;
 
 import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.InstanceInfo;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
+import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -24,5 +27,9 @@ public class ApimlDiscoveryClientFactory {
 
     public ApimlDiscoveryClient buildApimlDiscoveryClient(ApplicationInfoManager perClientAppManager, EurekaClientConfigBean configBean, MutableDiscoveryClientOptionalArgs args, ApplicationContext context) {
         return new ApimlDiscoveryClient(perClientAppManager, configBean, args, context);
+    }
+
+    public InstanceInfo createInstanceInfo(EurekaInstanceConfig instanceConfig) {
+        return new InstanceInfoFactory().create(instanceConfig);
     }
 }

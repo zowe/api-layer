@@ -252,17 +252,23 @@ export default class ServiceTab extends Component {
                             <Typography id="swagger-label" className="title2" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
-                            {!apiPortalEnabled && containsVersion && currentService && (
+                            {containsVersion && currentService && (
                                 <Typography id="version-label" variant="subtitle2">
-                                    Version
+                                    Service ID and Version:
                                 </Typography>
                             )}
                         </div>
-                        {!apiPortalEnabled && containsVersion && currentService && (
+                        {currentService && apiVersions?.length && (
                             <div id="version-div">
                                 <Select
+                                    disabled={apiVersions.length < 2}
                                     displayEmpty
                                     id="version-menu"
+                                    style={
+                                        apiVersions.length < 2
+                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                            : { backgroundColor: '#fff', color: '#0056B3' }
+                                    }
                                     value={
                                         this.state.selectedVersion
                                             ? this.state.selectedVersion
