@@ -69,13 +69,8 @@ function Login(props) {
         let invalidCredentials;
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
-        if (
-            error.messageNumber !== undefined &&
-            error.messageNumber !== null &&
-            error.messageType !== undefined &&
-            error.messageType !== null
-        ) {
-            messageText = `Unexpected error, please try again later (${error.messageNumber})`;
+        if (error?.messageNumber && error?.messageType && error?.messageContent) {
+            messageText = `(${error.messageNumber}) ${error.messageContent}`;
             const filter = errorMessages.messages.filter(
                 (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );

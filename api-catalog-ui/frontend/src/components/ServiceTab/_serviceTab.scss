@@ -27,10 +27,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     font-weight: bold;
 }
 #swagger-label {
-    color: var( --criticalShade10 );
-    font-size: var( --fontLarger );
-    letter-spacing: 0.5px;
-    margin-top: var( --spaceSmaller );
+    margin: var( --spaceSmaller ) 0 var( --spaceMedium );
 }
 #version-label {
     margin-top: var( --spaceMedium );

@@ -1,7 +1,8 @@
 eureka:
     client:
+        region: default
         serviceUrl:
-            defaultZone: https://localhost:10011/eureka/
+            defaultZone: ${apiml.service.discoveryServiceUrls}
 
 spring:
     application:
@@ -15,6 +16,7 @@ apiml:
         id: ${spring.application.name}
         port: 10023
         hostname: localhost
+        discoveryServiceUrls: https://localhost:10011/eureka/
         scheme: https  # "https" or "http"
         corsEnabled: true
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
@@ -62,10 +64,19 @@ logging:
 management:
     endpoint:
       gateway:
-          enabled: true
+          enabled: false
     endpoints:
         web:
             base-path: /application
             exposure:
                 include: health,gateway
+---
+spring:
+    config:
+        activate:
+            on-profile: debug
+
+logging:
+    level:
+        org.zowe.apiml: DEBUG
 

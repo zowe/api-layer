@@ -63,7 +63,7 @@ jobs:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SERVICE_CENTRALREGISTRYURLS: https://discovery-service-2:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             metrics-service:
@@ -252,12 +252,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_HOSTNAME: cloud-gateway-service
                     APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
             # Second group of services represents domain apiml instance which registers it's gateway in central's discovery service
             discovery-service-2:
@@ -274,7 +271,9 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_PORT: 10037
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
-                    APIML_SERVICE_CENTRALREGISTRYURLS: https://discovery-service:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_GATEWAYURL: /
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_SERVICEURL: /
 
         steps:
             -   uses: actions/checkout@v3

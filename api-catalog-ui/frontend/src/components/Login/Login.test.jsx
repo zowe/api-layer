@@ -21,6 +21,7 @@ describe('>>> Login page component tests', () => {
                     error: {
                         messageNumber: 'ZWEAT412E',
                         messageType: 'ERROR',
+                        messageContent: 'Some error',
                     },
                     expired: true,
                 }}
@@ -39,6 +40,7 @@ describe('>>> Login page component tests', () => {
                     error: {
                         messageNumber: 'ZWEAT604E',
                         messageType: 'ERROR',
+                        messageContent: 'Some error',
                     },
                     expired: true,
                 }}
@@ -55,6 +57,7 @@ describe('>>> Login page component tests', () => {
                     error: {
                         messageNumber: 'ZWEAT414E',
                         messageType: 'ERROR',
+                        messageContent: 'Some error',
                     },
                 }}
             />
@@ -72,6 +75,7 @@ describe('>>> Login page component tests', () => {
                     error: {
                         messageNumber: 'ZWEAT414E',
                         messageType: 'ERROR',
+                        messageContent: 'Some error',
                     },
                 }}
             />
