@@ -16,6 +16,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
+import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 
 export default class ServicesNavigationBar extends Component {
     componentDidMount() {
@@ -93,11 +94,12 @@ export default class ServicesNavigationBar extends Component {
                 {isAPIPortal() && (
                     <IconButton
                         id="go-back-button-portal"
-                        className="button-cta"
+                        className="button-link"
                         onClick={closeMobileMenu}
                         size="medium"
                         href={dashboard}
                     >
+                        <BackArrowImage className="icon-img" alt="" />
                         {backButtonText}
                     </IconButton>
                 )}

@@ -66,7 +66,6 @@ svg.MuiSvgIcon-root.clear-text-search {
 
 #search2 {
     margin: var( --spaceSmall ) 0 0;
-    height: 47px;
     background: var( --surface05 );
     border: 1px solid var( --divider15 );
     border-radius: var( --borderRadius1 );
@@ -74,24 +73,9 @@ svg.MuiSvgIcon-root.clear-text-search {
     .MuiInput-root {
         width: 100%;
     }
-    >div {
-        >div {
-            >input {
-                padding-left: var( --spaceMedium );
-                padding-right: var( --spaceHuge );
-                padding-top: var( --spaceSmall );
-            }
-            >div {
-                margin-right: 0;
-
-                > #search-icon {
-                    margin-top: var( --spaceSmaller );
-                }
-                &#search-input {
-                    right: var( --spaceSmallest );
-                }
-            }
-        }
+    .MuiInputBase-input {
+        padding-top: var( --spaceMedium );
+        padding-bottom: var( --spaceMedium );
     }
 }//end search2
 
@@ -101,20 +85,9 @@ svg.MuiSvgIcon-root.clear-text-search {
 
 #go-back-button-portal {
     margin-right: var( --spaceMedium );
-    background-image: url(../../assets/images/angles-left.svg);
-    background-repeat: no-repeat;
-    background-size: 16px;
-    background-position: 8px 50%;
-    padding: var(--spaceSmaller ) var(--spaceMedium ) 6px var( --spaceLargest );
-    background-color: var( --surface05 );
-    border: 1px solid var( --divider20 );
+    padding: var(--spaceSmaller ) var(--spaceMedium ) 6px 0px;
 
-    &, * {
-      color: var( --link20 );
-      font-size: var( --fontSmall );
-    }
-    &:hover, &:focus-visible {
-      background-color: var( --surface15 );
-      border-color: var( --divider15 );
+    svg {
+        height: 18px;
     }
 }
