@@ -245,7 +245,7 @@ public class ZosmfService extends AbstractZosmfService {
                 }
         }
 
-        throw new ServiceNotFoundException("Unable to obtain a token from z/OSMF service");
+        throw new ServiceNotFoundException("Unable to obtain a token from z/OSMF service.");
     }
 
 

@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.zaas;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,10 +31,13 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 
+import javax.management.ServiceNotFoundException;
 import java.util.Date;
 
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -67,7 +69,6 @@ class ZaasControllerTest {
     private static final String PASSTICKET = "test_passticket";
     private static final String APPLID = "test_applid";
     private static final String JWT_TOKEN = "jwt_test_token";
-    private static final String LTPA_TOKEN = "ltpa_test_token";
 
     @BeforeEach
     void setUp() throws IRRPassTicketGenerationException, JSONException {
@@ -90,24 +91,16 @@ class ZaasControllerTest {
         }
 
         @Test
-        @Disabled
-        void whenRequestZosmfToken_thenResonseOK() throws Exception {
+        void whenRequestZosmfToken_thenResponseOK() throws Exception {
+            when(zosmfService.exchangeAuthenticationForZosmfToken(JWT_TOKEN, authParsedSource))
+                .thenReturn(new ZosmfResponse(ZosmfService.TokenType.JWT.getCookieName(), JWT_TOKEN));
+
             mockMvc.perform(post(ZOSMF_TOKEN_URL)
                     .requestAttr(AUTH_SOURCE_ATTR, authSource)
                     .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
                 .andExpect(status().is(SC_OK))
                 .andExpect(jsonPath("$.cookieName", is(ZosmfService.TokenType.JWT.getCookieName())))
                 .andExpect(jsonPath("$.token", is(JWT_TOKEN)));
-        }
-
-        @Test
-        @Disabled
-        void whenRequestZoweToken_thenResonseOK() throws Exception {
-            mockMvc.perform(post(ZOSMF_TOKEN_URL)
-                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authSource))
-                .andExpect(status().is(SC_OK))
-                .andExpect(jsonPath("$.cookieName", is(ZosmfService.TokenType.LTPA.getCookieName())))
-                .andExpect(jsonPath("$.token", is(LTPA_TOKEN)));
         }
 
         @Test
@@ -159,15 +152,17 @@ class ZaasControllerTest {
             }
 
             @Test
-            @Disabled
             void whenRequestingZosmfTokens_thenInternalServerError() throws Exception {
+                when(zosmfService.exchangeAuthenticationForZosmfToken(JWT_TOKEN, authParsedSource))
+                    .thenThrow(new ServiceNotFoundException("Unable to obtain a token from z/OSMF service."));
+
                 mockMvc.perform(post(ZOSMF_TOKEN_URL)
-                        .requestAttr(AUTH_SOURCE_PARSED_ATTR, authSource))
-                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource)
+                        .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
+                    .andExpect(status().is(SC_SERVICE_UNAVAILABLE))
                     .andExpect(jsonPath("$.messages", hasSize(1)))
-                    .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
-                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG162E"))
-                    .andExpect(jsonPath("$.messages[0].messageContent", is("Gateway service failed to obtain token.")));
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAZ600W"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", containsString("Unable to obtain a token from z/OSMF service.")));
             }
         }
     }
@@ -181,14 +176,15 @@ class ZaasControllerTest {
         }
 
         @ParameterizedTest
-        @Disabled
-        @ValueSource(strings = {PASSTICKET_URL, ZOSMF_TOKEN_URL})
+        @ValueSource(strings = {PASSTICKET_URL})
         void thenRespondUnauthorized(String url) throws Exception {
             mockMvc.perform(post(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ticketBody.toString())
-                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authSource))
+                    .requestAttr(AUTH_SOURCE_ATTR, authParsedSource)
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
                 .andExpect(status().is(SC_UNAUTHORIZED));
         }
+
     }
 }
