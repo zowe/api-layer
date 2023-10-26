@@ -76,7 +76,7 @@ export default class ServicesNavigationBar extends Component {
         const parts = url.split('/');
         const serviceId = parts[parts.length - 1];
         const dashboard = '#/dashboard';
-        const backButtonText = 'BACK';
+        const backButtonText = 'Back';
         let selectedTab = Number(0);
         let allServices;
         if (hasTiles) {
