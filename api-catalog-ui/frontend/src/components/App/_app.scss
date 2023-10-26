@@ -401,54 +401,6 @@ body {
       color: var( --text10 );
       text-align: left;
   }
-  
-  // button {
-  // &.MuiIconButton-root,
-  // &.MuiButtonBase-root,
-  // &.btn,
-  // &.tablinks {
-  //   padding: var( --spaceSmallest ) var( --spaceSmaller );
-  //   font-size: var( --fontSmall );
-  //   border: 1px solid var( --controlText15 );
-  //   color: var( --controlText15 );
-  //   border-radius: var( --borderRadius1 );
-  //   display: flex;
-  //   align-items: center;
-  //   cursor: pointer;
-  //   background: var( --surface05 );
-
-  //   &:hover {
-  //     background: var( --surface15 );
-  //   }
-
-  //   svg {
-  //     fill: var( --controlText15 );
-
-  //     &:last-child {
-  //       margin-left: var( --spaceSmallest );
-  //     }
-  //     &:first-child {
-  //       margin-right: var( --spaceSmallest );
-  //     }
-  //   }
-
-  //   &.MuiButton-containedPrimary,
-  //   &#diff-button {
-  //     background-color: var( --control00 );
-  //     color: var( --text100 );
-  //     border-color: var( --control00 );
-  //   }
-  //   &.Mui-disabled,
-  //   &:disabled {
-  //     background-color: var( --unknown10 ) !important;
-  //     color: var( --controlText15Disabled ) !important;
-  //     border-color: var( --controlText15Disabled ) !important;
-  //   }
-  // }
-  // &.MuiButton-outlined {
-  //   padding: 0px var( --spaceSmall );
-  // }
-  // }//end button
 
   select, .MuiSelect-select, .MuiSelect-select.MuiSelect-select {
     font-size: var( --fontSmall );
