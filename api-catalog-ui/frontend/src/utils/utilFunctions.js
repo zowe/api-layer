@@ -10,7 +10,8 @@
 
 import getBaseUrl from '../helpers/urls';
 
-function checkForSwagger(service, hasSwagger) {
+function checkForSwagger(service) {
+    let hasSwagger = false;
     const serviceAPIKeys = Object.keys(service.apis);
     serviceAPIKeys.forEach((api) => {
         // Statically defined api service has a swagger url for default, but details page doesn't like that.
@@ -47,7 +48,7 @@ export default function countAdditionalContents(service) {
             videosCounter = service.videos.length;
         }
         if (service.apis) {
-            hasSwagger = checkForSwagger(service, hasSwagger);
+            hasSwagger = checkForSwagger(service);
         }
     }
     return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger };
