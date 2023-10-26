@@ -16,6 +16,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
+import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 
 export default class ServicesNavigationBar extends Component {
     componentDidMount() {
@@ -91,13 +92,8 @@ export default class ServicesNavigationBar extends Component {
         return (
             <div>
                 {isAPIPortal() && (
-                    <IconButton
-                        id="go-back-button-portal"
-                        className="button-cta"
-                        onClick={closeMobileMenu}
-                        size="medium"
-                        href={dashboard}
-                    >
+                    <IconButton id="go-back-button-portal" className="button-link" onClick={closeMobileMenu} size="medium" href={dashboard}>
+                        <BackArrowImage className="icon-img" alt="" />
                         {backButtonText}
                     </IconButton>
                 )}
@@ -115,7 +111,11 @@ export default class ServicesNavigationBar extends Component {
                 )}
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
-                        <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={this.handleSearch} />
+                        <SearchCriteria
+                            data-testid="search-bar"
+                            placeholder="Search..."
+                            doSearch={this.handleSearch}
+                        />
                     </Shield>
                 </div>
                 <Typography id="serviceIdTabs" variant="h5">
