@@ -241,11 +241,7 @@ export default class ServiceTab extends Component {
                                 </div>
                             )}
 
-                            <Typography
-                                data-testid="description"
-                                variant="subtitle2"
-                                style={{ color: 'black' }}
-                            >
+                            <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
                                 {selectedService.description}
                             </Typography>
                             <br />
