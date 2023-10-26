@@ -106,29 +106,29 @@ public class DiscoveryClientConfig {
         MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
 
-        ApplicationInfoManager bareManager = ProxyUtils.getTargetObject(appManager);
-        InstanceInfo ii = getInstanceInfo(apimlRegistration, bareManager);
+        InstanceInfo newInfo = apimlDiscoveryClientFactory.createInstanceInfo(appManager.getEurekaInstanceConfig());
+        InstanceInfo ii = rewriteInstanceInfoRoutes(apimlRegistration, newInfo);
 
-        ApplicationInfoManager perClientAppManager = new ApplicationInfoManager(bareManager.getEurekaInstanceConfig(), ii, null);
+        ApplicationInfoManager perClientAppManager = new ApplicationInfoManager(appManager.getEurekaInstanceConfig(), ii, null);
         final ApimlDiscoveryClient discoveryClientClient = apimlDiscoveryClientFactory.buildApimlDiscoveryClient(perClientAppManager, configBean, args, context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
         return discoveryClientClient;
     }
 
-    private static InstanceInfo getInstanceInfo(AdditionalRegistration apimlRegistration, ApplicationInfoManager bareManager) {
+    private InstanceInfo rewriteInstanceInfoRoutes(AdditionalRegistration apimlRegistration, InstanceInfo newInfo) {
         if (!CollectionUtils.isEmpty(apimlRegistration.getRoutes())) {
-            Map<String, String> metadataWithRoutes = bareManager.getInfo().getMetadata().entrySet().stream().filter(entry -> !entry.getKey().startsWith(ROUTES)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            Map<String, String> metadataWithRoutes = newInfo.getMetadata().entrySet().stream().filter(entry -> !entry.getKey().startsWith(ROUTES)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             int index = 0;
             for (AdditionalRegistration.Route route : apimlRegistration.getRoutes()) {
                 metadataWithRoutes.put(ROUTES + "." + index + "." + ROUTES_GATEWAY_URL, route.getGatewayUrl());
                 metadataWithRoutes.put(ROUTES + "." + index + "." + ROUTES_SERVICE_URL, route.getServiceUrl());
                 index++;
             }
-            InstanceInfo.Builder builder = new InstanceInfo.Builder(bareManager.getInfo());
+            InstanceInfo.Builder builder = new InstanceInfo.Builder(newInfo);
             builder.setMetadata(metadataWithRoutes);
             return builder.build();
         }
-        return bareManager.getInfo();
+        return newInfo;
     }
 }
