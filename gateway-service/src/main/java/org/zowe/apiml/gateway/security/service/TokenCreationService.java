@@ -66,7 +66,6 @@ public class TokenCreationService {
     }
 
     public Map<ZosmfService.TokenType, String> createZosmfTokensWithoutCredentials(String user) {
-
         if (!isZosmfAvailable()) return Collections.emptyMap();
 
         log.debug("ZOSMF is available and used. Attempt to authenticate with PassTicket");

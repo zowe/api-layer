@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
@@ -24,14 +25,18 @@ import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 @ExtendWith(MockitoExtension.class)
 class TokenCreationServiceTest {
@@ -56,6 +61,7 @@ class TokenCreationServiceTest {
     private final String VALID_USER_ID = "validUserId";
     private final String VALID_ZOSMF_TOKEN = "validZosmfToken";
     private final String VALID_APIML_TOKEN = "validApimlToken";
+    private final String PASSTICKET = "passTicket";
     private final String VALID_ZOSMF_APPLID = "IZUDFLT";
 
     @BeforeEach
@@ -88,7 +94,7 @@ class TokenCreationServiceTest {
     void givenZosmfIsAvailable_whenTokenIsRequested_thenTokenCreatedByZosmfIsReturned() throws IRRPassTicketGenerationException {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
-        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn("validPassticket");
+        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
         when(zosmfAuthenticationProvider.authenticate(any())).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_ZOSMF_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
@@ -105,4 +111,33 @@ class TokenCreationServiceTest {
             () -> underTest.createJwtTokenWithoutCredentials(VALID_USER_ID)
         );
     }
+
+    @Test
+    void givenNoZosmf_whenCreatingZosmfToken_thenReturnEmptyResult() {
+        when(providers.isZosfmUsed()).thenReturn(false);
+
+        Map<ZosmfService.TokenType, String> tokens = underTest.createZosmfTokensWithoutCredentials("user");
+
+        assertTrue(tokens.isEmpty());
+    }
+
+    @Test
+    void givenZosmfAvailable_whenCreatingZosmfToken_thenReturnEmptyResult() throws IRRPassTicketGenerationException {
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(true);
+        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
+
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(VALID_USER_ID, PASSTICKET);
+        Map<ZosmfService.TokenType, String> expectedTokens = new HashMap<ZosmfService.TokenType, String>() {{
+            put(LTPA, "ltpaToken");
+            put(JWT, "jwtToken");
+        }};
+        ZosmfService.AuthenticationResponse authenticationResponse = new ZosmfService.AuthenticationResponse("domain", expectedTokens);
+        when(zosmfService.authenticate(authToken)).thenReturn(authenticationResponse);
+
+        Map<ZosmfService.TokenType, String> tokens = underTest.createZosmfTokensWithoutCredentials(VALID_USER_ID);
+
+        assertEquals(expectedTokens, tokens);
+    }
+
 }
