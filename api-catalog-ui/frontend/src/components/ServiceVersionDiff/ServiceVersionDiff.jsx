@@ -21,6 +21,7 @@ import {
     DialogActions,
     Divider,
 } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import CloseIcon from '@material-ui/icons/Close';
 
 export default class ServiceVersionDiff extends Component {
@@ -126,3 +127,11 @@ export default class ServiceVersionDiff extends Component {
         );
     }
 }
+
+ServiceVersionDiff.propTypes = {
+    versions: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+    }).isRequired,
+    serviceId: PropTypes.string.isRequired,
+    getDiff: PropTypes.func.isRequired,
+};
