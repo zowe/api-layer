@@ -280,7 +280,7 @@ public class ZosmfService extends AbstractZosmfService {
 
             if (info.getStatusCode() != HttpStatus.OK) {
                 log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
-                    + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, String.valueOf(info.getBody()));
+                    + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, info.getBody());
             }
 
             return info.getStatusCode() == HttpStatus.OK;
@@ -304,7 +304,7 @@ public class ZosmfService extends AbstractZosmfService {
     /**
      * POST to provided url and return authentication response
      *
-     * @param authentication
+     * @param authentication with credentials
      * @param url            String containing auth endpoint to be used
      * @return AuthenticationResponse containing auth token, either LTPA or JWT
      */
@@ -327,7 +327,7 @@ public class ZosmfService extends AbstractZosmfService {
     /**
      * PUT to provided url and return authentication response
      *
-     * @param authentication
+     * @param authentication with credentials
      * @param url            String containing change password endpoint to be used
      * @return ResponseEntity
      */

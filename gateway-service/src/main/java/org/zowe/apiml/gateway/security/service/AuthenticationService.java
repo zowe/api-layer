@@ -66,7 +66,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class AuthenticationService {
 
-    private static final String LTPA_CLAIM_NAME = "ltpa";
+    public static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String AUTH_PROV_CLAIM = "auth.prov";
     private static final String SCOPES = "scopes";

@@ -41,25 +41,28 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 
+import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
 @ExtendWith(MockitoExtension.class)
@@ -172,7 +175,7 @@ class ZosmfServiceTest {
                 assertNotNull(response);
                 assertNotNull(response.getTokens());
                 assertEquals(1, response.getTokens().size());
-                assertEquals("jt", response.getTokens().get(ZosmfService.TokenType.JWT));
+                assertEquals("jt", response.getTokens().get(JWT));
             }
         }
 
@@ -241,7 +244,7 @@ class ZosmfServiceTest {
 
                 doReturn(new ZosmfService.AuthenticationResponse(
                     "domain1",
-                    Collections.singletonMap(ZosmfService.TokenType.JWT, "jwtToken1"))).when(zosmfService).getAuthenticationResponse(any());
+                    Collections.singletonMap(JWT, "jwtToken1"))).when(zosmfService).getAuthenticationResponse(any());
 
                 when(loginRequest.getPassword()).thenReturn("password".toCharArray());
                 when(authentication.getPrincipal()).thenReturn("principal");
@@ -251,7 +254,7 @@ class ZosmfServiceTest {
                 assertNotNull(response);
                 assertNotNull(response.getTokens());
                 assertEquals(1, response.getTokens().size());
-                assertEquals("jwtToken1", response.getTokens().get(ZosmfService.TokenType.JWT));
+                assertEquals("jwtToken1", response.getTokens().get(JWT));
             }
         }
 
@@ -604,7 +607,7 @@ class ZosmfServiceTest {
                 String.class
             );
 
-            assertDoesNotThrow(() -> zosmfService.invalidate(ZosmfService.TokenType.JWT, "jwt"));
+            assertDoesNotThrow(() -> zosmfService.invalidate(JWT, "jwt"));
         }
 
         @Test
@@ -643,7 +646,7 @@ class ZosmfServiceTest {
             );
 
             try {
-                zosmfService.invalidate(ZosmfService.TokenType.JWT, "jwt");
+                zosmfService.invalidate(JWT, "jwt");
             } catch (ServiceNotAccessibleException e) {
                 assertEquals("Could not get an access to z/OSMF service.", e.getMessage());
             }
@@ -666,7 +669,7 @@ class ZosmfServiceTest {
             );
 
             try {
-                zosmfService.invalidate(ZosmfService.TokenType.JWT, "jwt");
+                zosmfService.invalidate(JWT, "jwt");
             } catch (RuntimeException e) {
                 assertEquals("Runtime Exception", e.getMessage());
             }
@@ -911,4 +914,109 @@ class ZosmfServiceTest {
             }
         }
     }
+
+    @Nested
+    class WhenExchangingAuthenticationForZosmfToken {
+
+        private static final String USER = "user";
+        private static final String ZOWE_JWT_TOKEN = "zoweToken";
+        private static final String ZOSMF_JWT_TOKEN = "zosmfToken";
+        private static final String LTPA_TOKEN = "ltpaToken";
+
+        private ZosmfService underTest;
+
+        @BeforeEach
+        void setup() {
+            underTest = new ZosmfService(
+                authConfigurationProperties,
+                discovery,
+                restTemplate,
+                securityObjectMapper,
+                applicationContext,
+                authenticationService,
+                tokenCreationService,
+                null
+            );
+        }
+
+        @Test
+        void givenZosmfAuthSource_thenSameTokenIsReturned() throws ServiceNotFoundException {
+            AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.ZOSMF);
+
+            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken(ZOSMF_JWT_TOKEN, authParsedSource);
+
+            assertEquals(ZOSMF_JWT_TOKEN, zosmfResponse.getToken());
+            assertEquals(JWT.getCookieName(), zosmfResponse.getCookieName());
+        }
+
+        @Test
+        void givenZoweAuthSourceWithLtpa_thenSameLtpaTokenIsReturned() throws ServiceNotFoundException {
+            AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.ZOWE);
+
+            when(authenticationService.getLtpaToken(ZOWE_JWT_TOKEN)).thenReturn(LTPA_TOKEN);
+
+            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken(ZOWE_JWT_TOKEN, authParsedSource);
+
+            assertEquals(LTPA_TOKEN, zosmfResponse.getToken());
+            assertEquals(LTPA.getCookieName(), zosmfResponse.getCookieName());
+        }
+
+        @Test
+        void givenZoweAuthSourceWithoutLtpa_thenNewJwtTokenIsReturned() throws ServiceNotFoundException {
+            AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.ZOWE);
+
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+                put(JWT, ZOSMF_JWT_TOKEN);
+            }};
+            when(authenticationService.getLtpaToken(ZOWE_JWT_TOKEN)).thenReturn(null);
+            when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
+
+            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken(ZOWE_JWT_TOKEN, authParsedSource);
+
+            assertEquals(ZOSMF_JWT_TOKEN, zosmfResponse.getToken());
+            assertEquals(JWT.getCookieName(), zosmfResponse.getCookieName());
+        }
+
+        @Test
+        void givenOtherAuthSourceAndZosmfProducesJwt_thenNewJwtTokenIsReturned() throws ServiceNotFoundException {
+            AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
+
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+                put(LTPA, LTPA_TOKEN);
+                put(JWT, ZOSMF_JWT_TOKEN);
+            }};
+            when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
+
+            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource);
+
+            assertEquals(ZOSMF_JWT_TOKEN, zosmfResponse.getToken());
+            assertEquals(JWT.getCookieName(), zosmfResponse.getCookieName());
+        }
+
+        @Test
+        void givenOtherAuthSourceAndZosmfProducesOnlyLtpa_thenNewLtpaTokenIsReturned() throws ServiceNotFoundException {
+            AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
+
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+                put(LTPA, LTPA_TOKEN);
+            }};
+            when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
+
+            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource);
+
+            assertEquals(LTPA_TOKEN, zosmfResponse.getToken());
+            assertEquals(LTPA.getCookieName(), zosmfResponse.getCookieName());
+        }
+
+        @Test
+        void givenOtherAuthSourceAndZosmaIsNotAvailable_thenExceptionIsThrown() {
+            AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
+
+            when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(Collections.emptyMap());
+
+            assertThrows(ServiceNotFoundException.class, () -> underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource));
+        }
+
+    }
+
 }
