@@ -262,7 +262,7 @@ export default class ServiceTab extends Component {
                                     id="version-menu"
                                     style={
                                         apiVersions.length < 2
-                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                            ? { color: '#6b6868', opacity: '0.5' }
                                             : { backgroundColor: '#fff', color: '#0056B3' }
                                     }
                                     value={
