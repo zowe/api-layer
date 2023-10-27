@@ -59,15 +59,110 @@ body {
   #onetrust-button-group-parent {
     margin-left: 2% !important;
   }
+  #close-dialog {
+    &:hover, &:focus {
+      svg path {
+        fill: var( --linkHover );
+      }
+    }
+  }
+
+  .button-tertiary,
+  .button-link,
+  .button-cta {
+    &, * {
+      font-size: var( --fontMedium );
+      text-transform: none;
+      line-height: 100%;
+    }
+    .icon-img {
+      &:first-child {
+        margin-right: var( --spaceSmaller );
+      }
+      &:last-child:not(:first-child) {
+        margin-left: var( --spaceSmaller );
+      }
+    }
+  }//end all buttons
+
+  .button-tertiary,
+  .button-cta {
+    padding: var( --spaceSmaller ) var( --spaceSmall );
+    border-radius: var( --borderRadius1 );
+    border: 1px solid transparent;
+
+    &:hover {
+      &, * {
+        text-decoration: none;
+      }
+    }
+  }//end padded buttons
+
+  .button-link {
+    background: transparent;
+
+    &, * {
+      color: var( --link20 );
+    }
+
+    &:hover, &:focus {
+      text-decoration: underline;
+
+      &, * {
+        color: var( --linkHover );
+        background: transparent;
+      }
+      svg path {
+        fill: var( --linkHover );
+      }
+    }
+  }//end button-link
+
+  .button-tertiary {
+    background-color: transparent;
+    border-color: var( --link20 );
+
+    &, * {
+      color: var( --link20 );
+    }
+
+    &:hover, &:focus {
+      border-color: var( --linkHover );
+      background-color: #F2F6FC;
+
+      &, * {
+        color: var( --linkHover );
+      }
+    }
+
+    &:disabled {
+      &, &:hover {
+        border-color: #A9A8A5;
+        background-color: transparent;
+
+        &, * {
+          color: #A9A8A5;
+        }
+      }
+    }
+  }//end button-tertiary
   
   .button-cta {
     background: var( --criticalShade10 );
-    padding: var( --spaceSmaller ) var( --spaceSmall );
-    border-radius: 3px;
 
-    &:hover {
-      background: var( --criticalShade00 );
+    &, * {
+      color: var( --text100 );
     }
+
+    &:hover, &:focus {
+      border-color: var( --criticalShade10 );
+      background: var( --surface05 );
+
+      &, * {
+        color: var( --criticalShade10 );
+      }
+    }
+
     &.feedback-button {
       border-radius: 24px;
       height: 30px;
@@ -77,17 +172,8 @@ body {
         font-size: var( --fontSmall );
       }
     }
-    &, * {
-      color: var( --text100 );
-      text-transform: none;
-      line-height: 100%;
-      font-size: var( --fontMedium );
+  }//end button-cta
 
-      &:hover {
-        text-decoration: none;
-      }
-    }
-  }
   .MuiButton-root {
     &:not(:disabled) {
       &:hover {
@@ -315,53 +401,6 @@ body {
       color: var( --text10 );
       text-align: left;
   }
-  // button {
-  &.MuiIconButton-root,
-  &.MuiButtonBase-root,
-  &.btn,
-  &.tablinks {
-    padding: var( --spaceSmallest ) var( --spaceSmaller );
-    font-size: var( --fontSmall );
-    border: 1px solid var( --controlText15 );
-    color: var( --controlText15 );
-    border-radius: var( --borderRadius1 );
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    background: var( --surface05 );
-
-    &:hover {
-      background: var( --surface15 );
-    }
-
-    svg {
-      fill: var( --controlText15 );
-
-      &:last-child {
-        margin-left: var( --spaceSmallest );
-      }
-      &:first-child {
-        margin-right: var( --spaceSmallest );
-      }
-    }
-
-    &.MuiButton-containedPrimary,
-    &#diff-button {
-      background-color: var( --control00 );
-      color: var( --text100 );
-      border-color: var( --control00 );
-    }
-    &.Mui-disabled,
-    &:disabled {
-      background-color: var( --unknown10 ) !important;
-      color: var( --controlText15Disabled ) !important;
-      border-color: var( --controlText15Disabled ) !important;
-    }
-  }
-  &.MuiButton-outlined {
-    padding: 0px var( --spaceSmall );
-  }
-  // }//end button
 
   select, .MuiSelect-select, .MuiSelect-select.MuiSelect-select {
     font-size: var( --fontSmall );

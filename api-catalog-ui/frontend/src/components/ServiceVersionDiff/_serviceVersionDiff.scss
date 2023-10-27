@@ -8,8 +8,6 @@ $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Sego
 .api-diff-form {
     display: flex;
     align-items: center;
-    background: var( --surface15 );
-    border: 1px solid var( --surface25 );
     padding: var( --spaceSmall );
     border-radius: var( --borderRadius1 );
     justify-content: space-around;
@@ -18,8 +16,15 @@ $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Sego
     > *:not(:last-child) {
         margin-right: var( --spaceSmall );
     }
+    #diff-button {
+        @extend .button-tertiary;
+        margin-top: 15px;
+    }
 }
 .api-diff-content {
+    h2 {
+        @extend .title1;
+    }
     .article > div {
         padding: var( --spaceSmaller );
 
