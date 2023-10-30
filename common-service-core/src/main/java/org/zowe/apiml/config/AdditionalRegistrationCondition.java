@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.web.context.support.StandardServletEnvironment;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.zowe.apiml.gateway.config.AdditionalRegistrationConfig.DISCOVERYSERVICEURLS_PATTERN;
+import static org.zowe.apiml.config.AdditionalRegistrationParser.DISCOVERYSERVICEURLS_PATTERN;
 
 @Slf4j
 @RequiredArgsConstructor

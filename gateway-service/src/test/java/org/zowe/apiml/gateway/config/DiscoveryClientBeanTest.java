@@ -24,6 +24,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
+import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 
 import java.util.Arrays;
