@@ -12,8 +12,11 @@ package org.zowe.apiml.apicatalog.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.time.Duration;
 
 @Configuration
 @ComponentScan("org.zowe.apiml.product.web")
@@ -22,7 +25,21 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
-            .addResourceHandler("/resources/**")
-            .addResourceLocations("/resources/**", "/resources/static/**", "/resources/templates/**");
+        .addResourceHandler("/index.html")
+        .setCacheControl(CacheControl
+            .noStore()
+            .cachePrivate()
+            .mustRevalidate())
+        .addResourceLocations("/static/index.html", "classpath:/static/index.html");
+
+        registry
+        .addResourceHandler("/static/**")
+        .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
+        .addResourceLocations("classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/", "classpath:/static/static/");
+
+        registry
+        .addResourceHandler("/resources/**")
+        .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
+        .addResourceLocations("/resources/**", "/resources/static/**", "/resources/templates/**");
     }
 }

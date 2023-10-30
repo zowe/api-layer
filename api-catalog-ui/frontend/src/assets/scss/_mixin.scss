@@ -1,9 +1,11 @@
 @mixin blueLink() {
   color: var( --link20 );
   cursor: pointer;
+  text-decoration: none;
 
-  &:hover {
+  &:hover, &:focus {
     color: var( --link20Hover );
+    text-decoration: underline;
   }
   &:visited {
     color: var( --link20Visited );
@@ -12,6 +14,7 @@
   &.Mui-disabled {
     color: var( --text20Disabled );
     cursor: default;
+    pointer-events: none;
   }
 }
 

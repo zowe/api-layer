@@ -10,10 +10,12 @@
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+import configureMockStore from 'redux-mock-store';
 import ServiceVersionDiffContainer from './ServiceVersionDiffContainer';
 
-const mockStore = configureStore();
+const middlewares = [thunk];
+const mockStore = configureMockStore(middlewares);
 
 describe('ServiceVersionDiff Container', () => {
     let store;

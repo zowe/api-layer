@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -56,10 +57,13 @@ public class HttpsFactory {
     public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
 
         RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectTimeout(config.getRequestConnectionTimeout()).build();
+            .setConnectTimeout(config.getRequestConnectionTimeout())
+            .setSocketTimeout(config.getRequestConnectionTimeout())
+            .setConnectionRequestTimeout(config.getRequestConnectionTimeout()).build();
         UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
         return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(getHostnameVerifier())
+            .setConnectionTimeToLive(config.getTimeToLive(), TimeUnit.MILLISECONDS)
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
