@@ -34,8 +34,8 @@ import java.util.Base64;
 @Service
 public class PassticketFilterFactory extends AbstractAuthSchemeFactory<PassticketFilterFactory.Config, TicketResponse, String> {
 
-    private final String ticketUrl = "%s://%s:%s/%s/api/v1/auth/ticket";
-    private final ObjectWriter writer = new ObjectMapper().writer();
+    private static final String TICKET_URL = "%s://%s:%s/%s/api/v1/auth/ticket";
+    private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
     public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class, webClient, instanceInfoService, messageService);
@@ -49,7 +49,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, String requestBody) {
         return webClient.post()
-            .uri(String.format(ticketUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
+            .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
             .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
             .bodyValue(requestBody);
     }
@@ -57,6 +57,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, TicketResponse response) {
         if (response.getTicket() == null) {
+            // TODO: consider throwing an exception, ZAAS is not configured properly
             ServerHttpRequest request = updateHeadersForError(exchange, "Invalid or missing authentication.");
             return chain.filter(exchange.mutate().request(request).build());
         }
@@ -69,7 +70,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     @Override
     public GatewayFilter apply(Config config) {
         try {
-            return createGatewayFilter(writer.writeValueAsString(new TicketRequest(config.getApplicationName())));
+            return createGatewayFilter(WRITER.writeValueAsString(new TicketRequest(config.getApplicationName())));
         } catch (JsonProcessingException e) {
             return ((exchange, chain) -> {
                 ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());

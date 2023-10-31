@@ -56,7 +56,7 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
             try {
                 return requestCreator.apply(instance)
                     .retrieve()
-                    .onStatus(HttpStatus::is4xxClientError, (response) -> Mono.empty())
+                    .onStatus(HttpStatus::is4xxClientError, response -> Mono.empty())
                     .bodyToMono(getResponseClass())
                     .flatMap(responseProcessor);
 
@@ -66,26 +66,23 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         }
 
         if (latestException != null) {
-                  throw latestException;
+            throw latestException;
+        }
 
-        } return Mono.empty();
+        throw new IllegalArgumentException("No ZAAS is available");
     }
 
+    @SuppressWarnings("squid:S1452")
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, D data);
     protected abstract Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, R response);
 
     protected GatewayFilter createGatewayFilter(D data) {
-
-            return (ServerWebExchange exchange, GatewayFilterChain chain) -> {
-
-                getZaasInstances().flatMap(instances  -> invoke(
-                    instances,
-                    instance -> createRequest(exchange, instance, data),
-                    response -> processResponse(exchange, chain, response)
-                    ));
-                ServerHttpRequest request = updateHeadersForError(exchange, "All gateway service instances failed to respond.");
-                return chain.filter(exchange.mutate().request(request).build());
-            };
+        return (ServerWebExchange exchange, GatewayFilterChain chain) ->
+            getZaasInstances().flatMap(instances  -> invoke(
+                instances,
+                instance -> createRequest(exchange, instance, data),
+                response -> processResponse(exchange, chain, response)
+                ));
     }
     protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
         return exchange.getRequest().mutate()

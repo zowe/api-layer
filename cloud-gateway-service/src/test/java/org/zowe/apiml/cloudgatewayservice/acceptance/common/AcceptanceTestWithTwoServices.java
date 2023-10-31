@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
 
@@ -34,6 +35,9 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @Autowired
     protected ApplicationRegistry applicationRegistry;
 
+    @Value("${currentApplication:#{null}}")
+    private String defaultCurrentApplication;
+
     public ApplicationRegistry getApplicationRegistry() {
         return applicationRegistry;
     }
@@ -47,6 +51,9 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
         applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(), false);
+        if (defaultCurrentApplication != null) {
+            applicationRegistry.setCurrentApplication(defaultCurrentApplication);
+        }
     }
 
     @AfterEach
