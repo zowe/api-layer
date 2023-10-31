@@ -236,7 +236,7 @@ describe('>>> ServiceTab component tests', () => {
         expect(handleDialogOpenSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('should hide the button and dropdown if apiVersions length is less than 2', () => {
+    it('should disable the button and dropdown if apiVersions length is less than 2', () => {
         const selectService = jest.fn();
         const apiVersions = ['1.0.0'];
         selectedService.apiVersions = apiVersions;
@@ -255,7 +255,6 @@ describe('>>> ServiceTab component tests', () => {
             opacity: '0.5',
         });
         expect(dropdownMenu.prop('style')).toEqual({
-            backgroundColor: '#e4e4e4',
             color: '#6b6868',
             opacity: '0.5',
         });
