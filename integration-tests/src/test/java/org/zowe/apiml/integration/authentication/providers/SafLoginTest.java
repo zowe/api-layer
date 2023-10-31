@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.SAFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -63,6 +64,7 @@ class SafLoginTest implements TestWithStartedInstances {
     }
 
     @Nested
+    @NotForMainframeTest
     class ExpiredPassword {
 
         private final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();

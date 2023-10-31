@@ -250,7 +250,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OktaOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest'
         )
     }
     outputs.upToDateWhen { false }
