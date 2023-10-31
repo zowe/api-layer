@@ -29,9 +29,7 @@ import java.util.function.Function;
 public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGatewayFilterFactory<T> {
 
     protected final WebClient webClient;
-
     protected final InstanceInfoService instanceInfoService;
-
     protected final MessageService messageService;
 
     protected AbstractAuthSchemeFactory(Class<T> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
@@ -53,6 +51,7 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         Function<? super R, ? extends Mono<Void>> responseProcessor
     ) {
         RuntimeException latestException = null;
+
         for (ServiceInstance instance : serviceInstances) {
             try {
                 return requestCreator.apply(instance)
@@ -60,30 +59,34 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
                     .onStatus(HttpStatus::is4xxClientError, (response) -> Mono.empty())
                     .bodyToMono(getResponseClass())
                     .flatMap(responseProcessor);
+
             } catch (RuntimeException re) {
                 latestException = re;
             }
         }
 
         if (latestException != null) {
-            throw latestException;
-        }
+                  throw latestException;
 
-        return Mono.empty();
+        } return Mono.empty();
     }
 
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, D data);
     protected abstract Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, R response);
 
     protected GatewayFilter createGatewayFilter(D data) {
-        return (ServerWebExchange exchange, GatewayFilterChain chain) -> getZaasInstances()
-            .flatMap(instances -> invoke(
-                instances,
-                instance -> createRequest(exchange, instance, data),
-                response -> processResponse(exchange, chain, response)
-            ));
-    }
 
+            return (ServerWebExchange exchange, GatewayFilterChain chain) -> {
+
+                getZaasInstances().flatMap(instances  -> invoke(
+                    instances,
+                    instance -> createRequest(exchange, instance, data),
+                    response -> processResponse(exchange, chain, response)
+                    ));
+                ServerHttpRequest request = updateHeadersForError(exchange, "All gateway service instances failed to respond.");
+                return chain.filter(exchange.mutate().request(request).build());
+            };
+    }
     protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
         return exchange.getRequest().mutate()
             .headers(headers -> headers.add(key, value))
