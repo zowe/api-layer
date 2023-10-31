@@ -29,8 +29,8 @@ public class AdditionalRegistrationParser {
 
     public static final String ADDITIONAL_REGISTRATION_INDEX_GROUP_NAME = "index";
     public static final Pattern DISCOVERYSERVICEURLS_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_DISCOVERYSERVICEURLS$", Pattern.CASE_INSENSITIVE);
-    public static final Pattern ROUTE_SERVICEURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_SERVICEURL", Pattern.CASE_INSENSITIVE);
-    public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL", Pattern.CASE_INSENSITIVE);
+    public static final Pattern ROUTE_SERVICEURL_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_SERVICEURL$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL$", Pattern.CASE_INSENSITIVE);
 
     public List<AdditionalRegistration> extractAdditionalRegistrations(Map<String, String> allProperties) {
         if (allProperties == null) {
