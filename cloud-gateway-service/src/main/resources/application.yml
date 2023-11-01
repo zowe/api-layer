@@ -6,6 +6,9 @@ eureka:
         #ports are computed in code
         homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        metadata-map:
+            apiml:
+                service.apimlId :  ${apiml.service.apimlId}
     client:
         fetchRegistry: true
         registerWithEureka: true
