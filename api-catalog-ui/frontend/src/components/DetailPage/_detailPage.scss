@@ -8,9 +8,9 @@ body .detail-content {
   }
   h2#title {
     color: $color_1;
-    font-size: 34px;
-    font-style: normal;
-    font-weight: 400;
+      font-size: 34px;
+      font-style: normal;
+      font-weight: 400;
   }
   .swagger-ui {
     display: block;
@@ -68,7 +68,18 @@ body .detail-content {
             visibility: hidden;
         }
         h2.title {
-          display: none;
+          @extend .MuiTypography-h4;
+          margin-top: 0px;
+          display: flex;
+          flex-direction: column;
+          font-size: var( --fontMedium );
+
+          span, small {
+            font-weight: normal;
+          }
+        }
+        h2.title span {
+            visibility: visible;
         }
         .version {
           &:before {
@@ -82,7 +93,6 @@ body .detail-content {
     .description, .scheme-container, .info__extdocs, .info__license {
       display: none;
     }
-    
   }//end swagger-ui
 
   .header {
@@ -188,9 +198,5 @@ body .detail-content {
         padding-right: 10px;
         padding-left: 10px;
         font-size: 13px;
-    }
-    // Copied from chrome inspector
-    #swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2 > span > small:nth-child(1) > pre {
-      display: none;
     }
 }

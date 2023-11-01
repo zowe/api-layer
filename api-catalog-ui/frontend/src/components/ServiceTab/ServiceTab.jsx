@@ -241,15 +241,11 @@ export default class ServiceTab extends Component {
                                 </div>
                             )}
 
-                            <Typography
-                                data-testid="description"
-                                variant="subtitle2"
-                                style={{ marginTop: '15px', color: 'black' }}
-                            >
+                            <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
                                 {selectedService.description}
                             </Typography>
                             <br />
-                            <Typography id="swagger-label" className="title2" size="medium" variant="outlined">
+                            <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
                             {containsVersion && currentService && (
@@ -258,7 +254,7 @@ export default class ServiceTab extends Component {
                                 </Typography>
                             )}
                         </div>
-                        {currentService && apiVersions?.length && (
+                        {currentService && apiVersions?.length > 0 && (
                             <div id="version-div">
                                 <Select
                                     disabled={apiVersions.length < 2}
@@ -266,7 +262,7 @@ export default class ServiceTab extends Component {
                                     id="version-menu"
                                     style={
                                         apiVersions.length < 2
-                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
+                                            ? { color: '#6b6868', opacity: '0.5' }
                                             : { backgroundColor: '#fff', color: '#0056B3' }
                                     }
                                     value={
