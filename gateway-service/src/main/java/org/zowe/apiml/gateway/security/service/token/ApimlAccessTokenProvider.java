@@ -46,7 +46,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     private final CachingServiceClient cachingServiceClient;
     private final AuthenticationService authenticationService;
-    @Qualifier("oidcMapper")
+    @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;
 
     private byte[] salt;

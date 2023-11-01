@@ -89,7 +89,7 @@ public class GatewayOverrideConfig {
     }
 
     @Bean
-    @Qualifier("oidcMapper")
+    @Primary
     public ObjectMapper mapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());

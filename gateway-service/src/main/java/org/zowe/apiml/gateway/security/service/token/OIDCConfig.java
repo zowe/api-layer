@@ -20,12 +20,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OIDCConfig {
 
-    @Bean
+    @Bean("oidcJwtClock")
     public Clock oidcJwtClock() {
         return new DefaultClock();
     }
 
-    @Bean
+    @Bean("oidcJwkMapper")
     public ObjectMapper oidcJwkMapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());
