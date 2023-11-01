@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.impl.DefaultClock;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,8 +26,7 @@ public class OIDCConfig {
     }
 
     @Bean
-    @Qualifier("oidcMapper")
-    public ObjectMapper mapper() {
+    public ObjectMapper oidcJwkMapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());
     }
