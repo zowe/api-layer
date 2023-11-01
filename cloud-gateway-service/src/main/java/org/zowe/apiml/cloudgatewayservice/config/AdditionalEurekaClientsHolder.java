@@ -16,10 +16,16 @@ import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 
 import java.util.List;
 
+/**
+ * Purpose of that bean is to wrap additional {@link CloudEurekaClient} instances into wrapper bean so that it does not interfere with standard `primary` eureka autoconfiguration.
+ * <p>
+ * Wrapper exposes proxy `shutdown` call of the client instances
+ */
 @Getter
 @RequiredArgsConstructor
-public class Terminator {
+public class AdditionalEurekaClientsHolder {
     private final List<CloudEurekaClient> discoveryClients;
+
     public void shutdown() {
         if (discoveryClients != null) {
             discoveryClients.forEach(CloudEurekaClient::shutdown);

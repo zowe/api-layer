@@ -226,10 +226,10 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    public Terminator additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
-                                                       EurekaClientConfig config,
-                                                       List<AdditionalRegistration> additionalRegistrations,
-                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    public AdditionalEurekaClientsHolder additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
+                                                                          EurekaClientConfig config,
+                                                                          List<AdditionalRegistration> additionalRegistrations,
+                                                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
@@ -237,7 +237,7 @@ public class ConnectionsConfig {
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
         }
-        return new Terminator(additionalClients);
+        return new AdditionalEurekaClientsHolder(additionalClients);
     }
 
     private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager) {
@@ -259,7 +259,7 @@ public class ConnectionsConfig {
         return new CloudEurekaClient(perClientAppManager, configBean, args, context);
     }
 
-    public InstanceInfo createInstanceInfo(EurekaInstanceConfig instanceConfig) {
+    InstanceInfo createInstanceInfo(EurekaInstanceConfig instanceConfig) {
         return new InstanceInfoFactory().create(instanceConfig);
     }
 
