@@ -13,9 +13,7 @@ package org.zowe.apiml.cloudgatewayservice.filters;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,45 +24,20 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 import reactor.core.publisher.Mono;
 
+
 @Service
-public class ZosmfFilterFactory extends AbstractGatewayFilterFactory<ZosmfFilterFactory.Config> {
-    private final WebClient webClient;
-    private final InstanceInfoService instanceInfoService;
-    private final MessageService messageService;
-    private final String zosmfTokensUrl = "%s://%s:%s/%s/zaas/zosmf";
+public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFactory.Config,ZosmfResponse,String> {
 
     public ZosmfFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(Config.class);
-        this.webClient = webClient;
-        this.instanceInfoService = instanceInfoService;
-        this.messageService = messageService;
+        super(Config.class, webClient, instanceInfoService, messageService);
     }
 
     @Override
     public GatewayFilter apply(Config config) {
         try {
-            return (ServerWebExchange exchange, GatewayFilterChain chain) ->
-                instanceInfoService.getServiceInstance("gateway").flatMap(instances -> {
-                    for (ServiceInstance instance : instances) {
-                        return webClient.post()
-                            .uri(String.format(zosmfTokensUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-                            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
-                            .retrieve().onStatus(HttpStatus::is4xxClientError, (response) -> Mono.empty())
-                            .bodyToMono(ZosmfResponse.class)
-                            .flatMap(response -> {
-                                if (response.getToken() == null) {
-                                    ServerHttpRequest request = updateHeadersForError(exchange, "Invalid or missing authentication.");
-                                    return chain.filter(exchange.mutate().request(request).build());
-                                } else {
-                                    final String headerValue = response.getCookieName() + "=" + response.getToken();
-                                    ServerHttpRequest request = addRequestHeader(exchange, HttpHeaders.COOKIE, headerValue);
-                                    return chain.filter(exchange.mutate().request(request).build());
-                                }
-                            });
-                    }
-                    ServerHttpRequest request = updateHeadersForError(exchange, "All gateway service instances failed to respond.");
-                    return chain.filter(exchange.mutate().request(request).build());
-                });
+
+            return createGatewayFilter(new Config().toString());
+
         } catch (Exception e) {
             return ((exchange, chain) -> {
                 ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
@@ -73,13 +46,39 @@ public class ZosmfFilterFactory extends AbstractGatewayFilterFactory<ZosmfFilter
         }
     }
 
-    private ServerHttpRequest updateHeadersForError(ServerWebExchange exchange, String errorMessage) {
+    protected ServerHttpRequest updateHeadersForError(ServerWebExchange exchange, String errorMessage) {
         ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
         exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
         return request;
     }
 
-    private ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
+    @Override
+    protected Class<ZosmfResponse> getResponseClass() {
+        return ZosmfResponse.class;
+    }
+
+    @Override
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, String requestBody) {
+        String zosmfTokensUrl = "%s://%s:%s/%s/zaas/zosmf";
+        return webClient.post()
+            .uri(String.format(zosmfTokensUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
+            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders())).bodyValue(requestBody);
+    }
+
+    @Override
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
+
+        if (response.getToken() == null) {
+            // TODO: consider throwing an exception, ZAAS is not configured properly
+            ServerHttpRequest request = updateHeadersForError(exchange, "Invalid or missing authentication.");
+            return chain.filter(exchange.mutate().request(request).build());
+        }
+        final String headerValue = response.getCookieName() + "=" + response.getToken();
+        ServerHttpRequest request = addRequestHeader(exchange, HttpHeaders.COOKIE, headerValue);
+        return chain.filter(exchange.mutate().request(request).build());
+    }
+
+    protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
         return exchange.getRequest().mutate()
             .headers(headers -> {
                     headers.remove(HttpHeaders.COOKIE);
