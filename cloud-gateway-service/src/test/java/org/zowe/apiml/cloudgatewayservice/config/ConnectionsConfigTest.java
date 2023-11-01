@@ -23,7 +23,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
@@ -59,7 +61,7 @@ class ConnectionsConfigTest {
 
         @Test
         void thenCreateIt() {
-            Assertions.assertNotNull(connectionsConfig.eurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler));
+            Assertions.assertNotNull(connectionsConfig.primaryEurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler));
         }
     }
 

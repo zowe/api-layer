@@ -132,12 +132,6 @@ public class ConnectionsConfig {
         }
     }
 
-    @Bean
-    @Qualifier("apimlEurekaJerseyClient")
-    EurekaJerseyClient getEurekaJerseyClient() {
-        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
-    }
-
 
     HttpsFactory factory() {
         HttpsConfig config = HttpsConfig.builder()
@@ -180,12 +174,18 @@ public class ConnectionsConfig {
         }
     }
 
+    @Bean
+    @Qualifier("primaryApimlEurekaJerseyClient")
+    EurekaJerseyClient getEurekaJerseyClient() {
+        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+    }
+
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
-    public EurekaClient eurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
-                                     @Qualifier("apimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
-                                     @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
+    public CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
+                                                 @Qualifier("primaryApimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
+                                                 @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);
