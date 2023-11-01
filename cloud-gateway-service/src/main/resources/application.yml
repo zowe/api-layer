@@ -4,7 +4,6 @@ eureka:
         ipAddress: ${apiml.service.ipAddress}
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         #ports are computed in code
-        preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
     client:
@@ -32,7 +31,6 @@ apiml:
         id: ${spring.application.name}
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         port: 10023
-        preferIpAddress: false
         scheme: https  # "https" or "http"
     security:
         ssl:
