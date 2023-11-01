@@ -21,4 +21,5 @@ public class ZosmfResponse {
 
     String cookieName;
     String token;
+
 }
