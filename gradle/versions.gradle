@@ -97,6 +97,7 @@ dependencyResolutionManagement {
             version('nettyReactor', '1.1.7')
             version('nimbusJoseJwt', '9.31')
             version('openApiDiff', '2.0.1')
+            version('ow2asm', '9.6')
             version('picocli', '4.7.3')
 
             version('ribbon', '2.3.0')
@@ -315,6 +316,7 @@ dependencyResolutionManagement {
             library('netty_transport_udt', 'io.netty', 'netty-transport-udt').versionRef('netty')
             library('nimbusJoseJwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
             library('openapidiff', 'org.openapitools.openapidiff', 'openapi-diff-core').versionRef('openApiDiff')
+            library('ow2asm', 'org.ow2.asm', 'asm').versionRef('ow2asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocliCodegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')
