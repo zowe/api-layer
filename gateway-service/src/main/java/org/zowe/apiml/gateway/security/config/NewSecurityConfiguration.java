@@ -94,7 +94,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class NewSecurityConfiguration {
 
-    @Qualifier("mapper")
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
     private final AuthConfigurationProperties authConfigurationProperties;

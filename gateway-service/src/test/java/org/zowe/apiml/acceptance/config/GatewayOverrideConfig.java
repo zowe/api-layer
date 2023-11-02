@@ -89,10 +89,8 @@ public class GatewayOverrideConfig {
     }
 
     @Bean
-    @Primary
     public ObjectMapper mapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());
     }
-
 }

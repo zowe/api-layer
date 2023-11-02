@@ -16,6 +16,7 @@ import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.impl.DefaultClock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class OIDCConfig {
@@ -26,6 +27,7 @@ public class OIDCConfig {
     }
 
     @Bean("oidcJwkMapper")
+    @Primary
     public ObjectMapper oidcJwkMapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());

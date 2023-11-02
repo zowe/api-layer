@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.security.query;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -32,7 +31,7 @@ public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
     private final AuthenticationService authenticationService;
 
-    public SuccessfulQueryHandler(@Qualifier("mapper") ObjectMapper securityObjectMapper,
+    public SuccessfulQueryHandler(ObjectMapper securityObjectMapper,
                                   AuthenticationService authenticationService) {
         this.mapper = securityObjectMapper;
         this.authenticationService = authenticationService;
