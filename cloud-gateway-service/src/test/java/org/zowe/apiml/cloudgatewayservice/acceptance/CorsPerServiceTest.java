@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -22,21 +23,24 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @AcceptanceTest
+@TestPropertySource(properties = {
+    "currentApplication=serviceid1"
+})
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
     @Test
     void routeToServiceWithCorsEnabled() throws IOException {
-        mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 0, (headers) ->
+        mockServerWithSpecificHttpResponse(200, "/test", 0, (headers) ->
             assertTrue(headers != null && headers.get("Origin") == null),
             "".getBytes()
         );
         given()
             .header("Origin", "https://localhost:3000")
-            .header(HEADER_X_FORWARD_TO, "serviceid2")
+            .header(HEADER_X_FORWARD_TO, "serviceid1")
             .when()
-            .get(basePath + serviceWithDefaultConfiguration.getPath())
+            .get(basePath + "/test")
             .then().statusCode(Matchers.is(SC_OK));
     }
 
