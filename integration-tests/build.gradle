@@ -46,6 +46,7 @@ dependencies {
     testImplementation libs.jackson.databind
     testImplementation libs.jackson.dataformat.yaml
     testImplementation libs.javax.servlet.api
+    testImplementation libs.assertj.core
     testImplementation libs.nimbusJoseJwt
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson

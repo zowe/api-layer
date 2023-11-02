@@ -15,7 +15,6 @@ import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import lombok.SneakyThrows;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -26,21 +25,25 @@ import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.util.config.TlsConfiguration;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Strings.nullToEmpty;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @DiscoverableClientDependentTest
 @Tag("CloudGatewayCentralRegistry")
@@ -48,12 +51,14 @@ class CentralRegistryTest implements TestWithStartedInstances {
     static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/";
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
     @BeforeAll
     @SneakyThrows
     static void setupAll() {
         //In order to avoid config customization
-        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(1);
+        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
+        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
 
         TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
         SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
@@ -73,7 +78,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
         List<Map<String, Object>> services = response.extract().jsonPath().getObject("[0].services", new TypeRef<List<Map<String, Object>>>() {
         });
 
-        assertThat(services, hasSize(1));
+        assertThat(services).hasSize(1);
     }
 
     @Test
@@ -87,7 +92,24 @@ class CentralRegistryTest implements TestWithStartedInstances {
         List<String> apimlIds = listCentralRegistry(null, null, null)
             .extract().jsonPath().getList("apimlId");
 
-        assertThat(apimlIds, Matchers.containsInAnyOrder("central-apiml", "domain-apiml"));
+        assertThat(apimlIds).contains("central-apiml", "domain-apiml");
+    }
+
+    @Test
+    void shouldFindTwoRegisteredCloudGatewaysInTheEurekaApps() {
+        TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>> typeRef = new TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>>() {
+        };
+
+        ArrayList<LinkedHashMap<Object, Object>> metadata = listEurekaApps()
+            .extract()
+            .jsonPath()
+            .getObject("applications.application.findAll { it.name == 'CLOUD-GATEWAY' }.instance.metadata", typeRef).get(0);
+
+        assertThat(metadata).hasSize(2);
+
+        assertThat(metadata)
+            .extracting(map -> map.get("apiml.service.apimlId"))
+            .containsExactlyInAnyOrder("central-apiml", "domain-apiml");
     }
 
     @Test
@@ -116,6 +138,21 @@ class CentralRegistryTest implements TestWithStartedInstances {
         return with().given()
             .config(SslContext.clientCertUser)
             .get(cloudGatewayEndpoint)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON);
+    }
+
+    @SneakyThrows
+    private ValidatableResponse listEurekaApps() {
+
+        URI eurekaApps = new URL(discoveryConf.getScheme(), discoveryConf.getHost(), discoveryConf.getPort(), "/eureka/apps")
+            .toURI();
+
+        return with().given()
+            .config(SslContext.clientCertUser)
+            .header(ACCEPT, APPLICATION_JSON_VALUE)
+            .get(eurekaApps)
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON);
