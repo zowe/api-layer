@@ -215,6 +215,15 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 () -> authService.validateJwtToken(token)
             );
         }
+
+        @Test
+        void whenParseJWT_thenThrowTokenNotValidException() {
+            String invalidToken = "invalidToken";
+
+            assertThrows(TokenNotValidException.class,
+                () -> authService.parseJwtWithSignature(invalidToken));
+        }
+
     }
 
     @Nested

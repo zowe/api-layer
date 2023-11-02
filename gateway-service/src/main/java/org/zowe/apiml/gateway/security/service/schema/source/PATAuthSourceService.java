@@ -33,6 +33,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @Service
 public class PATAuthSourceService extends TokenAuthSourceService {
 
+    public static final String SERVICE_ID_HEADER = "X-Service-Id";
+
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
@@ -48,6 +50,19 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     @Override
     public Function<String, AuthSource> getMapper() {
         return PATAuthSource::new;
+    }
+
+    @Override
+    public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
+        Optional<AuthSource> authSource = super.getAuthSourceFromRequest(request);
+
+        if (authSource.isPresent()) {
+            PATAuthSource patAuthSource = (PATAuthSource) authSource.get();
+            String defaultServiceId = request.getHeader(SERVICE_ID_HEADER);
+            patAuthSource.setDefaultServiceId(defaultServiceId);
+        }
+
+        return authSource;
     }
 
     @Override
@@ -72,6 +87,9 @@ public class PATAuthSourceService extends TokenAuthSourceService {
             String token = (String) authSource.getRawSource();
             RequestContext context = RequestContext.getCurrentContext();
             String serviceId = (String) context.get(SERVICE_ID_KEY);
+            if (serviceId == null) {
+                serviceId = ((PATAuthSource) authSource).getDefaultServiceId();
+            }
             boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
             logger.log(MessageType.DEBUG, "PAT is %s for scope: %s ", validForScopes ? "valid" : "not valid", serviceId);
             boolean invalidate = tokenProvider.isInvalidated(token);

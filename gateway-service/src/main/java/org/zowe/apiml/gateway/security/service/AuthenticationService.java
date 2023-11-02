@@ -131,8 +131,16 @@ public class AuthenticationService {
     }
 
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
-        Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder().setSigningKey(jwtSecurityInitializer.getJwtSecret()).build().parse(jwt);
-        return parseQueryResponse(parsedJwt.getBody());
+        try {
+            Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder()
+                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
+                .build()
+                .parse(jwt);
+
+            return parseQueryResponse(parsedJwt.getBody());
+        } catch (RuntimeException exception) {
+            throw handleJwtParserException(exception);
+        }
     }
 
     /**
