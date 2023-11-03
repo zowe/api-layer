@@ -28,7 +28,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.CollectionUtils;
+import org.zowe.apiml.config.AdditionalRegistration;
+import org.zowe.apiml.config.AdditionalRegistrationCondition;
+import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 
@@ -59,6 +63,13 @@ public class DiscoveryClientConfig {
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;
     private final ApplicationContext context;
     private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+
+    @Bean
+    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
+        List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
+        log.debug("Parsed {} additional regs, \t first: {}", additionalRegistrations.size(), additionalRegistrations.stream().findFirst().orElse(null));
+        return additionalRegistrations;
+    }
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope

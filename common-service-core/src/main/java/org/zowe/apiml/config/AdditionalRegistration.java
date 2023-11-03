@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +29,7 @@ public class AdditionalRegistration {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    static class Route {
+    public static class Route {
         private String gatewayUrl;
         private String serviceUrl;
     }

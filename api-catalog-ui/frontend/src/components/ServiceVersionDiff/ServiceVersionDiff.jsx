@@ -21,17 +21,17 @@ import {
     DialogActions,
     Divider,
 } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import CloseIcon from '@material-ui/icons/Close';
 
 export default class ServiceVersionDiff extends Component {
     constructor(props) {
-        const { version1, version2, selectedVersion } = props;
+        const { versions } = props;
         super(props);
         this.state = {
-            selectedVersion1: version1 ? { text: version1 } : undefined,
-            selectedVersion2: version2 ? { text: version2 } : undefined,
+            selectedVersion1: versions?.length ? versions[versions.length - 2] : undefined,
+            selectedVersion2: versions?.length ? versions[versions.length - 1] : undefined,
             open: props.isDialogOpen,
-            defaultVersion: selectedVersion,
         };
 
         this.handleVersion1Change = this.handleVersion1Change.bind(this);
@@ -39,11 +39,12 @@ export default class ServiceVersionDiff extends Component {
     }
 
     componentDidMount() {
-        this.setState({ selectedVersion1: null, selectedVersion2: null });
+        const { serviceId, getDiff } = this.props;
+        const { selectedVersion1, selectedVersion2 } = this.state;
+        getDiff(serviceId, selectedVersion1, selectedVersion2);
     }
 
     handleVersion1Change = (event) => {
-        this.setState({ defaultVersion: null });
         this.setState({ selectedVersion1: event.target.value });
     };
 
@@ -72,13 +73,13 @@ export default class ServiceVersionDiff extends Component {
                         <div className="api-diff-form">
                             <Typography data-testid="compare-label">Compare</Typography>
                             <FormControl className="formField">
-                                <InputLabel shrink>Version</InputLabel>
+                                <InputLabel shrink>Version:</InputLabel>
                                 <Select
                                     data-testid="select-1"
                                     label="versionSelect1"
                                     className="select-diff"
                                     displayEmpty
-                                    value={this.state.defaultVersion || selectedVersion1}
+                                    value={selectedVersion1}
                                     onChange={this.handleVersion1Change}
                                     sx={selectorStyle}
                                 >
@@ -91,7 +92,7 @@ export default class ServiceVersionDiff extends Component {
                             </FormControl>
                             <Typography data-testid="label-with">with</Typography>
                             <FormControl className="formField">
-                                <InputLabel shrink>Version</InputLabel>
+                                <InputLabel shrink>Version:</InputLabel>
                                 <Select
                                     data-testid="select-2"
                                     className="select-diff"
@@ -108,11 +109,11 @@ export default class ServiceVersionDiff extends Component {
                                 </Select>
                             </FormControl>
                             <IconButton
-                                disabled={!selectedVersion2}
+                                disabled={!selectedVersion1 && !selectedVersion2}
                                 id="diff-button"
                                 data-testid="diff-button"
                                 onClick={() => {
-                                    getDiff(serviceId, this.state.defaultVersion ?? selectedVersion1, selectedVersion2);
+                                    getDiff(serviceId, selectedVersion1, selectedVersion2);
                                 }}
                             >
                                 Show
@@ -126,3 +127,11 @@ export default class ServiceVersionDiff extends Component {
         );
     }
 }
+
+ServiceVersionDiff.propTypes = {
+    versions: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+    }).isRequired,
+    serviceId: PropTypes.string.isRequired,
+    getDiff: PropTypes.func.isRequired,
+};

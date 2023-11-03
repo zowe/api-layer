@@ -10,13 +10,20 @@ body {
     }
 
   }
-  .operation-filter-input:hover {
+  input[type=text].operation-filter-input {
+    padding-left: var( --spaceLargest );
+    background: url(../../assets/images/magnifying-glass.svg) 8px 50% no-repeat;
+    background-size: var( --spaceMedium );
+
+    &:hover {
       border: 1px solid var( --linkHover );
-  }
-    .operation-filter-input:focus {
+    }
+    &:focus {
         border: 1px solid var( --linkHover );
         outline: none;
     }
+  }
+  
     @media only screen and (max-width: 1240px) {
         .renderedMarkdown p {
             max-width: 200px;
@@ -73,7 +80,7 @@ body {
       border-radius: var( --borderRadius1 );
       font-size: var( --fontSmall );
       color: var( --text100 );
-      min-width: 55px;
+      min-width: 70px;
     }
     > button {
       background: transparent;
