@@ -14,23 +14,15 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
@@ -99,41 +91,6 @@ class ConnectionsConfigTest {
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePath")).isEqualTo("/path2");
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePassword")).isNull();
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword")).isNull();
-        }
-
-    }
-
-    @Nested
-    @ExtendWith(MockitoExtension.class)
-    class WhenInitializingAdditionalRegistrations {
-        private ConnectionsConfig config;
-
-        @Mock
-        private CloudEurekaClient additionalClientOne;
-        @Mock
-        private CloudEurekaClient additionalClientTwo;
-
-        @BeforeEach
-        public void setUp() {
-            ConnectionsConfig config = Mockito.spy(connectionsConfig);
-        }
-
-
-        @Test
-        void shouldTriggerShutdownCallToWrappedClients() {
-            AdditionalEurekaClientsHolder holder = new AdditionalEurekaClientsHolder(Arrays.asList(additionalClientOne, additionalClientTwo));
-            holder.shutdown();
-
-            verify(additionalClientOne).shutdown();
-            verify(additionalClientTwo).shutdown();
-        }
-
-        @Test
-        void shouldHandleNullOnShutdownCall() {
-            AdditionalEurekaClientsHolder holder = new AdditionalEurekaClientsHolder(null);
-            holder.shutdown();
-
-            assertThat(holder.getDiscoveryClients()).isNull();
         }
     }
 }

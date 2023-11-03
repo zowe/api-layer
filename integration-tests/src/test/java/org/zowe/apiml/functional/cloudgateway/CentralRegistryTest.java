@@ -58,7 +58,6 @@ class CentralRegistryTest implements TestWithStartedInstances {
     static void setupAll() {
         //In order to avoid config customization
         ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
-        ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().setInstances(2);
 
         TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
         SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());

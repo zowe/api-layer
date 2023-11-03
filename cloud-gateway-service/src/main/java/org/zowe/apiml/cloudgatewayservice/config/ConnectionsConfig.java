@@ -38,7 +38,6 @@ import org.springframework.cloud.gateway.config.HttpClientCustomizer;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
@@ -226,41 +225,39 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    public AdditionalEurekaClientsHolder additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
-                                                                          EurekaClientConfig config,
-                                                                          List<AdditionalRegistration> additionalRegistrations,
-                                                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
+                                                                       EurekaClientConfig config,
+                                                                       List<AdditionalRegistration> additionalRegistrations,
+                                                                       EurekaFactory eurekaFactory,
+                                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
-            CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager);
+            CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }
 
-    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager) {
+    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
+
+        log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
+        Map<String, String> urls = new HashMap<>();
+        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
 
         EurekaClientConfigBean configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
-
-        Map<String, String> urls = new HashMap<>();
-        log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
-        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
-
         configBean.setServiceUrl(urls);
 
+        EurekaJerseyClient jerseyClient = factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
         MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build());
-        InstanceInfo newInfo = createInstanceInfo(appManager.getEurekaInstanceConfig());
+        args.setEurekaJerseyClient(jerseyClient);
 
-        ApplicationInfoManager perClientAppManager = new ApplicationInfoManager(appManager.getEurekaInstanceConfig(), newInfo, null);
-        return new CloudEurekaClient(perClientAppManager, configBean, args, context);
-    }
+        EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
+        InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
 
-    InstanceInfo createInstanceInfo(EurekaInstanceConfig instanceConfig) {
-        return new InstanceInfoFactory().create(instanceConfig);
+        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, args, context);
     }
 
     @Bean
