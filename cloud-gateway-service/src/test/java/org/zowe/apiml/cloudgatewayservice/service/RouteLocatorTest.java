@@ -41,6 +41,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 class RouteLocatorTest {
 
+    private final ServiceInstance MOCK_SERVICE = createServiceInstance("mockService");
+
     private static final FilterDefinition[] COMMON_FILTERS = {
         new FilterDefinition(), new FilterDefinition()
     };
@@ -136,17 +138,17 @@ class RouteLocatorTest {
 
         @Test
         void givenNoAuthentication_whenSetAuth_thenDoNothing() {
-            assertDoesNotThrow(() -> routeLocator.setAuth(null, null));
+            assertDoesNotThrow(() -> routeLocator.setAuth(MOCK_SERVICE,null, null));
         }
 
         @Test
         void givenNoAuthenticationScheme_whenSetAuth_thenDoNothing() {
-            assertDoesNotThrow(() -> routeLocator.setAuth(null, new Authentication()));
+            assertDoesNotThrow(() -> routeLocator.setAuth(MOCK_SERVICE, null, new Authentication()));
         }
 
         @Test
         void givenAuthenticationSchemeWithoutFilter_whenSetAuth_thenDoNothing() {
-            assertDoesNotThrow(() -> routeLocator.setAuth(null, new Authentication(AuthenticationScheme.X509, null)));
+            assertDoesNotThrow(() -> routeLocator.setAuth(MOCK_SERVICE, null, new Authentication(AuthenticationScheme.X509, null)));
         }
 
         @Test
@@ -154,9 +156,9 @@ class RouteLocatorTest {
             RouteDefinition routeDefinition = mock(RouteDefinition.class);
             Authentication authentication = new Authentication(AuthenticationScheme.BYPASS, null);
 
-            routeLocator.setAuth(routeDefinition, authentication);
+            routeLocator.setAuth(MOCK_SERVICE, routeDefinition, authentication);
 
-            verify(SCHEME_HANDLER_FILTERS[0]).apply(routeDefinition, authentication);
+            verify(SCHEME_HANDLER_FILTERS[0]).apply(MOCK_SERVICE, routeDefinition, authentication);
         }
 
         private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {

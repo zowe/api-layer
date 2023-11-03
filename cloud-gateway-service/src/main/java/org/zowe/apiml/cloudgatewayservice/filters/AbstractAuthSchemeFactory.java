@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
+import lombok.Data;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGatewayFilterFactory<T> {
+
+    private static final String HEADER_SERVICE_ID = "X-Service-Id";
 
     protected final WebClient webClient;
     protected final InstanceInfoService instanceInfoService;
@@ -47,6 +50,7 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
 
     protected Mono<Void> invoke(
         List<ServiceInstance> serviceInstances,
+        AbstractConfig config,
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator,
         Function<? super R, ? extends Mono<Void>> responseProcessor
     ) {
@@ -55,6 +59,7 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         for (ServiceInstance instance : serviceInstances) {
             try {
                 return requestCreator.apply(instance)
+                    .header(HEADER_SERVICE_ID, config.serviceId)
                     .retrieve()
                     .onStatus(HttpStatus::is4xxClientError, response -> Mono.empty())
                     .bodyToMono(getResponseClass())
@@ -76,10 +81,11 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, D data);
     protected abstract Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, R response);
 
-    protected GatewayFilter createGatewayFilter(D data) {
+    protected GatewayFilter createGatewayFilter(AbstractConfig config, D data) {
         return (ServerWebExchange exchange, GatewayFilterChain chain) ->
             getZaasInstances().flatMap(instances  -> invoke(
                 instances,
+                config,
                 instance -> createRequest(exchange, instance, data),
                 response -> processResponse(exchange, chain, response)
                 ));
@@ -100,6 +106,13 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
         exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
         return request;
+    }
+
+    @Data
+    protected abstract static class AbstractConfig {
+
+        private String serviceId;
+
     }
 
 }

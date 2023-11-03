@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -70,7 +71,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     @Override
     public GatewayFilter apply(Config config) {
         try {
-            return createGatewayFilter(WRITER.writeValueAsString(new TicketRequest(config.getApplicationName())));
+            return createGatewayFilter(config, WRITER.writeValueAsString(new TicketRequest(config.getApplicationName())));
         } catch (JsonProcessingException e) {
             return ((exchange, chain) -> {
                 ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
@@ -80,7 +81,8 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     }
 
     @Data
-    public static class Config {
+    @EqualsAndHashCode(callSuper = true)
+    public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
 
         private String applicationName;
 

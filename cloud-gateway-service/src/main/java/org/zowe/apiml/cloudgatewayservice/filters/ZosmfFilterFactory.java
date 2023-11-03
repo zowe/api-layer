@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
+import lombok.EqualsAndHashCode;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -26,7 +27,7 @@ import reactor.core.publisher.Mono;
 
 
 @Service
-public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFactory.Config,ZosmfResponse,String> {
+public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFactory.Config, ZosmfResponse, Object> {
 
     public ZosmfFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class, webClient, instanceInfoService, messageService);
@@ -35,9 +36,7 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     @Override
     public GatewayFilter apply(Config config) {
         try {
-
-            return createGatewayFilter(new Config().toString());
-
+            return createGatewayFilter(config, null);
         } catch (Exception e) {
             return ((exchange, chain) -> {
                 ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
@@ -58,11 +57,11 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, String requestBody) {
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, Object data) {
         String zosmfTokensUrl = "%s://%s:%s/%s/zaas/zosmf";
         return webClient.post()
             .uri(String.format(zosmfTokensUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders())).bodyValue(requestBody);
+            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()));
     }
 
     @Override
@@ -87,8 +86,9 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
             ).build();
     }
 
-
-    public static class Config {
+    @EqualsAndHashCode(callSuper = true)
+    public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
 
     }
+
 }
