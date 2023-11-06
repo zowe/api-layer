@@ -67,7 +67,7 @@ public class DiscoveryClientConfig {
     @Bean
     public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
-        log.debug("Parsed {} additional regs, \t first: {}", additionalRegistrations.size(), additionalRegistrations.stream().findFirst().orElse(null));
+        log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
     }
 
