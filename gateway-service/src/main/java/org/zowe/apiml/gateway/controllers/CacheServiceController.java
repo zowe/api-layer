@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.AllArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping(CacheServiceController.CONTROLLER_PATH)
+@ConditionalOnProperty(name = "apiml.caching.enabled", havingValue = "true")
 public class CacheServiceController {
 
     public static final String CONTROLLER_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
