@@ -18,8 +18,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.util.CacheUtils;
 
-import java.io.IOException;
-
 /**
  * Spring configuration to disable EhCache usage.
  */
@@ -28,7 +26,7 @@ import java.io.IOException;
 @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "false")
 public class NoOpCacheConfig {
     @Bean
-    public CacheManager cacheManager() throws IOException {
+    public CacheManager cacheManager() {
         return new NoOpCacheManager();
     }
 
