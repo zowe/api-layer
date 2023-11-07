@@ -21,6 +21,7 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class ApplicationRegistry {
     private String currentApplication;
 
     protected int servicePort;
-    private Map<String, Applications> applicationsToReturn = new HashMap<>();
+    private Map<String, Application> applicationToReturn = new HashMap<>();
 
     public ApplicationRegistry() {
     }
@@ -45,6 +46,10 @@ public class ApplicationRegistry {
             throw new RuntimeException("Failed to find free local port to bind the agent to", e);
         }
         return servicePort;
+    }
+
+    public void addApplication(String instanceId, Application application) {
+
     }
 
     /**
@@ -65,9 +70,14 @@ public class ApplicationRegistry {
         if (multipleInstances) {
             withMetadata.addInstance(getStandardInstance(metadata, id, id + "-copy"));
         }
-        applications.addApplication(withMetadata);
+        applicationToReturn.put(id, withMetadata);
+    }
 
-        applicationsToReturn.put(id, applications);
+    public void addApplication(InstanceInfo instanceInfo) {
+        Application application = new Application(instanceInfo.getId());
+        application.addInstance(instanceInfo);
+
+        applicationToReturn.put(instanceInfo.getId(), application);
     }
 
     /**
@@ -75,7 +85,7 @@ public class ApplicationRegistry {
      * discovery infrastructure to work properly.
      */
     public void clearApplications() {
-        applicationsToReturn.clear();
+        applicationToReturn.clear();
     }
 
     /**
@@ -89,14 +99,15 @@ public class ApplicationRegistry {
 
 
     public Applications getApplications() {
-        return applicationsToReturn.get(currentApplication);
+        Applications output = new Applications();
+        applicationToReturn.values().stream().forEach(a -> output.addApplication(a));
+        return output;
     }
 
     public List<InstanceInfo> getInstances() {
-        if (applicationsToReturn.get(currentApplication) == null) {
-            currentApplication = "serviceid2";
-        }
-        return applicationsToReturn.get(currentApplication).getRegisteredApplications(currentApplication).getInstances();
+        List<InstanceInfo> output = new LinkedList<>();
+        applicationToReturn.values().forEach(a -> output.addAll(a.getInstances()));
+        return output;
     }
 
     private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId, String instanceId) {

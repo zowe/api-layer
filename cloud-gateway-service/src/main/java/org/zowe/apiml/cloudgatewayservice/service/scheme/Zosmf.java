@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
@@ -29,7 +30,7 @@ public class Zosmf implements SchemeHandler {
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
         FilterDefinition filerDef = new FilterDefinition();
         filerDef.setName("ZosmfTokensFilterFactory");
-        filerDef.addArg("serviceId", serviceInstance.getServiceId());
+        filerDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
         routeDefinition.getFilters().add(filerDef);
     }
 

@@ -10,75 +10,72 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.netflix.appinfo.InstanceInfo;
 import org.apache.http.HttpHeaders;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
-import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 import org.zowe.apiml.ticket.TicketResponse;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AcceptanceTest
 public class PassticketTest extends AcceptanceTestWithTwoServices {
 
-    @MockBean
-    InstanceInfoService instanceInfoService;
-
-    @DynamicPropertySource
-    static void registerProps(DynamicPropertyRegistry registry) {
-        registry.add("apiml.service.gateway.proxy.enabled", () -> "false");
-    }
+    private static final String USER_ID = "user";
+    private static final String SERVICE_ID = "serviceusingpassticket";
+    private static final String COOKIE_NAME = "apimlAuthenticationToken";
+    private static final String JWT = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjcxNDYxNjIzLCJleHAiOjE2NzE0OTA0MjMsImlzcyI6IkFQSU1MIiwianRpIjoiYmFlMTkyZTYtYTYxMi00MThhLWI2ZGMtN2I0NWI5NzM4ODI3IiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIifQ.Vt5UjJUlbmuzmmEIodAACtj_AOxlsWqkFrFyWh4_MQRRPCj_zMIwnzpqRN-NJvKtUg1zxOCzXv2ypYNsglrXc7cH9wU3leK1gjYxK7IJjn2SBEb0dUL5m7-h4tFq2zNhcGH2GOmTpE2gTQGSTvDIdja-TIj_lAvUtbkiorm1RqrNu2MGC0WfgOGiak3tj2tNJLv_Y1ZMxNjzyHgXBMuNPozQrd4Vtnew3x4yy85LrTYF7jJM3U-e3AD2yImftxwycQvbkjNb-lWadejTVH0MgHMr04wVdDd8Nq5q7yrZf7YPzhias8ehNbew5CHiKut9SseZ1sO2WwgfhpEfsN4okg";
+    private static final String PASSTICKET = "ZOWE_DUMMY_PASS_TICKET";
 
     @BeforeEach
-    void setup() {
-        InstanceInfo info = InstanceInfo.Builder.newBuilder().setInstanceId("gateway").setHostName("localhost").setPort(getApplicationRegistry().findFreePort() + 1).setAppName("gateway").setStatus(InstanceInfo.InstanceStatus.UP).build();
-        ServiceInstance instance = new EurekaServiceInstance(info);
-        Mockito.when(instanceInfoService.getServiceInstance("gateway")).thenReturn(Mono.just(Collections.singletonList(instance)));
+    void setup() throws IOException {
+        TicketResponse response = new TicketResponse();
+        response.setToken(JWT);
+        response.setUserId(USER_ID);
+        response.setApplicationName("IZUDFLT");
+        response.setTicket(PASSTICKET);
+
+        mockService("gateway")
+            .addEndpoint("/gateway/api/v1/auth/ticket")
+                .assertion(he -> assertEquals(SERVICE_ID, he.getRequestHeaders().getFirst("X-Service-Id")))
+                .assertion(he -> assertEquals(COOKIE_NAME + "=" + JWT, he.getRequestHeaders().getFirst("Cookie")))
+                .bodyJson(response)
+            .and().start();
     }
 
     @Nested
     class GivenValidAuthentication {
+
         @Test
         void whenRequestingPassticketForAllowedAPPLID_thenTranslate() throws IOException {
-            AtomicBoolean result = new AtomicBoolean(false);
-            mockServerWithSpecificHttpResponse(200, "/serviceid2/test", 0, (headers) -> {
-                    result.set(headers != null && headers.get(HttpHeaders.AUTHORIZATION) != null);
-                }, "".getBytes()
-            );
-            TicketResponse response = new TicketResponse();
-            response.setToken("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjcxNDYxNjIzLCJleHAiOjE2NzE0OTA0MjMsImlzcyI6IkFQSU1MIiwianRpIjoiYmFlMTkyZTYtYTYxMi00MThhLWI2ZGMtN2I0NWI5NzM4ODI3IiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIifQ.Vt5UjJUlbmuzmmEIodAACtj_AOxlsWqkFrFyWh4_MQRRPCj_zMIwnzpqRN-NJvKtUg1zxOCzXv2ypYNsglrXc7cH9wU3leK1gjYxK7IJjn2SBEb0dUL5m7-h4tFq2zNhcGH2GOmTpE2gTQGSTvDIdja-TIj_lAvUtbkiorm1RqrNu2MGC0WfgOGiak3tj2tNJLv_Y1ZMxNjzyHgXBMuNPozQrd4Vtnew3x4yy85LrTYF7jJM3U-e3AD2yImftxwycQvbkjNb-lWadejTVH0MgHMr04wVdDd8Nq5q7yrZf7YPzhias8ehNbew5CHiKut9SseZ1sO2WwgfhpEfsN4okg");
-            response.setUserId("user");
-            response.setApplicationName("IZUDFLT");
-            response.setTicket("ZOWE_DUMMY_PASS_TICKET");
-            ObjectWriter writer = new ObjectMapper().writer();
-            mockServerWithSpecificHttpResponse(200, "/gateway/api/v1/auth/ticket", getApplicationRegistry().findFreePort() + 1, (headers) -> {
-                }, writer.writeValueAsString(response).getBytes()
-            );
+            String expectedAuthHeader = "Basic " + Base64.getEncoder().encodeToString((USER_ID + ":" + PASSTICKET).getBytes(StandardCharsets.UTF_8));
+            MockService mockService = mockService(SERVICE_ID)
+                .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
+                .addEndpoint("/" + SERVICE_ID + "/test")
+                    .assertion(he -> assertEquals(expectedAuthHeader, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                .and().start();
+
             given()
-                .when()
-                .get(basePath + "/serviceid2/api/v1/test")
-                .then().statusCode(Matchers.is(SC_OK));
-            assertTrue(result.get());
+                .cookie(COOKIE_NAME, JWT)
+            .when()
+                .get(basePath + "/" + SERVICE_ID + "/api/v1/test")
+            .then()
+                .statusCode(Matchers.is(SC_OK));
+
+            assertEquals(1, mockService.getEndpoints().get("/" + SERVICE_ID + "/test").getCounter());
         }
+
     }
+
 }

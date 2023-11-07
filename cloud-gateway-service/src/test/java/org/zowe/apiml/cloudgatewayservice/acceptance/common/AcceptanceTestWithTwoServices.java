@@ -12,22 +12,38 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpServer;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import static org.mockito.Mockito.doReturn;
+
+@Slf4j
 @AcceptanceTest
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     @Qualifier("test")
@@ -38,6 +54,9 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @Value("${currentApplication:#{null}}")
     private String defaultCurrentApplication;
 
+    @MockBean
+    protected InstanceInfoService instanceInfoService;
+
     public ApplicationRegistry getApplicationRegistry() {
         return applicationRegistry;
     }
@@ -45,6 +64,8 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     protected HttpServer server;
     protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
     protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
+
+    private Set<MockService> createdMockServices = new HashSet<>();
 
     @BeforeEach
     public void prepareApplications() {
@@ -58,9 +79,18 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
     @AfterEach
     public void tearDown() {
-        server.stop(0);
+        if (server != null) server.stop(0);
+        for (Iterator<MockService> i = createdMockServices.iterator(); i.hasNext(); ) {
+            MockService mockService = i.next();
+            i.remove();
+            mockService.close();
+        }
+
+        MockService.checkAssertionErrors();
     }
 
+    // Use rather mockService method - it is resource safe and more useful
+    @Deprecated
     protected AtomicInteger mockServerWithSpecificHttpResponse(int statusCode, String uri, int port, Consumer<Headers> assertion, byte[] body) throws IOException {
         if (port == 0) {
             port = applicationRegistry.findFreePort();
@@ -82,4 +112,31 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         server.start();
         return counter;
     }
+
+    protected void updateRoutingRules() {
+        applicationEventPublisher.publishEvent(new RefreshRoutesEvent("List of services changed"));
+    }
+
+    protected MockService.MockServiceBuilder mockService(String serviceId) {
+        return MockService.builder()
+            .statusChangedlistener(mockService -> {
+                List<ServiceInstance> allInstances = createdMockServices.stream()
+                    .filter(ms -> StringUtils.equals(serviceId, ms.getServiceId()))
+                    .map(MockService::getEurekaServiceInstance)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+                createdMockServices.add(mockService);
+
+                if (mockService.isStarted()) {
+                    allInstances.add(mockService.getEurekaServiceInstance());
+                    applicationRegistry.addApplication(mockService.getInstanceInfo());
+                }
+                doReturn(Mono.just(allInstances)).when(instanceInfoService).getServiceInstance(serviceId);
+
+                updateRoutingRules();
+            })
+            .serviceId(serviceId);
+    }
+
 }

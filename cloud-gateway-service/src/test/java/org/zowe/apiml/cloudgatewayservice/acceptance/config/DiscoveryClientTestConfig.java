@@ -21,11 +21,15 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
@@ -35,6 +39,7 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
+import reactor.core.publisher.Flux;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -59,6 +64,34 @@ public class DiscoveryClientTestConfig {
     public ApplicationRegistry registry() {
         ApplicationRegistry applicationRegistry = new ApplicationRegistry();
         return applicationRegistry;
+    }
+
+    @Bean
+    public ReactiveDiscoveryClient mockServicesReactiveDiscoveryClient(ApplicationRegistry applicationRegistry) {
+        return new ReactiveDiscoveryClient() {
+
+            @Override
+            public String description() {
+                return "mocked services";
+            }
+
+            @Override
+            public Flux<ServiceInstance> getInstances(String serviceId) {
+                return Flux.just(applicationRegistry.getInstances().stream()
+                    .filter(i -> StringUtils.equals(i.getId(), serviceId))
+                    .map(EurekaServiceInstance::new)
+                    .toArray(ServiceInstance[]::new)
+                );
+            }
+
+            @Override
+            public Flux<String> getServices() {
+                return Flux.just(applicationRegistry.getInstances().stream()
+                    .map(a -> a.getId())
+                    .distinct()
+                    .toArray(String[]::new));
+            }
+        };
     }
 
     @Bean(destroyMethod = "shutdown", name = "test")
