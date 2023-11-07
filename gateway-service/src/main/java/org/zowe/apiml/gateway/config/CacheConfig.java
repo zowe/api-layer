@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 @EnableCaching
 @Configuration
-@ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
 public class CacheConfig {
 
     public static final String COMPOSITE_KEY_GENERATOR = "compositeKeyGenerator";
