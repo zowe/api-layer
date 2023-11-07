@@ -19,6 +19,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
 
 @EnvironmentCheck
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -28,7 +29,6 @@ class CheckEnvironmentTest {
     private String password;
     private String zosmfHost;
     private int zosmfPort;
-    private String zosmfAuthEndpoint;
     private String zosmfProtectedEndpoint;
     private String zosmfScheme;
 
@@ -39,7 +39,6 @@ class CheckEnvironmentTest {
         password = config.getCredentials().getPassword();
         zosmfHost = config.getZosmfServiceConfiguration().getHost();
         zosmfPort = config.getZosmfServiceConfiguration().getPort();
-        zosmfAuthEndpoint = "/zosmf/services/authenticate";
         zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
         zosmfScheme = config.getZosmfServiceConfiguration().getScheme();
     }
@@ -53,7 +52,7 @@ class CheckEnvironmentTest {
                 .auth().preemptive().basic(username, new String(password))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
-                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT))
                 .then().statusCode(is(SC_OK))
                 .extract().cookie("LtpaToken2");
         // Logout LTPA
@@ -61,7 +60,7 @@ class CheckEnvironmentTest {
             .header("X-CSRF-ZOSMF-HEADER", "")
             .cookie("LtpaToken2", ltpa2)
         .when()
-            .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+            .delete(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT))
         .then()
             .statusCode(is(SC_NO_CONTENT));
     }
@@ -75,7 +74,7 @@ class CheckEnvironmentTest {
             given().auth().preemptive().basic(username, new String(password))
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
-                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, zosmfAuthEndpoint))
+                .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT))
                 .then().statusCode(is(SC_OK))
                 .extract().cookie("jwtToken");
 

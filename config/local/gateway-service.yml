@@ -12,14 +12,14 @@ apiml:
         webfinger:
             fileLocation: config/local/webfinger.yml
         personalAccessToken:
-            enabled: false
+            enabled: true
         oidc:
             enabled: false
             clientId:
             clientSecret:
-            registry:
-            identityMapperUrl:
-            identityMapperUser:
+            registry: zowe.okta.com
+            identityMapperUrl: https://localhost:10010/zss/api/v1/certificate/dn
+            identityMapperUser: APIMTST
             jwks:
                 uri:
         auth:
@@ -35,7 +35,7 @@ apiml:
             verifySslCertificatesOfServices: true
         x509:
             enabled: true
-            acceptForwardedCert: false
+            acceptForwardedCert: true
             certificatesUrl: https://localhost:10023/gateway/certificates
 
     banner: console

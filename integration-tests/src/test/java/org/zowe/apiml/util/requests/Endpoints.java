@@ -24,6 +24,8 @@ public class Endpoints {
     public final static String ROUTED_LOGIN = "/gateway/api/v1/auth/login";
     public final static String ROUTED_LOGOUT = "/gateway/api/v1/auth/logout";
 
+    public final static String ZAAS_ZOSMF_ENDPOINT = "/gateway/zaas/zosmf";
+
     public final static String ROUTED_LOGIN_OLD_FORMAT = "/gateway/api/v1/auth/login";
     public final static String ROUTED_LOGOUT_OLD_FORMAT = "/gateway/api/v1/auth/logout";
 
@@ -72,4 +74,6 @@ public class Endpoints {
     public final static String API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE = "/apicatalog/api/v1/apidoc/invalidService/v1/v2";
 
     public final static String CLOUD_GATEWAY_CERTIFICATES = "/gateway/certificates";
+
+    public final static String ZOSMF_AUTH_ENDPOINT = "/zosmf/services/authenticate";
 }
