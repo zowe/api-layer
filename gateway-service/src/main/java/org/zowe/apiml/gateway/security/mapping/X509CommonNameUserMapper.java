@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,6 @@ import java.security.cert.X509Certificate;
  * Certificate mapper that allows to return user id of the provided x509 certificate
  * This mapper will be executed when ZSS is not used
  */
-@Slf4j
 @Component("x509Mapper")
 @ConditionalOnExpression("T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
 )

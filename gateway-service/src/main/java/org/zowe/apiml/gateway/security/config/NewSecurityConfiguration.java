@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -67,7 +66,12 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
-import org.zowe.apiml.security.common.login.*;
+import org.zowe.apiml.security.common.login.BasicAuthFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.login.X509AuthAwareFilter;
+import org.zowe.apiml.security.common.login.X509AuthenticationFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.util.Collections;
@@ -89,9 +93,7 @@ import java.util.Set;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Slf4j
 public class NewSecurityConfiguration {
-
 
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;

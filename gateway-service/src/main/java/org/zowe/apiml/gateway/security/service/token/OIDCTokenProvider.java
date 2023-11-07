@@ -86,7 +86,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Qualifier("oidcJwtClock")
     private final Clock clock;
 
-    @Qualifier("oidcMapper")
+    @Qualifier("oidcJwkMapper")
     private final ObjectMapper mapper;
 
     private Map<String, Key> jwks = new ConcurrentHashMap<>();

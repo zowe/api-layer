@@ -8,15 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.config;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.StandardEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,24 +24,15 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-@Slf4j
-@Configuration
-@RequiredArgsConstructor
-public class AdditionalRegistrationConfig {
+public class AdditionalRegistrationParser {
+
 
     public static final String ADDITIONAL_REGISTRATION_INDEX_GROUP_NAME = "index";
-    public static final Pattern DISCOVERYSERVICEURLS_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_DISCOVERYSERVICEURLS$");
-    public static final Pattern ROUTE_SERVICEURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_SERVICEURL");
-    public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL");
+    public static final Pattern DISCOVERYSERVICEURLS_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_DISCOVERYSERVICEURLS$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern ROUTE_SERVICEURL_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_SERVICEURL$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern ROUTE_GATEWAYURL_PATTERN = Pattern.compile("^ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_(?<index>\\d+)_ROUTES_(?<routeIndex>\\d+)_GATEWAYURL$", Pattern.CASE_INSENSITIVE);
 
-    @Bean
-    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
-        List<AdditionalRegistration> additionalRegistrations = extractAdditionalRegistrations(System.getenv());
-        log.debug("Parsed {} additional regs, \t first: {}", additionalRegistrations.size(), additionalRegistrations.stream().findFirst().orElse(null));
-        return additionalRegistrations;
-    }
-
-    public static List<AdditionalRegistration> extractAdditionalRegistrations(Map<String, String> allProperties) {
+    public List<AdditionalRegistration> extractAdditionalRegistrations(Map<String, String> allProperties) {
         if (allProperties == null) {
             return new ArrayList<>();
         }
@@ -62,7 +48,7 @@ public class AdditionalRegistrationConfig {
             parseGatewayUrl(entry.getKey()).ifPresent(pair -> putRouteGatewayUrl(map, pair, entry.getValue()));
         }
         map.values().forEach(registration -> registration.setRoutes(registration.getRoutes().stream()
-            .filter(AdditionalRegistrationConfig::isRouteDefined).collect(Collectors.toList())));
+            .filter(AdditionalRegistrationParser::isRouteDefined).collect(Collectors.toList())));
         return new ArrayList<>(map.values());
     }
 
@@ -127,5 +113,4 @@ public class AdditionalRegistrationConfig {
     private static boolean isRouteDefined(AdditionalRegistration.Route route) {
         return route != null && (isNotBlank(route.getGatewayUrl()) || isNotBlank(route.getServiceUrl()));
     }
-
 }
