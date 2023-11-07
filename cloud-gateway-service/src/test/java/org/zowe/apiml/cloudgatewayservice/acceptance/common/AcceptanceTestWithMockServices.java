@@ -59,6 +59,26 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
         applicationEventPublisher.publishEvent(new RefreshRoutesEvent("List of services changed"));
     }
 
+    /**
+     * Create mock service. It will be automatically registred and removed on the time. It is not necessary to handle
+     * its lifecycle.
+     *
+     * Example:
+     *
+     * MockService myService;
+     *
+     * @BeforeAll
+     * void createMyService() {
+     *     myService = mockService("myservice").scope(MockService.Scope.CLASS)
+     *          .addEndpoint("/test/500")
+     *              .responseCode(500)
+     *              .bodyJson("{}")
+     *          .and().start();
+     * }
+     *
+     * @param serviceId serviceId of the new service
+     * @return builder to define a new MockService
+     */
     protected MockService.MockServiceBuilder mockService(String serviceId) {
         return MockService.builder()
             .statusChangedlistener(mockService -> {
