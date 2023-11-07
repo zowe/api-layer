@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.ConditionContext;
