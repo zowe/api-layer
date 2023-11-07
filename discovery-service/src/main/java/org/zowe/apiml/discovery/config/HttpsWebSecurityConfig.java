@@ -94,17 +94,15 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.requestMatchers().antMatchers(
+        baseConfigure(http.requestMatchers(matchers -> matchers.antMatchers(
                 "/application/**",
                 "/*"
-            )
-            .and())
-            .authenticationProvider(gatewayLoginProvider)
-            .authenticationProvider(gatewayTokenProvider)
-            .authorizeRequests()
-            .antMatchers("/**").authenticated()
-            .and()
-            .httpBasic().realmName(DISCOVERY_REALM);
+        )))
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider)
+                .authorizeRequests(requests -> requests
+                        .antMatchers("/**").authenticated())
+                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (isAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
         }
@@ -120,15 +118,14 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.antMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeRequests()
-                .anyRequest().authenticated()
-                .and().x509().userDetailsService(x509UserDetailsService());
+            http.authorizeRequests(requests -> requests
+                    .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authorizeRequests().anyRequest().permitAll();
+            http.authorizeRequests(requests -> requests.anyRequest().permitAll());
         }
         return http.build();
     }
@@ -140,12 +137,12 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.antMatcher("/discovery/**"))
-            .authenticationProvider(gatewayLoginProvider)
-            .authenticationProvider(gatewayTokenProvider)
-            .httpBasic().realmName(DISCOVERY_REALM);
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider)
+                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeRequests().anyRequest().authenticated().and()
-                .x509().userDetailsService(x509UserDetailsService());
+            http.authorizeRequests(requests -> requests.anyRequest().authenticated())
+                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
