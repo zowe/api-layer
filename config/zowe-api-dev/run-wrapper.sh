@@ -48,7 +48,7 @@ export KEYSTORE_PASSWORD=password
 export KEYSTORE_TYPE=PKCS12
 export KEYSTORE=$dir/keystore/keystore.p12
 #export LAUNCH_COMPONENT
-#export LIBRARY_PATH
+export LIBRARY_PATH=lib/
 #export NONSTRICT_VERIFY_CERTIFICATES:-false
 #export QUICK_START
 #export RESOURCE_CLASS:-ZOWE

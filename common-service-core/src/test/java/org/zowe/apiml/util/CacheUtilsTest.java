@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 class CacheUtilsTest {
 
     private CacheUtils underTest;
-    private int removeCounter;
 
     @BeforeEach
     void setUp() {
