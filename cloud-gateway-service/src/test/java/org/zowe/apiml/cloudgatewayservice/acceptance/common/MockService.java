@@ -14,12 +14,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Singular;
-import lombok.Value;
+import lombok.*;
 import org.apache.http.HttpHeaders;
 import org.assertj.core.error.MultipleAssertionsError;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
@@ -33,9 +31,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Builder(builderClassName = "MockServiceBuilder")
 @Getter
@@ -44,6 +44,7 @@ public class MockService implements AutoCloseable {
     private HttpServer server;
 
     private String serviceId;
+    private String vipAddress;
 
     private String gatewayUrl;
     private String serviceUrl;
@@ -51,11 +52,15 @@ public class MockService implements AutoCloseable {
     private AuthenticationScheme authenticationScheme;
     private String applid;
 
+    @Builder.Default
+    private Scope scope = Scope.TEST;
+
     @Singular
     private List<Consumer<MockService>> statusChangedlisteners;
 
     private final Map<String, Endpoint> endpoints = new HashMap<>();
-    private final AtomicBoolean status = new AtomicBoolean(false);
+    @Getter(AccessLevel.NONE)
+    private final AtomicReference<Status> status = new AtomicReference<>(Status.STOPPED);
 
     private static AssertionError assertionError;
 
@@ -73,6 +78,15 @@ public class MockService implements AutoCloseable {
         if (serviceUrl == null) serviceUrl = "/" + serviceId;
 
         server.setExecutor(null);
+    }
+
+    public Status getStatus() {
+        return status.get();
+    }
+
+    public String getInstanceId() {
+        InetSocketAddress address = server.getAddress();
+        return "localhost:" + getServiceId() + ":" + (address == null ? 0 : address.getPort());
     }
 
     private void fireStatusChanged() {
@@ -103,25 +117,42 @@ public class MockService implements AutoCloseable {
     }
 
     public void start() {
-        server.start();
-        status.set(true);
-        fireStatusChanged();
+        if (status.get() == Status.STOPPED) {
+            server.start();
+            status.set(Status.STARTED);
+            fireStatusChanged();
+        }
     }
 
     public void stop() {
-        status.set(false);
-        server.stop(0);
-        fireStatusChanged();
+        if (status.get() == Status.STARTED) {
+            status.set(Status.STOPPED);
+            server.stop(0);
+            fireStatusChanged();
+        }
     }
 
-    public boolean isStarted() {
-        return status.get();
+    public Endpoint getEndpoint() {
+        assertEquals(1, endpoints.size(), "There are more than one endpoint, please use method getEndpoints and select one");
+        return endpoints.values().stream().findFirst().get();
+    }
+
+    public int getCounter() {
+        int out = 0;
+        for (Endpoint endpoint : endpoints.values()) {
+            out += endpoint.getCounter();
+        }
+        return out;
+    }
+
+    public void resetCounter() {
+        endpoints.values().forEach(Endpoint::resetCounter);
     }
 
     @Override
     public void close() {
         statusChangedlisteners = null;
-        if (status.get()) stop();
+        stop();
     }
 
     private Map<String, String> getMetadata() {
@@ -140,7 +171,7 @@ public class MockService implements AutoCloseable {
     }
 
     public InstanceInfo getInstanceInfo() {
-        if (!status.get()) return null;
+        if (status.get() != Status.STARTED) return null;
 
         InetSocketAddress address = server.getAddress();
         return InstanceInfo.Builder.newBuilder()
@@ -148,6 +179,7 @@ public class MockService implements AutoCloseable {
             .setHostName("localhost"/*address == null ? null : address.getHostName()*/)
             .setPort(address == null ? null : address.getPort())
             .setAppName(serviceId)
+            .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setMetadata(getMetadata())
             .build();
@@ -156,6 +188,13 @@ public class MockService implements AutoCloseable {
     public EurekaServiceInstance getEurekaServiceInstance() {
         InstanceInfo instanceInfo = getInstanceInfo();
         return instanceInfo == null ? null : new EurekaServiceInstance(instanceInfo);
+    }
+
+    public Application getApplication() {
+        InstanceInfo instanceInfo = getInstanceInfo();
+        Application application = new Application(instanceInfo.getId());
+        application.addInstance(instanceInfo);
+        return application;
     }
 
     public static class MockServiceBuilder {
@@ -245,6 +284,21 @@ public class MockService implements AutoCloseable {
             }
 
         }
+
+    }
+
+    public enum Scope {
+
+        TEST,
+        CLASS
+
+    }
+
+    public enum Status {
+
+        STOPPED,
+        STARTED,
+        CANCELLING
 
     }
 

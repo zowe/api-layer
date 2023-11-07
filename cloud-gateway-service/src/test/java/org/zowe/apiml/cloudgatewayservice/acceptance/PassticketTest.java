@@ -46,7 +46,7 @@ public class PassticketTest extends AcceptanceTestWithTwoServices {
         response.setApplicationName("IZUDFLT");
         response.setTicket(PASSTICKET);
 
-        mockService("gateway")
+        mockService("gateway").scope(MockService.Scope.CLASS)
             .addEndpoint("/gateway/api/v1/auth/ticket")
                 .assertion(he -> assertEquals(SERVICE_ID, he.getRequestHeaders().getFirst("X-Service-Id")))
                 .assertion(he -> assertEquals(COOKIE_NAME + "=" + JWT, he.getRequestHeaders().getFirst("Cookie")))
@@ -73,7 +73,7 @@ public class PassticketTest extends AcceptanceTestWithTwoServices {
             .then()
                 .statusCode(Matchers.is(SC_OK));
 
-            assertEquals(1, mockService.getEndpoints().get("/" + SERVICE_ID + "/test").getCounter());
+            assertEquals(1, mockService.getEndpoint().getCounter());
         }
 
     }

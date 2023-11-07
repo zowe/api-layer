@@ -10,15 +10,15 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
-import com.sun.net.httpserver.Headers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.TestPropertySource;
+import org.junit.jupiter.api.TestInstance;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
@@ -27,73 +27,58 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AcceptanceTest
-@TestPropertySource(properties = {
-    "currentApplication=serviceid1"
-})
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
-    Consumer<Headers> dummyConsumer = (headers -> {
-    });
+    private MockService mockService;
+
+    @BeforeAll
+    void startMockService() throws IOException {
+        mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
+                .addEndpoint("/503").responseCode(503)
+            .and()
+                .addEndpoint("/401").responseCode(401)
+            .and().start();
+    }
 
     @Nested
     class GivenRetryOnAllOperationsIsDisabled {
+
         @Test
         void whenGetReturnsUnavailable_thenRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "/serviceid1/test", 0, dummyConsumer, "".getBytes());
             given()
                 .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .get(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_SERVICE_UNAVAILABLE));
-            assertEquals(6, counter.get());
+            .when()
+                .get(basePath + "/503")
+            .then()
+                .statusCode(is(SC_SERVICE_UNAVAILABLE));
+            assertEquals(6, mockService.getCounter());
         }
 
         @Test
         void whenRequestReturnsUnauthorized_thenDontRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(401, "/serviceid1/test", 0, dummyConsumer, "".getBytes());
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
+            for (int i = 1; i < 6; i++) {
+                given()
+                    .header(HEADER_X_FORWARD_TO, "serviceid1")
                 .when()
-                .get(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_UNAUTHORIZED));
-            assertEquals(1, counter.get());
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .post(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_UNAUTHORIZED));
-            assertEquals(2, counter.get());
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .put(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_UNAUTHORIZED));
-            assertEquals(3, counter.get());
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .delete(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_UNAUTHORIZED));
-            assertEquals(4, counter.get());
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .patch(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_UNAUTHORIZED));
-            assertEquals(5, counter.get());
+                    .get(basePath + "/401")
+                .then()
+                    .statusCode(is(SC_UNAUTHORIZED));
+                assertEquals(i, mockService.getCounter());
+            }
         }
 
         @Test
         void whenPostReturnsUnavailable_thenDontRetry() throws Exception {
-            AtomicInteger counter = mockServerWithSpecificHttpResponse(503, "/serviceid1/test", 0, dummyConsumer, "".getBytes());
             given()
                 .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .post(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(is(SC_SERVICE_UNAVAILABLE));
-            assertEquals(1, counter.get());
+            .when()
+                .post(basePath + "/503")
+            .then()
+                .statusCode(is(SC_SERVICE_UNAVAILABLE));
+            assertEquals(1, mockService.getCounter());
         }
 
     }

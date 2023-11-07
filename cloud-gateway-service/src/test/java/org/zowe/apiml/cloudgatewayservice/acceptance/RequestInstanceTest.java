@@ -11,13 +11,13 @@
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 
 import java.io.IOException;
 
@@ -34,46 +34,42 @@ class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
-    @BeforeEach
+    @BeforeAll
     void setUp() throws IOException {
-        mockServerWithSpecificHttpResponse(200, "/serviceid1/test", 0, (headers) -> {
-        }, "".getBytes());
+        mockService("serviceid1").scope(MockService.Scope.CLASS)
+            .addEndpoint("/test")
+            .and().start();
     }
 
-    @Nested
-    class WhenValidInstanceId {
-
-        @Test
-        void routeToCorrectService() {
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
-                .when()
-                .get(basePath + serviceWithCustomConfiguration.getPath())
-                .then().statusCode(Matchers.is(SC_OK));
-        }
-    }
-
-    @Nested
-    class WhenNonExistingInstanceId {
-        @Test
-        void cantRouteToServer() {
-            given()
-                .header(HEADER_X_FORWARD_TO, "non-existing").
-                when()
-                .get(basePath + serviceWithCustomConfiguration.getPath())
-                .then()
-                .statusCode(is(SC_NOT_FOUND));
-        }
+    @Test
+    void routeToCorrectService() {
+        given()
+            .header(HEADER_X_FORWARD_TO, "serviceid1")
+        .when()
+            .get(basePath + "/test")
+        .then()
+            .statusCode(Matchers.is(SC_OK));
     }
 
     @Test
     void routeToServiceWithCorsDisabled() {
-
         given()
             .header("Origin", "https://localhost:3000")
             .header(HEADER_X_FORWARD_TO, "serviceid1")
-            .when()
-            .get(basePath + serviceWithCustomConfiguration.getPath())
-            .then().statusCode(Matchers.is(SC_FORBIDDEN));
+        .when()
+            .get(basePath + "/test")
+        .then()
+            .statusCode(Matchers.is(SC_FORBIDDEN));
     }
+
+    @Test
+    void cantRouteToServer() {
+        given()
+            .header(HEADER_X_FORWARD_TO, "non-existing")
+        .when()
+            .get(basePath + "/test")
+        .then()
+            .statusCode(is(SC_NOT_FOUND));
+    }
+
 }

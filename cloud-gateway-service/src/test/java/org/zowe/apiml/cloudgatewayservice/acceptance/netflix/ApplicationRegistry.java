@@ -10,117 +10,100 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.netflix;
 
-import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.client.ServiceInstance;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Register the route to all components that need the information for the request to pass properly through the
  * Cloud Gateway. This class is heavily depended upon from the Stubs in this package.
  */
 public class ApplicationRegistry {
-    private String currentApplication;
 
-    protected int servicePort;
-    private Map<String, Application> applicationToReturn = new HashMap<>();
+    private Map<String, MockService> instanceIdToService = new HashMap<>();
 
-    public ApplicationRegistry() {
-    }
-
-    public synchronized int findFreePort() {
-        if (servicePort != 0) return servicePort;
-        try (ServerSocket server = new ServerSocket(0);) {
-            this.servicePort = server.getLocalPort();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to find free local port to bind the agent to", e);
+    public boolean update(MockService mockService) {
+        switch (mockService.getStatus()) {
+            case STARTED:
+                return (instanceIdToService.put(mockService.getInstanceId(), mockService) != mockService);
+            case STOPPED:
+            case CANCELLING:
+                boolean removed = false;
+                for (Iterator<Map.Entry<String, MockService>> i = instanceIdToService.entrySet().iterator(); i.hasNext(); ) {
+                    Map.Entry<String, MockService> entry = i.next();
+                    if (entry.getValue() == mockService) {
+                        i.remove();
+                        removed = true;
+                    };
+                }
+                return removed;
+            default:
+                throw new IllegalStateException("Unsupported status: " + mockService.getStatus());
         }
-        return servicePort;
     }
 
-    public void addApplication(String instanceId, Application application) {
-
+    public Collection<MockService> getMockServices() {
+        return instanceIdToService.values();
     }
 
-    /**
-     * Add new application. The customization to the metadata are done via the MetadataBuilder.
-     *
-     * @param service           Details of the service to be registered in the Cloud Gateway
-     * @param builder           The builder pattern for metadata.
-     * @param multipleInstances Whether there are multiple instances of the service.
-     */
-    public void addApplication(Service service, MetadataBuilder builder, boolean multipleInstances) {
-        String id = service.getId();
-        Applications applications = new Applications();
-        Application withMetadata = new Application(id);
-
-        Map<String, String> metadata = builder.build();
-
-        withMetadata.addInstance(getStandardInstance(metadata, id, id));
-        if (multipleInstances) {
-            withMetadata.addInstance(getStandardInstance(metadata, id, id + "-copy"));
-        }
-        applicationToReturn.put(id, withMetadata);
+    public Application getApplication(String serviceId) {
+        Application application = new Application();
+        application.setName(serviceId);
+        instanceIdToService.values().stream()
+            .filter(i -> StringUtils.equalsIgnoreCase(serviceId, i.getServiceId()))
+            .map(MockService::getInstanceInfo)
+            .forEach(application::addInstance);
+        return application;
     }
-
-    public void addApplication(InstanceInfo instanceInfo) {
-        Application application = new Application(instanceInfo.getId());
-        application.addInstance(instanceInfo);
-
-        applicationToReturn.put(instanceInfo.getId(), application);
-    }
-
-    /**
-     * Remove all applications from internal mappings. This needs to be followed by adding new ones in order for the
-     * discovery infrastructure to work properly.
-     */
-    public void clearApplications() {
-        applicationToReturn.clear();
-    }
-
-    /**
-     * Sets which application should be returned for all the callers looking up the service.
-     *
-     * @param currentApplication Id of the application.
-     */
-    public void setCurrentApplication(String currentApplication) {
-        this.currentApplication = currentApplication;
-    }
-
 
     public Applications getApplications() {
-        Applications output = new Applications();
-        applicationToReturn.values().stream().forEach(a -> output.addApplication(a));
-        return output;
+        Applications applications = new Applications();
+
+        instanceIdToService.values().stream()
+            .map(MockService::getServiceId).distinct()
+            .map(this::getApplication)
+            .forEach(applications::addApplication);
+
+        return applications;
     }
 
     public List<InstanceInfo> getInstances() {
-        List<InstanceInfo> output = new LinkedList<>();
-        applicationToReturn.values().forEach(a -> output.addAll(a.getInstances()));
-        return output;
+        return instanceIdToService.values().stream()
+            .map(MockService::getInstanceInfo)
+            .collect(Collectors.toList());
     }
 
-    private InstanceInfo getStandardInstance(Map<String, String> metadata, String serviceId, String instanceId) {
-        return InstanceInfo.Builder.newBuilder()
-            .setAppName(serviceId)
-            .setInstanceId(instanceId)
-            .setHostName("localhost")
-            .setVIPAddress(serviceId)
-            .setMetadata(metadata)
-            .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
-            .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setSecurePort(findFreePort())
-            .setPort(findFreePort())
-            .build();
+    public List<ServiceInstance> getServiceInstance(String serviceId) {
+        return instanceIdToService.values().stream()
+            .filter(ms -> StringUtils.equalsIgnoreCase(serviceId, ms.getServiceId()))
+            .map(MockService::getEurekaServiceInstance)
+            .collect(Collectors.toList());
     }
+
+    public boolean afterTest() {
+        boolean anyChange = false;
+        for (Iterator<Map.Entry<String, MockService>> i = instanceIdToService.entrySet().iterator(); i.hasNext(); ) {
+            MockService mockService = i.next().getValue();
+            if (mockService.getScope() == MockService.Scope.TEST) {
+                i.remove();
+                mockService.close();
+                anyChange = true;
+            }
+        }
+        return anyChange;
+    }
+
+    public boolean afterClass() {
+        boolean anyChange = !instanceIdToService.isEmpty();
+        instanceIdToService.values().forEach(MockService::close);
+        instanceIdToService.clear();
+        return anyChange;
+    }
+
 }

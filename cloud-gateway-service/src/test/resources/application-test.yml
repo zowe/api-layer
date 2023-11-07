@@ -48,4 +48,3 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
-currentApplication: serviceid1
