@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 import org.zowe.apiml.ticket.TicketResponse;
 
@@ -30,7 +30,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AcceptanceTest
-public class PassticketTest extends AcceptanceTestWithTwoServices {
+public class PassticketTest extends AcceptanceTestWithMockServices {
 
     private static final String USER_ID = "user";
     private static final String SERVICE_ID = "serviceusingpassticket";

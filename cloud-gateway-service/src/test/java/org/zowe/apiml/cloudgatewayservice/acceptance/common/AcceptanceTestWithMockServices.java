@@ -26,7 +26,7 @@ import static org.mockito.Mockito.doAnswer;
 @Slf4j
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
+public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;

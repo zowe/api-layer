@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ import static org.hamcrest.core.Is.is;
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=false"
 })
-class RequestInstanceTest extends AcceptanceTestWithTwoServices {
+class RequestInstanceTest extends AcceptanceTestWithMockServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 

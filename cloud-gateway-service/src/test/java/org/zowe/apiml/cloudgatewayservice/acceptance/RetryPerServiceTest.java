@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
+class RetryPerServiceTest extends AcceptanceTestWithMockServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 

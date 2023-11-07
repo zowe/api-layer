@@ -13,7 +13,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @AcceptanceTest
-class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
+class CorsPerServiceTest extends AcceptanceTestWithMockServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
