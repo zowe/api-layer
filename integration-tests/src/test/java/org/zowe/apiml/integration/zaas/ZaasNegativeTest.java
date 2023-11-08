@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
-import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.categories.ZaasTest;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -29,7 +29,7 @@ import static org.zowe.apiml.integration.zaas.ZosmfTokensTest.ZAAS_ZOSMF_URI;
 import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
-@zOSMFAuthTest
+@ZaasTest
 public class ZaasNegativeTest {
 
     @Nested

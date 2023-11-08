@@ -243,6 +243,10 @@ task runZosmfAuthTest(dependsOn: ":integration-tests:runZosmfAuthTest") {
     description "Run zOSMF dependant authentication tests only"
     group "Integration tests"
 }
+task runZaasTest(dependsOn: ":integration-tests:runZaasTest") {
+    description "Run Zaas dependant authentication tests only"
+    group "Integration tests"
+}
 task runX509AuthTest(dependsOn: ":integration-tests:runX509AuthTest") {
     description "Run x509 dependant authentication tests only"
     group "Integration tests"

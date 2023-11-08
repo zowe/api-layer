@@ -11,7 +11,6 @@
 package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -22,7 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.X509Test;
-import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
@@ -42,8 +41,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.ZAAS_ZOSMF_ENDPOINT;
 
-@Slf4j
-@zOSMFAuthTest
+@ZaasTest
 class ZosmfTokensTest implements TestWithStartedInstances {
 
     static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromGateway(ZAAS_ZOSMF_ENDPOINT);
