@@ -411,8 +411,9 @@ jobs:
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
 
-            -   uses: ./.github/actions/dump-jacoco
-                if: always()
+            -   name: Dump DC jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v3
