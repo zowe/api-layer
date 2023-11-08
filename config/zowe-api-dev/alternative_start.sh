@@ -106,8 +106,10 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xqu
     -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.keyStore="${KEYSTORE}" \
     -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
     -Dserver.ssl.trustStore="${TRUSTSTORE}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dapiml.service.preferIpAddress=false \
     -jar ${ROOT_DIR}"/components/api-mediation/discoverable-client.jar" &

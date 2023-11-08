@@ -143,22 +143,22 @@ public class NewSecurityConfiguration {
                     authConfigurationProperties.getGatewayLogoutEndpoint(),
                     authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
             )))
-                    .authorizeRequests(requests -> requests
-                            .anyRequest().permitAll())
+                .authorizeRequests(requests -> requests
+                        .anyRequest().permitAll())
 
-                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
-                    .logout(logout -> logout
-                            .logoutRequestMatcher(new RegexRequestMatcher(
-                                    String.format("(%s|%s)",
-                                            authConfigurationProperties.getGatewayLogoutEndpoint(),
-                                            authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
-                            , HttpMethod.POST.name()))
-                            .addLogoutHandler(logoutHandler())
-                            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new RegexRequestMatcher(
+                                String.format("(%s|%s)",
+                                        authConfigurationProperties.getGatewayLogoutEndpoint(),
+                                        authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
+                        , HttpMethod.POST.name()))
+                        .addLogoutHandler(logoutHandler())
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
 
-                    .authenticationProvider(compoundAuthProvider) // for authenticating credentials
-                    .authenticationProvider(new CertificateAuthenticationProvider()) // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
-                    .apply(new CustomSecurityFilters());
+                .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                .authenticationProvider(new CertificateAuthenticationProvider()) // this is a dummy auth provider so the x509 prefiltering doesn't fail with nullpointer (no auth provider) or No AuthenticationProvider found for org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+                .apply(new CustomSecurityFilters());
 
             return http.build();
         }
