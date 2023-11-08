@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -30,6 +31,7 @@ import java.io.IOException;
  */
 @EnableCaching
 @Configuration
+@ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
 public class CacheConfig {
 
     public static final String COMPOSITE_KEY_GENERATOR = "compositeKeyGenerator";
