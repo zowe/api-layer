@@ -27,7 +27,7 @@ class NoOpCacheConfigTest {
     private CacheManager cacheManager;
 
     @Test
-    void testCacheManagerIsRealImplementation() {
+    void testDisabledCacheManager() {
         assertNotNull(cacheManager);
         assertTrue(cacheManager instanceof NoOpCacheManager);
     }
