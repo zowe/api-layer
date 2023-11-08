@@ -153,6 +153,7 @@ dependencyResolutionManagement {
             version('checkstyle', '9.3')
             version('jacoco', '0.8.10')
             version('gradle', '8.1.1')
+            version('assertjCore', '3.24.2')
 
             library('zowe_attls', 'org.zowe.apiml.sdk', 'attls').versionRef('attls')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
@@ -350,6 +351,7 @@ dependencyResolutionManagement {
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('woodstox_stax2', 'org.codehaus.woodstox', 'stax2-api').versionRef('woodstoxStax2')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
+            library('assertj_core','org.assertj', 'assertj-core').versionRef('assertjCore')
 
             // Sample apps only
             library('jersey_container_servlet_core', 'org.glassfish.jersey.containers', 'jersey-container-servlet-core').versionRef('jersey')
