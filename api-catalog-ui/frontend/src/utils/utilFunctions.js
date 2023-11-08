@@ -9,6 +9,7 @@
  */
 
 import getBaseUrl from '../helpers/urls';
+import contents from './educational_contents.json';
 
 function checkForSwagger(service) {
     let hasSwagger = false;
@@ -33,25 +34,36 @@ function checkForSwagger(service) {
  * @returns {{videosCounter: number, useCasesCounter: number, tutorialsCounter: number}}
  */
 export default function countAdditionalContents(service) {
+    // eslint-disable-next-line no-console
+    console.log(service);
+    let videos;
+    let tutorials;
+    let useCases;
     let useCasesCounter = 0;
     let tutorialsCounter = 0;
     let videosCounter = 0;
     let hasSwagger = false;
-    if (service) {
-        if ('useCases' in service && service.useCases) {
-            useCasesCounter = service.useCases.length;
+    if (contents?.products?.length > 0 && service?.serviceId) {
+        const correctProduct = contents.products.find((product) => service.serviceId === product.name);
+        // eslint-disable-next-line no-console
+        console.log(correctProduct);
+        if (correctProduct?.useCases) {
+            useCasesCounter = correctProduct.useCases.length;
+            useCases = correctProduct.useCases;
         }
-        if ('tutorials' in service && service.tutorials) {
-            tutorialsCounter = service.tutorials.length;
+        if (correctProduct?.tutorials) {
+            tutorialsCounter = correctProduct.tutorials.length;
+            tutorials = correctProduct.tutorials;
         }
-        if ('videos' in service && service.videos) {
-            videosCounter = service.videos.length;
-        }
-        if (service.apis) {
-            hasSwagger = checkForSwagger(service);
+        if (correctProduct?.videos) {
+            videosCounter = correctProduct.videos.length;
+            videos = correctProduct.videos;
         }
     }
-    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger };
+    if (service?.apis) {
+        hasSwagger = checkForSwagger(service);
+    }
+    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger, useCases, tutorials, videos };
 }
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {

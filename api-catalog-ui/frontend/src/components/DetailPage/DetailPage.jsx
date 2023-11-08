@@ -79,6 +79,7 @@ export default class DetailPage extends Component {
             history,
             currentTileId,
             fetchNewTiles,
+            selectedService,
         } = this.props;
         let { tiles } = this.props;
         const iconBack = <ChevronLeftIcon />;
@@ -102,8 +103,12 @@ export default class DetailPage extends Component {
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
-        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
+        // eslint-disable-next-line no-console
+        console.log(tiles);
+        const { useCasesCounter, tutorialsCounter, videosCounter, useCases, tutorials, videos } = countAdditionalContents(selectedService);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
+        // eslint-disable-next-line no-console
+        console.log(tutorialsCounter);
         const showSideBar = false;
         if (
             hasTiles &&
@@ -236,6 +241,9 @@ export default class DetailPage extends Component {
                                             render={() => (
                                                 <div className="tabs-swagger">
                                                     <ServiceTabContainer
+                                                        videos={videos}
+                                                        useCases={useCases}
+                                                        tutorials={tutorials}
                                                         videosCounter={videosCounter}
                                                         tutorialsCounter={tutorialsCounter}
                                                         useCasesCounter={useCasesCounter}

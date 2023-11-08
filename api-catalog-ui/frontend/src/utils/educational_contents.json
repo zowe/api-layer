@@ -1,0 +1,34 @@
+{
+    "products": [
+        {
+            "name": "gateway",
+            "videos": [
+                "url1",
+                "url2"
+            ],
+            "useCases": [
+                "Some use case. This is just a placeholder for now.",
+                "Some more case. This is just a placeholder for now."
+            ],
+            "tutorials": [
+                "tutorial1",
+                "tutorial2"
+            ]
+        },
+        {
+            "name": "apicatalog",
+            "videos": [
+                "https://www.youtube.com/embed/cH9SpWknHsY?si=CXkFtGhrRdjNgr_h",
+                "hxsad252b1"
+            ],
+            "useCases": [
+                "Some use case. This is just a placeholder for now.",
+                "Some more case. This is just a placeholder for now."
+            ],
+            "tutorials": [
+                "tutorial1",
+                "tutorial2"
+            ]
+        }
+    ]
+}

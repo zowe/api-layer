@@ -13,6 +13,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 import { isAPIPortal } from '../../utils/utilFunctions';
+import VideoWrapper from './VideoWrapper';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -144,6 +145,9 @@ export default class ServiceTab extends Component {
             },
             tiles,
             selectedService,
+            useCases,
+            tutorials,
+            videos,
             useCasesCounter,
             tutorialsCounter,
             videosCounter,
@@ -310,6 +314,10 @@ export default class ServiceTab extends Component {
                                 >
                                     Use Cases ({useCasesCounter})
                                 </Typography>
+                                {useCases &&
+                                    useCases.map((useCase) => (
+                                        <Typography style={{ marginBottom: '10px' }}>{useCase}</Typography>
+                                    ))}
                                 <br />
                                 <br />
                                 <Typography
@@ -331,6 +339,7 @@ export default class ServiceTab extends Component {
                                     Videos ({videosCounter})
                                 </Typography>
                                 <br />
+                                {videos && videos.map((url) => <VideoWrapper url={url} />)}
                             </div>
                         )}
                     </div>
