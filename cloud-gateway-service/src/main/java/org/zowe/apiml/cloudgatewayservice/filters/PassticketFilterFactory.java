@@ -51,7 +51,6 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, String requestBody) {
         return webClient.post()
             .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
             .bodyValue(requestBody);
     }
 

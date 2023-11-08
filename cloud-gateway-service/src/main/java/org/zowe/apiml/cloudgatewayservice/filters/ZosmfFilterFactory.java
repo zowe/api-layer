@@ -14,7 +14,6 @@ import lombok.EqualsAndHashCode;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -58,32 +57,19 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
 
     @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, Object data) {
-        String zosmfTokensUrl = "%s://%s:%s/%s/zaas/zosmf";
+        String zosmfTokensUrl = String.format("%s://%s:%d/%s/zaas/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
         return webClient.post()
-            .uri(String.format(zosmfTokensUrl, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()));
+            .uri(zosmfTokensUrl);
     }
 
     @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
 
         if (response.getToken() == null) {
-            // TODO: consider throwing an exception, ZAAS is not configured properly
-            ServerHttpRequest request = updateHeadersForError(exchange, "Invalid or missing authentication.");
-            return chain.filter(exchange.mutate().request(request).build());
+            throw new IllegalArgumentException("The ZAAS is not configured properly");
         }
-        final String headerValue = response.getCookieName() + "=" + response.getToken();
-        ServerHttpRequest request = addRequestHeader(exchange, HttpHeaders.COOKIE, headerValue);
+        ServerHttpRequest request = setCookie(exchange, response.getCookieName(), response.getToken());
         return chain.filter(exchange.mutate().request(request).build());
-    }
-
-    protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
-        return exchange.getRequest().mutate()
-            .headers(headers -> {
-                    headers.remove(HttpHeaders.COOKIE);
-                    headers.add(key, value);
-                }
-            ).build();
     }
 
     @EqualsAndHashCode(callSuper = true)

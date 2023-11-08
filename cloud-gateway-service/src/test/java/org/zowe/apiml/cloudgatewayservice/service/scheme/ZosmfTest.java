@@ -40,6 +40,6 @@ class ZosmfTest {
 
         assertEquals(1, routeDefinition.getFilters().size());
         FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
-        assertEquals("ZosmfTokensFilterFactory", filterDefinition.getName());
+        assertEquals("ZosmfFilterFactory", filterDefinition.getName());
     }
 }

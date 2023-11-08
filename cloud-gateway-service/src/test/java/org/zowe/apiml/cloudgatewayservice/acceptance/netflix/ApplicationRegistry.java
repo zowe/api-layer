@@ -28,21 +28,31 @@ public class ApplicationRegistry {
 
     private Map<String, MockService> instanceIdToService = new HashMap<>();
 
+    public boolean remove(MockService mockService) {
+        boolean removed = false;
+        for (Iterator<Map.Entry<String, MockService>> i = instanceIdToService.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry<String, MockService> entry = i.next();
+            if (entry.getValue() == mockService) {
+                i.remove();
+                removed = true;
+            };
+        }
+        return removed;
+    }
+
     public boolean update(MockService mockService) {
         switch (mockService.getStatus()) {
             case STARTED:
-                return (instanceIdToService.put(mockService.getInstanceId(), mockService) != mockService);
+            case ZOMBIE:
+                if (instanceIdToService.get(mockService.getInstanceId()) == mockService) {
+                    return false;
+                }
+                remove(mockService);
+                instanceIdToService.put(mockService.getInstanceId(), mockService);
+                return true;
             case STOPPED:
             case CANCELLING:
-                boolean removed = false;
-                for (Iterator<Map.Entry<String, MockService>> i = instanceIdToService.entrySet().iterator(); i.hasNext(); ) {
-                    Map.Entry<String, MockService> entry = i.next();
-                    if (entry.getValue() == mockService) {
-                        i.remove();
-                        removed = true;
-                    };
-                }
-                return removed;
+                return remove(mockService);
             default:
                 throw new IllegalStateException("Unsupported status: " + mockService.getStatus());
         }

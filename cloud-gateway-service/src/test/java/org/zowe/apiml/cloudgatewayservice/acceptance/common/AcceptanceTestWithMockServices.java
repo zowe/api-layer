@@ -37,7 +37,7 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     @MockBean
     protected InstanceInfoService instanceInfoService;
 
-    @BeforeAll
+    @BeforeEach
     void mockInstanceInfoService() {
         doAnswer(invocation -> {
             String serviceId = invocation.getArgument(0);

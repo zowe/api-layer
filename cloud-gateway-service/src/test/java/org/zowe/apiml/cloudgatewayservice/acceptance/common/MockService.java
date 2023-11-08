@@ -67,15 +67,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * Note: Before implementation please check the full list of methods.
  */
-@Builder(builderClassName = "MockServiceBuilder")
+@Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
 @Getter
 public class MockService implements AutoCloseable {
 
+    private static int idCounter = 1;
+    // in case on zombie mode is necessary to have a unique port number, on start replaced with the real one
+    private int port;
+
     /**
-     * HTTP server to handle requests
+     * HTTP server to handle requests and the endpoint configuration
      */
     @Getter(AccessLevel.NONE)
     private HttpServer server;
+    @Getter(AccessLevel.NONE)
+    private List<Endpoint> endpointsConfig;
 
     /**
      * Service identification
@@ -126,10 +132,11 @@ public class MockService implements AutoCloseable {
      */
     private static AssertionError assertionError;
 
-    private void init(List<Endpoint> endpoints) throws IOException {
+    private void init() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        endpoints.forEach(endpoint -> {
-            if (this.endpoints.put(endpoint.getPath(), endpoint) != null) {
+        endpoints.clear();
+        endpointsConfig.forEach(endpoint -> {
+            if (endpoints.put(endpoint.getPath(), endpoint) != null) {
                 throw new IllegalStateException("Duplicity of endpoints: " + endpoint.getPath());
             }
 
@@ -147,8 +154,7 @@ public class MockService implements AutoCloseable {
     }
 
     public String getInstanceId() {
-        InetSocketAddress address = server.getAddress();
-        return hostname + ":" + getServiceId() + ":" + (address == null ? 0 : address.getPort());
+        return hostname + ":" + getServiceId() + ":" + port;
     }
 
     private void fireStatusChanged() {
@@ -184,26 +190,45 @@ public class MockService implements AutoCloseable {
         }
     }
 
+    private void setStatus(Status status) {
+        if (this.status.get() != status) {
+            this.status.set(status);
+            fireStatusChanged();
+        }
+    }
+
     /**
      * To start the service.
      */
-    public void start() {
-        if (status.get() == Status.STOPPED) {
+    public void start() throws IOException {
+        if (!status.get().isUp()) {
+            init();
             server.start();
-            status.set(Status.STARTED);
-            fireStatusChanged();
+            port = server.getAddress().getPort();
         }
+        setStatus(Status.STARTED);
     }
 
     /**
      * To stop the service. If you want release the whole service, consider calling {@link MockService#close()}
      */
     public void stop() {
-        if (status.get() == Status.STARTED) {
-            status.set(Status.STOPPED);
+        if (status.get().isUp()) {
             server.stop(0);
-            fireStatusChanged();
         }
+        setStatus(Status.STOPPED);
+    }
+
+    /**
+     * To stop service without any notification (to be still in the registry). In the case service is down, just notify
+     * to be in the registry.
+     */
+    public void zombie() {
+        if (status.get().isUp()) {
+            server.stop(0);
+        }
+
+        setStatus(Status.ZOMBIE);
     }
 
     /**
@@ -272,13 +297,10 @@ public class MockService implements AutoCloseable {
      * @return instanceInfo with all related data
      */
     public InstanceInfo getInstanceInfo() {
-        if (status.get() != Status.STARTED) return null;
-
-        InetSocketAddress address = server.getAddress();
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(serviceId)
             .setHostName(hostname)
-            .setPort(address == null ? null : address.getPort())
+            .setPort(port)
             .setAppName(serviceId)
             .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
             .setStatus(InstanceInfo.InstanceStatus.UP)
@@ -323,13 +345,23 @@ public class MockService implements AutoCloseable {
         }
 
         /**
+         * To build mock service. It will be stopped (not registred). It is necessary to call method start or zombie.
+         * @return instance of mockService
+         */
+        public MockService build() {
+            MockService mockService = internalBuild();
+            mockService.port = idCounter++;
+            mockService.endpointsConfig = endpoints;
+            return mockService;
+        }
+
+        /**
          * To start build and start MockService
          * @return instance of MockService
          * @throws IOException - in case of any issue with starting server
          */
         public MockService start() throws IOException {
             MockService mockService = build();
-            mockService.init(endpoints);
             mockService.start();
             return mockService;
         }
@@ -387,13 +419,16 @@ public class MockService implements AutoCloseable {
                 }
 
                 if (assertions != null) {
-                    assertions.forEach(a -> a.accept(httpExchange));
+                    assertions.forEach(a -> {
+                        try {
+                            a.accept(httpExchange);
+                        } catch (AssertionError afe) {
+                            setAssertionError(afe);
+                        }
+                    });
                 }
 
                 httpExchange.getResponseBody().close();
-            } catch (AssertionError afe) {
-                setAssertionError(afe);
-                throw afe;
             } finally {
                 counter.getAndIncrement();
             }
@@ -454,12 +489,20 @@ public class MockService implements AutoCloseable {
 
     public enum Status {
 
-        // service is stopped (not registred)
-        STOPPED,
-        // service is up and could be called by gateway
-        STARTED,
-        // service was stopped, and it should be removed from the memory
-        CANCELLING
+            // service is stopped (not registred)
+            STOPPED,
+            // service is up and could be called by gateway
+            STARTED,
+            // service was stopped, and it should be removed from the memory
+            CANCELLING,
+            // service is registered but it is also down
+            ZOMBIE
+
+        ;
+
+        public boolean isUp() {
+            return this == STARTED;
+        }
 
     }
 

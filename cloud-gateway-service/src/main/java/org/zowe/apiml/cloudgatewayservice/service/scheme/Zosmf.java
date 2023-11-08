@@ -29,7 +29,7 @@ public class Zosmf implements SchemeHandler {
     @Override
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
         FilterDefinition filerDef = new FilterDefinition();
-        filerDef.setName("ZosmfTokensFilterFactory");
+        filerDef.setName("ZosmfFilterFactory");
         filerDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
         routeDefinition.getFilters().add(filerDef);
     }
