@@ -27,6 +27,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -43,7 +44,6 @@ import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
-import sun.security.x509.X500Name;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -244,11 +244,11 @@ public class SecurityUtils {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
         JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
-            dnName.asX500Principal(),
+            dnName,
             certSerialNumber,
             startDate,
             endDate,
-            dnName.asX500Principal(),
+            dnName,
             keyPair.getPublic());
 
         String signatureAlgorithm = "SHA256WithRSA";
