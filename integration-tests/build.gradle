@@ -312,7 +312,8 @@ task runContainerTests(type: Test) {
             'OktaOauth2Test',
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
-            'CloudGatewayCentralRegistry'
+            'CloudGatewayCentralRegistry',
+            'ZaasTest'
         )
     }
 }

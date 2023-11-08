@@ -14,13 +14,11 @@ import io.restassured.RestAssured;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -117,7 +115,6 @@ class ZosmfTokensTest implements TestWithStartedInstances {
                 //@formatter:on
         }
 
-        @X509Test
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZosmfTokensTest#provideClientCertificates")
         void givenX509Certificate(String certificate) {
@@ -134,7 +131,6 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         }
 
         @Test
-        @Tag("OktaOauth2Test")
         void givenValidOAuthToken() {
             String oAuthToken = validOktaAccessToken(true);
 
@@ -152,5 +148,5 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         }
     }
 
-    // Negative tests are in ZaasNegativeTest since they are common for the whole component
+    // Negative tests are in ZaasNegativeTest since they are common for the whole service
 }
