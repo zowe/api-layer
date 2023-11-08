@@ -464,6 +464,7 @@ task runSafAuthTest(type: Test) {
         )
     }
 }
+
 task runZosmfAuthTest(type: Test) {
     group "integration tests"
     description "Run zOSMF dependant authentication tests only"
@@ -477,6 +478,20 @@ task runZosmfAuthTest(type: Test) {
         )
         excludeTags(
             'InfinispanStorageTest'
+        )
+    }
+}
+
+task runZaasTest(type: Test) {
+    group "integration tests"
+    description "Run Zaas tests only"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'ZaasTest'
         )
     }
 }
