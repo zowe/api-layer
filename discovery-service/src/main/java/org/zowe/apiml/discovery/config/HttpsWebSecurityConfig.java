@@ -104,7 +104,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                         .antMatchers("/**").authenticated())
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (isAttlsEnabled) {
-            http.addFilterBefore(new SecureConnectionFilter(), CookieContentFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

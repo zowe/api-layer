@@ -135,6 +135,7 @@ public class SecurityConfiguration {
      * Default filter chain to protect all routes with MF credentials.
      */
     @Configuration
+    @Order(2)
     public class FilterChainBasicAuthOrTokenAllEndpoints {
 
         @Bean
@@ -166,7 +167,7 @@ public class SecurityConfiguration {
             http.authorizeRequests(requests -> requests.antMatchers("/application/**").authenticated());
 
             if (isAttlsEnabled) {
-                http.addFilterBefore(new SecureConnectionFilter(), BasicContentFilter.class);
+                http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
             }
             return http.build();
         }
@@ -218,8 +219,8 @@ public class SecurityConfiguration {
             http.addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint(), authenticationManager), ShouldBeAlreadyAuthenticatedFilter.class)
                 .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(cookieFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(bearerContentFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(cookieFilter(authenticationManager), BasicContentFilter.class)
+                .addFilterAfter(bearerContentFilter(authenticationManager), CookieContentFilter.class);
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
