@@ -7,14 +7,111 @@ body {
   }
 
   .MuiCard-root {
-    padding: var( --spaceTiny );
+    padding: 0;
     margin: var( --spaceSmallest ) var( --spaceSmaller ) var( --spaceMedium );
 
-    &:hover {
-      cursor: pointer;
-      background: var( --surface15 );
+    .MuiCardActionArea-focusHighlight,
+    .MuiTouchRipple-root {
+      display: none;
     }
-  }
+    .tile-desc,
+    .icon-ctn > .expanded-spacer {
+      flex: 0 0;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+    .tile-desc {
+      transition: all .5s ease;
+    }
+    .card-action {
+      &:hover, &:focus {
+        cursor: pointer;
+        box-shadow: 0 0 0 2px var( --linkHover ) inset;
+
+        .tile-title #tiles-service-title {
+          color: var( --linkHover );
+        }
+      }
+    }
+
+    .icon-ctn {
+      display: flex;
+      flex: 4 1;
+
+      > * {
+        display: flex;
+        flex: 1 1;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition: height .5s ease;
+
+        .swagger-img {
+          background-image: url(../../assets/images/swagger.svg);
+        }
+        &.link-counter .icon-img-ctn {
+          &:focus, &:hover {
+            background: transparent;
+
+            svg path {
+              fill: var( --linkHover );
+            }
+          }
+        }
+        &.disabled-counter {
+          svg path {
+            fill: var( --control00Disabled );
+          }
+          .media-labels,
+          .expanded-icon-title {
+            color: var( --control00Disabled ) !important;
+          }
+        }
+
+        .expanded-icon-title {
+          margin-top: var( --spaceSmallest );
+          display: none;
+          color: #014ba4;
+          font-weight: var( --fontWeightBold );
+        }
+        .icon-img-ctn {
+          display: flex;
+          align-items: center;
+          height: 22px;
+          padding: 0px;
+
+          svg {
+            width: 100%;
+          }
+        }
+      }
+    }//end icon-ctn
+
+    &.expanded {
+      .tile-ctn, #swagger {
+        flex-direction: column;
+      }
+      .expanded-icon-title {
+        display: block;
+      }
+      .expanded-spacer {
+        flex: 4 1;
+      }
+      .tile-desc {
+        padding: var( --spaceLarger ) 0;
+        text-align: left;
+        width: 100%;
+        font-size: var( --fontMedium );
+      }
+      .tile-desc,
+      .expanded-spacer {
+        width: auto;
+        height: auto;
+        overflow: visible;
+      }
+    }//end expanded
+  }//end card-root
 
   .MuiCardContent-root,
   .dashboard-grid-header {
@@ -66,16 +163,18 @@ body {
     .media-labels {
         font-size: 14px;
     }
+    #tutorials-counter,
+    #videos-counter {
+      margin-right: var( --spaceSmaller );
+    }
     #videos-counter {
         color: #602C0A;
-        margin-right: 5px;
     }
     #use-cases-counter {
         color: #D61A00;
     }
     #tutorials-counter {
         color: #9B51E0;
-        margin-right: 5px;
     }
     .imageCounter {
       display: flex

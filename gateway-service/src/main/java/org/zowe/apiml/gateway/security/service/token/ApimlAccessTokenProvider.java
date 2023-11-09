@@ -12,9 +12,9 @@ package org.zowe.apiml.gateway.security.service.token;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.CachingServiceClient;
 import org.zowe.apiml.gateway.cache.CachingServiceClientException;
@@ -40,18 +40,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
-
-    private final CachingServiceClient cachingServiceClient;
-    private final AuthenticationService authenticationService;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private byte[] salt;
     static final String INVALID_TOKENS_KEY = "invalidTokens";
     static final String INVALID_USERS_KEY = "invalidUsers";
     static final String INVALID_SCOPES_KEY = "invalidScopes";
 
-    static {
-        objectMapper.registerModule(new JavaTimeModule());
-    }
+    private final CachingServiceClient cachingServiceClient;
+    private final AuthenticationService authenticationService;
+    @Qualifier("oidcJwkMapper")
+    private final ObjectMapper objectMapper;
+
+    private byte[] salt;
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         String hashedValue = getHash(token);

@@ -30,12 +30,6 @@
     margin: 0 var( --spaceSmaller );
     flex: 1 1 100%;
 
-    > * {
-      display: flex;
-      flex: 1 1;
-      align-items: center;
-      justify-content: center;
-    }
     .empty, .tile-title {
       flex: 4 1;
       justify-content: flex-start;
@@ -60,8 +54,6 @@
     &::-webkit-scrollbar {
       width: 0px;
     }
-
-
   }
   .zowe-styling {
     grid-gap: 20px !important;
@@ -140,11 +132,6 @@
   flex-direction: row-reverse;
   z-index: 1000;
   right: 2vw;
-
-  .MuiButtonBase-root, &.MuiFab-root, &.MuiFab-extended {
-    background-color: var( --criticalShade10 ) !important;
-    color: white;
-  }
 }
 
 body {
@@ -279,7 +266,8 @@ body {
             }
             h5 {
               margin: var( --spaceSmaller ) 0 var( --spaceLarger );
-              font-size: var( --fontSmall );
+              text-transform: none;
+              line-height: var( --fontLarger );
             }
             p {
               line-height: 130%;

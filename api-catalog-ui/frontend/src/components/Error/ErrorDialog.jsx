@@ -26,8 +26,8 @@ export default class ErrorDialog extends Component {
         }
         // eslint-disable-next-line global-require
         const errorMessages = require('../../error-messages.json');
-        if (error && error.messageNumber && error.messageType) {
-            messageText = 'Unexpected error, please try again later';
+        if (error?.messageNumber && error?.messageType && error?.messageContent) {
+            messageText = `(${error.messageNumber} ${error.messageContent})`;
             const filter = errorMessages.messages.filter(
                 (x) => x.messageKey != null && x.messageKey === error.messageNumber
             );

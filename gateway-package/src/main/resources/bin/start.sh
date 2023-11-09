@@ -49,12 +49,12 @@
 # - ZWE_configs_apiml_security_oidc_enabled
 # - ZWE_configs_apiml_security_oidc_clientId
 # - ZWE_configs_apiml_security_oidc_clientSecret
-# - ZWE_configs_apiml_security_oidc_introspectUrl
 # - ZWE_configs_apiml_security_oidc_registry
 # - ZWE_configs_apiml_security_oidc_identityMapperUrl
 # - ZWE_configs_apiml_security_oidc_identityMapperUser
+# - ZWE_configs_apiml_security_oidc_jwks_uri
+# - ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours
 # - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
-# - ZWE_configs_apiml_service_centralRegistryUrls - List of additional Discovery Services URLs to register with
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
@@ -210,14 +210,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
-    -Dapiml.service.centralRegistryUrls=${ZWE_configs_apiml_service_centralRegistryUrls:-} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
-    -Dapiml.service.centralRegistryUrls=${ZWE_configs_apiml_service_centralRegistryUrls:-} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
-    -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_PARAMETER_HA_INSTANCE:-localhost} \
+    -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.gateway.timeoutMillis=${ZWE_configs_apiml_gateway_timeoutMillis:-600000} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
@@ -269,10 +267,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-false} \
     -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-} \
     -Dapiml.security.oidc.clientSecret=${ZWE_configs_apiml_security_oidc_clientSecret:-} \
-    -Dapiml.security.oidc.introspectUrl=${ZWE_configs_apiml_security_oidc_introspectUrl:-} \
     -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/dn"} \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
+    -Dapiml.security.oidc.jwks.uri=${ZWE_configs_apiml_security_oidc_jwks_uri} \
+    -Dapiml.security.oidc.jwks.refreshInternalHours=${ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours:-1} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \

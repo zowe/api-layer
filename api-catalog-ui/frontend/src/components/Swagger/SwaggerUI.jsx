@@ -38,7 +38,7 @@ function transformSwaggerToCurrentHost(swagger) {
 function setFilterBarStyle() {
     const filterInput = document.getElementsByClassName('operation-filter-input');
     if (filterInput && filterInput.length > 0) {
-        filterInput.item(0).placeholder = 'Filter APIs';
+        filterInput.item(0).placeholder = 'Search in endpoints...';
     }
     if (isAPIPortal() && !document.getElementById('filter-label')) {
         const divInfo = document.querySelector('.info');
@@ -46,7 +46,6 @@ function setFilterBarStyle() {
         if (divInfo && searchLabel) {
             searchLabel.setAttribute('id', 'filter-label');
             searchLabel.textContent = 'Search through Swagger';
-            searchLabel.style.fontWeight = 'bold';
             searchLabel.style.fontSize = '13.3px';
             divInfo.appendChild(searchLabel);
         }

@@ -13,9 +13,16 @@
     .feedback-dialog .form textarea {
       height: 150px;
     }
+    #swagger {
+      flex-direction: row;
+      justify-content: flex-end;
+    }
     .header {
       #doc, .product-name {
         margin-right: var( --spaceSmaller );
+      }
+      .right-icons {
+        display: none;
       }
       .product-name {
         min-width: 27px;
@@ -28,6 +35,9 @@
     &.mobile-menu-open {
       &, .App, .main-content2 {
         overflow: hidden !important;
+      }
+      .dashboard-mobile-menu .header .right-icons {
+        display: flex;
       }
       .main-content2, .header {
         filter: blur(1px);
@@ -55,6 +65,21 @@
           .mobile-view {
             display: flex !important;
           }
+          .feedback-button {
+            height: auto;
+
+            * {
+              color: var( --text10 );
+            }
+            svg {
+              rect {
+                fill: var( --text10 );
+              }
+              path {
+                fill: var( --surface05 );
+              }
+            }
+          } 
           .right-icons a {
             width: 100%;
           }

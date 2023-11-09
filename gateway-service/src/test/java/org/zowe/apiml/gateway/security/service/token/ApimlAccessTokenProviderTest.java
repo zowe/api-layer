@@ -29,6 +29,9 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class ApimlAccessTokenProviderTest {
@@ -48,7 +51,7 @@ class ApimlAccessTokenProviderTest {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
-        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as);
+        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()));
     }
 
     @BeforeAll

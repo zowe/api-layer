@@ -1,25 +1,18 @@
 body {
-    /* Extra small devices (phones, 600px and down) */
-    @media only screen and (max-width: 600px) {
-        #zowe-links {
-            display: contents;
-        }
-    }
-  #go-back-button-portal {
-      background-color: #CC092F;
-      margin-right: 25px;
-      border-radius: 3px;
-      height: 40px;
-      &, > span {
-          &, > a {
-              text-decoration: none;
-              color: white;
-              font-size: var( --fontMedium );
-          }
-          &, > a:hover {
-              color: var(--linkHover);
-          }
+  /* Extra small devices (phones, 600px and down) */
+  @media only screen and (max-width: 600px) {
+      #zowe-links {
+          display: contents;
       }
+  }
+  
+  .dashboard-develop-link {
+    margin-right: var( --spaceLarger );
+  }
+  .mobile-product-title {
+    position: absolute;
+    top: var( --spaceSmallest );
+    left: var( --spaceSmall );
   }
   #product-title {
       font-size: var( --spaceLarger );
@@ -54,17 +47,29 @@ body {
     .right-icons {
       margin-left: auto;
       margin-right: var( --spaceSmall );
+      width: 100%;
+      justify-content: flex-end;
 
       .MuiLink-root:hover .ext{
         color: var(--controlText15Hover);
         filter: invert(28%) sepia(93%) saturate(1803%) hue-rotate(190deg) brightness(96%) contrast(101%);
       }
-      a, #zowe-links {
+      > a {
         display: flex;
         align-items: center;
+        text-align: right;
 
         img:first-child {
           margin-right: var( --spaceSmallest );
+        }
+        img:last-child {
+          margin-right: var( --spaceLarger );
+          margin-left: var( --spaceSmaller );
+          height: 15px;
+          width: 15px;
+        }
+        &:last-child img:last-child {
+          margin-right: 0;
         }
       }
 
@@ -85,13 +90,6 @@ body {
         margin-left: var( --spaceSmall);
       }
     }
-
-      #img-internal-link {
-          margin-right: var( --spaceLarger );
-          margin-left: var( --spaceSmall );
-          height: 15px;
-          width: 15px;
-      }
   }//end header
 
   .dashboard-mobile-menu {
@@ -122,13 +120,12 @@ body {
       .feedback-ctn .MuiFab-extended{
         width: 100%;
         border-radius: var( --borderRadius1 );
-        background-color: var( --surface05 );
         justify-content: flex-start;
       }
     }
 
     #internal-link {
       margin-right: 0 !important;
-  }
+    }
   }
 }

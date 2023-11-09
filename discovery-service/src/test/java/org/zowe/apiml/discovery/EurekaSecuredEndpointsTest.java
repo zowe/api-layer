@@ -12,13 +12,11 @@ package org.zowe.apiml.discovery;
 
 import org.junit.jupiter.api.Nested;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Base64;
@@ -26,7 +24,6 @@ import java.util.Base64;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
@@ -56,7 +53,7 @@ class EurekaSecuredEndpointsTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-    }
+        }
 
         @Test
         void shouldForbidCallForNotEurekaUser () throws Exception {
@@ -64,8 +61,6 @@ class EurekaSecuredEndpointsTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
+        }
     }
-    }
-
-
 }
