@@ -14,6 +14,7 @@ import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 import { isAPIPortal } from '../../utils/utilFunctions';
 import VideoWrapper from './VideoWrapper';
+import BlogContainer from './BlogContainer';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -155,6 +156,8 @@ export default class ServiceTab extends Component {
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
+        // eslint-disable-next-line no-console
+        console.log(tutorials);
         const { selectedVersion, isDialogOpen } = this.state;
         const { basePath } = this;
         const { currentService } = this;
@@ -328,6 +331,10 @@ export default class ServiceTab extends Component {
                                 >
                                     Tutorials ({tutorialsCounter} articles)
                                 </Typography>
+                                {tutorials &&
+                                    tutorials.map((tutorial) => (
+                                        <BlogContainer mediumUser={tutorial.user} mediumBlogUrl={tutorial.url} />
+                                    ))}
                                 <br />
                                 <br />
                                 <Typography

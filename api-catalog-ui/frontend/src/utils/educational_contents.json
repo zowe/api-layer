@@ -7,12 +7,8 @@
                 "url2"
             ],
             "useCases": [
-                "Some use case. This is just a placeholder for now.",
-                "Some more case. This is just a placeholder for now."
             ],
             "tutorials": [
-                "tutorial1",
-                "tutorial2"
             ]
         },
         {
@@ -26,8 +22,10 @@
                 "Some more case. This is just a placeholder for now."
             ],
             "tutorials": [
-                "tutorial1",
-                "tutorial2"
+                {
+                    "user":  "davidmcnierney",
+                    "url": "https://medium.com/zowe/code4z-zowe-championing-the-vs-code-opportunity-95e888d5a901"
+                }
             ]
         }
     ]
