@@ -9,18 +9,10 @@
  */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { isValidUrl } from '../../utils/utilFunctions';
 
 function VideoWrapper({ url }) {
-    const isValidUrl = () => {
-        try {
-            return Boolean(new URL(url));
-        } catch (e) {
-            return false;
-        }
-    };
-    // eslint-disable-next-line no-console
-    console.log(url);
-    if (!isValidUrl()) return null;
+    if (!isValidUrl(url)) return null;
     return (
         <div className="video-responsive">
             <iframe

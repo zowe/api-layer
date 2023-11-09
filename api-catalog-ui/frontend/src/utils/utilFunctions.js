@@ -11,6 +11,14 @@
 import getBaseUrl from '../helpers/urls';
 import contents from './educational_contents.json';
 
+export const isValidUrl = (url) => {
+    try {
+        return Boolean(new URL(url));
+    } catch (e) {
+        return false;
+    }
+};
+
 function checkForSwagger(service) {
     let hasSwagger = false;
     const serviceAPIKeys = Object.keys(service.apis);
@@ -52,11 +60,19 @@ export default function countAdditionalContents(service) {
             useCases = correctProduct.useCases;
         }
         if (correctProduct?.tutorials) {
-            tutorialsCounter = correctProduct.tutorials.length;
+            correctProduct.tutorials.forEach((tutorial) => {
+                if (isValidUrl(tutorial.url)) {
+                    tutorialsCounter += 1;
+                }
+            });
             tutorials = correctProduct.tutorials;
         }
         if (correctProduct?.videos) {
-            videosCounter = correctProduct.videos.length;
+            correctProduct.videos.forEach((video) => {
+                if (isValidUrl(video)) {
+                    videosCounter += 1;
+                }
+            });
             videos = correctProduct.videos;
         }
     }

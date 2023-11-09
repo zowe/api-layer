@@ -9,15 +9,14 @@
  */
 import React, { useState, useEffect } from 'react';
 import BlogTile from './BlogTile';
+import { isValidUrl } from '../../utils/utilFunctions';
 
 function BlogContainer({ mediumUser, mediumBlogUrl }) {
-    // eslint-disable-next-line no-console
-    console.log(mediumBlogUrl);
-    // eslint-disable-next-line no-console
-    console.log(mediumUser);
-    // const mediumUrl = "https://medium.com/feed/@joshuagauthreaux"
     // const rss2json =
     //     'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40joshuagauthreaux';
+    if (!isValidUrl(mediumBlogUrl) || !mediumUser) {
+        return null;
+    }
     const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${mediumUser}`;
     const [myBlog, setMyBlog] = useState([]);
 
@@ -36,16 +35,6 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
         console.log(myBlog);
         if (myBlog?.items) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(mediumBlogUrl));
-            // return (
-            //     myBlog.items &&
-            //     myBlog.items.map(
-            //         (blog) =>
-            //             blog.link ===
-            //                 'https://medium.com/zowe/code4z-zowe-championing-the-vs-code-opportunity-95e888d5a901?source=rss-fda0d8c06a08------2' && (
-            //                 <BlogTile key={blog.pubDate} blogData={blog} />
-            //             )
-            //     )
-            // );
             return correctBlog && <BlogTile blogData={correctBlog} />;
         }
     }

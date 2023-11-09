@@ -156,8 +156,6 @@ export default class ServiceTab extends Component {
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
-        // eslint-disable-next-line no-console
-        console.log(tutorials);
         const { selectedVersion, isDialogOpen } = this.state;
         const { basePath } = this;
         const { currentService } = this;
@@ -167,7 +165,7 @@ export default class ServiceTab extends Component {
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         const apiPortalEnabled = isAPIPortal();
-        const additionalContentsPresent = useCasesCounter !== 0 && tutorialsCounter !== 0 && videosCounter !== 0;
+        const additionalContentsPresent = useCasesCounter !== 0 || tutorialsCounter !== 0 || videosCounter !== 0;
         return (
             <>
                 {currentService === null && (
