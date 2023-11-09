@@ -13,12 +13,16 @@ package org.zowe.apiml.integration.zaas;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.ZaasTest;
+
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -31,6 +35,16 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 @ZaasTest
 public class ZaasNegativeTest {
+
+    private static Stream<Arguments> provideToken() {
+        return Stream.of(
+            Arguments.of(generateJwtWithRandomSignature(QueryResponse.Source.ZOSMF.value)),
+            Arguments.of(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE.value)),
+            Arguments.of(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE_PAT.value)),
+            Arguments.of(generateJwtWithRandomSignature("https://localhost:10010"))
+        );
+    }
+
 
     @Nested
     @GeneralAuthenticationTest
@@ -51,56 +65,12 @@ public class ZaasNegativeTest {
             //@formatter:on
         }
 
-        @Test
-        void givenIncorrectlySignedZosmfToken() {
-            String zoweToken = generateJwtWithRandomSignature(QueryResponse.Source.ZOSMF.value);
-
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideToken")
+        void givenInvalidOAuthToken(String token) {
             //@formatter:off
             given()
-                .header("Authorization", "Bearer " + zoweToken)
-            .when()
-                .post(ZAAS_ZOSMF_URI)
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-            //@formatter:on
-        }
-
-        @Test
-        void givenIncorrectlySignedZoweToken() {
-            String zoweToken = generateJwtWithRandomSignature(QueryResponse.Source.ZOWE.value);
-
-            //@formatter:off
-            given()
-                .header("Authorization", "Bearer " + zoweToken)
-            .when()
-                .post(ZAAS_ZOSMF_URI)
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-            //@formatter:on
-        }
-
-        @Test
-        void givenIncorrectlySignedAccessToken() {
-            String zoweToken = generateJwtWithRandomSignature(QueryResponse.Source.ZOWE_PAT.value);
-
-            //@formatter:off
-            given()
-                .header("Authorization", "Bearer " + zoweToken)
-            .when()
-                .post(ZAAS_ZOSMF_URI)
-            .then()
-                .statusCode(is(SC_UNAUTHORIZED));
-            //@formatter:on
-        }
-
-        @Test
-        @Tag("OktaOauth2Test")
-        void givenInvalidOAuthToken() {
-            String oAuthToken = generateJwtWithRandomSignature("https://localhost:10010");
-
-            //@formatter:off
-            given()
-                .header("Authorization", "Bearer " + oAuthToken)
+                .header("Authorization", "Bearer " + token)
             .when()
                 .post(ZAAS_ZOSMF_URI)
             .then()
