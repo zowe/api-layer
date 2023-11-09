@@ -130,6 +130,7 @@ public class AuthenticationService {
             .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
     }
 
+    @SuppressWarnings("java:S5659") // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
         try {
             Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder()
