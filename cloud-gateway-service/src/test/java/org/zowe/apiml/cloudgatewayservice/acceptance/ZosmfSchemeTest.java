@@ -13,6 +13,8 @@ package org.zowe.apiml.cloudgatewayservice.acceptance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.opentest4j.AssertionFailedError;
+import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
@@ -20,6 +22,10 @@ import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
 import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 
 import java.io.IOException;
+import java.net.HttpCookie;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,11 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ZosmfSchemeTest  extends AcceptanceTestWithMockServices {
+public class ZosmfSchemeTest extends AcceptanceTestWithMockServices {
 
     private static final String COOKIE_NAME = "zosmf_cookie";
     private static final String JWT = "jwt";
-    private static ZosmfResponse OK_RESPONSE = new ZosmfResponse(COOKIE_NAME, JWT);
+    private static final ZosmfResponse OK_RESPONSE = new ZosmfResponse(COOKIE_NAME, JWT);
 
     private MockService zaasError2;
     private MockService zaasError;
@@ -39,8 +45,12 @@ public class ZosmfSchemeTest  extends AcceptanceTestWithMockServices {
 
     private MockService service;
 
+    private String getServiceUrl() {
+        return basePath + "/service/api/v1/test";
+    }
+
     @BeforeAll
-    void createAllMockServices() throws IOException {
+    void createAllZaasServices() throws IOException {
         // on the beginning prepare all as zombie, each test will decide
         zaasError = mockService("gateway").scope(MockService.Scope.CLASS)
             .addEndpoint("/gateway/zaas/zosmf")
@@ -56,16 +66,18 @@ public class ZosmfSchemeTest  extends AcceptanceTestWithMockServices {
                 .assertion(he -> assertEquals("service", he.getRequestHeaders().getFirst("x-service-id")))
             .and().build();
 
-        // south-bound service
+        // south-bound service - alive for all tests
         service = mockService("service").scope(MockService.Scope.CLASS)
             .authenticationScheme(AuthenticationScheme.ZOSMF)
             .addEndpoint("/service/test")
-                .assertion(he -> assertEquals(COOKIE_NAME + "=\"" + JWT + "\"", he.getRequestHeaders().getFirst("Cookie")))
+                .assertion(he -> assertEquals(JWT,
+                    he.getRequestHeaders().get(HttpHeaders.COOKIE).stream()
+                        .map(HttpCookie::parse)
+                        .flatMap(Collection::stream)
+                        .filter(c -> COOKIE_NAME.equals(c.getName()))
+                        .findFirst().orElseThrow(() -> new AssertionFailedError("No z/OSMF token is set")).getValue()
+                ))
             .and().start();
-    }
-
-    private String getServiceUrl() {
-        return basePath + "/service/api/v1/test";
     }
 
     @Test
@@ -144,6 +156,35 @@ public class ZosmfSchemeTest  extends AcceptanceTestWithMockServices {
         given().when().get(getServiceUrl()).then().statusCode(500);
         assertEquals(1, zaasError2.getCounter());
         assertEquals(0, service.getCounter());
+    }
+
+    @Test
+    void givenMultipleHeaders_whenCallingAService_thenTheyAreResend() throws IOException {
+        zaasError2.stop();
+        zaasError.stop();
+        zaasOk.stop();
+
+        mockService("gateway")
+            .addEndpoint("/gateway/zaas/zosmf")
+                .bodyJson(OK_RESPONSE)
+                .assertion(he -> assertEquals("service", he.getRequestHeaders().getFirst("x-service-id")))
+                .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
+                .assertion(he -> assertEquals("Bearer " + JWT, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                .assertion(he -> {
+                    List<HttpCookie> cookies = he.getRequestHeaders().get("Cookie").stream()
+                        .map(HttpCookie::parse)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList());
+                    assertEquals(1, cookies.size());
+                    assertEquals("mycookievalue", cookies.get(0).getValue());
+                })
+            .and().start();
+
+        given()
+            .header("myheader", "myvalue")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + JWT)
+            .cookie("mycookie", "mycookievalue")
+        .when().get(getServiceUrl()).then().statusCode(200);
     }
 
 }

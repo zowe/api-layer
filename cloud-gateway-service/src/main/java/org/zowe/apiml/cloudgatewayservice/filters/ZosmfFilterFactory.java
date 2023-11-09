@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
-import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 import reactor.core.publisher.Mono;
@@ -44,12 +43,6 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
         }
     }
 
-    protected ServerHttpRequest updateHeadersForError(ServerWebExchange exchange, String errorMessage) {
-        ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
-        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
-        return request;
-    }
-
     @Override
     protected Class<ZosmfResponse> getResponseClass() {
         return ZosmfResponse.class;
@@ -64,7 +57,6 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
 
     @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
-
         if (response.getToken() == null) {
             throw new IllegalArgumentException("The ZAAS is not configured properly");
         }

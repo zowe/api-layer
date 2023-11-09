@@ -11,17 +11,14 @@
 package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
-import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
-import reactor.core.publisher.Mono;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 
 @Slf4j
 @AcceptanceTest
@@ -33,17 +30,6 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
 
     @Autowired
     protected ApplicationRegistry applicationRegistry;
-
-    @MockBean
-    protected InstanceInfoService instanceInfoService;
-
-    @BeforeEach
-    void mockInstanceInfoService() {
-        doAnswer(invocation -> {
-            String serviceId = invocation.getArgument(0);
-            return Mono.just(applicationRegistry.getServiceInstance(serviceId));
-        }).when(instanceInfoService).getServiceInstance(anyString());
-    }
 
     @BeforeEach
     void resetCounters() {

@@ -27,8 +27,8 @@ import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -123,28 +123,26 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         return request;
     }
 
-    protected List<HttpCookie> readCookies(HttpHeaders headers) {
-        List<HttpCookie> cookies = new LinkedList<>();
-        Optional.ofNullable(headers.get(HttpHeaders.COOKIE))
-            .ifPresent(cookieHeaders -> cookieHeaders.forEach(cookieHeader ->
-                cookies.addAll(HttpCookie.parse(cookieHeader))));
-        return cookies;
-    }
-
     protected ServerHttpRequest setCookie(ServerWebExchange exchange, String cookieName, String value) {
         return exchange.getRequest().mutate()
             .headers(headers -> {
-                // read all current cookies
-                List<HttpCookie> cookies = readCookies(headers);
-                // remove old on with the same name if exists
-                cookies = cookies.stream().filter(c -> !StringUtils.equals(c.getName(), cookieName)).collect(Collectors.toList());
+                // read all other current cookies
+                List<HttpCookie> cookies = Optional.ofNullable(headers.get(HttpHeaders.COOKIE))
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(HttpCookie::parse)
+                    .flatMap(List::stream)
+                    .filter(c -> !StringUtils.equals(c.getName(), cookieName))
+                    .collect(Collectors.toList());
+
                 // add the new cookie
                 cookies.add(new HttpCookie(cookieName, value));
 
                 // remove old cookie header in the request
                 headers.remove(HttpHeaders.COOKIE);
+
                 // set new cookie header in the request
-                headers.set(HttpHeaders.COOKIE, cookies.stream().map(HttpCookie::toString).collect(Collectors.joining("; ")));
+                cookies.stream().forEach(c -> headers.add(HttpHeaders.COOKIE, c.toString()));
             }).build();
     }
 
