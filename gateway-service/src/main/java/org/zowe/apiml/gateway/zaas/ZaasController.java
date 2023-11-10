@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
@@ -26,10 +27,10 @@ import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @RestController
@@ -38,6 +39,7 @@ import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SO
 public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
 
+    private final AuthSourceService authSourceService;
     private final MessageService messageService;
     private final PassTicketService passTicketService;
     private final ZosmfService zosmfService;
@@ -82,11 +84,11 @@ public class ZaasController {
     public ResponseEntity<Object> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
                                                 @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
         try {
-            ZosmfResponse zosmfResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
+            ZaasResponse zaasResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
 
             return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(zosmfResponse);
+                .body(zaasResponse);
 
         } catch (Exception e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived", e.getMessage()).mapToView();
@@ -100,20 +102,12 @@ public class ZaasController {
     @PostMapping(path = "zoweJwt", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     @ResponseBody
-    public ResponseEntity<Object> getZoweJwt(HttpServletRequest request) {
-
-        Optional<AuthSource> rawAuthSource = authSourceService.getAuthSourceFromRequest(request);
-        if (!rawAuthSource.isPresent()) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .build();
-        }
-
-        String token = authSourceService.getJWT(rawAuthSource.get());
+    public ResponseEntity<Object> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
+        String token = authSourceService.getJWT(authSource);
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(Collections.singletonMap("token", token));
+            .body(new ZaasResponse(COOKIE_AUTH_NAME, token));
     }
 
 }

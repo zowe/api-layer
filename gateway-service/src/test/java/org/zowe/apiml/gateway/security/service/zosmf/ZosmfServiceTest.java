@@ -49,7 +49,7 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+import org.zowe.apiml.gateway.zaas.ZaasResponse;
 
 import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
@@ -943,10 +943,10 @@ class ZosmfServiceTest {
         void givenZosmfAuthSource_thenSameTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.ZOSMF);
 
-            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken(ZOSMF_JWT_TOKEN, authParsedSource);
+            ZaasResponse zaasResponse = underTest.exchangeAuthenticationForZosmfToken(ZOSMF_JWT_TOKEN, authParsedSource);
 
-            assertEquals(ZOSMF_JWT_TOKEN, zosmfResponse.getToken());
-            assertEquals(JWT.getCookieName(), zosmfResponse.getCookieName());
+            assertEquals(ZOSMF_JWT_TOKEN, zaasResponse.getToken());
+            assertEquals(JWT.getCookieName(), zaasResponse.getCookieName());
         }
 
         @Test
@@ -955,10 +955,10 @@ class ZosmfServiceTest {
 
             when(authenticationService.getLtpaToken(ZOWE_JWT_TOKEN)).thenReturn(LTPA_TOKEN);
 
-            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken(ZOWE_JWT_TOKEN, authParsedSource);
+            ZaasResponse zaasResponse = underTest.exchangeAuthenticationForZosmfToken(ZOWE_JWT_TOKEN, authParsedSource);
 
-            assertEquals(LTPA_TOKEN, zosmfResponse.getToken());
-            assertEquals(LTPA.getCookieName(), zosmfResponse.getCookieName());
+            assertEquals(LTPA_TOKEN, zaasResponse.getToken());
+            assertEquals(LTPA.getCookieName(), zaasResponse.getCookieName());
         }
 
         @Test
@@ -971,10 +971,10 @@ class ZosmfServiceTest {
             when(authenticationService.getLtpaToken(ZOWE_JWT_TOKEN)).thenReturn(null);
             when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
 
-            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken(ZOWE_JWT_TOKEN, authParsedSource);
+            ZaasResponse zaasResponse = underTest.exchangeAuthenticationForZosmfToken(ZOWE_JWT_TOKEN, authParsedSource);
 
-            assertEquals(ZOSMF_JWT_TOKEN, zosmfResponse.getToken());
-            assertEquals(JWT.getCookieName(), zosmfResponse.getCookieName());
+            assertEquals(ZOSMF_JWT_TOKEN, zaasResponse.getToken());
+            assertEquals(JWT.getCookieName(), zaasResponse.getCookieName());
         }
 
         @Test
@@ -987,10 +987,10 @@ class ZosmfServiceTest {
             }};
             when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
 
-            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource);
+            ZaasResponse zaasResponse = underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource);
 
-            assertEquals(ZOSMF_JWT_TOKEN, zosmfResponse.getToken());
-            assertEquals(JWT.getCookieName(), zosmfResponse.getCookieName());
+            assertEquals(ZOSMF_JWT_TOKEN, zaasResponse.getToken());
+            assertEquals(JWT.getCookieName(), zaasResponse.getCookieName());
         }
 
         @Test
@@ -1002,10 +1002,10 @@ class ZosmfServiceTest {
             }};
             when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
 
-            ZosmfResponse zosmfResponse = underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource);
+            ZaasResponse zaasResponse = underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource);
 
-            assertEquals(LTPA_TOKEN, zosmfResponse.getToken());
-            assertEquals(LTPA.getCookieName(), zosmfResponse.getCookieName());
+            assertEquals(LTPA_TOKEN, zaasResponse.getToken());
+            assertEquals(LTPA.getCookieName(), zaasResponse.getCookieName());
         }
 
         @Test
