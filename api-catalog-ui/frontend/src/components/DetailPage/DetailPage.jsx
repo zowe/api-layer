@@ -79,6 +79,7 @@ export default class DetailPage extends Component {
             history,
             currentTileId,
             fetchNewTiles,
+            selectedService,
         } = this.props;
         let { tiles } = this.props;
         const iconBack = <ChevronLeftIcon />;
@@ -92,12 +93,8 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         } else if (services && services.length > 0 && !currentTileId) {
-            const id = history.location.pathname.split('/service/')[1];
-            if (id) {
-                const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
-                if (correctTile) {
-                    tiles = [correctTile];
-                }
+            if (selectedService) {
+                tiles = [selectedService];
             }
         }
         const apiPortalEnabled = isAPIPortal();
@@ -166,7 +163,7 @@ export default class DetailPage extends Component {
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
                                         <h2 id="title" className="text-block-11 title1">
-                                            {tiles[0].title}
+                                            {selectedService.title}
                                         </h2>
                                     )}
                                 </div>
