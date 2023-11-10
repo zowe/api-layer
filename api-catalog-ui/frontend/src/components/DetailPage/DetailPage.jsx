@@ -93,12 +93,8 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         } else if (services && services.length > 0 && !currentTileId) {
-            const id = history.location.pathname.split('/service/')[1];
-            if (id) {
-                const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
-                if (correctTile) {
-                    tiles = [correctTile];
-                }
+            if (selectedService) {
+                tiles = [selectedService];
             }
         }
         const apiPortalEnabled = isAPIPortal();
@@ -170,17 +166,17 @@ export default class DetailPage extends Component {
                             )}
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
-                                    {tiles !== undefined && tiles.length === 1 && (
+                                    {selectedService && (
                                         <h2 id="title" className="text-block-11 title1">
-                                            {tiles[0].title}
+                                            {selectedService.title}
                                         </h2>
                                     )}
                                 </div>
                                 {!apiPortalEnabled && (
                                     <div className="paragraph-description-container">
-                                        {tiles !== undefined && tiles.length > 0 && (
+                                        {selectedService && (
                                             <p id="description" className="text-block-12">
-                                                {tiles[0].description}
+                                                {selectedService.description}
                                             </p>
                                         )}
                                     </div>
