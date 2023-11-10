@@ -27,7 +27,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
-import org.zowe.apiml.gateway.security.service.zosmf.TokenValidationStrategy;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -67,6 +67,12 @@ class SuccessfulQueryHandlerTest {
     @Mock
     private CacheManager cacheManager;
 
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @Mock
+    private TokenCreationService tokenCreationService;
+
     @BeforeEach
     void setup() {
         httpServletRequest = new MockHttpServletRequest();
@@ -84,7 +90,9 @@ class SuccessfulQueryHandlerTest {
             restTemplate,
             new ObjectMapper(),
             applicationContext,
-            new ArrayList<TokenValidationStrategy>());
+            authenticationService,
+            tokenCreationService,
+            new ArrayList<>());
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()

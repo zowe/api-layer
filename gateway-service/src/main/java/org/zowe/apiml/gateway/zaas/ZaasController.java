@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.controllers;
+package org.zowe.apiml.gateway.zaas;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +19,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+
+import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,15 +38,16 @@ import org.zowe.apiml.ticket.TicketResponse;
 public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
 
-    private final PassTicketService passTicketService;
     private final MessageService messageService;
+    private final PassTicketService passTicketService;
+    private final ZosmfService zosmfService;
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     @ResponseBody
-    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute("zaas.auth.source") AuthSource.Parsed authSource) {
+    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
 
-        if (StringUtils.isEmpty(authSource.getUserId())) {
+        if (StringUtils.isEmpty(authSourceParsed.getUserId())) {
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .build();
@@ -57,7 +63,7 @@ public class ZaasController {
 
         String ticket = null;
         try {
-            ticket = passTicketService.generate(authSource.getUserId(), applicationName);
+            ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
         } catch (IRRPassTicketGenerationException e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getErrorCode().getMessage()).mapToView();
@@ -67,6 +73,27 @@ public class ZaasController {
         }
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new TicketResponse(null, authSource.getUserId(), applicationName, ticket));
+            .body(new TicketResponse(null, authSourceParsed.getUserId(), applicationName, ticket));
     }
+
+    @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Provides z/OSMF JWT or LTPA token for authenticated user.")
+    @ResponseBody
+    public ResponseEntity<Object> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
+                                                @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
+        try {
+            ZosmfResponse zosmfResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
+
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(zosmfResponse);
+
+        } catch (Exception e) {
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived", e.getMessage()).mapToView();
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(messageView);
+        }
+    }
+
 }

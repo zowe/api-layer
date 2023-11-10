@@ -15,6 +15,8 @@ import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import com.nimbusds.jose.util.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
@@ -25,10 +27,19 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.TlsConfiguration;
@@ -37,13 +48,15 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 import static io.restassured.RestAssured.given;
@@ -62,10 +75,15 @@ public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private final static TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();
     private final static String gatewayHost = serviceConfiguration.getHost();
     private final static int gatewayPort = serviceConfiguration.getPort();
+
+    private final static String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+    private final static String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
+    private final static int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
 
     public final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -129,6 +147,117 @@ public class SecurityUtils {
 
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return cookie;
+    }
+
+    public static String getZosmfJwtToken() {
+        return getZosmfToken("jwtToken");
+    }
+
+    public static String getZosmfToken(String cookie) {
+        SSLConfig originalConfig = RestAssured.config().getSSLConfig();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+
+        String zosmfToken = given()
+            .contentType(JSON)
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .header("X-CSRF-ZOSMF-HEADER", "")
+            .when()
+            .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT))
+            .then()
+            .statusCode(is(SC_OK))
+            .cookie(cookie, not(isEmptyString()))
+            .extract().cookie(cookie);
+
+        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+
+        return zosmfToken;
+    }
+
+    public static String generateZoweJwtWithLtpa(String ltpaToken) throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+        long now = System.currentTimeMillis();
+        long expiration = now + 100_000L;
+
+        return Jwts.builder()
+            .setSubject(USERNAME)
+            .setIssuedAt(new Date(now))
+            .setExpiration(new Date(expiration))
+            .setIssuer(QueryResponse.Source.ZOWE.value)
+            .setId(UUID.randomUUID().toString())
+            .claim("ltpa", ltpaToken)
+            .signWith(getKey(), SignatureAlgorithm.RS256)
+            .compact();
+    }
+
+    public static String generateJwtWithRandomSignature(String issuer) {
+        long now = System.currentTimeMillis();
+        long expiration = now + 100_000L;
+
+        return Jwts.builder()
+            .setSubject(USERNAME)
+            .setIssuedAt(new Date(now))
+            .setExpiration(new Date(expiration))
+            .setIssuer(issuer)
+            .setId(UUID.randomUUID().toString())
+            .setHeaderParam("kid", "apiKey")
+            .signWith(Keys.secretKeyFor(SignatureAlgorithm.HS256))
+            .compact();
+    }
+
+    private static KeyStore loadKeystore(String keystore) throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+        File keyStoreFile = new File(keystore);
+        InputStream inputStream = new FileInputStream(keyStoreFile);
+
+        KeyStore ks = KeyStore.getInstance(SecurityUtils.tlsConfiguration.getKeyStoreType());
+        ks.load(inputStream, SecurityUtils.tlsConfiguration.getKeyStorePassword());
+
+        return ks;
+    }
+
+    private static Key getKey() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        KeyStore ks = loadKeystore(SecurityUtils.tlsConfiguration.getKeyStore());
+
+        return ks.getKey(SecurityUtils.tlsConfiguration.getKeyAlias(), SecurityUtils.tlsConfiguration.getKeyStorePassword());
+    }
+
+    public static String getClientCertificate() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+        KeyStore ks = loadKeystore(SecurityUtils.tlsConfiguration.getClientKeystore());
+        Certificate certificate = ks.getCertificate(ks.aliases().nextElement());
+
+        return Base64.encode(certificate.getEncoded()).toString();
+    }
+
+    public static String getDummyClientCertificate()throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException, IOException {
+        Security.addProvider(new BouncyCastleProvider());
+
+        long now = System.currentTimeMillis();
+        Calendar calendar = Calendar.getInstance();
+
+        X500Name dnName = new X500Name("CN=USER");
+        BigInteger certSerialNumber = new BigInteger(Long.toString(now));
+        Date startDate = new Date(now);
+        calendar.setTime(startDate);
+        calendar.add(Calendar.YEAR, 1);
+        Date endDate = calendar.getTime();
+
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+        JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+            dnName,
+            certSerialNumber,
+            startDate,
+            endDate,
+            dnName,
+            keyPair.getPublic());
+
+        String signatureAlgorithm = "SHA256WithRSA";
+        ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).build(keyPair.getPrivate());
+
+        X509CertificateHolder certificateHolder = certBuilder.build(contentSigner);
+        X509Certificate certificate  = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certificateHolder);
+
+        return Base64.encode(certificate.getEncoded()).toString();
     }
 
     public static String personalAccessToken(Set<String> scopes) {
