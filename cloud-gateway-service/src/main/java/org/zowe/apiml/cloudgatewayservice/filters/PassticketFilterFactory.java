@@ -48,7 +48,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, String requestBody) {
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
         return webClient.post()
             .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
             .bodyValue(requestBody);
@@ -56,15 +56,17 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
 
     @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, TicketResponse response) {
-        if (response.getTicket() == null) {
-            // TODO: consider throwing an exception, ZAAS is not configured properly
-            ServerHttpRequest request = updateHeadersForError(exchange, "Invalid or missing authentication.");
-            return chain.filter(exchange.mutate().request(request).build());
+        ServerHttpRequest request;
+        if (response.getTicket() != null) {
+            String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
+            final String headerValue = "Basic " + encodedCredentials;
+            request = setRequestHeader(exchange, HttpHeaders.AUTHORIZATION, headerValue);
+        } else {
+            request = updateHeadersForError(exchange, "Invalid or missing authentication.");
         }
-        String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
-        final String headerValue = "Basic " + encodedCredentials;
-        ServerHttpRequest request = setRequestHeader(exchange, HttpHeaders.AUTHORIZATION, headerValue);
-        return chain.filter(exchange.mutate().request(request).build());
+
+        exchange = exchange.mutate().request(request).build();
+        return chain.filter(exchange);
     }
 
     @Override

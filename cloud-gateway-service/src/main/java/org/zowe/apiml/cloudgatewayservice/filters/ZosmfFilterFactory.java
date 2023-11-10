@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,6 +23,8 @@ import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 import reactor.core.publisher.Mono;
+
+import java.net.HttpCookie;
 
 
 @Service
@@ -49,7 +52,7 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, Object data) {
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
         String zosmfTokensUrl = String.format("%s://%s:%d/%s/zaas/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
         return webClient.post()
             .uri(zosmfTokensUrl);
@@ -57,11 +60,17 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
 
     @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
-        if (response.getToken() == null) {
-            throw new IllegalArgumentException("The ZAAS is not configured properly");
+        ServerHttpRequest request;
+        if (response.getToken() != null) {
+            request = exchange.getRequest().mutate().headers(headers -> {
+                headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString());
+            }).build();
+        } else {
+            request = updateHeadersForError(exchange, "Invalid or missing authentication.");
         }
-        ServerHttpRequest request = setCookie(exchange, response.getCookieName(), response.getToken());
-        return chain.filter(exchange.mutate().request(request).build());
+
+        exchange = exchange.mutate().request(request).build();
+        return chain.filter(exchange);
     }
 
     @EqualsAndHashCode(callSuper = true)

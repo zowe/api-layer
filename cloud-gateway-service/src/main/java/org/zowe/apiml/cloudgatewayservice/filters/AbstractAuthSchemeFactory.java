@@ -27,16 +27,40 @@ import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
+import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGatewayFilterFactory<T> {
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
+
+
+    private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
+        StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
+        StringUtils.equalsIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME) ||
+        StringUtils.startsWithIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME + ".");
+    private static final Predicate<HttpCookie> CREDENTIALS_COOKIE = cookie ->
+        CREDENTIALS_COOKIE_INPUT.test(cookie) ||
+        StringUtils.equalsIgnoreCase(cookie.getName(), "jwtToken") ||
+        StringUtils.equalsIgnoreCase(cookie.getName(), "LtpaToken2");
+
+    private static final Predicate<String> CREDENTIALS_HEADER_INPUT = headerName ->
+        StringUtils.equalsIgnoreCase(headerName, HttpHeaders.AUTHORIZATION) ||
+        StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
+    private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
+        CREDENTIALS_HEADER_INPUT.test(headerName) ||
+        StringUtils.equalsIgnoreCase(headerName, "X-SAF-Token") ||
+        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-Public") ||
+        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-DistinguishedName") ||
+        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-CommonName") ||
+        StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
 
     private static final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
 
@@ -59,7 +83,6 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
 
     private Mono<R> requestWithHa(
         Iterator<ServiceInstance> serviceInstanceIterator,
-        AbstractConfig config,
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
     ) {
         return requestCreator.apply(serviceInstanceIterator.next())
@@ -67,13 +90,12 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
             .onStatus(HttpStatus::isError, clientResponse -> Mono.empty())
             .bodyToMono(getResponseClass())
             .switchIfEmpty(serviceInstanceIterator.hasNext() ?
-                requestWithHa(serviceInstanceIterator, config, requestCreator) : Mono.empty()
+                requestWithHa(serviceInstanceIterator, requestCreator) : Mono.empty()
             );
     }
 
     protected Mono<Void> invoke(
         List<ServiceInstance> serviceInstances,
-        AbstractConfig config,
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator,
         Function<? super R, ? extends Mono<Void>> responseProcessor
     ) {
@@ -82,27 +104,60 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
             throw new IllegalArgumentException("No ZAAS is available");
         }
 
-        return requestWithHa(i, config, requestCreator).flatMap(responseProcessor);
+        return requestWithHa(i, requestCreator).flatMap(responseProcessor);
     }
 
     @SuppressWarnings("squid:S1452")
-    protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServerWebExchange exchange, ServiceInstance instance, D data);
-    protected abstract Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, R response);
+    protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data);
+    protected abstract Mono<Void> processResponse(ServerWebExchange clientCallBuilder, GatewayFilterChain chain, R response);
 
-    protected WebClient.RequestHeadersSpec<?> setDefaults(AbstractConfig config, ServerWebExchange exchange, WebClient.RequestHeadersSpec<?> requestHeadersSpec) {
-        return requestHeadersSpec
-            .headers(headers -> headers.addAll(exchange.getRequest().getHeaders()))
-            .header(HEADER_SERVICE_ID, config.serviceId);
+    protected WebClient.RequestHeadersSpec<?> createRequest(AbstractConfig config, ServerHttpRequest.Builder clientRequestbuilder, ServiceInstance instance, D data) {
+        WebClient.RequestHeadersSpec<?> zaasCallBuilder = createRequest(instance, data);
+
+        clientRequestbuilder
+            .headers(headers -> {
+                // get all current cookies
+                List<HttpCookie> cookies = readCookies(headers).collect(Collectors.toList());
+
+                // set in the request to ZAAS all cookies and headers that contain credentials
+                headers.entrySet().stream()
+                    .filter(e -> CREDENTIALS_HEADER_INPUT.test(e.getKey()))
+                    .forEach(e -> zaasCallBuilder.header(e.getKey(), e.getValue().toArray(new String[0])));
+                cookies.stream()
+                    .filter(CREDENTIALS_COOKIE_INPUT)
+                    .forEach(c -> zaasCallBuilder.cookie(c.getName(), c.getValue()));
+
+                // add common headers to ZAAS
+                zaasCallBuilder.header(HEADER_SERVICE_ID, config.serviceId);
+
+                // update original request - to remove all potential headers and cookies with credentials
+                Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
+                    .filter(entry -> !CREDENTIALS_HEADER.test(entry.getKey()))
+                    .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
+                Stream<Map.Entry<String, String>> nonCredentialCookies = cookies.stream()
+                    .filter(c -> !CREDENTIALS_COOKIE.test(c))
+                    .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
+                headers.clear();
+                Stream.concat(
+                    nonCredentialHeaders,
+                    nonCredentialCookies
+                ).forEach(h -> headers.add(h.getKey(), h.getValue()));
+            });
+
+
+        return zaasCallBuilder;
     }
 
     protected GatewayFilter createGatewayFilter(AbstractConfig config, D data) {
         return (exchange, chain) -> getZaasInstances().flatMap(
-            instances -> invoke(
-                instances,
-                config,
-                instance -> setDefaults(config, exchange, createRequest(exchange, instance, data)),
-                response -> processResponse(exchange, chain, response)
-            )
+            instances -> {
+                ServerHttpRequest.Builder clientCallBuilder = exchange.getRequest().mutate();
+                return invoke(
+                    instances,
+                    instance -> createRequest(config, clientCallBuilder, instance, data),
+                    response -> processResponse(exchange.mutate().request(clientCallBuilder.build()).build(), chain, response)
+                );
+            }
         );
     }
     protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
@@ -123,15 +178,22 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         return request;
     }
 
+    protected Stream<HttpCookie> readCookies(HttpHeaders httpHeaders) {
+        return Optional.ofNullable(httpHeaders.get(HttpHeaders.COOKIE))
+            .orElse(Collections.emptyList())
+            .stream()
+            .map(v -> StringUtils.split(v, ";"))
+            .flatMap(Arrays::stream)
+            .map(StringUtils::trim)
+            .map(HttpCookie::parse)
+            .flatMap(List::stream);
+    }
+
     protected ServerHttpRequest setCookie(ServerWebExchange exchange, String cookieName, String value) {
         return exchange.getRequest().mutate()
             .headers(headers -> {
                 // read all other current cookies
-                List<HttpCookie> cookies = Optional.ofNullable(headers.get(HttpHeaders.COOKIE))
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .map(HttpCookie::parse)
-                    .flatMap(List::stream)
+                List<HttpCookie> cookies = readCookies(headers)
                     .filter(c -> !StringUtils.equals(c.getName(), cookieName))
                     .collect(Collectors.toList());
 

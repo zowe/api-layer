@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
+import com.sun.net.httpserver.HttpExchange;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -28,8 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -47,6 +48,16 @@ public class ZosmfSchemeTest extends AcceptanceTestWithMockServices {
 
     private String getServiceUrl() {
         return basePath + "/service/api/v1/test";
+    }
+
+    private String getCookie(HttpExchange httpExchange, String cookieName) {
+        List<HttpCookie> cookies = httpExchange.getRequestHeaders().get("Cookie").stream()
+            .map(HttpCookie::parse)
+            .flatMap(Collection::stream)
+            .filter(c -> StringUtils.equalsIgnoreCase(cookieName, c.getName()))
+            .collect(Collectors.toList());
+        assertTrue(cookies.size() <= 1);
+        return cookies.isEmpty() ? null : cookies.get(0).getValue();
     }
 
     @BeforeAll
@@ -167,23 +178,39 @@ public class ZosmfSchemeTest extends AcceptanceTestWithMockServices {
         mockService("gateway")
             .addEndpoint("/gateway/zaas/zosmf")
                 .bodyJson(OK_RESPONSE)
+                .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+
                 .assertion(he -> assertEquals("service", he.getRequestHeaders().getFirst("x-service-id")))
-                .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
-                .assertion(he -> assertEquals("Bearer " + JWT, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
-                .assertion(he -> {
-                    List<HttpCookie> cookies = he.getRequestHeaders().get("Cookie").stream()
-                        .map(HttpCookie::parse)
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList());
-                    assertEquals(1, cookies.size());
-                    assertEquals("mycookievalue", cookies.get(0).getValue());
-                })
+
+                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("myheader")))
+                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
+                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
+                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
+                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+
+                .assertion(he -> assertNull(getCookie(he, "mycookie")))
+                .assertion(he -> assertEquals("pat", getCookie(he, "personalAccessToken")))
+                .assertion(he -> assertEquals("jwt1", getCookie(he, "apimlAuthenticationToken")))
+                .assertion(he -> assertEquals("jwt2", getCookie(he, "apimlAuthenticationToken.2")))
+                .assertion(he -> assertNull(getCookie(he, "jwtToken")))
+                .assertion(he -> assertNull(getCookie(he, "LtpaToken2")))
             .and().start();
 
         given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer userJwt")
+
             .header("myheader", "myvalue")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + JWT)
+            .header("X-SAF-Token", "X-SAF-Token")
+            .header("X-Certificate-Public", "X-Certificate-Public")
+            .header("X-Certificate-DistinguishedName", "X-Certificate-DistinguishedName")
+            .header("X-Certificate-CommonName", "X-Certificate-CommonName")
+
             .cookie("mycookie", "mycookievalue")
+            .cookie("personalAccessToken", "pat")
+            .cookie("apimlAuthenticationToken", "jwt1")
+            .cookie("apimlAuthenticationToken.2", "jwt2")
+            .cookie("jwtToken", "jwtToken")
+            .cookie("LtpaToken2", "LtpaToken2")
         .when().get(getServiceUrl()).then().statusCode(200);
     }
 
