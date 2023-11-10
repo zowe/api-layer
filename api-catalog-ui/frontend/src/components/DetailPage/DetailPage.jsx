@@ -81,7 +81,7 @@ export default class DetailPage extends Component {
             fetchNewTiles,
             selectedService,
         } = this.props;
-        let { tiles } = this.props;
+        const { tiles } = this.props;
         const iconBack = <ChevronLeftIcon />;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
@@ -92,10 +92,6 @@ export default class DetailPage extends Component {
             fetchTilesStop();
             fetchNewTiles();
             fetchTilesStart(currentTileId);
-        } else if (services && services.length > 0 && !currentTileId) {
-            if (selectedService) {
-                tiles = [selectedService];
-            }
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
@@ -161,7 +157,7 @@ export default class DetailPage extends Component {
                             )}
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
-                                    {tiles !== undefined && tiles.length === 1 && (
+                                    {selectedService && (
                                         <h2 id="title" className="text-block-11 title1">
                                             {selectedService.title}
                                         </h2>
@@ -169,9 +165,9 @@ export default class DetailPage extends Component {
                                 </div>
                                 {!apiPortalEnabled && (
                                     <div className="paragraph-description-container">
-                                        {tiles !== undefined && tiles.length > 0 && (
+                                        {selectedService && (
                                             <p id="description" className="text-block-12">
-                                                {tiles[0].description}
+                                                {selectedService.description}
                                             </p>
                                         )}
                                     </div>
