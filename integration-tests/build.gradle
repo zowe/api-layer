@@ -31,6 +31,7 @@ dependencies {
     testImplementation libs.json
     testImplementation libs.jjwt
     testImplementation libs.reactorTest
+    testImplementation libs.bcpkix;
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
 
@@ -46,6 +47,7 @@ dependencies {
     testImplementation libs.jackson.databind
     testImplementation libs.jackson.dataformat.yaml
     testImplementation libs.javax.servlet.api
+    testImplementation libs.assertj.core
     testImplementation libs.nimbusJoseJwt
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
@@ -250,7 +252,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OktaOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -309,7 +312,8 @@ task runContainerTests(type: Test) {
             'OktaOauth2Test',
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
-            'CloudGatewayCentralRegistry'
+            'CloudGatewayCentralRegistry',
+            'ZaasTest'
         )
     }
 }
@@ -461,6 +465,7 @@ task runSafAuthTest(type: Test) {
         )
     }
 }
+
 task runZosmfAuthTest(type: Test) {
     group "integration tests"
     description "Run zOSMF dependant authentication tests only"
@@ -474,6 +479,20 @@ task runZosmfAuthTest(type: Test) {
         )
         excludeTags(
             'InfinispanStorageTest'
+        )
+    }
+}
+
+task runZaasTest(type: Test) {
+    group "integration tests"
+    description "Run Zaas tests only"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'ZaasTest'
         )
     }
 }

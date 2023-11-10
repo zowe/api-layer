@@ -24,6 +24,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 
@@ -33,6 +34,7 @@ import java.util.TreeMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
@@ -69,9 +71,9 @@ class DiscoveryClientConfigTest {
                 .discoveryServiceUrls("https://host:10011/eureka").routes(new ArrayList<>()).build();
 
             instanceInfo = new InstanceInfo.Builder(baseInstanceInfo).setAppName(GATEWAY.name()).setMetadata(new TreeMap<>()).build();
-            when(appManager.getInfo()).thenReturn(instanceInfo);
-            when(apimlDiscoveryClientFactory.buildApimlDiscoveryClient(any(), any(), any(), any())).thenReturn(discoveryClientClient);
-
+            lenient().when(appManager.getInfo()).thenReturn(instanceInfo);
+            lenient().when(apimlDiscoveryClientFactory.buildApimlDiscoveryClient(any(), any(), any(), any())).thenReturn(discoveryClientClient);
+            lenient().when(apimlDiscoveryClientFactory.createInstanceInfo(any())).thenReturn(instanceInfo);
         }
 
         @Test

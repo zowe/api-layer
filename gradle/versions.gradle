@@ -97,6 +97,7 @@ dependencyResolutionManagement {
             version('nettyReactor', '1.1.7')
             version('nimbusJoseJwt', '9.31')
             version('openApiDiff', '2.0.1')
+            version('ow2asm', '9.6')
             version('picocli', '4.7.3')
 
             version('ribbon', '2.3.0')
@@ -152,6 +153,7 @@ dependencyResolutionManagement {
             version('checkstyle', '9.3')
             version('jacoco', '0.8.10')
             version('gradle', '8.1.1')
+            version('assertjCore', '3.24.2')
 
             library('zowe_attls', 'org.zowe.apiml.sdk', 'attls').versionRef('attls')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
@@ -315,6 +317,7 @@ dependencyResolutionManagement {
             library('netty_transport_udt', 'io.netty', 'netty-transport-udt').versionRef('netty')
             library('nimbusJoseJwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
             library('openapidiff', 'org.openapitools.openapidiff', 'openapi-diff-core').versionRef('openApiDiff')
+            library('ow2asm', 'org.ow2.asm', 'asm').versionRef('ow2asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocliCodegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')
@@ -348,6 +351,7 @@ dependencyResolutionManagement {
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('woodstox_stax2', 'org.codehaus.woodstox', 'stax2-api').versionRef('woodstoxStax2')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
+            library('assertj_core','org.assertj', 'assertj-core').versionRef('assertjCore')
 
             // Sample apps only
             library('jersey_container_servlet_core', 'org.glassfish.jersey.containers', 'jersey-container-servlet-core').versionRef('jersey')

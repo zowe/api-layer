@@ -14,21 +14,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.impl.DefaultClock;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class OIDCConfig {
 
-    @Bean
-    public Clock clock() {
+    @Bean("oidcJwtClock")
+    public Clock oidcJwtClock() {
         return new DefaultClock();
     }
 
-    @Bean
-    @Qualifier("oidcMapper")
-    public ObjectMapper mapper() {
+    @Bean("oidcJwkMapper")
+    @Primary
+    public ObjectMapper oidcJwkMapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());
     }

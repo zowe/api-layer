@@ -1,7 +1,20 @@
 eureka:
+    instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+        #ports are computed in code
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        metadata-map:
+            apiml:
+                service.apimlId :  ${apiml.service.apimlId}
     client:
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
         serviceUrl:
-            defaultZone: https://localhost:10011/eureka/
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        healthcheck:
+            enabled: true
 
 spring:
     application:
@@ -12,19 +25,20 @@ apiml:
         timeout: 60
     service:
         apimlId: apiml1
-        id: ${spring.application.name}
-        port: 10023
-        hostname: localhost
-        scheme: https  # "https" or "http"
         corsEnabled: true
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 10023
+        scheme: https  # "https" or "http"
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
     cloudGateway:
         registry:
-            enabled: true
+            enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
 
 server:

@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -55,6 +54,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
+import org.zowe.apiml.gateway.zaas.ZaasAuthenticationFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
@@ -66,7 +66,12 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
-import org.zowe.apiml.security.common.login.*;
+import org.zowe.apiml.security.common.login.BasicAuthFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.login.X509AuthAwareFilter;
+import org.zowe.apiml.security.common.login.X509AuthenticationFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.util.Collections;
@@ -88,9 +93,7 @@ import java.util.Set;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Slf4j
 public class NewSecurityConfiguration {
-
 
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
@@ -307,12 +310,12 @@ public class NewSecurityConfiguration {
         @Configuration
         @RequiredArgsConstructor
         @Order(9)
-        class ZaasTicketEndpoint {
+        class ZaasEndpoints {
 
             private final CompoundAuthProvider compoundAuthProvider;
 
             @Bean
-            public SecurityFilterChain authZaasTicketEndpointFilterChain(HttpSecurity http) throws Exception {
+            public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
                     authConfigurationProperties.getEvictAccessTokensAndRules(),
@@ -323,8 +326,9 @@ public class NewSecurityConfiguration {
                     .and()
                     .x509().userDetailsService(x509UserDetailsService())
                     .and()
-                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                    .addFilterBefore(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                    .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(new ZaasAuthenticationFilter(authSourceService, authExceptionHandler), CategorizeCertsFilter.class);
 
                 return http.build();
             }

@@ -2,7 +2,8 @@ $red-selected-bx: 0 0 0 2px var( --criticalShade10 ) inset;
 
 #serviceIdTabs {
     margin-bottom: var( --spaceSmall );
-    font-weight: bold;
+    color: var( --criticalShade10 );
+    font-size: var( --fontLarger );
 }
 #search_no_results {
     margin: auto;
@@ -65,7 +66,6 @@ svg.MuiSvgIcon-root.clear-text-search {
 
 #search2 {
     margin: var( --spaceSmall ) 0 0;
-    height: 47px;
     background: var( --surface05 );
     border: 1px solid var( --divider15 );
     border-radius: var( --borderRadius1 );
@@ -73,27 +73,21 @@ svg.MuiSvgIcon-root.clear-text-search {
     .MuiInput-root {
         width: 100%;
     }
-    >div {
-        >div {
-            >input {
-                padding-left: var( --spaceMedium );
-                padding-right: var( --spaceHuge );
-                padding-top: var( --spaceSmall );
-            }
-            >div {
-                margin-right: 0;
-
-                > #search-icon {
-                    margin-top: var( --spaceSmaller );
-                }
-                &#search-input {
-                    right: var( --spaceSmallest );
-                }
-            }
-        }
+    .MuiInputBase-input {
+        padding-top: var( --spaceMedium );
+        padding-bottom: var( --spaceMedium );
     }
 }//end search2
 
 #search2:has(.Mui-focused, :hover) {
     border: 1px solid var(--linkHover);
+}
+
+#go-back-button-portal {
+    margin-right: var( --spaceMedium );
+    padding: var(--spaceSmaller ) var(--spaceMedium ) 6px 0px;
+
+    svg {
+        height: 18px;
+    }
 }

@@ -1,31 +1,18 @@
 body {
-    /* Extra small devices (phones, 600px and down) */
-    @media only screen and (max-width: 600px) {
-        #zowe-links {
-            display: contents;
-        }
-    }
-  #go-back-button-portal {
-      margin-right: var( --spaceMedium );
-      background-image: url(../../assets/images/angles-left.svg);
-      background-repeat: no-repeat;
-      background-size: 16px;
-      background-position: 8px 50%;
-      padding: var(--spaceSmaller ) var(--spaceMedium ) 6px var( --spaceLargest );
-      background-color: var( --surface05 );
-      border: 1px solid var( --divider20 );
-
-      &, * {
-        color: var( --link20 );
-        font-size: var( --fontSmall );
-      }
-      &:hover, &:focus-visible {
-        background-color: var( --surface15 );
-        border-color: var( --divider15 );
+  /* Extra small devices (phones, 600px and down) */
+  @media only screen and (max-width: 600px) {
+      #zowe-links {
+          display: contents;
       }
   }
+  
   .dashboard-develop-link {
     margin-right: var( --spaceLarger );
+  }
+  .mobile-product-title {
+    position: absolute;
+    top: var( --spaceSmallest );
+    left: var( --spaceSmall );
   }
   #product-title {
       font-size: var( --spaceLarger );
@@ -60,17 +47,29 @@ body {
     .right-icons {
       margin-left: auto;
       margin-right: var( --spaceSmall );
+      width: 100%;
+      justify-content: flex-end;
 
       .MuiLink-root:hover .ext{
         color: var(--controlText15Hover);
         filter: invert(28%) sepia(93%) saturate(1803%) hue-rotate(190deg) brightness(96%) contrast(101%);
       }
-      a, #zowe-links {
+      > a {
         display: flex;
         align-items: center;
+        text-align: right;
 
         img:first-child {
           margin-right: var( --spaceSmallest );
+        }
+        img:last-child {
+          margin-right: var( --spaceLarger );
+          margin-left: var( --spaceSmaller );
+          height: 15px;
+          width: 15px;
+        }
+        &:last-child img:last-child {
+          margin-right: 0;
         }
       }
 
@@ -91,13 +90,6 @@ body {
         margin-left: var( --spaceSmall);
       }
     }
-
-      #img-internal-link {
-          margin-right: var( --spaceLarger );
-          margin-left: var( --spaceSmall );
-          height: 15px;
-          width: 15px;
-      }
   }//end header
 
   .dashboard-mobile-menu {
@@ -128,13 +120,12 @@ body {
       .feedback-ctn .MuiFab-extended{
         width: 100%;
         border-radius: var( --borderRadius1 );
-        background-color: var( --surface05 );
         justify-content: flex-start;
       }
     }
 
     #internal-link {
       margin-right: 0 !important;
-  }
+    }
   }
 }

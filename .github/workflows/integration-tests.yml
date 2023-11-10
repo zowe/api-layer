@@ -252,6 +252,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_HOSTNAME: cloud-gateway-service
                     APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
 
@@ -269,6 +270,17 @@ jobs:
                     APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_PORT: 10037
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_GATEWAYURL: /
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_SERVICEURL: /
+            cloud-gateway-service-2:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: domain-apiml
+                    APIML_SERVICE_HOSTNAME: cloud-gateway-service-2
+                    APIML_CLOUDGATEWAY_REGISTRY_ENABLED: false
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_GATEWAYURL: /
@@ -345,6 +357,72 @@ jobs:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsZaas:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    CACHING_STORAGE_MODE: "infinispan"
+                    JGROUPS_BIND_ADDRESS: "caching-service"
+                    JGROUPS_BIND_PORT: "7099"
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://cloud-gateway-service:10023/gateway/certificates
+                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
+                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    APIML_SECURITY_OIDC_ENABLED: true
+                    APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
+                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWK_URI }}
+                    APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
+                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    ZOSMF_APPLIEDAPARS: PH34201
+
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
+                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
+
+            -   name: Dump DC jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                    name: ContainerCITestsZaas-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -1442,7 +1520,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:

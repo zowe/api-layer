@@ -74,7 +74,7 @@ class ExtractAuthSourceFilterTest {
             void thenParsedAuthSourceInRequestAttribute() throws ServletException, IOException {
                 ExtractAuthSourceFilter filter = new ExtractAuthSourceFilter(authSourceService, authExceptionHandler);
                 filter.doFilterInternal(request, response, filterChain);
-                verify(request, times(1)).setAttribute(ExtractAuthSourceFilter.AUTH_SOURCE_ATTR, parseAuthSource);
+                verify(request, times(1)).setAttribute(ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR, parseAuthSource);
             }
         }
 

@@ -27,7 +27,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -80,16 +79,14 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private int jwkRefreshInterval;
 
-    @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
     @NonNull
     private final CloseableHttpClient httpClient;
 
-    @Autowired
+    @Qualifier("oidcJwtClock")
     private final Clock clock;
 
-    @Autowired
-    @Qualifier("oidcMapper")
+    @Qualifier("oidcJwkMapper")
     private final ObjectMapper mapper;
 
     private Map<String, Key> jwks = new ConcurrentHashMap<>();
