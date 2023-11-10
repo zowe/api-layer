@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -76,6 +77,7 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
     }
 
     protected abstract Class<R> getResponseClass();
+    protected abstract R getResponseFor401();
 
     private Mono<List<ServiceInstance>> getZaasInstances() {
         return instanceInfoService.getServiceInstance("gateway");
@@ -87,8 +89,9 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
     ) {
         return requestCreator.apply(serviceInstanceIterator.next())
             .retrieve()
-            .onStatus(HttpStatus::isError, clientResponse -> Mono.empty())
+            .onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.empty())
             .bodyToMono(getResponseClass())
+            .onErrorResume(exception -> exception instanceof WebClientResponseException.Unauthorized ? Mono.just(getResponseFor401()) : Mono.error(exception))
             .switchIfEmpty(serviceInstanceIterator.hasNext() ?
                 requestWithHa(serviceInstanceIterator, requestCreator) : Mono.empty()
             );
@@ -137,13 +140,15 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
                 Stream<Map.Entry<String, String>> nonCredentialCookies = cookies.stream()
                     .filter(c -> !CREDENTIALS_COOKIE.test(c))
                     .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
-                headers.clear();
-                Stream.concat(
+
+                List<Map.Entry<String, String>> newHeaders = Stream.concat(
                     nonCredentialHeaders,
                     nonCredentialCookies
-                ).forEach(h -> headers.add(h.getKey(), h.getValue()));
-            });
+                ).collect(Collectors.toList());
 
+                headers.clear();
+                newHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));
+            });
 
         return zaasCallBuilder;
     }

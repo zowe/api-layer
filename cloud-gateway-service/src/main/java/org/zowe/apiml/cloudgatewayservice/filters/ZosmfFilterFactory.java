@@ -52,6 +52,11 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     }
 
     @Override
+    protected ZosmfResponse getResponseFor401() {
+        return new ZosmfResponse();
+    }
+
+    @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
         String zosmfTokensUrl = String.format("%s://%s:%d/%s/zaas/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
         return webClient.post()

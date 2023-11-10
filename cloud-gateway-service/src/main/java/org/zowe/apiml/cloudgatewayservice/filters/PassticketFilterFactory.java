@@ -48,6 +48,11 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     }
 
     @Override
+    protected TicketResponse getResponseFor401() {
+        return new TicketResponse();
+    }
+
+    @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
         return webClient.post()
             .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
