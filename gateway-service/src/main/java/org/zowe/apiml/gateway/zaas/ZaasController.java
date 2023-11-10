@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.controllers;
+package org.zowe.apiml.gateway.zaas;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +18,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
+import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+
+import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 @RequiredArgsConstructor
 @RestController
@@ -36,19 +37,17 @@ import org.zowe.apiml.ticket.TicketResponse;
 @Slf4j
 public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
-    static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
 
-    private final PassTicketService passTicketService;
-    private final TokenCreationService tokenCreationService;
-    private final AuthenticationService authenticationService;
     private final MessageService messageService;
+    private final PassTicketService passTicketService;
+    private final ZosmfService zosmfService;
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     @ResponseBody
-    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_ATTR) AuthSource.Parsed authSource) {
+    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
 
-        if (StringUtils.isEmpty(authSource.getUserId())) {
+        if (StringUtils.isEmpty(authSourceParsed.getUserId())) {
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .build();
@@ -64,7 +63,7 @@ public class ZaasController {
 
         String ticket = null;
         try {
-            ticket = passTicketService.generate(authSource.getUserId(), applicationName);
+            ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
         } catch (IRRPassTicketGenerationException e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getErrorCode().getMessage()).mapToView();
@@ -74,42 +73,27 @@ public class ZaasController {
         }
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new TicketResponse(null, authSource.getUserId(), applicationName, ticket));
+            .body(new TicketResponse(null, authSourceParsed.getUserId(), applicationName, ticket));
     }
 
     @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Provides z/OSMF LTPA and JWT token for authenticated user.")
+    @Operation(summary = "Provides z/OSMF JWT or LTPA token for authenticated user.")
     @ResponseBody
-    public ResponseEntity<Object> getZosmfTokens(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource.Parsed authSource) {
-
-        if (StringUtils.isEmpty(authSource.getUserId())) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .build();
-        }
-
-        String token = null;
-        String cookieName = null;
+    public ResponseEntity<Object> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
+                                                @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
         try {
-            token = tokenCreationService.createJwtTokenWithoutCredentials(authSource.getUserId());
-            AuthSource.Origin origin = authenticationService.getTokenOrigin(token);
-            switch (origin) {
-                case ZOSMF:
-                    cookieName = ZosmfService.TokenType.JWT.getCookieName();
-                    break;
-                case ZOWE:
-                    token = authenticationService.getLtpaToken(token);
-                    cookieName = ZosmfService.TokenType.LTPA.getCookieName();
-                    break;
-            }
-        } catch (Exception e) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.security.token.authenticationFailed").mapToView();
+            ZosmfResponse zosmfResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
+
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(HttpStatus.OK)
+                .body(zosmfResponse);
+
+        } catch (Exception e) {
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived", e.getMessage()).mapToView();
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(messageView);
         }
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(new ZosmfResponse(cookieName, token));
     }
+
 }

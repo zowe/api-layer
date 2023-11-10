@@ -11,146 +11,142 @@
 package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
-import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
+import java.io.IOException;
 import java.net.URI;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.requests.Endpoints.ZAAS_ZOSMF_ENDPOINT;
 
-@Slf4j
-@GeneralAuthenticationTest
+@ZaasTest
 class ZosmfTokensTest implements TestWithStartedInstances {
 
-    private final static String COOKIE = "apimlAuthenticationToken";
-    private final URI zosmfTokens_URL = HttpRequestUtils.getUriFromGateway("/gateway/zaas/zosmf");
+    static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromGateway(ZAAS_ZOSMF_ENDPOINT);
 
-    @BeforeEach
-    void setUp() {
-        RestAssured.useRelaxedHTTPSValidation();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    private static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
+        return Stream.of(
+            Arguments.of(getClientCertificate()),
+            Arguments.of(getDummyClientCertificate())
+        );
     }
 
     @Nested
-    class WhenGeneratingZosmfTokens {
-        private String jwt;
+    class WhenGeneratingZosmfTokens_returnValidZosmfToken {
+
+        final static String COOKIE = "apimlAuthenticationToken";
+        private final static String LTPA_COOKIE = "LtpaToken2";
+        private final static String JWT_COOKIE = "jwtToken";
+
 
         @BeforeEach
-        void setUpToken() {
-            jwt = gatewayToken();
+        void setUpCertificate() {
+            RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         }
 
-        @Nested
-        class ReturnValidZosmfToken {
-            @BeforeEach
-            void setUpCertificate() {
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-            }
+        @Test
+        void givenValidZosmfToken() {
+            String zosmfToken = getZosmfJwtToken();
 
-            @Test
-            void givenValidTokenInCookieAndCertificate() {
-                ZosmfResponse zosmfResponse = given()
-                    .cookie(COOKIE, jwt)
+            //@formatter:off
+                given()
+                    .cookie(COOKIE, zosmfToken)
                 .when()
-                    .post(zosmfTokens_URL)
+                    .post(ZAAS_ZOSMF_URI)
                 .then()
                     .statusCode(is(SC_OK))
-                    .extract().body().as(ZosmfResponse.class);
+                    .body("cookieName", is(JWT_COOKIE))
+                    .body("token", is(zosmfToken));
+                //@formatter:on
+        }
 
-                assertNotNull(zosmfResponse.getCookieName());
-                assertNotNull(zosmfResponse.getToken());
-            }
+        @Test
+        void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+            String ltpaToken = getZosmfToken(LTPA_COOKIE);
+            String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
-            @Test
-            void givenValidTokenInHeaderAndCertificate() {
-                ZosmfResponse zosmfResponse = given()
-                    .header("Authorization", "Bearer " + jwt)
+            //@formatter:off
+                given()
+                    .header("Authorization", "Bearer " + zoweToken)
                 .when()
-                    .post(zosmfTokens_URL)
+                    .post(ZAAS_ZOSMF_URI)
                 .then()
                     .statusCode(is(SC_OK))
-                    .extract().body().as(ZosmfResponse.class);
-
-                assertNotNull(zosmfResponse.getCookieName());
-                assertNotNull(zosmfResponse.getToken());
-            }
+                    .body("cookieName", is(LTPA_COOKIE))
+                    .body("token", is(ltpaToken));
+                //@formatter:on
         }
 
-        @Nested
-        class ReturnUnauthorized {
-            @BeforeEach
-            void setUpCertificateAndToken() {
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-            }
+        @Test
+        void givenValidAccessToken() {
+            String serviceId = "gateway";
+            String pat = personalAccessToken(Collections.singleton(serviceId));
 
-            @Test
-            void givenNoToken() {
-                String expectedMessage = "Authentication is required for URL '" + zosmfTokens_URL.getPath() + "'";
-
+            //@formatter:off
                 given()
+                    .header("Authorization", "Bearer " + pat)
+                    .header("X-Service-Id", serviceId)
                 .when()
-                    .post(zosmfTokens_URL)
+                    .post(ZAAS_ZOSMF_URI)
                 .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG105E' }.messageContent", equalTo(expectedMessage));
-            }
-
-            @Test
-            void givenInvalidTokenInCookie() {
-                String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + zosmfTokens_URL.getPath() + "'";
-
-                given()
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(zosmfTokens_URL)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
-            }
-
-            @Test
-            void givenInvalidTokenInHeader() {
-                String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + zosmfTokens_URL.getPath() + "'";
-
-                given()
-                    .header("Authorization", "Bearer " + jwt)
-                .when()
-                    .post(zosmfTokens_URL)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
-            }
+                    .statusCode(is(SC_OK))
+                    .body("cookieName", is(JWT_COOKIE))
+                    .body("token", not(""));
+                //@formatter:on
         }
 
-        @Nested
-        class GivenNoCertificate {
-            @Test
-            void thenReturnUnauthorized() {
-                String expectedMessage = "Authentication is required for URL '" + zosmfTokens_URL.getPath() + "'";
-
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZosmfTokensTest#provideClientCertificates")
+        void givenX509Certificate(String certificate) {
+            //@formatter:off
                 given()
-                    .cookie(COOKIE, jwt)
+                    .header("Client-Cert", certificate)
                 .when()
-                    .post(zosmfTokens_URL)
+                    .post(ZAAS_ZOSMF_URI)
                 .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG105E' }.messageContent", equalTo(expectedMessage));
-            }
+                    .statusCode(is(SC_OK))
+                    .body("cookieName", is(JWT_COOKIE))
+                    .body("token", not(""));
+                //@formatter:on
+        }
+
+        @Test
+        void givenValidOAuthToken() {
+            String oAuthToken = validOktaAccessToken(true);
+
+            //@formatter:off
+                given()
+                    .cookie(COOKIE, oAuthToken)
+                .when()
+                    .log().all()
+                    .post(ZAAS_ZOSMF_URI)
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body("cookieName", is(JWT_COOKIE))
+                    .body("token", not(""));
+                //@formatter:on
         }
     }
+
+    // Negative tests are in ZaasNegativeTest since they are common for the whole service
 }
