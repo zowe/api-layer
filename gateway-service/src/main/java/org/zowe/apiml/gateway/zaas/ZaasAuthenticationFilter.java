@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.filters.pre;
+package org.zowe.apiml.gateway.zaas;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -25,31 +25,25 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+
 @RequiredArgsConstructor
-@Slf4j
-public class ExtractAuthSourceFilter extends OncePerRequestFilter {
-    public static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
-    public static final String AUTH_SOURCE_PARSED_ATTR = "zaas.auth.source.parsed";
+public class ZaasAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthSourceService authSourceService;
     private final AuthExceptionHandler authExceptionHandler;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
-            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            if (authSource.isPresent()) {
-                AuthSource.Parsed parsed = authSourceService.parse(authSource.get());
-                request.setAttribute(AUTH_SOURCE_ATTR, authSource.get());
-                request.setAttribute(AUTH_SOURCE_PARSED_ATTR, parsed);
-                filterChain.doFilter(request, response);
-            } else {
-                throw new InsufficientAuthenticationException("No authentication source found in the request.");
+            Optional<AuthSource> authSource = Optional.ofNullable((AuthSource) request.getAttribute(AUTH_SOURCE_ATTR));
+            if (!authSource.isPresent() || !authSourceService.isValid(authSource.get())) {
+                throw new InsufficientAuthenticationException("Authentication failed.");
             }
+            filterChain.doFilter(request, response);
+        } catch (RuntimeException e) {
+            authExceptionHandler.handleException(request, response, e);
         }
-        catch (RuntimeException ex) {
-            authExceptionHandler.handleException(request, response, ex);
-        }
-
     }
+
 }

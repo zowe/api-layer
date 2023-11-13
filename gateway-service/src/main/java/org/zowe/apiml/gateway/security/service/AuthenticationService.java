@@ -66,7 +66,7 @@ import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenTy
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class AuthenticationService {
 
-    private static final String LTPA_CLAIM_NAME = "ltpa";
+    public static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String AUTH_PROV_CLAIM = "auth.prov";
     private static final String SCOPES = "scopes";
@@ -130,9 +130,18 @@ public class AuthenticationService {
             .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
     }
 
+    @SuppressWarnings("java:S5659") // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
-        Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder().setSigningKey(jwtSecurityInitializer.getJwtSecret()).build().parse(jwt);
-        return parseQueryResponse(parsedJwt.getBody());
+        try {
+            Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder()
+                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
+                .build()
+                .parse(jwt);
+
+            return parseQueryResponse(parsedJwt.getBody());
+        } catch (RuntimeException exception) {
+            throw handleJwtParserException(exception);
+        }
     }
 
     /**

@@ -13,7 +13,13 @@ package org.zowe.apiml.security.common.error;
 import org.springframework.security.core.AuthenticationException;
 
 public class AuthenticationTokenException extends AuthenticationException {
+
     public AuthenticationTokenException(String msg) {
         super(msg);
     }
+
+    public AuthenticationTokenException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
 }

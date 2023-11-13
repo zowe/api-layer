@@ -338,3 +338,12 @@ messages:
         Enable debugging to see further details in stack trace.
       reason: "The z/OSMF connection is incorrectly configured."
       action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS. Configure sslDebug to see SSL debugging messages."
+
+    # ZAAS error messages (#600) TODO: Messaging requires clean up
+
+    - key: org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived
+      number: ZWEAZ600
+      type: WARNING
+      text: "z/OSMF is not available or z/OSMF response does not contain any token. Reason: %s"
+      reason: z/OSMF does not return JWT or LTPA tokens.
+      action: Make sure z/OSMF is available to API ML or review your z/OSMF configuration.
