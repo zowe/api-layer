@@ -205,7 +205,10 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @param data - data object set in the call of {@link AbstractAuthSchemeFactory#createGatewayFilter(AbstractConfig, Object)}
      * @return builder of the request
      */
-    @SuppressWarnings("squid:S1452")
+    @SuppressWarnings({
+        "squid:S1452",  // the internal API cannot define generic more specificly
+        "squid:S2092"   // the cookie is used just for internal purposes (off the browser)
+    })
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data);
 
     /**
@@ -216,8 +219,10 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @param response response body from the ZAAS containing new credentials or and empty object - see {@link AbstractAuthSchemeFactory#getResponseFor401()}
      * @return response of chain evaluation (`return chain.filter(exchange)`)
      */
+    @SuppressWarnings("squid:S2092")    // the cookie is used just for internal purposes (off the browser)
     protected abstract Mono<Void> processResponse(ServerWebExchange clientCallBuilder, GatewayFilterChain chain, R response);
 
+    @SuppressWarnings("squid:S1452")    // the internal API cannot define generic more specificly
     protected WebClient.RequestHeadersSpec<?> createRequest(AbstractConfig config, ServerHttpRequest.Builder clientRequestbuilder, ServiceInstance instance, D data) {
         WebClient.RequestHeadersSpec<?> zaasCallBuilder = createRequest(instance, data);
 

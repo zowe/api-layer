@@ -115,14 +115,12 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     private static Stream<Arguments> validToBeTransformed() {
         return Stream.of(
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
-                assertEquals(200, response.getStatusCode());
                 assertNotNull(response.jsonPath().getString("cookies.jwtToken"));
                 assertNull(response.jsonPath().getString("headers.authorization"));
                 //TODO: uncomment once http client handle client certs propertly
                 //assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             }),
             Arguments.of("passticket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
-                assertEquals(200, response.getStatusCode());
                 assertNotNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
                 //TODO: uncomment once http client handle client certs propertly
@@ -169,6 +167,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
                 .when()
                     .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
             assertions.accept(response);
+            assertEquals(200, response.getStatusCode());
         }
 
         @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
@@ -177,6 +176,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
             Response response = given().when()
                 .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
             assertions.accept(response);
+            assertEquals(200, response.getStatusCode());
         }
 
         @ParameterizedTest(name = "givenInvalidCredentials_thenNoCredentialsAreProvided {0} [{index}]")
@@ -186,6 +186,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
                 .when()
                     .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
             assertions.accept(response);
+            assertEquals(200, response.getStatusCode());
         }
 
     }
