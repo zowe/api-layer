@@ -43,7 +43,7 @@ export GATEWAY_CODE=GW
 export GATEWAY_LOADER_PATH=components/api-mediation/lib/api-layer-lite-lib-all.jar,/usr/include/java_classes/IRRRacf.jar
 export GATEWAY_PORT=$basePort
 #export JAR_FILE #MODDED
-export KEY_ALIAS=apiml
+export KEY_ALIAS=localhost
 export KEYSTORE_PASSWORD=password
 export KEYSTORE_TYPE=PKCS12
 export KEYSTORE=$dir/keystore/keystore.p12
