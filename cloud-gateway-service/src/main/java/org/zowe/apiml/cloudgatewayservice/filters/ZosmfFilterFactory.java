@@ -67,9 +67,9 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
         ServerHttpRequest request;
         if (response.getToken() != null) {
-            request = exchange.getRequest().mutate().headers(headers -> {
-                headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString());
-            }).build();
+            request = exchange.getRequest().mutate().headers(headers ->
+                headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString())
+            ).build();
         } else {
             request = updateHeadersForError(exchange, "Invalid or missing authentication.");
         }
