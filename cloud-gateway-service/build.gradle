@@ -96,8 +96,6 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.reactorTest
     testImplementation libs.mockito.inline
-    testImplementation libs.mockwebserver
-
 }
 
 bootJar {
