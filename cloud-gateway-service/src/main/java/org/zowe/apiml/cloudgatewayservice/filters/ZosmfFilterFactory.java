@@ -64,6 +64,7 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     }
 
     @Override
+    @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
         ServerHttpRequest request;
         if (response.getToken() != null) {

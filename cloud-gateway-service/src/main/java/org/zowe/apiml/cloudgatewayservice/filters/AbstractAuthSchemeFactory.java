@@ -222,7 +222,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     @SuppressWarnings("squid:S2092")    // the cookie is used just for internal purposes (off the browser)
     protected abstract Mono<Void> processResponse(ServerWebExchange clientCallBuilder, GatewayFilterChain chain, R response);
 
-    @SuppressWarnings("squid:S1452")    // the internal API cannot define generic more specificly
+    @SuppressWarnings("squid:S1452")    // the internal API cannot define generic more specifically
     protected WebClient.RequestHeadersSpec<?> createRequest(AbstractConfig config, ServerHttpRequest.Builder clientRequestbuilder, ServiceInstance instance, D data) {
         WebClient.RequestHeadersSpec<?> zaasCallBuilder = createRequest(instance, data);
 
