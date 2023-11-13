@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.*;
@@ -315,17 +314,6 @@ public class MockService implements AutoCloseable {
     public EurekaServiceInstance getEurekaServiceInstance() {
         InstanceInfo instanceInfo = getInstanceInfo();
         return instanceInfo == null ? null : new EurekaServiceInstance(instanceInfo);
-    }
-
-    /**
-     * Construct Application object using InstanceInfo from {@link MockService#getInstanceInfo()}
-     * @return Eureka Application object
-     */
-    public Application getApplication() {
-        InstanceInfo instanceInfo = getInstanceInfo();
-        Application application = new Application(instanceInfo.getId());
-        application.addInstance(instanceInfo);
-        return application;
     }
 
     public static class MockServiceBuilder {
