@@ -303,25 +303,6 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             .flatMap(List::stream);
     }
 
-    protected ServerHttpRequest setCookie(ServerWebExchange exchange, String cookieName, String value) {
-        return exchange.getRequest().mutate()
-            .headers(headers -> {
-                // read all other current cookies
-                List<HttpCookie> cookies = readCookies(headers)
-                    .filter(c -> !StringUtils.equals(c.getName(), cookieName))
-                    .collect(Collectors.toList());
-
-                // add the new cookie
-                cookies.add(new HttpCookie(cookieName, value));
-
-                // remove old cookie header in the request
-                headers.remove(HttpHeaders.COOKIE);
-
-                // set new cookie header in the request
-                cookies.stream().forEach(c -> headers.add(HttpHeaders.COOKIE, c.toString()));
-            }).build();
-    }
-
     @Data
     protected abstract static class AbstractConfig {
 

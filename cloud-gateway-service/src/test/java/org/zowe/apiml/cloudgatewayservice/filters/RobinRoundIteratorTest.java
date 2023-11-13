@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RobinRoundIteratorTest {
 
@@ -70,6 +70,19 @@ class RobinRoundIteratorTest {
             assertIterableEquals(Arrays.asList(3, 1, 2), fetch(rri.getIterator(Arrays.asList(1, 2, 3))));
             assertIterableEquals(Arrays.asList(4, 1, 2, 3), fetch(rri.getIterator(Arrays.asList(1, 2, 3, 4))));
             assertIterableEquals(Arrays.asList(2, 3, 1), fetch(rri.getIterator(Arrays.asList(1, 2, 3))));
+        }
+
+    }
+
+    @Nested
+    class EdgeCases {
+
+        @Test
+        void givenACollection_whenIterateOver_thenThrowAnException() {
+            RobinRoundIterator<Integer> rri = new RobinRoundIterator<>();
+            Iterator<Integer> i = rri.getIterator(Collections.emptyList());
+            assertFalse(i.hasNext());
+            assertThrows(NoSuchElementException.class, i::next);
         }
 
     }
