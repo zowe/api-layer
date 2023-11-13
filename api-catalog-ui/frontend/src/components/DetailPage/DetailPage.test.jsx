@@ -57,6 +57,7 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                selectedService={tile.services[0]}
                 services={tile.services}
                 currentTileId="apicatalog"
                 fetchTilesStart={fetchTilesStart}
@@ -79,6 +80,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 services={tile.services}
+                selectedService={tile.services[0]}
                 currentTileId="apicatalog"
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
@@ -97,6 +99,7 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                selectedService={tile.services[0]}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStart={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
@@ -114,6 +117,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 services={tile.services}
+                selectedService={tile.services[0]}
                 currentTileId="apicatalog"
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
@@ -131,6 +135,7 @@ describe('>>> Detailed Page component tests', () => {
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
+                selectedService={tile.services[0]}
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
@@ -142,12 +147,13 @@ describe('>>> Detailed Page component tests', () => {
         expect(spinner.props().isLoading).toEqual(true);
     });
 
-    it('should display tile title', () => {
+    it('should display service title', () => {
         const isLoading = false;
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
                 services={tile.services}
+                selectedService={tile.services[0]}
                 currentTileId="apicatalog"
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
@@ -158,16 +164,17 @@ describe('>>> Detailed Page component tests', () => {
             />
         );
         const title = wrapper.find('#title');
-        expect(title.props().children).toEqual(tile.title);
+        expect(title.props().children).toEqual(tile.services[0].title);
     });
 
-    it('should display tile description', () => {
+    it('should display service description', () => {
         const isLoading = false;
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
                 services={tile.services}
                 currentTileId="apicatalog"
+                selectedService={tile.services[0]}
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
@@ -177,7 +184,7 @@ describe('>>> Detailed Page component tests', () => {
             />
         );
         const title = wrapper.find('#description');
-        expect(title.props().children).toEqual(tile.description);
+        expect(title.props().children).toEqual(tile.services[0].description);
     });
 
     it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
@@ -191,6 +198,7 @@ describe('>>> Detailed Page component tests', () => {
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
+                selectedService={tile.services[0]}
                 fetchTilesStop={fetchTilesStop}
                 history={history}
                 fetchTilesError={fetchTilesError}
@@ -211,6 +219,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
+                selectedService={tile.services[0]}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
                 history={history}
@@ -233,6 +242,7 @@ describe('>>> Detailed Page component tests', () => {
             <DetailPage
                 tiles={[tile]}
                 clearService={clearService}
+                selectedService={tile.services[0]}
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
@@ -260,6 +270,7 @@ describe('>>> Detailed Page component tests', () => {
                 tiles={[tile]}
                 services={tile.services[0]}
                 currentTileId="apicatalog"
+                selectedService={tile.services[0]}
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
                 fetchTilesStop={jest.fn()}
@@ -283,6 +294,7 @@ describe('>>> Detailed Page component tests', () => {
                 tiles={[tile]}
                 services={[tile]}
                 currentTileId="apicatalog"
+                selectedService={tile.services[0]}
                 handleLinkClick={mockHandleLinkClick}
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
@@ -323,6 +335,7 @@ describe('>>> Detailed Page component tests', () => {
                 tiles={[tile]}
                 services={[tile]}
                 currentTileId={null}
+                selectedService={tile.services[0]}
                 handleLinkClick={mockHandleLinkClick}
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
@@ -357,6 +370,7 @@ describe('>>> Detailed Page component tests', () => {
                 tiles={[tile]}
                 services={tile.services}
                 currentTileId="apicatalog"
+                selectedService={tile.services[0]}
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
                 fetchTilesStop={jest.fn()}
