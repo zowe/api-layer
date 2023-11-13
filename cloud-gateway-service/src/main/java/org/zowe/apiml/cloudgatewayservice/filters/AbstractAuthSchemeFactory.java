@@ -38,10 +38,89 @@ import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
-public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGatewayFilterFactory<T> {
+/**
+ * This class is responsible for the shared part about decoration of user request with authentication scheme. The
+ * service defines its own authentication scheme, and it could evaluate a request mutation. The aim is to have as
+ * small implementation as possible. Therefore, the implemntation itself should construct the request to ZAAS with
+ * a minimal requirements and process the result. The rest (common values for ZAAS, retrying, HA evaluation and
+ * sanitation of user request should be done by this class).
+ *
+ * To prepare a new implementation of authentication scheme decoration is required to implement those methods:
+ * - {@link AbstractAuthSchemeFactory#getResponseClass()} - define class of the response body (see T)
+ * - {@link AbstractAuthSchemeFactory#getResponseFor401()} - construct empty response body for 401 response
+ * - {@link AbstractAuthSchemeFactory#createRequest(AbstractConfig, ServerHttpRequest.Builder, ServiceInstance, Object)}
+ *   - create the base part of request to the ZAAS. It requires only related request properties to the releated scheme
+ * - {@link AbstractAuthSchemeFactory#processResponse(ServerWebExchange, GatewayFilterChain, Object)}
+ *   - it is responsible for reading the response from the ZAAS and modifying the clients request to provide new credentials
+ *
+ * Example:
+ *  class MyScheme extends AbstractAuthSchemeFactory<MyScheme.Config, MyResponse, MyData> {
+ *
+ *     @Override
+ *     public GatewayFilter apply(Config config) {
+ *         try {
+ *             return createGatewayFilter(config, <construct common data or null>);
+ *         } catch (Exception e) {
+ *             return ((exchange, chain) -> {
+ *                 ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
+ *                 return chain.filter(exchange.mutate().request(request).build());
+ *             });
+ *         }
+ *     }
+ *
+ *     @Override
+ *     protected Class<MyResponse> getResponseClass() {
+ *         return MyResponse.class;
+ *     }
+ *
+ *     @Override
+ *     protected MyResponse getResponseFor401() {
+ *         return new MyResponse();
+ *     }
+ *
+ *     @Override
+ *     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
+ *         String url = String.format("%s://%s:%d/%s/zaas/myScheme", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+ *         return webClient.post()
+ *             .uri(url);
+ *     }
+ *
+ *     @Override
+ *     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, MyResponse response) {
+ *         ServerHttpRequest request;
+ *         if (response.getToken() != null) {
+ *             request = exchange.getRequest().mutate().headers(headers ->
+ *                 headers.add("mySchemeHeader", response.getToken())
+ *             ).build();
+ *         } else {
+ *             request = updateHeadersForError(exchange, "Invalid or missing authentication.");
+ *         }
+ *
+ *         exchange = exchange.mutate().request(request).build();
+ *         return chain.filter(exchange);
+ *     }
+ *
+ *     @EqualsAndHashCode(callSuper = true)
+ *     public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
+ *
+ *     }
+ *
+ *  }
+ *
+ *  @Data
+ *  class MyResponse {
+ *
+ *      private String token;
+ *
+ *  }
+ *
+ * @param <T> Class of config class. It should extend {@link AbstractAuthSchemeFactory.AbstractConfig}
+ * @param <R> Class of expended response from the ZAAS
+ * @param <D> Type of data object that could be constructed before any request, and it is request for creating a request
+ */
+public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFactory.AbstractConfig, R, D> extends AbstractGatewayFilterFactory<T> {
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
-
 
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
         StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
@@ -76,7 +155,14 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         this.messageService = messageService;
     }
 
+    /**
+     * @return class of response body from ZAAS
+     */
     protected abstract Class<R> getResponseClass();
+
+    /**
+     * @return empty object that is returned in the case of 401 response from ZAAS
+     */
     protected abstract R getResponseFor401();
 
     private Mono<List<ServiceInstance>> getZaasInstances() {
@@ -110,8 +196,26 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
         return requestWithHa(i, requestCreator).flatMap(responseProcessor);
     }
 
+    /**
+     * This method should construct basic request to the ZAAS (related to the authentication scheme). It should define
+     * URL, body and specific headers / cookies (if they are needed). The rest of values are set by
+     * {@link AbstractAuthSchemeFactory}
+     *
+     * @param instance - instance of the ZAAS instance that will be invoked
+     * @param data - data object set in the call of {@link AbstractAuthSchemeFactory#createGatewayFilter(AbstractConfig, Object)}
+     * @return builder of the request
+     */
     @SuppressWarnings("squid:S1452")
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data);
+
+    /**
+     * The method responsible for reading a response from a ZAAS component and decorating of user request (ie. set
+     * credentials as header, etc.)
+     * @param clientCallBuilder builder of customer request (to set new credentials)
+     * @param chain chain of filter to be evaluated. Method should return `return chain.filter(exchange)`
+     * @param response response body from the ZAAS containing new credentials or and empty object - see {@link AbstractAuthSchemeFactory#getResponseFor401()}
+     * @return response of chain evaluation (`return chain.filter(exchange)`)
+     */
     protected abstract Mono<Void> processResponse(ServerWebExchange clientCallBuilder, GatewayFilterChain chain, R response);
 
     protected WebClient.RequestHeadersSpec<?> createRequest(AbstractConfig config, ServerHttpRequest.Builder clientRequestbuilder, ServiceInstance instance, D data) {
@@ -216,6 +320,7 @@ public abstract class AbstractAuthSchemeFactory<T, R, D> extends AbstractGateway
     @Data
     protected abstract static class AbstractConfig {
 
+        // service ID of the target service
         private String serviceId;
 
     }
