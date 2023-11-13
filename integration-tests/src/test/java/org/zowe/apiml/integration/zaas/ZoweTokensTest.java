@@ -34,13 +34,10 @@ import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
-class ZosmfTokensTest implements TestWithStartedInstances {
-
+class ZoweTokensTest implements TestWithStartedInstances {
 
     @Nested
     class WhenGeneratingZosmfTokens_returnValidZosmfToken {
-
-        private static final String JWT_COOKIE = "jwtToken";
 
         @BeforeEach
         void setUpCertificate() {
@@ -55,10 +52,10 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             given()
                 .cookie(COOKIE, zosmfToken)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOWE_URI)
             .then()
                 .statusCode(is(SC_OK))
-                .body("cookieName", is(JWT_COOKIE))
+                .body("cookieName", is(COOKIE))
                 .body("token", is(zosmfToken));
             //@formatter:on
         }
@@ -69,15 +66,15 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off
-            given()
-                .header("Authorization", "Bearer " + zoweToken)
-            .when()
-                .post(ZAAS_ZOSMF_URI)
-            .then()
-                .statusCode(is(SC_OK))
-                .body("cookieName", is(LTPA_COOKIE))
-                .body("token", is(ltpaToken));
-            //@formatter:on
+                given()
+                    .header("Authorization", "Bearer " + zoweToken)
+                .when()
+                    .post(ZAAS_ZOWE_URI)
+                .then()
+                    .statusCode(is(SC_OK))
+                    .body("cookieName", is(COOKIE))
+                    .body("token", is(zoweToken));
+                //@formatter:on
         }
 
         @Test
@@ -90,10 +87,10 @@ class ZosmfTokensTest implements TestWithStartedInstances {
                 .header("Authorization", "Bearer " + pat)
                 .header("X-Service-Id", serviceId)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOWE_URI)
             .then()
                 .statusCode(is(SC_OK))
-                .body("cookieName", is(JWT_COOKIE))
+                .body("cookieName", is(COOKIE))
                 .body("token", not(""));
             //@formatter:on
         }
@@ -105,10 +102,10 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             given()
                 .header("Client-Cert", certificate)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOWE_URI)
             .then()
                 .statusCode(is(SC_OK))
-                .body("cookieName", is(JWT_COOKIE))
+                .body("cookieName", is(COOKIE))
                 .body("token", not(""));
             //@formatter:on
         }
@@ -121,10 +118,10 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             given()
                 .cookie(COOKIE, oAuthToken)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOWE_URI)
             .then()
                 .statusCode(is(SC_OK))
-                .body("cookieName", is(JWT_COOKIE))
+                .body("cookieName", is(COOKIE))
                 .body("token", not(""));
             //@formatter:on
         }
