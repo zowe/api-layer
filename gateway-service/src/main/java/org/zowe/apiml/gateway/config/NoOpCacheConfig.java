@@ -14,9 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.cache.CompositeKeyGenerator;
+import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.util.CacheUtils;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +41,16 @@ public class NoOpCacheConfig {
     @Bean
     public CacheManager cacheManager() {
         return new NoOpCacheManager();
+    }
+
+    @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR)
+    public KeyGenerator getCompositeKeyGenerator() {
+        return new CompositeKeyGenerator();
+    }
+
+    @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR_WITHOUT_LAST)
+    public KeyGenerator getCompositeKeyGeneratorWithoutLast() {
+        return new CompositeKeyGeneratorWithoutLast();
     }
 
     @Bean
