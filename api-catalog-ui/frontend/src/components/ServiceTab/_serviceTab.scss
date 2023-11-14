@@ -85,15 +85,19 @@ body #version-div {
     padding: 8px 12px;
 }
 .BlogsContainer {
-    width: 177.667px;
+    width: 200px;
     height: 174px;
     display: inline-table;
 }
 .blogs-image {
-    width: 177.667px;
+    width: 200px;
     height: 174px;
 }
 .PostContainer {
     display: inline-table;
     margin-right: 25px;
+}
+.use-cases-links {
+    color: var( --link20 );
+    margin-left: 10px;
 }

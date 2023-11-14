@@ -2,6 +2,7 @@
     "products": [
         {
             "name": "gateway",
+            "documentation": "url",
             "videos": [
                 "url1",
                 "url2"
@@ -13,18 +14,39 @@
         },
         {
             "name": "apicatalog",
+            "documentation": {
+                "url": "https://docs.zowe.org/stable/user-guide/api-mediation/using-api-mediation-layer",
+                "label": "API Catalog (Zowe Docs)"
+            },
             "videos": [
+                "https://www.youtube.com/embed/cH9SpWknHsY?si=CXkFtGhrRdjNgr_h",
+                "https://www.youtube.com/embed/gje-S18-wbY?si=_d2R8-G689hoiP6f",
                 "https://www.youtube.com/embed/cH9SpWknHsY?si=CXkFtGhrRdjNgr_h",
                 "hxsad252b1"
             ],
             "useCases": [
-                "Some use case. This is just a placeholder for now.",
+                {
+                    "url": "https://medium.com/zowe/introducing-try-it-out-functionality-in-the-zowe-api-mediation-layer-930aa9e947bd",
+                    "label": "Introducing “Try it out” functionality in the Zowe API Mediation Layer"
+                },
+                {
+                    "url": "https://medium.com/zowe/the-yaml-onboarding-wizard-an-easy-way-to-onboard-your-rest-api-service-to-the-zowe-api-mediation-66ba22c9617a",
+                    "label": "The YAML Onboarding Wizard: an easy way to onboard your REST API service to the Zowe API Mediation Layer"
+                },
                 "Some more case. This is just a placeholder for now."
             ],
             "tutorials": [
                 {
-                    "user":  "davidmcnierney",
-                    "url": "https://medium.com/zowe/code4z-zowe-championing-the-vs-code-opportunity-95e888d5a901"
+                    "user":  "andrea.tabone",
+                    "url": "https://medium.com/zowe/introducing-try-it-out-functionality-in-the-zowe-api-mediation-layer-930aa9e947bd"
+                },
+                {
+                    "user":  "andrea.tabone",
+                    "url": "https://medium.com/zowe/the-yaml-onboarding-wizard-an-easy-way-to-onboard-your-rest-api-service-to-the-zowe-api-mediation-66ba22c9617a"
+                },
+                {
+                    "user":  "janda.david",
+                    "url": "https://medium.com/zowe/exposing-partial-api-documentation-in-the-zowe-api-catalog-e3aa2ef30616"
                 }
             ]
         }

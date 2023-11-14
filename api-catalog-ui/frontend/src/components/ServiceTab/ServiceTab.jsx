@@ -162,6 +162,7 @@ export default class ServiceTab extends Component {
             useCasesCounter,
             tutorialsCounter,
             videosCounter,
+            documentation,
         } = this.props;
         const { displayVideosCount, displayBlogsCount } = this.state;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
@@ -332,13 +333,28 @@ export default class ServiceTab extends Component {
                                 </Typography>
                                 <br />
                                 {useCases &&
-                                    useCases.map((useCase, index) => (
-                                        <Typography style={{ marginBottom: '10px' }}>
-                                            {index + 1}. {useCase}
-                                        </Typography>
-                                    ))}
+                                    useCases.map(
+                                        (useCase, index) =>
+                                            useCase?.url &&
+                                            useCase?.label && (
+                                                <Typography style={{ marginBottom: '10px' }}>
+                                                    {index + 1}.
+                                                    <Link className="use-cases-links" href={useCase.url}>
+                                                        {useCase.label}
+                                                    </Link>
+                                                </Typography>
+                                            )
+                                    )}
                                 <br />
-                                <Typography>To see {selectedService.title} services, see the</Typography>
+                                {documentation?.label && documentation?.url && (
+                                    <Typography>
+                                        To see {selectedService.title} services, see the
+                                        <Link className="use-cases-links" href={documentation.url}>
+                                            {documentation.label}
+                                        </Link>
+                                        .
+                                    </Typography>
+                                )}
                                 <br />
                                 <Typography
                                     className="footer-labels"

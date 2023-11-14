@@ -50,6 +50,7 @@ export default function countAdditionalContents(service) {
     let useCasesCounter = 0;
     let tutorialsCounter = 0;
     let videosCounter = 0;
+    let documentation;
     let hasSwagger = false;
     if (contents?.products?.length > 0 && service?.serviceId) {
         const correctProduct = contents.products.find((product) => service.serviceId === product.name);
@@ -75,11 +76,14 @@ export default function countAdditionalContents(service) {
             });
             videos = correctProduct.videos;
         }
+        if (correctProduct?.documentation) {
+            documentation = correctProduct.documentation;
+        }
     }
     if (service?.apis) {
         hasSwagger = checkForSwagger(service);
     }
-    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger, useCases, tutorials, videos };
+    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger, useCases, tutorials, videos, documentation };
 }
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
