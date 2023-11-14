@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class ApplicationRegistry {
 
-    private Map<String, MockService> instanceIdToService = new HashMap<>();
+    private final Map<String, MockService> instanceIdToService = Collections.synchronizedMap(new HashMap<>());
 
     public boolean remove(MockService mockService) {
         boolean removed = false;
@@ -35,7 +35,7 @@ public class ApplicationRegistry {
             if (entry.getValue() == mockService) {
                 i.remove();
                 removed = true;
-            };
+            }
         }
         return removed;
     }

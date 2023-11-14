@@ -30,6 +30,8 @@ import java.net.HttpCookie;
 @Service
 public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFactory.Config, ZosmfResponse, Object> {
 
+    private static final String ZOSMF_URL = "%s://%s:%d/%s/zaas/zosmf";
+
     public ZosmfFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class, webClient, instanceInfoService, messageService);
     }
@@ -58,7 +60,7 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
 
     @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
-        String zosmfTokensUrl = String.format("%s://%s:%d/%s/zaas/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        String zosmfTokensUrl = String.format(ZOSMF_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
         return webClient.post()
             .uri(zosmfTokensUrl);
     }
