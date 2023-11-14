@@ -21,7 +21,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.MockService;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+import org.zowe.apiml.zaas.ZaasResponse;
 
 import java.io.IOException;
 import java.net.HttpCookie;
@@ -38,7 +38,7 @@ public class ZosmfSchemeTest {
 
     private static final String COOKIE_NAME = "zosmf_cookie";
     private static final String JWT = "jwt";
-    private static final ZosmfResponse OK_RESPONSE = new ZosmfResponse(COOKIE_NAME, JWT);
+    private static final ZaasResponse OK_RESPONSE = new ZaasResponse(COOKIE_NAME, JWT);
 
     private String getCookie(HttpExchange httpExchange, String cookieName) {
         List<HttpCookie> cookies = Optional.ofNullable(httpExchange.getRequestHeaders().get("Cookie"))
@@ -76,7 +76,7 @@ public class ZosmfSchemeTest {
                 .and().build();
             zaasZombie = mockService("gateway").scope(MockService.Scope.CLASS)
                 .addEndpoint("/gateway/zaas/zosmf")
-                    .bodyJson(new ZosmfResponse())
+                    .bodyJson(new ZaasResponse())
                 .and().build();
             zaasOk = mockService("gateway").scope(MockService.Scope.CLASS)
                 .addEndpoint("/gateway/zaas/zosmf")
@@ -213,7 +213,7 @@ public class ZosmfSchemeTest {
             zaas = mockService("gateway").scope(MockService.Scope.CLASS)
                 .addEndpoint("/gateway/zaas/zosmf")
                     .responseCode(200)
-                    .bodyJson(new ZosmfResponse())
+                    .bodyJson(new ZaasResponse())
                 .and().start();
 
 
