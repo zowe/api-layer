@@ -15,7 +15,6 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.Applications;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -23,18 +22,18 @@ import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.MetadataBuilder;
-import org.zowe.apiml.cloudgatewayservice.acceptance.common.Service;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
+import reactor.core.publisher.Flux;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,15 +49,36 @@ import static org.mockito.Mockito.*;
 @TestConfiguration
 @RequiredArgsConstructor
 public class DiscoveryClientTestConfig {
-    private final ApplicationContext context;
 
-    protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
-    protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
+    private final ApplicationContext context;
 
     @Bean
     public ApplicationRegistry registry() {
-        ApplicationRegistry applicationRegistry = new ApplicationRegistry();
-        return applicationRegistry;
+        return new ApplicationRegistry();
+    }
+
+    @Bean
+    public ReactiveDiscoveryClient mockServicesReactiveDiscoveryClient(ApplicationRegistry applicationRegistry) {
+        return new ReactiveDiscoveryClient() {
+
+            @Override
+            public String description() {
+                return "mocked services";
+            }
+
+            @Override
+            public Flux<ServiceInstance> getInstances(String serviceId) {
+                return Flux.just(applicationRegistry.getServiceInstance(serviceId).toArray(new ServiceInstance[0]));
+            }
+
+            @Override
+            public Flux<String> getServices() {
+                return Flux.just(applicationRegistry.getInstances().stream()
+                    .map(a -> a.getId())
+                    .distinct()
+                    .toArray(String[]::new));
+            }
+        };
     }
 
     @Bean(destroyMethod = "shutdown", name = "test")
@@ -68,8 +88,7 @@ public class DiscoveryClientTestConfig {
                                                  EurekaClientConfig config,
                                                  EurekaInstanceConfig instance,
                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                 ApplicationRegistry applicationRegistry,
-                                                 @Value("${currentApplication:}") String currentApplication
+                                                 ApplicationRegistry applicationRegistry
     ) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -79,7 +98,7 @@ public class DiscoveryClientTestConfig {
         }
 
         AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(eurekaJerseyClient(applicationRegistry, currentApplication));
+        args.setEurekaJerseyClient(eurekaJerseyClient());
 
 
         final ApimlDiscoveryClientStub discoveryClient = new ApimlDiscoveryClientStub(appManager, config, args, this.context, applicationRegistry);
@@ -90,7 +109,7 @@ public class DiscoveryClientTestConfig {
         return discoveryClient;
     }
 
-    private EurekaJerseyClient eurekaJerseyClient(ApplicationRegistry registry, String currentApplication) {
+    private EurekaJerseyClient eurekaJerseyClient() {
         EurekaJerseyClient jerseyClient = mock(EurekaJerseyClient.class);
         ApacheHttpClient4 httpClient4 = mock(ApacheHttpClient4.class);
         when(jerseyClient.getClient()).thenReturn(httpClient4);
@@ -104,12 +123,6 @@ public class DiscoveryClientTestConfig {
         when(builder.get(ClientResponse.class)).thenReturn(response);
         when(response.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
         when(response.hasEntity()).thenReturn(true);
-
-        registry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
-        registry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance(), false);
-        registry.setCurrentApplication(currentApplication);
-        when(response.getEntity(Applications.class)).thenReturn(registry.getApplications());
-
         return jerseyClient;
     }
 

@@ -17,31 +17,29 @@ import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-class X509Test {
+class ZosmfTest {
 
     @Test
-    void givenX509_whenGetAuthenticationScheme_thenReturnProperType() {
-        assertEquals(AuthenticationScheme.X509, new X509().getAuthenticationScheme());
+    void givenZosmfInstance_whenGetAuthenticationScheme_thenReturnProperType() {
+        assertEquals(AuthenticationScheme.ZOSMF, new Zosmf().getAuthenticationScheme());
     }
 
     @Test
-    void givenX509_whenApply_thenFulfillFilterFactorArgs() {
+    void givenRouteDefinition_whenApply_thenFulfillFilterFactorArgs() {
         RouteDefinition routeDefinition = new RouteDefinition();
         Authentication authentication = new Authentication();
-        authentication.setHeaders("header1,header2");
+        authentication.setApplid("applid");
         ServiceInstance serviceInstance = mock(ServiceInstance.class);
         doReturn("service").when(serviceInstance).getServiceId();
 
-        new X509().apply(serviceInstance, routeDefinition, authentication);
+        new Zosmf().apply(serviceInstance, routeDefinition, authentication);
 
         assertEquals(1, routeDefinition.getFilters().size());
         FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
-        assertEquals("header1,header2", filterDefinition.getArgs().get("headers"));
-        assertEquals("X509FilterFactory", filterDefinition.getName());
+        assertEquals("ZosmfFilterFactory", filterDefinition.getName());
     }
-
 }
