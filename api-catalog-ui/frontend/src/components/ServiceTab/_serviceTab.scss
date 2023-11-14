@@ -73,3 +73,27 @@ body #version-div {
     font-size: var( --fontMedium );
     color: var( --criticalShade10 );
 }
+#more-videos-button {
+    margin-top: 13px;
+    padding: 0;
+}
+#more-tutorials-button {
+    width: fit-content;
+    border-radius: 3px;
+    border: 1px solid var(--tertiary, #0056B3);
+    margin-top: 13px;
+    padding: 8px 12px;
+}
+.BlogsContainer {
+    width: 177.667px;
+    height: 174px;
+    display: inline-table;
+}
+.blogs-image {
+    width: 177.667px;
+    height: 174px;
+}
+.PostContainer {
+    display: inline-table;
+    margin-right: 25px;
+}

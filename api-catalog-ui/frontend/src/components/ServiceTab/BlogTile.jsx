@@ -7,8 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+import './_serviceTab.scss';
+import { Typography } from '@material-ui/core';
+
 function BlogTile(props) {
-    const { title, link, thumbnail, content, pubDate } = props.blogData;
+    const { title, link, thumbnail, description, pubDate, author } = props.blogData;
     function cleanTitle(checkTitle) {
         return checkTitle.replace('amp;', '');
     }
@@ -34,16 +38,13 @@ function BlogTile(props) {
     function blogPost() {
         return (
             <a target="_blank" rel="noopener noreferrer" href={`${link}`}>
-                <div className="ImageContainer">
-                    <img src={`${thumbnail}`} className="Image" alt={truncateText(cleanTitle(title), 0, 60)} />
-                </div>
-                <div className="TDContainer">
-                    <h3>{truncateText(cleanTitle(title), 0, 60)}</h3>
-                    <br />
-                    <p>{`${truncateText(toText(content), 48, 300)}...`}</p>
-                    <br />
-                    <h4>{convertDate(pubDate)}</h4>
-                </div>
+                <img src={`${thumbnail}`} className="blogs-image" alt={truncateText(cleanTitle(title), 0, 60)} />
+                <h3>{truncateText(cleanTitle(title), 0, 60)}</h3>
+                <br />
+                <Typography>{`${truncateText(toText(description), 0, 300)}...`}</Typography>
+                <br />
+                <h4>{author}</h4>
+                <h4>{convertDate(pubDate)}</h4>
             </a>
         );
     }

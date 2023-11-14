@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select, Button, IconButton } from '@material-ui/core';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
@@ -23,6 +23,8 @@ export default class ServiceTab extends Component {
             selectedVersion: null,
             previousVersion: null,
             isDialogOpen: false,
+            displayVideosCount: 2,
+            displayBlogsCount: 2,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
     }
@@ -139,6 +141,14 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
+    showMoreVideos = () => {
+        this.setState((prevState) => ({ displayVideosCount: prevState.displayVideosCount + 2 }));
+    };
+
+    showMoreBlogs = () => {
+        this.setState((prevState) => ({ displayBlogsCount: prevState.displayBlogsCount + 2 }));
+    };
+
     render() {
         const {
             match: {
@@ -153,6 +163,7 @@ export default class ServiceTab extends Component {
             tutorialsCounter,
             videosCounter,
         } = this.props;
+        const { displayVideosCount, displayBlogsCount } = this.state;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -329,10 +340,27 @@ export default class ServiceTab extends Component {
                                 >
                                     Tutorials ({tutorialsCounter} articles)
                                 </Typography>
-                                {tutorials &&
-                                    tutorials.map((tutorial) => (
-                                        <BlogContainer mediumUser={tutorial.user} mediumBlogUrl={tutorial.url} />
-                                    ))}
+                                <br />
+                                <div id="blogs-container">
+                                    {tutorials &&
+                                        tutorials
+                                            .slice(0, displayBlogsCount)
+                                            .map((tutorial) => (
+                                                <BlogContainer
+                                                    mediumUser={tutorial.user}
+                                                    mediumBlogUrl={tutorial.url}
+                                                />
+                                            ))}
+                                </div>
+                                {displayBlogsCount < tutorials.length && (
+                                    <IconButton
+                                        id="more-tutorials-button"
+                                        className="button-link"
+                                        onClick={this.showMoreBlogs}
+                                    >
+                                        Show all ({tutorialsCounter} articles)
+                                    </IconButton>
+                                )}
                                 <br />
                                 <br />
                                 <Typography
@@ -344,7 +372,22 @@ export default class ServiceTab extends Component {
                                     Videos ({videosCounter})
                                 </Typography>
                                 <br />
-                                {videos && videos.map((url) => <VideoWrapper url={url} />)}
+                                {videos && (
+                                    <div>
+                                        {videos.slice(0, displayVideosCount).map((url) => (
+                                            <VideoWrapper url={url} />
+                                        ))}{' '}
+                                        {displayVideosCount < videos.length && (
+                                            <IconButton
+                                                id="more-videos-button"
+                                                className="button-link"
+                                                onClick={this.showMoreVideos}
+                                            >
+                                                Show More
+                                            </IconButton>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

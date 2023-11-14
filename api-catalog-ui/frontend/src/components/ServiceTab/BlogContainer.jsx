@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
+import './_serviceTab.scss';
 
 function BlogContainer({ mediumUser, mediumBlogUrl }) {
     // const rss2json =

@@ -166,17 +166,17 @@ export default class DetailPage extends Component {
                             )}
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
-                                    {selectedService && (
+                                    {tiles !== undefined && tiles.length === 1 && (
                                         <h2 id="title" className="text-block-11 title1">
-                                            {selectedService.title}
+                                            {tiles[0].title}
                                         </h2>
                                     )}
                                 </div>
                                 {!apiPortalEnabled && (
                                     <div className="paragraph-description-container">
-                                        {selectedService && (
+                                        {tiles !== undefined && tiles.length > 0 && (
                                             <p id="description" className="text-block-12">
-                                                {selectedService.description}
+                                                {tiles[0].description}
                                             </p>
                                         )}
                                     </div>
