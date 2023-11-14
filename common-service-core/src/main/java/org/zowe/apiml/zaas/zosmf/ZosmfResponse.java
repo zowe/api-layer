@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ZosmfResponse {
 
-    String cookieName;
-    String token;
-
+    private String cookieName;
+    private String token;
 }

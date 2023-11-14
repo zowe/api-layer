@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -29,6 +30,6 @@ public interface SchemeHandler {
      * @param routeDefinition rule to be updated
      * @param auth definition of authentication scheme from the service instance
      */
-    void apply(RouteDefinition routeDefinition, Authentication auth);
+    void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth);
 
 }

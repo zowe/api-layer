@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
@@ -17,25 +18,20 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Component
-public class X509 implements SchemeHandler {
+public class Zosmf implements SchemeHandler {
 
     @Override
     public AuthenticationScheme getAuthenticationScheme() {
-        return AuthenticationScheme.X509;
+        return AuthenticationScheme.ZOSMF;
     }
 
     @Override
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
-        FilterDefinition x509filter = new FilterDefinition();
-        x509filter.setName("X509FilterFactory");
-        Map<String,String> m = new HashMap<>();
-        m.put("headers", auth.getHeaders());
-        x509filter.setArgs(m);
-        routeDefinition.getFilters().add(x509filter);
+        FilterDefinition filerDef = new FilterDefinition();
+        filerDef.setName("ZosmfFilterFactory");
+        filerDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+        routeDefinition.getFilters().add(filerDef);
     }
 
 }
