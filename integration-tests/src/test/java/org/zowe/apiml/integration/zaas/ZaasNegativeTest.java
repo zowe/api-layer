@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
@@ -81,7 +80,7 @@ public class ZaasNegativeTest {
             when()
                 .post(uri)
             .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                .statusCode(SC_UNAUTHORIZED);
             //@formatter:on
         }
 
@@ -94,7 +93,7 @@ public class ZaasNegativeTest {
             .when()
                 .post(uri)
             .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                .statusCode(SC_UNAUTHORIZED);
             //@formatter:on
         }
 
@@ -117,7 +116,7 @@ public class ZaasNegativeTest {
             .when()
                 .post(uri)
             .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                .statusCode(SC_UNAUTHORIZED);
             //@formatter:on
         }
 

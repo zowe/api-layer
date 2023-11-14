@@ -57,7 +57,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOSMF_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
                 .body("token", is(zosmfToken));
             //@formatter:on
@@ -74,7 +74,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOSMF_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(LTPA_COOKIE))
                 .body("token", is(ltpaToken));
             //@formatter:on
@@ -92,7 +92,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOSMF_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
                 .body("token", not(""));
             //@formatter:on
@@ -107,7 +107,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOSMF_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
                 .body("token", not(""));
             //@formatter:on
@@ -123,7 +123,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOSMF_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
                 .body("token", not(""));
             //@formatter:on

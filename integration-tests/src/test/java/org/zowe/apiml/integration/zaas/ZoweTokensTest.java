@@ -54,7 +54,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOWE_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
                 .body("token", is(zosmfToken));
             //@formatter:on
@@ -71,7 +71,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
                 .when()
                     .post(ZAAS_ZOWE_URI)
                 .then()
-                    .statusCode(is(SC_OK))
+                    .statusCode(SC_OK)
                     .body("cookieName", is(COOKIE))
                     .body("token", is(zoweToken));
                 //@formatter:on
@@ -89,7 +89,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOWE_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
                 .body("token", not(""));
             //@formatter:on
@@ -104,7 +104,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOWE_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
                 .body("token", not(""));
             //@formatter:on
@@ -120,7 +120,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_ZOWE_URI)
             .then()
-                .statusCode(is(SC_OK))
+                .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
                 .body("token", not(""));
             //@formatter:on
