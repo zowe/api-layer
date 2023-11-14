@@ -32,6 +32,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.zaas.ZaasResponse;
 
 import javax.management.ServiceNotFoundException;
 import java.util.Date;
