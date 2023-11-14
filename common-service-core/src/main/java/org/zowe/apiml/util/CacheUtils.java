@@ -12,8 +12,10 @@ package org.zowe.apiml.util;
 
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCache;
 import org.zowe.apiml.cache.CompositeKey;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
@@ -95,6 +97,8 @@ public class CacheUtils {
         if (nativeCache instanceof javax.cache.Cache) {
             Spliterator<javax.cache.Cache.Entry<Object, T>> spliterator = ((javax.cache.Cache<Object, T>) nativeCache).spliterator();
             return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).collect(Collectors.toList());
+        } else if (nativeCache instanceof NoOpCache) {
+            return Collections.emptyList();
         } else {
             throw new IllegalArgumentException("Unsupported type of cache : " + nativeCache.getClass());
         }
