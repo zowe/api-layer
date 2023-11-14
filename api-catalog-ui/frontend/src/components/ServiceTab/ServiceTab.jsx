@@ -326,11 +326,19 @@ export default class ServiceTab extends Component {
                                 >
                                     Use Cases ({useCasesCounter})
                                 </Typography>
+                                <br />
+                                <Typography>
+                                    {useCases && selectedService.title} APIs provide the following capabilities:{' '}
+                                </Typography>
+                                <br />
                                 {useCases &&
-                                    useCases.map((useCase) => (
-                                        <Typography style={{ marginBottom: '10px' }}>{useCase}</Typography>
+                                    useCases.map((useCase, index) => (
+                                        <Typography style={{ marginBottom: '10px' }}>
+                                            {index + 1}. {useCase}
+                                        </Typography>
                                     ))}
                                 <br />
+                                <Typography>To see {selectedService.title} services, see the</Typography>
                                 <br />
                                 <Typography
                                     className="footer-labels"
