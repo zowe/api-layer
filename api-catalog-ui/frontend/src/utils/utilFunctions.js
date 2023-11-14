@@ -57,7 +57,11 @@ export default function countAdditionalContents(service) {
         // eslint-disable-next-line no-console
         console.log(correctProduct);
         if (correctProduct?.useCases) {
-            useCasesCounter = correctProduct.useCases.length;
+            correctProduct.useCases.forEach((cases) => {
+                if (isValidUrl(cases.url)) {
+                    useCasesCounter += 1;
+                }
+            });
             useCases = correctProduct.useCases;
         }
         if (correctProduct?.tutorials) {
