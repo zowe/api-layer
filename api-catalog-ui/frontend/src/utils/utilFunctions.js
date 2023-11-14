@@ -81,7 +81,9 @@ export default function countAdditionalContents(service) {
             videos = correctProduct.videos;
         }
         if (correctProduct?.documentation) {
-            documentation = correctProduct.documentation;
+            if (isValidUrl(correctProduct.documentation?.url)) {
+                documentation = correctProduct.documentation;
+            }
         }
     }
     if (service?.apis) {

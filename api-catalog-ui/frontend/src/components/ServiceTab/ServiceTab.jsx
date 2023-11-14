@@ -339,7 +339,12 @@ export default class ServiceTab extends Component {
                                             useCase?.label && (
                                                 <Typography style={{ marginBottom: '10px' }}>
                                                     {index + 1}.
-                                                    <Link className="use-cases-links" href={useCase.url}>
+                                                    <Link
+                                                        rel="noopener noreferrer"
+                                                        target="_blank"
+                                                        className="use-cases-links"
+                                                        href={useCase.url}
+                                                    >
                                                         {useCase.label}
                                                     </Link>
                                                 </Typography>
@@ -349,7 +354,12 @@ export default class ServiceTab extends Component {
                                 {documentation?.label && documentation?.url && (
                                     <Typography>
                                         To see {selectedService.title} services, see the
-                                        <Link className="use-cases-links" href={documentation.url}>
+                                        <Link
+                                            rel="noopener noreferrer"
+                                            target="_blank"
+                                            className="use-cases-links"
+                                            href={documentation.url}
+                                        >
                                             {documentation.label}
                                         </Link>
                                         .
