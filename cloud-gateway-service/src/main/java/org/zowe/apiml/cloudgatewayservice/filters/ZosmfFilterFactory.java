@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.filters;
 
 import lombok.EqualsAndHashCode;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -32,7 +33,7 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
 
     private static final String ZOSMF_URL = "%s://%s:%d/%s/zaas/zosmf";
 
-    public ZosmfFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+    public ZosmfFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class, webClient, instanceInfoService, messageService);
     }
 
