@@ -16,7 +16,6 @@ import io.jsonwebtoken.impl.FixedClock;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -45,56 +44,34 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
 
-    private static final String JWKS_KEYS_BODY = "\n"
-    + "{\n"
-    + "    \"keys\": [\n"
-    + "        {\n"
-    + "           \"kty\": \"RSA\",\n"
-    + "           \"alg\": \"RS256\",\n"
-    + "           \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n"
-    + "           \"use\": \"sig\",\n"
-    + "           \"e\": \"AQAB\",\n"
-    + "           \"n\": \"v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw\"\n"
-    + "       },\n"
-    + "       {\n"
-    + "           \"kty\": \"RSA\",\n"
-    + "           \"alg\": \"RS256\",\n"
-    + "           \"kid\": \"-716sp3XBB_v30lGj2mu5MdXkdh8poa9zJQlAwC46n4\",\n"
-    + "           \"use\": \"sig\",\n"
-    + "           \"e\": \"AQAB\",\n"
-    + "           \"n\": \"5rYyqFsxel0Pv-xRDHPbg3IfumE4ks9ffLvJrfZVgrTQyiFmFfBnyD3r7y6626Yr5-68Pj0I5SHlCBPkkgTU_e9Z3tCYiegtIOeJdSdumWR2JDVAsbpwFJDG_kxP9czgX7HL0T2BPSapx7ba0ZBXd2-SfSDDL-c1Q0rJ1uQEJwDXAGZV4qy_oXuQf5DuV65Xj8y2Qn1DtVEBThxita-kis_H35CTWgW2zyyaS_08wa00R98mnQ2SHfmO5fZABITmH0DO0coDHqKZ429VNNpELLX9e95dirQ1jfngDbBCmy-XsT8yc6NpAaXmd8P2NHdsO2oK46EQEaFRyMcoDTs3-w\"\n"
-    + "       }\n"
-    + "    ]\n"
-    + "}";
-
+    private static final String OKTA_JWKS_RESOURCE = "/test_samples/okta_jwks.json";
     private static final String JWKS_KEYS_BODY_INVALID = "\n"
-    + "{\n"
-    + "    \"keys\": [\n"
-    + "        {\n"
-    + "           \"kty\": \"RSA\",\n"
-    + "           \"alg\": \"RS256\",\n"
-    + "           \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n"
-    + "           \"use\": \"sig\",\n"
-    + "           \"e\": \"AQAB\",\n"
-    + "           \"n\": \"invalid\"\n"
-    + "       }\n"
-    + "    ]\n"
-    + "}";
+        + "{\n"
+        + "    \"keys\": [\n"
+        + "        {\n"
+        + "           \"kty\": \"RSA\",\n"
+        + "           \"alg\": \"RS256\",\n"
+        + "           \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n"
+        + "           \"use\": \"sig\",\n"
+        + "           \"e\": \"AQAB\",\n"
+        + "           \"n\": \"invalid\"\n"
+        + "       }\n"
+        + "    ]\n"
+        + "}";
 
     private static final String EXPIRED_TOKEN = "eyJraWQiOiJMY3hja2tvcjk0cWtydW54SFA3VGtpYjU0N3J6bWtYdnNZVi1uYzZVLU40IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULlExakp2UkZ0dUhFUFpGTXNmM3A0enQ5aHBRRHZrSU1CQ3RneU9IcTdlaEkiLCJpc3MiOiJodHRwczovL2Rldi05NTcyNzY4Ni5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE2OTcwNjA3NzMsImV4cCI6MTY5NzA2NDM3MywiY2lkIjoiMG9hNmE0OG1uaVhBcUVNcng1ZDciLCJ1aWQiOiIwMHU5OTExOGgxNmtQT1dBbTVkNyIsInNjcCI6WyJvcGVuaWQiXSwiYXV0aF90aW1lIjoxNjk3MDYwMDY0LCJzdWIiOiJzajg5NTA5MkBicm9hZGNvbS5uZXQiLCJncm91cHMiOlsiRXZlcnlvbmUiXX0.Cuf1JVq_NnfBxaCwiLsR5O6DBmVV1fj9utAfKWIF1hlek2hCJsDLQM4ii_ucQ0MM1V3nVE1ZatPB-W7ImWPlGz7NeNBv7jEV9DkX70hchCjPHyYpaUhAieTG75obdufiFpI55bz3qH5cPRvsKv0OKKI9T8D7GjEWsOhv6CevJJZZvgCFLGFfnacKLOY5fEBN82bdmCulNfPVrXF23rOregFjOBJ1cKWfjmB0UGWgI8VBGGemMNm3ACX3OYpTOek2PBfoCIZWOSGnLZumFTYA0F_3DsWYhIJNoFv16_EBBJcp_C0BYE_fiuXzeB0fieNUXASsKp591XJMflDQS_Zt1g";
 
     private static final String TOKEN = "token";
 
     private OIDCTokenProvider oidcTokenProvider;
-
-    @Mock
-    private OIDCTokenProvider underTest;
     @Mock
     private CloseableHttpClient httpClient;
     @Mock
@@ -109,7 +86,7 @@ class OIDCTokenProviderTest {
         responseEntity = new BasicHttpEntity();
         responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
         oidcTokenProvider = new OIDCTokenProvider(httpClient, new DefaultClock(), new ObjectMapper());
-        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval",1);
+        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1);
         ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
         oidcTokenProvider.clientId = "client_id";
         oidcTokenProvider.clientSecret = "client_secret";
@@ -119,8 +96,9 @@ class OIDCTokenProviderTest {
     class GivenInitializationWithJwks {
 
         @BeforeEach
-        void setup() throws IOException {
-            responseEntity.setContent(IOUtils.toInputStream(JWKS_KEYS_BODY, StandardCharsets.UTF_8));
+        void setup() {
+
+            responseEntity.setContent(getClass().getResourceAsStream(OKTA_JWKS_RESOURCE));
         }
 
         @Test
@@ -141,7 +119,7 @@ class OIDCTokenProviderTest {
 
         @Test
         @SuppressWarnings("unchecked")
-        void whenRequestFails_thenNotInitialized() throws ClientProtocolException, IOException {
+        void whenRequestFails_thenNotInitialized() throws IOException {
             Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
             when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
             when(response.getStatusLine()).thenReturn(responseStatusLine);
@@ -162,7 +140,7 @@ class OIDCTokenProviderTest {
 
         @Test
         @SuppressWarnings("unchecked")
-        void whenInvalidKey_thenNotInitialized() throws ClientProtocolException, IOException {
+        void whenInvalidKey_thenNotInitialized() throws IOException {
             responseEntity.setContent(IOUtils.toInputStream(JWKS_KEYS_BODY_INVALID, StandardCharsets.UTF_8));
             Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
             when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
@@ -178,9 +156,9 @@ class OIDCTokenProviderTest {
     class GivenTokenForValidation {
 
         @SuppressWarnings("unchecked")
-        private void initJwks() throws ClientProtocolException, IOException {
+        private void initJwks() throws IOException {
             Map<String, JwkKeys> jwks = (Map<String, JwkKeys>) ReflectionTestUtils.getField(oidcTokenProvider, "jwks");
-            responseEntity.setContent(IOUtils.toInputStream(JWKS_KEYS_BODY, StandardCharsets.UTF_8));
+            responseEntity.setContent(getClass().getResourceAsStream(OKTA_JWKS_RESOURCE));
             when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             when(response.getStatusLine()).thenReturn(responseStatusLine);
             when(response.getEntity()).thenReturn(responseEntity);
@@ -190,20 +168,20 @@ class OIDCTokenProviderTest {
         }
 
         @Test
-        void whenValidTokenExpired_thenReturnInvalid() throws ClientProtocolException, IOException {
+        void whenValidTokenExpired_thenReturnInvalid() throws IOException {
             initJwks();
             assertFalse(oidcTokenProvider.isValid(EXPIRED_TOKEN));
         }
 
         @Test
-        void whenValidtoken_thenReturnValid() throws ClientProtocolException, IOException {
+        void whenValidtoken_thenReturnValid() throws IOException {
             initJwks();
             ReflectionTestUtils.setField(oidcTokenProvider, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
             assertTrue(oidcTokenProvider.isValid(EXPIRED_TOKEN));
         }
 
         @Test
-        void whenInvalidToken_thenReturnInvalid() throws ClientProtocolException, IOException {
+        void whenInvalidToken_thenReturnInvalid() throws IOException {
             initJwks();
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
@@ -230,6 +208,7 @@ class OIDCTokenProviderTest {
             assertFalse(oidcTokenProvider.isValid(""));
         }
     }
+
     @Nested
     class GivenInvalidConfiguration {
 
@@ -250,4 +229,26 @@ class OIDCTokenProviderTest {
         }
     }
 
+    @Nested
+    class JwksUriLoad {
+        @Mock
+        private CloseableHttpClient httpClientMock;
+        @Mock
+        CloseableHttpResponse httpResponse;
+
+        @BeforeEach
+        public void setUp() {
+            oidcTokenProvider = new OIDCTokenProvider(httpClientMock, new DefaultClock(), new ObjectMapper());
+            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
+        }
+
+        @Test
+        void shouldNotModifyJwksUri() throws IOException {
+            when(httpClientMock.execute(any())).thenReturn(httpResponse);
+
+            oidcTokenProvider.fetchJwksUrls();
+
+            verify(httpClientMock).execute(argThat((getJwksRequest) -> getJwksRequest.getURI().toString().equals("https://jwksurl")));
+        }
+    }
 }
