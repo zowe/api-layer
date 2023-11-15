@@ -18,13 +18,12 @@ import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 class OIDCConfigTest {
     private final ObjectMapper oidcJwkMapper = new OIDCConfig().oidcJwkMapper();
 
     @Test
     @SneakyThrows
-    void shouldParseAzureKeyFormat() {
+    void shouldParseJwksFormatWithExtraProperties() {
         try (InputStream is = this.getClass().getResourceAsStream("/test_samples/azure_jwks.json")) {
             JwkKeys jwkKeys = oidcJwkMapper.readValue(is, JwkKeys.class);
 
@@ -37,7 +36,7 @@ class OIDCConfigTest {
 
     @Test
     @SneakyThrows
-    void shouldParseOktaKeyFormat() {
+    void shouldParseExpectedJwksFormat() {
         try (InputStream is = this.getClass().getResourceAsStream("/test_samples/okta_jwks.json")) {
             JwkKeys jwkKeys = oidcJwkMapper.readValue(is, JwkKeys.class);
 
