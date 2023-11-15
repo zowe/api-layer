@@ -41,7 +41,7 @@ class OIDCConfigTest {
         try (InputStream is = this.getClass().getResourceAsStream("/test_samples/okta_jwks.json")) {
             JwkKeys jwkKeys = oidcJwkMapper.readValue(is, JwkKeys.class);
 
-            assertThat(jwkKeys.getKeys()).hasSize(1);
+            assertThat(jwkKeys.getKeys()).hasSize(2);
             JwkKeys.Key key = jwkKeys.getKeys().get(0);
             assertThat(key.getKid()).isEqualTo("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4");
             assertThat(key.getKty()).isEqualTo("RSA");
