@@ -359,7 +359,7 @@ export default class ServiceTab extends Component {
                                                 <BlogContainer mediumUser={useCase.user} mediumBlogUrl={useCase.url} />
                                             ))}
                                 </div>
-                                {displayUseCasesCount < useCases.length && (
+                                {useCasesCounter > 0 && displayUseCasesCount < useCases.length && (
                                     <IconButton
                                         id="more-tutorials-button"
                                         className="button-link"
@@ -390,7 +390,7 @@ export default class ServiceTab extends Component {
                                                 />
                                             ))}
                                 </div>
-                                {displayBlogsCount < tutorials.length && (
+                                {tutorialsCounter > 0 && displayBlogsCount < tutorials.length && (
                                     <IconButton
                                         id="more-tutorials-button"
                                         className="button-link"
@@ -413,7 +413,7 @@ export default class ServiceTab extends Component {
                                     {videos &&
                                         videos.slice(0, displayVideosCount).map((url) => <VideoWrapper url={url} />)}
                                 </div>
-                                {displayVideosCount < videos.length && (
+                                {videosCounter > 0 && displayVideosCount < videos.length && (
                                     <IconButton
                                         id="more-videos-button"
                                         className="button-link"
