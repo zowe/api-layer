@@ -45,7 +45,7 @@ function BlogTile(props) {
                 {thumbnail && (
                     <img src={`${thumbnail}`} className="blogs-image" alt={truncateText(cleanTitle(title), 0, 60)} />
                 )}
-                <h3>{truncateText(cleanTitle(title), 0, 60)}</h3>
+                <h3 className="blog-title">{truncateText(cleanTitle(title), 0, 60)}</h3>
                 <br />
                 <Typography>{`${truncateText(toText(description), 0, 180)}...`}</Typography>
                 <br />
