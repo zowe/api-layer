@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useState, useEffect } from 'react';
-import { Link } from '@material-ui/core';
 import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
 import './_serviceTab.scss';
@@ -16,7 +15,10 @@ import './_serviceTab.scss';
 function BlogContainer({ mediumUser, mediumBlogUrl }) {
     // const rss2json =
     //     'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40joshuagauthreaux';
-    if (!isValidUrl(mediumBlogUrl) || !mediumUser) {
+    if (!isValidUrl(mediumBlogUrl)) {
+        return null;
+    }
+    if (mediumBlogUrl.includes('medium.com') && !mediumUser) {
         return null;
     }
     const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${mediumUser}`;

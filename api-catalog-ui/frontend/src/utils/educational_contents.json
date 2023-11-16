@@ -26,17 +26,6 @@
             ],
             "useCases": [
                 {
-                    "url": "https://medium.com/zowe/introducing-try-it-out-functionality-in-the-zowe-api-mediation-layer-930aa9e947bd",
-                    "label": "Introducing “Try it out” functionality in the Zowe API Mediation Layer"
-                },
-                {
-                    "url": "https://medium.com/zowe/the-yaml-onboarding-wizard-an-easy-way-to-onboard-your-rest-api-service-to-the-zowe-api-mediation-66ba22c9617a",
-                    "label": "The YAML Onboarding Wizard: an easy way to onboard your REST API service to the Zowe API Mediation Layer"
-                },
-                "Some more case. This is just a placeholder for now."
-            ],
-            "tutorials": [
-                {
                     "user":  "andrea.tabone",
                     "url": "https://medium.com/zowe/introducing-try-it-out-functionality-in-the-zowe-api-mediation-layer-930aa9e947bd"
                 },
@@ -47,6 +36,21 @@
                 {
                     "user":  "janda.david",
                     "url": "https://medium.com/zowe/exposing-partial-api-documentation-in-the-zowe-api-catalog-e3aa2ef30616"
+                },
+                "Some more case. This is just a placeholder for now."
+            ],
+            "tutorials": [
+                {
+                    "user": "",
+                    "url": "internal doc"
+                },
+                {
+                    "user": "",
+                    "url": "internal doc"
+                },
+                {
+                    "user": "",
+                    "url": "internal doc"
                 }
             ]
         }
