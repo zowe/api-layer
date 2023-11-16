@@ -86,12 +86,12 @@ body #version-div {
     padding: 8px 12px;
 }
 .BlogsContainer {
-    width: 200px;
+    width: 229px;
     height: 174px;
     display: inline-table;
 }
 .blogs-image {
-    width: 200px;
+    width: 229px;
     height: 174px;
 }
 .PostContainer {
@@ -112,4 +112,10 @@ body #version-div {
 }
 .blog-title {
     font-size: var( --fontLarge );
+}
+.pub-date {
+    color: var(--text-secondary, #3B4151);
+}
+.blog-description {
+    color: var(--text-secondary, #3B4151);
 }
