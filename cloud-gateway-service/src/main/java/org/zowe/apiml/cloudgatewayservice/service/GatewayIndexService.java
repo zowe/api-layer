@@ -13,14 +13,13 @@ package org.zowe.apiml.cloudgatewayservice.service;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
-import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,23 +27,13 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.SslProvider;
 
 import javax.validation.constraints.NotNull;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.springframework.util.CollectionUtils.isEmpty;
-import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelper.load;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 /**
@@ -58,40 +47,23 @@ public class GatewayIndexService {
     private final Cache<String, ServiceInstance> apimlGatewayLookup;
     private final Cache<String, List<ServiceInfo>> apimlServicesCache;
     private final WebClient defaultWebClient;
-    private SslContext customClientSslContext = null;
 
-    public GatewayIndexService(WebClient defaultWebClient,
-                               @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec,
-                               @Value("${apiml.cloudGateway.clientKeystore:#{null}}") String clientKeystorePath,
-                               @Value("${apiml.cloudGateway.clientKeystorePassword:#{null}}") char[] clientKeystorePassword,
-                               @Value("${apiml.cloudGateway.clientKeystoreType:PKCS12}") String keystoreType
+    public GatewayIndexService(
+        @Qualifier("webClientClientCert") WebClient defaultWebClient,
+        @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec
     ) {
         this.defaultWebClient = defaultWebClient;
 
         apimlGatewayLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
         apimlServicesCache = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
-
-        if (isNotBlank(clientKeystorePath) && nonNull(clientKeystorePassword)) {
-            customClientSslContext = load(clientKeystorePath, clientKeystorePassword, keystoreType);
-        }
     }
 
     private WebClient buildWebClient(ServiceInstance registration) {
         final String baseUrl = String.format("%s://%s:%d", registration.getScheme(), registration.getHost(), registration.getPort());
-        if (this.customClientSslContext != null) {
-            SslProvider sslProvider = SslProvider.builder().sslContext(customClientSslContext).build();
-            HttpClient httpClient = HttpClient.create()
-                .secure(sslProvider);
-
-            return WebClient.builder()
-                .baseUrl(baseUrl)
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-                .build();
-        }
 
         return defaultWebClient.mutate()
             .baseUrl(baseUrl)
+            .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
             .build();
     }
 
