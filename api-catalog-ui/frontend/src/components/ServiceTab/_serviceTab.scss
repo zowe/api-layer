@@ -104,8 +104,8 @@ body #version-div {
 }
 .video-responsive {
     display: inline-table;
-    margin-right: var( --spaceSmall );
-    margin-top: var( --spaceSmall );
+    margin-right: var( --spaceLargest );
+    margin-top: var( --spaceLargest );
 }
 .blog_content_link {
     text-decoration: none;
