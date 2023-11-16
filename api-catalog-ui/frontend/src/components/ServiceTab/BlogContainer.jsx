@@ -33,10 +33,10 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
                 if (divs) {
                     divs.parentNode.removeChild(divs);
                 }
-                const content = doc.querySelector('.topic .topic .concept');
+                const content = doc.querySelector('.shortdesc');
                 const title = doc.querySelector('h1.title');
                 const blogTitle = title.textContent;
-                const blogContent = content.textContent.replace(blogTitle, '');
+                const blogContent = content.textContent;
                 const blogData = {
                     content: blogContent,
                     description: blogContent,
@@ -85,17 +85,6 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
             </div>
         )
     );
-    // return (
-    //     <Link
-    //         target="_blank"
-    //         rel="noopener noreferrer"
-    //         href={mediumBlogUrl}
-    //         className="BlogsContainer"
-    //         dangerouslySetInnerHTML={{
-    //             __html: myBlog,
-    //         }}
-    //     />
-    // );
 }
 
 export default BlogContainer;

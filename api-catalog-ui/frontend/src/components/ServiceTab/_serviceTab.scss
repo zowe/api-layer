@@ -59,7 +59,7 @@ body #version-div {
     }
 }
 #detail-footer {
-    margin-top: var( --spaceSmall );
+    margin-top: var( --spaceLargest );
     margin-bottom: var( --spaceLargest );
     display: grid;
 }
@@ -104,5 +104,9 @@ body #version-div {
 }
 .video-responsive {
     display: inline-table;
-    margin-right: 10px;
+    margin-right: var( --spaceSmall );
+    margin-top: var( --spaceSmall );
+}
+.blog_content_link {
+    text-decoration: none;
 }

@@ -24,6 +24,7 @@ export default class ServiceTab extends Component {
             previousVersion: null,
             isDialogOpen: false,
             displayVideosCount: 2,
+            displayUseCasesCount: 2,
             displayBlogsCount: 2,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
@@ -142,12 +143,18 @@ export default class ServiceTab extends Component {
     };
 
     showMoreVideos = () => {
-        this.setState((prevState) => ({ displayVideosCount: prevState.displayVideosCount + 2 }));
+        const { videos } = this.props;
+        this.setState((prevState) => ({ displayVideosCount: prevState.displayVideosCount + videos.length }));
     };
 
     showMoreBlogs = () => {
         const { tutorials } = this.props;
         this.setState((prevState) => ({ displayBlogsCount: prevState.displayBlogsCount + tutorials.length }));
+    };
+
+    showMoreUseCases = () => {
+        const { useCases } = this.props;
+        this.setState((prevState) => ({ displayUseCasesCount: prevState.displayUseCasesCount + useCases.length }));
     };
 
     render() {
@@ -165,7 +172,7 @@ export default class ServiceTab extends Component {
             videosCounter,
             documentation,
         } = this.props;
-        const { displayVideosCount, displayBlogsCount } = this.state;
+        const { displayVideosCount, displayBlogsCount, displayUseCasesCount } = this.state;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -263,6 +270,20 @@ export default class ServiceTab extends Component {
                                 {selectedService.description}
                             </Typography>
                             <br />
+                            {documentation?.label && documentation?.url && (
+                                <Typography variant="subtitle2">
+                                    To know more about the {selectedService.title} service, see the
+                                    <Link
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                        className="use-cases-links"
+                                        href={documentation.url}
+                                    >
+                                        {documentation.label}
+                                    </Link>
+                                    .
+                                </Typography>
+                            )}
                             <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
@@ -329,43 +350,25 @@ export default class ServiceTab extends Component {
                                     Use Cases ({useCasesCounter})
                                 </Typography>
                                 <br />
-                                <Typography>
-                                    {useCases && selectedService.title} APIs provide the following capabilities:{' '}
-                                </Typography>
                                 <br />
-                                {useCases &&
-                                    useCases.map(
-                                        (useCase, index) =>
-                                            useCase?.url &&
-                                            useCase?.label && (
-                                                <Typography style={{ marginBottom: '10px' }}>
-                                                    {index + 1}.
-                                                    <Link
-                                                        rel="noopener noreferrer"
-                                                        target="_blank"
-                                                        className="use-cases-links"
-                                                        href={useCase.url}
-                                                    >
-                                                        {useCase.label}
-                                                    </Link>
-                                                </Typography>
-                                            )
-                                    )}
-                                <br />
-                                {documentation?.label && documentation?.url && (
-                                    <Typography>
-                                        To see {selectedService.title} services, see the
-                                        <Link
-                                            rel="noopener noreferrer"
-                                            target="_blank"
-                                            className="use-cases-links"
-                                            href={documentation.url}
-                                        >
-                                            {documentation.label}
-                                        </Link>
-                                        .
-                                    </Typography>
+                                <div id="blogs-container">
+                                    {useCases &&
+                                        useCases
+                                            .slice(0, displayUseCasesCount)
+                                            .map((useCase) => (
+                                                <BlogContainer mediumUser={useCase.user} mediumBlogUrl={useCase.url} />
+                                            ))}
+                                </div>
+                                {displayUseCasesCount < useCases.length && (
+                                    <IconButton
+                                        id="more-tutorials-button"
+                                        className="button-link"
+                                        onClick={this.showMoreUseCases}
+                                    >
+                                        Show all ({useCasesCounter} articles)
+                                    </IconButton>
                                 )}
+                                <br />
                                 <br />
                                 <Typography
                                     className="footer-labels"
@@ -373,7 +376,7 @@ export default class ServiceTab extends Component {
                                     size="medium"
                                     variant="outlined"
                                 >
-                                    Tutorials ({tutorialsCounter} articles)
+                                    TechDocs Resources ({tutorialsCounter})
                                 </Typography>
                                 <br />
                                 <div id="blogs-container">
@@ -396,7 +399,6 @@ export default class ServiceTab extends Component {
                                         Show all ({tutorialsCounter} articles)
                                     </IconButton>
                                 )}
-                                <br />
                                 <br />
                                 <Typography
                                     className="footer-labels"

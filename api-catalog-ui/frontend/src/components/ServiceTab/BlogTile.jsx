@@ -41,16 +41,16 @@ function BlogTile(props) {
     }
     function blogPost() {
         return (
-            <a target="_blank" rel="noopener noreferrer" href={`${link}`}>
+            <a className="blog_content_link" target="_blank" rel="noopener noreferrer" href={`${link}`}>
                 {thumbnail && (
                     <img src={`${thumbnail}`} className="blogs-image" alt={truncateText(cleanTitle(title), 0, 60)} />
                 )}
                 <h3>{truncateText(cleanTitle(title), 0, 60)}</h3>
                 <br />
-                <Typography>{`${truncateText(toText(description), 0, 300)}...`}</Typography>
+                <Typography>{`${truncateText(toText(description), 0, 180)}...`}</Typography>
                 <br />
                 <h4>{author}</h4>
-                {pubDate && <h4>{convertDate(pubDate)}</h4>}
+                {pubDate && <Typography variant="h4">{convertDate(pubDate)}</Typography>}
             </a>
         );
     }
