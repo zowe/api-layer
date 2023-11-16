@@ -17,8 +17,8 @@ function VideoWrapper({ url }) {
     return (
         <div className="video-responsive">
             <iframe
-                width="350"
-                height="230"
+                width="355"
+                height="200"
                 src={url}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
