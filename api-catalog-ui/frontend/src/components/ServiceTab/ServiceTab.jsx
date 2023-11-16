@@ -270,13 +270,14 @@ export default class ServiceTab extends Component {
                                 {selectedService.description}
                             </Typography>
                             <br />
-                            {documentation?.label && documentation?.url && (
+                            {isAPIPortal() && documentation?.label && documentation?.url && (
                                 <Typography variant="subtitle2">
                                     To know more about the {selectedService.title} service, see the
                                     <Link
                                         rel="noopener noreferrer"
                                         target="_blank"
-                                        className="use-cases-links"
+                                        style={{ color: '#0056B3' }}
+                                        className="service-doc-link"
                                         href={documentation.url}
                                     >
                                         {documentation.label}
@@ -361,7 +362,7 @@ export default class ServiceTab extends Component {
                                 </div>
                                 {useCasesCounter > 0 && displayUseCasesCount < useCases.length && (
                                     <IconButton
-                                        id="more-tutorials-button"
+                                        id="more-content-button"
                                         className="button-link"
                                         onClick={this.showMoreUseCases}
                                     >
@@ -392,13 +393,14 @@ export default class ServiceTab extends Component {
                                 </div>
                                 {tutorialsCounter > 0 && displayBlogsCount < tutorials.length && (
                                     <IconButton
-                                        id="more-tutorials-button"
+                                        id="more-content-button"
                                         className="button-link"
                                         onClick={this.showMoreBlogs}
                                     >
                                         Show all ({tutorialsCounter} articles)
                                     </IconButton>
                                 )}
+                                <br />
                                 <br />
                                 <Typography
                                     className="footer-labels"
@@ -415,11 +417,11 @@ export default class ServiceTab extends Component {
                                 </div>
                                 {videosCounter > 0 && displayVideosCount < videos.length && (
                                     <IconButton
-                                        id="more-videos-button"
+                                        id="more-content-button"
                                         className="button-link"
                                         onClick={this.showMoreVideos}
                                     >
-                                        Show More
+                                        Show all ({videosCounter})
                                     </IconButton>
                                 )}
                             </div>
