@@ -23,6 +23,7 @@ spring:
 apiml:
     gateway:
         timeout: 60
+    authentication.scheme: x509
     service:
         apimlId: apiml1
         corsEnabled: true
