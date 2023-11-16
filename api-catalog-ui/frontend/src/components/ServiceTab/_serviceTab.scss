@@ -75,6 +75,7 @@ body #version-div {
 }
 #more-videos-button {
     margin-top: 13px;
+    margin-right: auto;
     padding: 0;
 }
 #more-tutorials-button {
@@ -100,4 +101,8 @@ body #version-div {
 .use-cases-links {
     color: var( --link20 );
     margin-left: 10px;
+}
+.video-responsive {
+    display: inline-table;
+    margin-right: 10px;
 }

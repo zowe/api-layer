@@ -13,12 +13,16 @@ import { Typography } from '@material-ui/core';
 
 function BlogTile(props) {
     const { title, link, thumbnail, description, pubDate, author } = props.blogData;
+    // eslint-disable-next-line no-console
+    console.log(props.blogData);
     function cleanTitle(checkTitle) {
-        return checkTitle.replace('amp;', '');
+        // eslint-disable-next-line no-console
+        console.log(checkTitle);
+        return checkTitle?.replace('amp;', '');
     }
 
     function truncateText(text, start, len) {
-        return text.length > len ? text.slice(start, len) : text;
+        return text?.length > len ? text?.slice(start, len) : text;
     }
 
     function toText(block) {
@@ -28,23 +32,25 @@ function BlogTile(props) {
     }
 
     function convertDate(date) {
-        const dateArray = date.slice(0, 10).split('-');
-        const year = dateArray.shift();
-        dateArray.push(year);
+        const dateArray = date?.slice(0, 10).split('-');
+        const year = dateArray?.shift();
+        dateArray?.push(year);
         // eslint-disable-next-line no-console
         console.log(date);
-        return `Published: ${dateArray.join('/')}`;
+        return `Published: ${dateArray?.join('/')}`;
     }
     function blogPost() {
         return (
             <a target="_blank" rel="noopener noreferrer" href={`${link}`}>
-                <img src={`${thumbnail}`} className="blogs-image" alt={truncateText(cleanTitle(title), 0, 60)} />
+                {thumbnail && (
+                    <img src={`${thumbnail}`} className="blogs-image" alt={truncateText(cleanTitle(title), 0, 60)} />
+                )}
                 <h3>{truncateText(cleanTitle(title), 0, 60)}</h3>
                 <br />
                 <Typography>{`${truncateText(toText(description), 0, 300)}...`}</Typography>
                 <br />
                 <h4>{author}</h4>
-                <h4>{convertDate(pubDate)}</h4>
+                {pubDate && <h4>{convertDate(pubDate)}</h4>}
             </a>
         );
     }

@@ -146,7 +146,8 @@ export default class ServiceTab extends Component {
     };
 
     showMoreBlogs = () => {
-        this.setState((prevState) => ({ displayBlogsCount: prevState.displayBlogsCount + 2 }));
+        const { tutorials } = this.props;
+        this.setState((prevState) => ({ displayBlogsCount: prevState.displayBlogsCount + tutorials.length }));
     };
 
     render() {
@@ -406,21 +407,18 @@ export default class ServiceTab extends Component {
                                     Videos ({videosCounter})
                                 </Typography>
                                 <br />
-                                {videos && (
-                                    <div>
-                                        {videos.slice(0, displayVideosCount).map((url) => (
-                                            <VideoWrapper url={url} />
-                                        ))}{' '}
-                                        {displayVideosCount < videos.length && (
-                                            <IconButton
-                                                id="more-videos-button"
-                                                className="button-link"
-                                                onClick={this.showMoreVideos}
-                                            >
-                                                Show More
-                                            </IconButton>
-                                        )}
-                                    </div>
+                                <div>
+                                    {videos &&
+                                        videos.slice(0, displayVideosCount).map((url) => <VideoWrapper url={url} />)}
+                                </div>
+                                {displayVideosCount < videos.length && (
+                                    <IconButton
+                                        id="more-videos-button"
+                                        className="button-link"
+                                        onClick={this.showMoreVideos}
+                                    >
+                                        Show More
+                                    </IconButton>
                                 )}
                             </div>
                         )}
