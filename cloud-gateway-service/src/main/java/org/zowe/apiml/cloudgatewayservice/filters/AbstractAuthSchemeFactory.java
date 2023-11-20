@@ -41,7 +41,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 /**
  * This class is responsible for the shared part about decoration of user request with authentication scheme. The
  * service defines its own authentication scheme, and it could evaluate a request mutation. The aim is to have as
- * small implementation as possible. Therefore, the implemntation itself should construct the request to ZAAS with
+ * small implementation as possible. Therefore, the implementation itself should construct the request to ZAAS with
  * a minimal requirements and process the result. The rest (common values for ZAAS, retrying, HA evaluation and
  * sanitation of user request should be done by this class).
  *
@@ -49,7 +49,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  * - {@link AbstractAuthSchemeFactory#getResponseClass()} - define class of the response body (see T)
  * - {@link AbstractAuthSchemeFactory#getResponseFor401()} - construct empty response body for 401 response
  * - {@link AbstractAuthSchemeFactory#createRequest(AbstractConfig, ServerHttpRequest.Builder, ServiceInstance, Object)}
- *   - create the base part of request to the ZAAS. It requires only related request properties to the releated scheme
+ *   - create the base part of request to the ZAAS. It requires only related request properties to the related scheme
  * - {@link AbstractAuthSchemeFactory#processResponse(ServerWebExchange, GatewayFilterChain, Object)}
  *   - it is responsible for reading the response from the ZAAS and modifying the clients request to provide new credentials
  *
@@ -93,7 +93,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  *                 headers.add("mySchemeHeader", response.getToken())
  *             ).build();
  *         } else {
- *             request = updateHeadersForError(exchange, "Invalid or missing authentication.");
+ *             request = updateHeadersForError(exchange, "Invalid or missing authentication");
  *         }
  *
  *         exchange = exchange.mutate().request(request).build();
@@ -206,13 +206,13 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return builder of the request
      */
     @SuppressWarnings({
-        "squid:S1452",  // the internal API cannot define generic more specificly
+        "squid:S1452",  // the internal API cannot define generic more specifically
         "squid:S2092"   // the cookie is used just for internal purposes (off the browser)
     })
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data);
 
     /**
-     * The method responsible for reading a response from a ZAAS component and decorating of user request (ie. set
+     * The method responsible for reading a response from a ZAAS component and decorating of user request (i.e. set
      * credentials as header, etc.)
      * @param clientCallBuilder builder of customer request (to set new credentials)
      * @param chain chain of filter to be evaluated. Method should return `return chain.filter(exchange)`
@@ -287,8 +287,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     protected ServerHttpRequest updateHeadersForError(ServerWebExchange exchange, String errorMessage) {
-        ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
-        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
+        ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
+        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
         return request;
     }
 

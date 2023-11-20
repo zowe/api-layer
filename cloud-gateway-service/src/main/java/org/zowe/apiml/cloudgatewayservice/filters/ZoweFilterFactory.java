@@ -17,13 +17,13 @@ import org.zowe.apiml.message.core.MessageService;
 
 
 @Service
-public class ZosmfFilterFactory extends TokenFilterFactory {
+public class ZoweFilterFactory extends TokenFilterFactory {
 
     public String getEndpointUrl() {
-        return "%s://%s:%d/%s/zaas/zosmf";
+        return "%s://%s:%d/%s/zaas/zoweJwt";
     }
 
-    public ZosmfFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+    public ZoweFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(webClient, instanceInfoService, messageService);
     }
 

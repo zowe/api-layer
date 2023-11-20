@@ -67,7 +67,8 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
             final String headerValue = "Basic " + encodedCredentials;
             request = setRequestHeader(exchange, HttpHeaders.AUTHORIZATION, headerValue);
         } else {
-            request = updateHeadersForError(exchange, "Invalid or missing authentication.");
+            String message = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication").mapToLogMessage();
+            request = updateHeadersForError(exchange, message);
         }
 
         exchange = exchange.mutate().request(request).build();

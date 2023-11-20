@@ -12,14 +12,14 @@ package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import org.zowe.apiml.auth.AuthenticationScheme;
 
-public class ZosmfSchemeTest extends TokenSchemeTest {
+public class ZoweSchemeTest extends TokenSchemeTest {
 
     public String getTokenEndpoint() {
-        return "/gateway/zaas/zosmf";
+        return "/gateway/zaas/zoweJwt";
     }
 
     public AuthenticationScheme getAuthenticationScheme() {
-        return AuthenticationScheme.ZOSMF;
+        return AuthenticationScheme.ZOWE_JWT;
     }
 
 }
