@@ -39,7 +39,6 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -105,7 +104,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             return;
         }
         log.debug("Refreshing JWK endpoints {}", jwksUri);
-        HttpGet getRequest = new HttpGet(jwksUri + "?client_id=" + clientId);
+        HttpGet getRequest = new HttpGet(jwksUri);
         try {
             CloseableHttpResponse response = httpClient.execute(getRequest);
             final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
