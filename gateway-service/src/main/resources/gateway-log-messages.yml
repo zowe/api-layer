@@ -452,8 +452,15 @@ messages:
 
     # ZAAS error messages (#600) TODO: Messaging requires clean up
 
-    - key: org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived
+    - key: org.zowe.apiml.zaas.zoweJwt.noToken
       number: ZWEAZ600
+      type: WARNING
+      text: "ZAAS cannot generate or obtain Zowe token. Reason: %s"
+      reason: Review the reason section of the message.
+      action: Make sure z/OSMF is available when using the z/OSMF authentication provider or whether Zowe can generate tokens for other authentication providers. Make also sure that the identity mapping is correctly configured and set for the requested authentication.
+
+    - key: org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived
+      number: ZWEAZ601
       type: WARNING
       text: "z/OSMF is not available or z/OSMF response does not contain any token. Reason: %s"
       reason: z/OSMF does not return JWT or LTPA tokens.
