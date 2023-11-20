@@ -27,7 +27,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-import static org.zowe.apiml.cloudgatewayservice.config.Constants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 @Service
 @Slf4j

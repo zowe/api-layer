@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
-import static org.zowe.apiml.cloudgatewayservice.config.Constants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 class NettyRoutingFilterApimlTest {
 

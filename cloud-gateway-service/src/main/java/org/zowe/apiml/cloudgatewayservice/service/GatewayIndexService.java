@@ -46,13 +46,13 @@ public class GatewayIndexService {
     private final ApimlLogger apimlLog = ApimlLogger.of(GatewayIndexService.class, YamlMessageServiceInstance.getInstance());
     private final Cache<String, ServiceInstance> apimlGatewayLookup;
     private final Cache<String, List<ServiceInfo>> apimlServicesCache;
-    private final WebClient defaultWebClient;
+    private final WebClient webClient;
 
     public GatewayIndexService(
-        @Qualifier("webClientClientCert") WebClient defaultWebClient,
+        @Qualifier("webClientClientCert") WebClient webClient,
         @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec
     ) {
-        this.defaultWebClient = defaultWebClient;
+        this.webClient = webClient;
 
         apimlGatewayLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
         apimlServicesCache = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
@@ -61,7 +61,7 @@ public class GatewayIndexService {
     private WebClient buildWebClient(ServiceInstance registration) {
         final String baseUrl = String.format("%s://%s:%d", registration.getScheme(), registration.getHost(), registration.getPort());
 
-        return defaultWebClient.mutate()
+        return webClient.mutate()
             .baseUrl(baseUrl)
             .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
             .build();

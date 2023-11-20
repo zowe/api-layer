@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
-import static org.zowe.apiml.cloudgatewayservice.config.Constants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 public class NettyRoutingFilterApiml extends NettyRoutingFilter {
 
