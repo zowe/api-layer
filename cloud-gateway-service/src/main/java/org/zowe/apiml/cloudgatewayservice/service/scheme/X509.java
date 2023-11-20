@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,7 @@ public class X509 implements SchemeHandler {
     }
 
     @Override
-    public void apply(RouteDefinition routeDefinition, Authentication auth) {
+    public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
         FilterDefinition x509filter = new FilterDefinition();
         x509filter.setName("X509FilterFactory");
         Map<String,String> m = new HashMap<>();

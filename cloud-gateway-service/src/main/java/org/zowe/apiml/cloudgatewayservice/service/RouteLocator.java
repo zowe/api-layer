@@ -82,11 +82,11 @@ public class RouteLocator implements RouteDefinitionLocator {
             .collectList());
     }
 
-    void setAuth(RouteDefinition routeDefinition, Authentication auth) {
+    void setAuth(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
         if (auth != null && auth.getScheme() != null) {
             SchemeHandler schemeHandler = schemeHandlers.get(auth.getScheme());
             if (schemeHandler != null) {
-                schemeHandler.apply(routeDefinition, auth);
+                schemeHandler.apply(serviceInstance, routeDefinition, auth);
             }
         }
     }
@@ -138,7 +138,7 @@ public class RouteLocator implements RouteDefinitionLocator {
                         RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
                         routeDefinition.setOrder(order.getAndIncrement());
                         routeDefinition.getFilters().addAll(commonFilters);
-                        setAuth(routeDefinition, auth);
+                        setAuth(serviceInstance, routeDefinition, auth);
 
                         return routeDefinition;
                     }).collect(Collectors.toList())

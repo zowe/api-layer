@@ -23,9 +23,6 @@ import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
 import org.zowe.apiml.util.config.EnvironmentConfiguration;
-import org.zowe.apiml.util.http.HttpRequestUtils;
-
-import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -33,6 +30,7 @@ import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
@@ -51,7 +49,6 @@ class PassTicketTest implements TestWithStartedInstances {
     private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
     private final static String COOKIE = "apimlAuthenticationToken";
-    private URI url = HttpRequestUtils.getUriFromGateway("/gateway/zaas/ticket");
 
     @BeforeEach
     void setUp() {
@@ -84,7 +81,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_OK))
                     .extract().body().as(TicketResponse.class);
@@ -99,7 +96,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .body(ticketRequest)
                     .header("Authorization", "Bearer " + jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_OK))
                     .extract().body().as(TicketResponse.class);
@@ -117,13 +114,13 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenNoToken() {
-                String expectedMessage = "Authentication is required for URL '" + url.getPath() + "'";
+                String expectedMessage = "Authentication is required for URL '" + ZAAS_TICKET_URI.getPath() + "'";
 
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG105E' }.messageContent", equalTo(expectedMessage));
@@ -132,14 +129,14 @@ class PassTicketTest implements TestWithStartedInstances {
             @Test
             void givenInvalidTokenInCookie() {
                 String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + url.getPath() + "'";
+                String expectedMessage = "Token is not valid for URL '" + ZAAS_TICKET_URI.getPath() + "'";
 
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
@@ -148,14 +145,14 @@ class PassTicketTest implements TestWithStartedInstances {
             @Test
             void givenInvalidTokenInHeader() {
                 String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + url.getPath() + "'";
+                String expectedMessage = "Token is not valid for URL '" + ZAAS_TICKET_URI.getPath() + "'";
 
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
                     .header("Authorization", "Bearer " + jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
@@ -178,7 +175,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .body(new TicketRequest())
                     .cookie(COOKIE, jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_BAD_REQUEST))
                     .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
@@ -195,7 +192,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_BAD_REQUEST))
                     .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
@@ -207,14 +204,14 @@ class PassTicketTest implements TestWithStartedInstances {
         class GivenNoCertificate {
             @Test
             void thenReturnUnauthorized() {
-                String expectedMessage = "Authentication is required for URL '" + url.getPath() + "'";
+                String expectedMessage = "Authentication is required for URL '" + ZAAS_TICKET_URI.getPath() + "'";
 
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
                 .when()
-                    .post(url)
+                    .post(ZAAS_TICKET_URI)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG105E' }.messageContent", equalTo(expectedMessage));

@@ -11,12 +11,15 @@
 package org.zowe.apiml.cloudgatewayservice.service.scheme;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 class HttpBasicPassticketTest {
 
@@ -30,8 +33,10 @@ class HttpBasicPassticketTest {
         RouteDefinition routeDefinition = new RouteDefinition();
         Authentication authentication = new Authentication();
         authentication.setApplid("applid");
+        ServiceInstance serviceInstance = mock(ServiceInstance.class);
+        doReturn("service").when(serviceInstance).getServiceId();
 
-        new HttpBasicPassticket().apply(routeDefinition, authentication);
+        new HttpBasicPassticket().apply(serviceInstance, routeDefinition, authentication);
 
         assertEquals(1, routeDefinition.getFilters().size());
         FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);

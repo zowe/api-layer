@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCache;
 import org.zowe.apiml.cache.CompositeKey;
 
 import java.util.*;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.*;
 class CacheUtilsTest {
 
     private CacheUtils underTest;
-    private int removeCounter;
 
     @BeforeEach
     void setUp() {
@@ -111,6 +111,16 @@ class CacheUtilsTest {
             () -> underTest.getAllRecords(cacheManager, "unknownCacheName")
         );
         assertEquals("Unknown cache unknownCacheName", iae.getMessage());
+    }
+
+    @Test
+    void givenNoOpCache_whenGetAllRecords_thenEmpty() {
+        CacheManager cacheManager = mock(CacheManager.class);
+        Cache cache = mock(Cache.class);
+        when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
+        when(cache.getNativeCache()).thenReturn(new NoOpCache("knownCacheName"));
+
+        assertEquals(underTest.getAllRecords(cacheManager, "knownCacheName").size(), 0);
     }
 
     @Test

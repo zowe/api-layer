@@ -54,6 +54,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.gateway.services.ServicesInfoController;
+import org.zowe.apiml.gateway.zaas.ZaasAuthenticationFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
@@ -309,24 +310,25 @@ public class NewSecurityConfiguration {
         @Configuration
         @RequiredArgsConstructor
         @Order(9)
-        class ZaasTicketEndpoint {
+        class ZaasEndpoints {
 
             private final CompoundAuthProvider compoundAuthProvider;
 
             @Bean
-            public SecurityFilterChain authZaasTicketEndpointFilterChain(HttpSecurity http) throws Exception {
+            public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers().antMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                     authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
                     authConfigurationProperties.getEvictAccessTokensAndRules(),
-                    "/gateway/zaas/ticket"
+                    "/gateway/zaas/**"
                 ).and())
                     .authorizeRequests()
                     .anyRequest().authenticated()
                     .and()
                     .x509().userDetailsService(x509UserDetailsService())
                     .and()
-                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
-                    .addFilterBefore(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                    .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(new ZaasAuthenticationFilter(authSourceService, authExceptionHandler), CategorizeCertsFilter.class);
 
                 return http.build();
             }
