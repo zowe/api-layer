@@ -22,14 +22,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
 
 
 @Service
-public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFactory.Config, ZosmfResponse, Object> {
+public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFactory.Config, ZaasTokenResponse, Object> {
 
     private static final String ZOSMF_URL = "%s://%s:%d/%s/zaas/zosmf";
 
@@ -50,13 +50,13 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
     }
 
     @Override
-    protected Class<ZosmfResponse> getResponseClass() {
-        return ZosmfResponse.class;
+    protected Class<ZaasTokenResponse> getResponseClass() {
+        return ZaasTokenResponse.class;
     }
 
     @Override
-    protected ZosmfResponse getResponseFor401() {
-        return new ZosmfResponse();
+    protected ZaasTokenResponse getResponseFor401() {
+        return new ZaasTokenResponse();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ZosmfFilterFactory extends AbstractAuthSchemeFactory<ZosmfFilterFac
 
     @Override
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
-    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZosmfResponse response) {
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
         ServerHttpRequest request;
         if (response.getToken() != null) {
             request = exchange.getRequest().mutate().headers(headers ->
