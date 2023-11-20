@@ -47,7 +47,6 @@ public class ZaasController {
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
-    @ResponseBody
     public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
 
         if (StringUtils.isEmpty(authSourceParsed.getUserId())) {
@@ -81,7 +80,6 @@ public class ZaasController {
 
     @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides z/OSMF JWT or LTPA token for authenticated user.")
-    @ResponseBody
     public ResponseEntity<Object> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
                                                 @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
         try {
@@ -102,7 +100,6 @@ public class ZaasController {
 
     @PostMapping(path = "zoweJwt", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides zoweJwt for authenticated user.")
-    @ResponseBody
     public ResponseEntity<Object> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
         try {
             String token = authSourceService.getJWT(authSource);
