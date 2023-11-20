@@ -32,7 +32,8 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.zaas.ZaasResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import javax.management.ServiceNotFoundException;
 import java.util.Date;
@@ -98,7 +99,7 @@ class ZaasControllerTest {
         @Test
         void whenRequestZosmfToken_thenResponseOK() throws Exception {
             when(zosmfService.exchangeAuthenticationForZosmfToken(JWT_TOKEN, authParsedSource))
-                .thenReturn(new ZaasResponse(ZosmfService.TokenType.JWT.getCookieName(), JWT_TOKEN));
+                .thenReturn(new ZaasTokenResponse(ZosmfService.TokenType.JWT.getCookieName(), JWT_TOKEN));
 
             mockMvc.perform(post(ZOSMF_TOKEN_URL)
                     .requestAttr(AUTH_SOURCE_ATTR, authSource)
@@ -167,18 +168,34 @@ class ZaasControllerTest {
             }
 
             @Test
-            void whenRequestingZosmfTokens_thenInternalServerError() throws Exception {
+            void whenRequestingZosmfTokens_thenServiceUnavailable() throws Exception {
+                String expectedMessage = "Unable to obtain a token from z/OSMF service.";
                 when(zosmfService.exchangeAuthenticationForZosmfToken(JWT_TOKEN, authParsedSource))
-                    .thenThrow(new ServiceNotFoundException("Unable to obtain a token from z/OSMF service."));
+                    .thenThrow(new ServiceNotFoundException(expectedMessage));
 
                 mockMvc.perform(post(ZOSMF_TOKEN_URL)
                         .requestAttr(AUTH_SOURCE_ATTR, authSource)
                         .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
                     .andExpect(status().is(SC_SERVICE_UNAVAILABLE))
                     .andExpect(jsonPath("$.messages", hasSize(1)))
-                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAZ600W"))
-                    .andExpect(jsonPath("$.messages[0].messageContent", containsString("Unable to obtain a token from z/OSMF service.")));
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAZ601W"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", containsString(expectedMessage)));
             }
+
+            @Test
+            void whenRequestingZoweTokens_thenInternalServerError() throws Exception {
+                String expectedMessage = "No mainframe identity found.";
+                when(authSourceService.getJWT(authSource))
+                    .thenThrow(new TokenNotValidException(expectedMessage));
+
+                mockMvc.perform(post(ZOWE_TOKEN_URL)
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource))
+                    .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                    .andExpect(jsonPath("$.messages", hasSize(1)))
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAZ600W"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", containsString(expectedMessage)));
+            }
+
         }
     }
 

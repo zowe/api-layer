@@ -27,7 +27,7 @@ import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.zaas.ZaasResponse;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
@@ -85,11 +85,11 @@ public class ZaasController {
     public ResponseEntity<Object> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
                                                 @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
         try {
-            ZaasResponse zaasResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
+            ZaasTokenResponse zaasTokenResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
 
             return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(zaasResponse);
+                .body(zaasTokenResponse);
 
         } catch (Exception e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived", e.getMessage()).mapToView();
@@ -104,11 +104,19 @@ public class ZaasController {
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     @ResponseBody
     public ResponseEntity<Object> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
-        String token = authSourceService.getJWT(authSource);
+        try {
+            String token = authSourceService.getJWT(authSource);
 
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(new ZaasResponse(COOKIE_AUTH_NAME, token));
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ZaasTokenResponse(COOKIE_AUTH_NAME, token));
+
+        } catch (Exception e) {
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zoweJwt.noToken", e.getMessage()).mapToView();
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(messageView);
+        }
     }
 
 }

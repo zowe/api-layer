@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ZaasResponse {
+public class ZaasTokenResponse {
 
     private String cookieName;
     private String token;
