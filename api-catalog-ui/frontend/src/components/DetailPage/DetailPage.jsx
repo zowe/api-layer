@@ -93,8 +93,12 @@ export default class DetailPage extends Component {
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         } else if (services && services.length > 0 && !currentTileId) {
-            if (selectedService) {
-                tiles = [selectedService];
+            const id = history.location.pathname.split('/service/')[1];
+            if (id) {
+                const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
+                if (correctTile) {
+                    tiles = [correctTile];
+                }
             }
         }
         const apiPortalEnabled = isAPIPortal();
