@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import './_serviceTab.scss';
+import '../ServiceTab/_serviceTab.scss';
 import { Typography } from '@material-ui/core';
 
 function BlogTile(props) {
@@ -43,20 +43,31 @@ function BlogTile(props) {
         return (
             <a className="blog_content_link" target="_blank" rel="noopener noreferrer" href={`${link}`}>
                 {thumbnail && (
-                    <img src={`${thumbnail}`} className="blogs-image" alt={truncateText(cleanTitle(title), 0, 60)} />
+                    <img
+                        data-testid="blogs-image"
+                        src={`${thumbnail}`}
+                        className="blogs-image"
+                        alt={truncateText(cleanTitle(title), 0, 60)}
+                    />
                 )}
-                {title && <h3 className="blog-title">{truncateText(cleanTitle(title), 0, 60)}</h3>}
+                {title && (
+                    <h3 data-testid="blog-title" className="blog-title">
+                        {truncateText(cleanTitle(title), 0, 60)}
+                    </h3>
+                )}
                 {description && (
-                    <Typography className="blog-description">{`${truncateText(
+                    <Typography data-testid="blog-description" className="blog-description">{`${truncateText(
                         toText(description),
                         0,
                         180
                     )}...`}</Typography>
                 )}
                 <br />
-                <h4 className="author">{author}</h4>
+                <h4 data-testid="author" className="author">
+                    {author}
+                </h4>
                 {pubDate && (
-                    <Typography className="pub-date" variant="subtitle2">
+                    <Typography data-testid="pub-date" className="pub-date" variant="subtitle2">
                         {convertDate(pubDate)}
                     </Typography>
                 )}

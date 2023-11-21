@@ -8,14 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React from 'react';
-import './_serviceTab.scss';
+import '../ServiceTab/_serviceTab.scss';
 import PropTypes from 'prop-types';
 import { isValidUrl } from '../../utils/utilFunctions';
 
 function VideoWrapper({ url }) {
     if (!isValidUrl(url)) return null;
     return (
-        <div className="video-responsive">
+        <div data-testid="video-container" className="video-responsive">
             <iframe
                 width="355"
                 height="200"

@@ -13,8 +13,8 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 import { isAPIPortal } from '../../utils/utilFunctions';
-import VideoWrapper from './VideoWrapper';
-import BlogContainer from './BlogContainer';
+import VideoWrapper from '../ExtraContents/VideoWrapper';
+import BlogContainer from '../ExtraContents/BlogContainer';
 
 export default class ServiceTab extends Component {
     constructor(props) {

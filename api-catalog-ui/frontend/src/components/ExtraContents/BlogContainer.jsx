@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
-import './_serviceTab.scss';
+import '../ServiceTab/_serviceTab.scss';
 
 function BlogContainer({ mediumUser, mediumBlogUrl }) {
     // const rss2json =
@@ -77,12 +77,16 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
     // eslint-disable-next-line no-console
     console.log(mediumBlogUrl);
     if (mediumBlogUrl.includes('medium.com')) {
-        return <div className="BlogsContainer">{displayBlogs()}</div>;
+        return (
+            <div data-testid="medium-blog-container" className="BlogsContainer">
+                {displayBlogs()}
+            </div>
+        );
     }
 
     return (
         myBlog && (
-            <div className="BlogsContainer">
+            <div data-testid="tech-blog-container" className="BlogsContainer">
                 <BlogTile blogData={myBlog} />
             </div>
         )
