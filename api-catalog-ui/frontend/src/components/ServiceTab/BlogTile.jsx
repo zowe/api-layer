@@ -54,7 +54,7 @@ function BlogTile(props) {
                     )}...`}</Typography>
                 )}
                 <br />
-                <h4>{author}</h4>
+                <h4 className="author">{author}</h4>
                 {pubDate && (
                     <Typography className="pub-date" variant="subtitle2">
                         {convertDate(pubDate)}
