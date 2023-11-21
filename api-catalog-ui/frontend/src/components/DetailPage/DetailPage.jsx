@@ -208,7 +208,7 @@ export default class DetailPage extends Component {
                                             className="links"
                                             onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
                                         >
-                                            Tutorials ({tutorialsCounter})
+                                            TechDocs Resources ({tutorialsCounter})
                                         </Link>
                                         <Link
                                             className="links"
