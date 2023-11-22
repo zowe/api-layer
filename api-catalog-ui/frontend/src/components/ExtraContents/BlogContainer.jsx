@@ -10,11 +10,8 @@
 import React, { useState, useEffect } from 'react';
 import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
-import '../ServiceTab/_serviceTab.scss';
 
 function BlogContainer({ mediumUser, mediumBlogUrl }) {
-    // const rss2json =
-    //     'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40joshuagauthreaux';
     if (!isValidUrl(mediumBlogUrl)) {
         return null;
     }
@@ -27,8 +24,6 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
         fetch(mediumBlogUrl)
             .then((res) => res.text())
             .then((data) => {
-                // eslint-disable-next-line no-console
-                console.log(data);
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(data, 'text/html');
                 const divs = doc.querySelector('.linklist.relatedlinks');
@@ -45,8 +40,6 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
                     title: blogTitle,
                     link: mediumBlogUrl,
                 };
-                // eslint-disable-next-line no-console
-                console.log(blogData);
                 setMyBlog(blogData);
             });
     };
@@ -58,24 +51,16 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
                 .then((res) => res.json())
                 .then((data) => {
                     setMyBlog(data);
-                    // eslint-disable-next-line no-console
-                    console.log(data);
                 });
         }
     }, [rss2json]);
 
     function displayBlogs() {
-        // eslint-disable-next-line no-console
-        console.log(myBlog);
         if (myBlog?.items) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(mediumBlogUrl));
-            // eslint-disable-next-line no-console
-            console.log(correctBlog);
             return correctBlog && <BlogTile blogData={correctBlog} />;
         }
     }
-    // eslint-disable-next-line no-console
-    console.log(mediumBlogUrl);
     if (mediumBlogUrl.includes('medium.com')) {
         return (
             <div data-testid="medium-blog-container" className="BlogsContainer">

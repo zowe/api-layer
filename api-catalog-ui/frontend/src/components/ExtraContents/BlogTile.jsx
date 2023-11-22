@@ -8,16 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import '../ServiceTab/_serviceTab.scss';
 import { Typography } from '@material-ui/core';
 
 function BlogTile(props) {
     const { title, link, thumbnail, description, pubDate, author } = props.blogData;
-    // eslint-disable-next-line no-console
-    console.log(props.blogData);
     function cleanTitle(checkTitle) {
-        // eslint-disable-next-line no-console
-        console.log(checkTitle);
         return checkTitle?.replace('amp;', '');
     }
 
@@ -35,8 +30,6 @@ function BlogTile(props) {
         const dateArray = date?.slice(0, 10).split('-');
         const year = dateArray?.shift();
         dateArray?.push(year);
-        // eslint-disable-next-line no-console
-        console.log(date);
         return `Published: ${dateArray?.join('/')}`;
     }
     function blogPost() {

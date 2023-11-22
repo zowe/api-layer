@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React from 'react';
-import '../ServiceTab/_serviceTab.scss';
 import PropTypes from 'prop-types';
 import { isValidUrl } from '../../utils/utilFunctions';
 

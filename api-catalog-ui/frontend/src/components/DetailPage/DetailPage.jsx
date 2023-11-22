@@ -103,13 +103,9 @@ export default class DetailPage extends Component {
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
-        // eslint-disable-next-line no-console
-        console.log(tiles);
         const { useCasesCounter, tutorialsCounter, videosCounter, useCases, tutorials, videos, documentation } =
             countAdditionalContents(selectedService);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
-        // eslint-disable-next-line no-console
-        console.log(tutorialsCounter);
         const showSideBar = false;
         if (
             hasTiles &&

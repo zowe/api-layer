@@ -278,7 +278,7 @@ export default class ServiceTab extends Component {
                                     <Link
                                         rel="noopener noreferrer"
                                         target="_blank"
-                                        style={{ color: '#0056B3' }}
+                                        style={{ color: '#0056B3', marginLeft: '4px' }}
                                         className="service-doc-link"
                                         href={documentation.url}
                                     >
