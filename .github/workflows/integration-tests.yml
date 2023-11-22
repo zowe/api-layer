@@ -1409,10 +1409,14 @@ jobs:
                         ~/.cache/Cypress
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-            -   name: Cypress run
+            -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
                     npm run cy:e2e:ci
+            -   name: Cypress run Metrics service
+                run: |
+                    cd metrics-service-ui/frontend
+                    npm run cy:e2e
             -   name: Upload screenshots
                 uses: actions/upload-artifact@v2
                 if: failure()
