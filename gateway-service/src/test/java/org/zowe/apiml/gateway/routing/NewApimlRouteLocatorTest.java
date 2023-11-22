@@ -45,6 +45,11 @@ class NewApimlRouteLocatorTest {
     }
 
     @Test
+    void given_when_then() {
+
+    }
+
+    @Test
     void givenOneServiceWithMultipleRoutes_whenLocateRoutes_thenRoutesLocatedWithOneFormat() {
         //given
         Map<String, String> metadata = new HashMap<>();
@@ -80,8 +85,6 @@ class NewApimlRouteLocatorTest {
 
     @Test
     void whenRouteLocated_thenNotifierInvoked() {
-        //when
-        Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
         //then
         verify(routedServicesNotifier, times(1)).notifyAndFlush();
     }
