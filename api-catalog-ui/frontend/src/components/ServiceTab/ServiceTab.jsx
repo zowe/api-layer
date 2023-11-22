@@ -185,7 +185,9 @@ export default class ServiceTab extends Component {
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         const apiPortalEnabled = isAPIPortal();
-        const additionalContentsPresent = useCasesCounter !== 0 || tutorialsCounter !== 0 || videosCounter !== 0;
+        const useCasesPresent = useCasesCounter !== 0;
+        const videosPresent = videosCounter !== 0;
+        const tutorialsPresent = tutorialsCounter !== 0;
         return (
             <>
                 {currentService === null && (
@@ -340,16 +342,18 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {isAPIPortal() && additionalContentsPresent && (
+                        {isAPIPortal() && (
                             <div id="detail-footer">
-                                <Typography
-                                    className="footer-labels"
-                                    id="use-cases-label"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    Use Cases ({useCasesCounter})
-                                </Typography>
+                                {useCasesPresent && (
+                                    <Typography
+                                        className="footer-labels"
+                                        id="use-cases-label"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        Use Cases ({useCasesCounter})
+                                    </Typography>
+                                )}
                                 <br />
                                 <br />
                                 <div id="blogs-container">
@@ -371,14 +375,16 @@ export default class ServiceTab extends Component {
                                 )}
                                 <br />
                                 <br />
-                                <Typography
-                                    className="footer-labels"
-                                    id="tutorials-label"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    TechDocs Resources ({tutorialsCounter})
-                                </Typography>
+                                {tutorialsPresent && (
+                                    <Typography
+                                        className="footer-labels"
+                                        id="tutorials-label"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        TechDocs Resources ({tutorialsCounter})
+                                    </Typography>
+                                )}
                                 <br />
                                 <div id="blogs-container">
                                     {tutorials &&
@@ -402,14 +408,16 @@ export default class ServiceTab extends Component {
                                 )}
                                 <br />
                                 <br />
-                                <Typography
-                                    className="footer-labels"
-                                    id="videos-label"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    Videos ({videosCounter})
-                                </Typography>
+                                {videosPresent && (
+                                    <Typography
+                                        className="footer-labels"
+                                        id="videos-label"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        Videos ({videosCounter})
+                                    </Typography>
+                                )}
                                 <br />
                                 <div>
                                     {videos &&

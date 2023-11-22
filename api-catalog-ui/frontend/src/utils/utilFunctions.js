@@ -9,7 +9,7 @@
  */
 
 import getBaseUrl from '../helpers/urls';
-import contents from './educational_contents.json';
+import contents from '../components/ExtraContents/educational_contents.json';
 
 export const isValidUrl = (url) => {
     try {
