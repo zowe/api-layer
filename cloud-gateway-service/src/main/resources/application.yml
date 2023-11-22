@@ -7,8 +7,6 @@ eureka:
         metadata-map:
             apiml:
                 service.apimlId :  ${apiml.service.apimlId}
-                apiml.authentication.scheme: x509
-                apiml.authentication.headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
     client:
         fetchRegistry: true
         registerWithEureka: true

@@ -117,9 +117,6 @@ public class GatewayConfig {
         }
         instance.getMetadataMap().put(APIML_ID, apimlId);
 
-        instance.getMetadataMap().put(AUTHENTICATION_SCHEME, AuthenticationScheme.X509.getScheme());
-        instance.getMetadataMap().put(AUTHENTICATION_HEADERS, "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName");
-
         String statusPageUrlPath = getProperty("eureka.instance.status-page-url-path");
         String healthCheckUrlPath = getProperty("eureka.instance.health-check-url-path");
 
