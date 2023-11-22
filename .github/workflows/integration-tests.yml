@@ -1392,6 +1392,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            metrics-service:
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v3
