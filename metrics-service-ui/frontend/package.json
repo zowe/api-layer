@@ -78,7 +78,8 @@
         "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
         "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "cy:open": "cypress open",
-        "cy:e2e": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headless"
+        "cy:e2e": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headed",
+        "cy:e2e:ci": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --env catalogHomePage=https://gateway-service:10010/metrics-service/ui/v1 --browser chrome --headless"
     },
     "jest-html-reporter": {
         "pageTitle": "Metrics Service UI Unit Tests",

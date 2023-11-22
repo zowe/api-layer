@@ -1420,13 +1420,19 @@ jobs:
             -   name: Cypress run Metrics service
                 run: |
                     cd metrics-service-ui/frontend
-                    npm run cy:e2e
-            -   name: Upload screenshots
+                    npm run cy:e2e:ci
+            -   name: Upload screenshots API Catalog
                 uses: actions/upload-artifact@v2
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
+            -   name: Upload screenshots Metrics service
+                uses: actions/upload-artifact@v2
+                if: failure()
+                with:
+                    name: cypress-snapshots
+                    path: metrics-service-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
 
     CITestsServicePrefixReplacer:
