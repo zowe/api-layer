@@ -24,8 +24,8 @@ export default class ServiceTab extends Component {
             previousVersion: null,
             isDialogOpen: false,
             displayVideosCount: 2,
-            displayUseCasesCount: 2,
-            displayBlogsCount: 2,
+            displayUseCasesCount: 3,
+            displayBlogsCount: 3,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
     }
