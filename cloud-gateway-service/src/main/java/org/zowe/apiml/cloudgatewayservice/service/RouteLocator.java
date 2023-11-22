@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.service;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
@@ -30,20 +31,21 @@ import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 @Service
 public class RouteLocator implements RouteDefinitionLocator {
 
     private static final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+
+    @Value("${apiml.service.forwardClientCertEnabled:false}")
+    private boolean forwardingClientCertEnabled;
 
     private final ApplicationContext context;
 
@@ -112,6 +114,54 @@ public class RouteLocator implements RouteDefinitionLocator {
             .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed());
     }
 
+    private <T> List<T> join(List<T> a, List<T> b) {
+        if (b.isEmpty()) return a;
+
+        List<T> output = new LinkedList<>(a);
+        output.addAll(b);
+        return output;
+    }
+
+    private List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
+        List<FilterDefinition> serviceRelated = new LinkedList<>();
+        if (
+            forwardingClientCertEnabled &&
+            Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
+                .map(Boolean::parseBoolean).orElse(false)
+        ) {
+            FilterDefinition clientCertFilter = new FilterDefinition();
+            clientCertFilter.setName("ClientCertFilterFactory");
+            serviceRelated.add(clientCertFilter);
+        }
+
+        return join(commonFilters, serviceRelated);
+    }
+
+    private List<RouteDefinition> getAuthFilterPerRoute(
+        AtomicInteger orderHolder,
+        ServiceInstance serviceInstance,
+        List<FilterDefinition> postRoutingFilters
+    ) {
+        Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
+        // iterate over routing definition (ordered from the longest one to match with the most specific)
+        return getRoutedService(serviceInstance)
+            .map(routedService ->
+                routeDefinitionProducers.stream()
+                    .sorted(Comparator.comparingInt(x -> x.getOrder()))
+                    .map(rdp -> {
+                        // generate a new routing rule by a specific produces
+                        RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
+                        routeDefinition.setOrder(orderHolder.getAndIncrement());
+                        routeDefinition.getFilters().addAll(postRoutingFilters);
+                        setAuth(serviceInstance, routeDefinition, auth);
+
+                        return routeDefinition;
+                    }).collect(Collectors.toList())
+            )
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
     /**
      * It generates each rule for each combination of instance x routing x generator ({@link RouteDefinitionProducer})
      * The routes are sorted by serviceUrl to avoid clashing between multiple levels of paths, ie. / vs. /a.
@@ -122,29 +172,16 @@ public class RouteLocator implements RouteDefinitionLocator {
      */
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
+        // counter of generated route definition to prevent clashing by the order
         AtomicInteger order = new AtomicInteger();
         // iterate over services
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
-            Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
             // configure CORS for the service (if necessary)
             setCors(serviceInstance);
-            // iterate over routing definition (ordered from the longest one to match with the most specific)
-            return getRoutedService(serviceInstance)
-                .map(routedService ->
-                    routeDefinitionProducers.stream()
-                    .sorted(Comparator.comparingInt(x -> x.getOrder()))
-                    .map(rdp -> {
-                        // generate a new routing rule by a specific produces
-                        RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
-                        routeDefinition.setOrder(order.getAndIncrement());
-                        routeDefinition.getFilters().addAll(commonFilters);
-                        setAuth(serviceInstance, routeDefinition, auth);
 
-                        return routeDefinition;
-                    }).collect(Collectors.toList())
-            ).collect(Collectors.toList());
+            // generate route definition per services and its routing rules
+            return getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance));
         })
-        .flatMapIterable(list -> list)
         .flatMapIterable(list -> list);
     }
 

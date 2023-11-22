@@ -13,8 +13,6 @@ package org.zowe.apiml.cloudgatewayservice.filters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
@@ -78,8 +76,7 @@ class ClientCertFilterFactoryTest {
         }
 
         @Test
-        void whenEnabled_thenAddHeaderToRequest() {
-            filterConfig.setForwardingEnabled("true");
+        void whenFilter_thenAddHeaderToRequest() {
             GatewayFilter filter = filterFactory.apply(filterConfig);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
@@ -87,17 +84,6 @@ class ClientCertFilterFactoryTest {
             assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
             assertNotNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
             assertEquals(ENCODED_CERT, exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER).get(0));
-        }
-
-        @Test
-        void whenDisabled_thenNoHeadersInRequest() {
-            filterConfig.setForwardingEnabled("false");
-            GatewayFilter filter = filterFactory.apply(filterConfig);
-            Mono<Void> result = filter.filter(exchange, chain);
-            result.block();
-
-            assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
-            assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
         }
 
         @Nested
@@ -109,8 +95,7 @@ class ClientCertFilterFactoryTest {
             }
 
             @Test
-            void whenEnabled_thenHeaderContainsNewValue() {
-                filterConfig.setForwardingEnabled("true");
+            void whenFilter_thenHeaderContainsNewValue() {
                 GatewayFilter filter = filterFactory.apply(filterConfig);
                 Mono<Void> result = filter.filter(exchange, chain);
                 result.block();
@@ -118,17 +103,6 @@ class ClientCertFilterFactoryTest {
                 assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
                 assertNotNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
                 assertEquals(ENCODED_CERT, exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER).get(0));
-            }
-
-            @Test
-            void whenDisabled_thenNoHeadersInRequest() {
-                filterConfig.setForwardingEnabled("false");
-                GatewayFilter filter = filterFactory.apply(filterConfig);
-                Mono<Void> result = filter.filter(exchange, chain);
-                result.block();
-
-                assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
-                assertNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
             }
 
             @Nested
@@ -139,10 +113,8 @@ class ClientCertFilterFactoryTest {
                     when(request.getSslInfo()).thenReturn(null);
                 }
 
-                @ParameterizedTest
-                @ValueSource(strings = {"true", "false"})
-                void thenNoHeadersInRequest(String enabled) {
-                    filterConfig.setForwardingEnabled(enabled);
+                @Test
+                void thenNoHeadersInRequest() {
                     GatewayFilter filter = filterFactory.apply(filterConfig);
                     Mono<Void> result = filter.filter(exchange, chain);
                     result.block();
@@ -161,10 +133,8 @@ class ClientCertFilterFactoryTest {
                 when(request.getSslInfo()).thenReturn(null);
             }
 
-            @ParameterizedTest
-            @ValueSource(strings = {"true", "false"})
-            void thenNoHeadersInRequest(String enabled) {
-                filterConfig.setForwardingEnabled(enabled);
+            @Test
+            void thenNoHeadersInRequest() {
                 GatewayFilter filter = filterFactory.apply(filterConfig);
                 Mono<Void> result = filter.filter(exchange, chain);
                 result.block();
@@ -181,7 +151,6 @@ class ClientCertFilterFactoryTest {
 
         @BeforeEach
         void setup() throws CertificateEncodingException {
-            filterConfig.setForwardingEnabled("true");
             requestBuilder.header(CLIENT_CERT_HEADER, "This value cannot pass through the filter.");
             when(x509Certificates[0].getEncoded()).thenThrow(new CertificateEncodingException("incorrect encoding"));
         }
@@ -208,10 +177,8 @@ class ClientCertFilterFactoryTest {
             when(sslInfo.getPeerCertificates()).thenReturn(new X509Certificate[0]);
         }
 
-        @ParameterizedTest
-        @ValueSource(strings = {"true", "false"})
-        void thenContinueFilterChainWithoutClientCertHeader(String enabled) {
-            filterConfig.setForwardingEnabled(enabled);
+        @Test
+        void thenContinueFilterChainWithoutClientCertHeader() {
             GatewayFilter filter = filterFactory.apply(filterConfig);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
@@ -229,10 +196,8 @@ class ClientCertFilterFactoryTest {
             when(request.getSslInfo()).thenReturn(null);
         }
 
-        @ParameterizedTest
-        @ValueSource(strings = {"true", "false"})
-        void thenContinueFilterChainWithoutClientCertHeader(String enabled) {
-            filterConfig.setForwardingEnabled(enabled);
+        @Test
+        void thenContinueFilterChainWithoutClientCertHeader() {
             GatewayFilter filter = filterFactory.apply(filterConfig);
             Mono<Void> result = filter.filter(exchange, chain);
             result.block();
