@@ -114,16 +114,22 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     @SuppressWarnings("unused")
     private static Stream<Arguments> validToBeTransformed() {
         return Stream.of(
+            Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
+                assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
+                assertNull(response.jsonPath().getString("headers.authorization"));
+                //TODO: uncomment once http client handle client certs properly
+                //assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+            }),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("cookies.jwtToken"));
                 assertNull(response.jsonPath().getString("headers.authorization"));
-                //TODO: uncomment once http client handle client certs propertly
+                //TODO: uncomment once http client handle client certs properly
                 //assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             }),
-            Arguments.of("passticket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
+            Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
-                //TODO: uncomment once http client handle client certs propertly
+                //TODO: uncomment once http client handle client certs properly
                 //assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         );
@@ -133,15 +139,17 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     private static Stream<Arguments> noCredentials() {
         Consumer<Response> assertions = response -> {
             assertEquals(200, response.getStatusCode());
+            assertNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
             assertNull(response.jsonPath().getString("cookies.jwtToken"));
             assertNull(response.jsonPath().getString("headers.authorization"));
-            //TODO: uncomment once http client handle client certs propertly
+            //TODO: uncomment once http client handle client certs properly
             //assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
         };
 
         return Stream.of(
+            Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, assertions),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
-            Arguments.of("passticket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
+            Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
         );
     }
 
