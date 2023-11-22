@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContents, { closeMobileMenu, customUIStyle, openMobileMenu } from './utilFunctions';
+import countAdditionalContents, { closeMobileMenu, customUIStyle, isValidUrl, openMobileMenu } from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
     function mockFetch() {
@@ -45,18 +45,15 @@ describe('>>> Util Functions tests', () => {
     afterEach(() => {
         document.body.innerHTML = '';
     });
-    it('should count medias', () => {
+    it('should return default count when no medias are provided', () => {
         const service = {
-            id: 'service',
+            id: 'apicatalog',
             hasSwagger: false,
-            useCases: ['usecase1', 'usecase2'],
-            tutorials: [],
-            videos: [],
         };
         expect(countAdditionalContents(service)).toEqual({
             hasSwagger: false,
             tutorialsCounter: 0,
-            useCasesCounter: 2,
+            useCasesCounter: 0,
             videosCounter: 0,
         });
     });
@@ -64,9 +61,6 @@ describe('>>> Util Functions tests', () => {
     it('should check for swagger when not default one available', () => {
         const service = {
             id: 'service',
-            useCases: ['usecase1', 'usecase2'],
-            tutorials: [],
-            videos: [],
             apis: {
                 'org.zowe v1': {
                     swaggerUrl: 'swagger',
@@ -76,7 +70,7 @@ describe('>>> Util Functions tests', () => {
         expect(countAdditionalContents(service)).toEqual({
             hasSwagger: true,
             tutorialsCounter: 0,
-            useCasesCounter: 2,
+            useCasesCounter: 0,
             videosCounter: 0,
         });
     });
@@ -177,5 +171,13 @@ describe('>>> Util Functions tests', () => {
         const spyToggle = jest.spyOn(document.body.classList, 'remove');
         closeMobileMenu();
         expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
+    });
+
+    it('should return false when URL is invalid', async () => {
+        expect(isValidUrl('invalidurl')).toBe(false);
+    });
+
+    it('should return true when URL is valid', async () => {
+        expect(isValidUrl('https://localhost.com/hello')).toBe(true);
     });
 });

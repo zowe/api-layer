@@ -241,13 +241,4 @@ export const customUIStyle = async (uiConfig) => {
     handleWhiteHeader(uiConfig);
 };
 
-export const toText = (node) => {
-    const tag = document.createElement('div');
-    tag.innerHTML = node;
-    return tag.innerText;
-};
-
-export const shortenText = (text, startingPoint, maxLength) =>
-    text.length > maxLength ? text.slice(startingPoint, maxLength) : text;
-
 export const isAPIPortal = () => process.env.REACT_APP_API_PORTAL === 'true';
