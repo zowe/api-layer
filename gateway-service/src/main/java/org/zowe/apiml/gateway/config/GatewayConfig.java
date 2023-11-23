@@ -85,8 +85,7 @@ public class GatewayConfig {
         int serverPort = Integer
             .parseInt(getEnabledPort(env));
 
-        boolean isSecurePortEnabled = Boolean
-            .parseBoolean(getProperty("server.ssl.enabled"));
+        boolean isSecurePortEnabled = Boolean.parseBoolean(getProperty("server.ssl.enabled"));
         instance.setNonSecurePort(isSecurePortEnabled ? 0 : serverPort);
         instance.setNonSecurePortEnabled(!isSecurePortEnabled);
         instance.setSecurePort(isSecurePortEnabled ? serverPort : 0);
