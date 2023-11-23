@@ -287,6 +287,7 @@ public class ZosmfSchemeTest {
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("Client-Cert")))
                     .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
 
                     .assertion(he -> assertNull(getCookie(he, "personalAccessToken")))
@@ -312,6 +313,7 @@ public class ZosmfSchemeTest {
                 .header("X-Certificate-Public", "X-Certificate-Public")
                 .header("X-Certificate-DistinguishedName", "X-Certificate-DistinguishedName")
                 .header("X-Certificate-CommonName", "X-Certificate-CommonName")
+                .header("Client-Cert", "certData")
 
                 .cookie("mycookie", "mycookievalue")
                 .cookie("personalAccessToken", "pat")

@@ -29,14 +29,23 @@
             "caching-service/build/libs/caching-service.jar": {
                 "target": "components/api-mediation/caching-service.jar",
                 "binary": true
+            },
+            "../api-layer-deploy/libzowe-attls.so": {
+                "target": "lib/libzowe-attls.so",
+                "postSoUpdateCommands": [
+                    "extattr +p lib/*.so && chmod a+x lib/*.so && ls -E lib/"
+                ],
+                "binary": true
             }
         }
     },
-
     "shellStartCommand": "echo 'Not supported until variable replacement is implemented by Zowe SDK team'",
     "jobTemplatePath": "config/zowe-api-dev/template-bpxbatch.jcl",
     "jobPath": "build/api.jcl",
-
+    "stcTemplatePath": "config/zowe-api-dev/template-stc.jcl",
+    "stcPath": "build/stc.jcl",
+    "defaultStcProclib": "USER.PROCLIB",
+    "defaultStcName": "",
     "configurations": {
         "zos": {
             "files": {
@@ -67,5 +76,4 @@
             }
         }
     }
-
 }

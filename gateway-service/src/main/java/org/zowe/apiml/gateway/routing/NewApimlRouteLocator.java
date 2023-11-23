@@ -13,10 +13,12 @@ package org.zowe.apiml.gateway.routing;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
+import org.springframework.util.PatternMatchUtils;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -27,6 +29,9 @@ import java.util.Map;
 
 @Slf4j
 public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
+
+    @Value("${zuul.ignoredServices:}")
+    private String[] zuulIgnored;
 
     private final DiscoveryClient discoveryClient;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
@@ -45,9 +50,9 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
         log.debug("Locating routes from Discovery client");
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
-        discoveryClient.getServices().forEach( serviceId ->
-             routesMap.putAll(createServiceRoutes(serviceId))
-        );
+        discoveryClient.getServices().stream()
+            .filter(this::filterIgnored)
+            .forEach(serviceId -> routesMap.putAll(createServiceRoutes(serviceId)));
 
         routedServicesNotifier.notifyAndFlush();
         return routesMap;
@@ -89,5 +94,9 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
         log.debug("ServiceId: {}, RouteId: {}, Created Routes: {}", serviceId, routedService.getSubServiceId(), routeFormat);
 
         return routesMap;
+    }
+
+    private boolean filterIgnored(String serviceId) {
+        return !PatternMatchUtils.simpleMatch(zuulIgnored, serviceId);
     }
 }

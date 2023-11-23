@@ -54,8 +54,6 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
 
-
-    implementation libs.zowe.attls
     implementation libs.jjwt
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
