@@ -88,11 +88,10 @@ public class GatewayIndexService {
     }
 
     private Mono<List<ServiceInfo>> fetchServices(String apimlId, ServiceInstance registration) {
-        WebClient webClient = buildWebClient(registration);
         final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
         };
 
-        return webClient.get().uri("/gateway/services")
+        return buildWebClient(registration).get().uri("/gateway/services")
             .retrieve()
             .bodyToMono(serviceInfoType)
             .doOnNext(foreignServices -> apimlServicesCache.put(apimlId, foreignServices));

@@ -69,6 +69,7 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
         });
     }
 
+    @SuppressWarnings("squid:S2094")
     public static class Config {
     }
 

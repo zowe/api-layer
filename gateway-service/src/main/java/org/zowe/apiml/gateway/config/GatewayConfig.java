@@ -30,7 +30,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.util.StringUtils;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
