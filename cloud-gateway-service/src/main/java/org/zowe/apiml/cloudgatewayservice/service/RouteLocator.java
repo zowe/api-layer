@@ -114,7 +114,7 @@ public class RouteLocator implements RouteDefinitionLocator {
             .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed());
     }
 
-    private <T> List<T> join(List<T> a, List<T> b) {
+    static <T> List<T> join(List<T> a, List<T> b) {
         if (b.isEmpty()) return a;
 
         List<T> output = new LinkedList<>(a);
@@ -122,7 +122,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         return output;
     }
 
-    private List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
+    List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
         List<FilterDefinition> serviceRelated = new LinkedList<>();
         if (
             forwardingClientCertEnabled &&

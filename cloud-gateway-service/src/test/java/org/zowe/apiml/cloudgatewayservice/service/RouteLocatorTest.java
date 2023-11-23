@@ -20,6 +20,7 @@ import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 class RouteLocatorTest {
 
@@ -206,6 +208,25 @@ class RouteLocatorTest {
             assertEquals(2, rs.size());
         }
 
+        @Nested
+        class JoinLists {
+
+            @Test
+            void givenSecondOneEmpty_whenJoin_thenReturnFirstInstance() {
+                List<Integer> a = Collections.singletonList(1);
+                List<Integer> b = Collections.emptyList();
+                assertSame(a, RouteLocator.join(a, b));
+            }
+
+            @Test
+            void givenNonEmptyLists_whenJoin_thenCreateNewOneWithAllValues() {
+                List<Integer> a = Arrays.asList(1, 2, 3);
+                List<Integer> b = Arrays.asList(3, 4, 5);
+                assertIterableEquals(Arrays.asList(1, 2, 3, 3, 4, 5), RouteLocator.join(a, b));
+            }
+
+        }
+
     }
 
     @Nested
@@ -236,6 +257,78 @@ class RouteLocatorTest {
                     }
                 }
             }
+        }
+
+        @Nested
+        class PostRoutingFilterDefinition {
+
+            private final List<FilterDefinition> COMMON_FILTERS = Collections.singletonList(mock(FilterDefinition.class));
+            private final RouteLocator routeLocator = new RouteLocator(null, null, null, COMMON_FILTERS, Collections.emptyList(), null);
+
+            private ServiceInstance createServiceInstance(Boolean forwardingEnabled) {
+                Map<String, String> metadata = new HashMap<>();
+                if (forwardingEnabled != null) {
+                    metadata.put(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING, String.valueOf(forwardingEnabled));
+                }
+                ServiceInstance serviceInstance = mock(ServiceInstance.class);
+                doReturn(metadata).when(serviceInstance).getMetadata();
+                return serviceInstance;
+            }
+
+            @Nested
+            class EnabledForwarding {
+
+                @BeforeEach
+                void enableForwarding() {
+                    ReflectionTestUtils.setField(routeLocator, "forwardingClientCertEnabled", true);
+                }
+
+                @Test
+                void givenServiceAllowingCertForwarding_whenGetPostRoutingFilters_thenAddClientCertFilterFactory() {
+                    ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
+
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertEquals(2, filterDefinitions.size());
+                    assertEquals("ClientCertFilterFactory", filterDefinitions.get(1).getName());
+                }
+
+                @Test
+                void givenServiceNotAllowingCertForwarding_whenGetPostRoutingFilters_thenReturnJustCommon() {
+                    ServiceInstance serviceInstance = createServiceInstance(Boolean.FALSE);
+
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertSame(COMMON_FILTERS, filterDefinitions);
+                }
+
+
+                @Test
+                void givenServiceWithoutCertForwardingConfig_whenGetPostRoutingFilters_thenReturnJustCommon() {
+                    ServiceInstance serviceInstance = createServiceInstance(null);
+
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertSame(COMMON_FILTERS, filterDefinitions);
+                }
+
+            }
+
+            @Nested
+            class DisabledForwarding {
+
+                @BeforeEach
+                void disableForwarding() {
+                    ReflectionTestUtils.setField(routeLocator, "forwardingClientCertEnabled", false);
+                }
+
+                @Test
+                void givenAnyService_whenGetPostRoutingFilters_thenReturnJustCommon() {
+                    ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
+
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertSame(COMMON_FILTERS, filterDefinitions);
+                }
+
+            }
+
         }
 
     }

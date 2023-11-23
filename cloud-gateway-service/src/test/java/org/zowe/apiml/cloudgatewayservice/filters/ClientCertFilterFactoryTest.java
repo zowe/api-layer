@@ -30,11 +30,14 @@ import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 class ClientCertFilterFactoryTest {
 
@@ -65,6 +68,9 @@ class ClientCertFilterFactoryTest {
         when(request.mutate()).thenReturn(requestBuilder);
         when(exchange.mutate()).thenReturn(exchangeBuilder);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        Map<String, Object> attributes = new HashMap<>();
+        when(exchange.getAttributes()).thenReturn(attributes);
     }
 
     @Nested
@@ -84,6 +90,7 @@ class ClientCertFilterFactoryTest {
             assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
             assertNotNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));
             assertEquals(ENCODED_CERT, exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER).get(0));
+            assertEquals(Boolean.TRUE, exchange.getAttributes().get(HTTP_CLIENT_USE_CLIENT_CERTIFICATE));
         }
 
         @Nested
