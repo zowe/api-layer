@@ -17,6 +17,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.NoOpCache;
 import org.zowe.apiml.cache.CompositeKey;
 
+import javax.cache.Cache.Entry;
+
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +46,7 @@ class CacheUtilsTest {
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public <T> T unwrap(Class<T> clazz) {
                 return (T) value;
             }
@@ -51,6 +54,7 @@ class CacheUtilsTest {
     }
 
     @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void testEvictSubset() {
         CacheManager cacheManager = mock(CacheManager.class);
 
@@ -120,7 +124,7 @@ class CacheUtilsTest {
         when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
         when(cache.getNativeCache()).thenReturn(new NoOpCache("knownCacheName"));
 
-        assertEquals(underTest.getAllRecords(cacheManager, "knownCacheName").size(), 0);
+        assertEquals(0, underTest.getAllRecords(cacheManager, "knownCacheName").size());
     }
 
     @Test
@@ -140,9 +144,9 @@ class CacheUtilsTest {
     void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
-        javax.cache.Cache ehCache = mock(javax.cache.Cache.class);
+        javax.cache.Cache<?, ?> ehCache = mock(javax.cache.Cache.class);
 
-        List entries = Arrays.asList(
+        List<Entry<Object, Object>> entries = Arrays.asList(
             createEntry(1, "a"),
             createEntry(2, "b"),
             createEntry(3, "c")

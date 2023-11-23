@@ -11,7 +11,7 @@
 /// <reference types="Cypress" />
 
 describe('>>> Login bad test', () => {
-    it('succesfully loads login page', () => {
+    beforeEach('succesfully loads login page', () => {
         cy.visit(`${Cypress.env('catalogHomePage')}/`);
     });
 

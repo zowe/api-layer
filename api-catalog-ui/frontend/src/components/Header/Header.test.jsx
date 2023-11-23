@@ -9,7 +9,7 @@
  */
 import * as enzyme from 'enzyme';
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import Header from './Header';
 
 describe('>>> Header component tests', () => {
