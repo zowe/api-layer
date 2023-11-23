@@ -11,7 +11,6 @@
 package org.zowe.apiml.cloudgatewayservice.service;
 
 
-import io.netty.handler.ssl.SslContext;
 import org.apache.groovy.util.Maps;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -30,27 +28,17 @@ import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelperTest.KEYSTORE_PATH;
-import static org.zowe.apiml.cloudgatewayservice.service.WebClientHelperTest.PASSWORD;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayIndexServiceTest {
+
     private GatewayIndexService gatewayIndexService;
     private final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
     };
@@ -67,7 +55,6 @@ class GatewayIndexServiceTest {
 
     @BeforeEach
     void setUp() {
-
         lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
 
@@ -82,7 +69,7 @@ class GatewayIndexServiceTest {
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        gatewayIndexService = new GatewayIndexService(webClient, 60, null, null, null);
+        gatewayIndexService = new GatewayIndexService(webClient, 60);
     }
 
     @Nested
@@ -185,48 +172,4 @@ class GatewayIndexServiceTest {
         }
     }
 
-    @Nested
-    class WhenUsingCustomClientKey {
-
-        @Test
-        void shouldInitializeCustomSslContext() {
-
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD, "PKCS12");
-
-            SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
-
-            assertThat(customClientSslContext).isNotNull();
-        }
-
-        @Test
-        void shouldNotUseDefaultWebClientWhenCustomContextIdProvided() {
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, PASSWORD, "PKCS12");
-
-            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                .verifyComplete();
-
-            verifyNoInteractions(webClient);
-        }
-
-        @Test
-        void shouldSkipCustomSslContextCreationIfPasswordNotDefined() {
-
-            gatewayIndexService = new GatewayIndexService(webClient, 60, KEYSTORE_PATH, null, null);
-
-            SslContext customClientSslContext = (SslContext) ReflectionTestUtils.getField(gatewayIndexService, "customClientSslContext");
-
-            assertThat(customClientSslContext).isNull();
-        }
-
-        @Test
-        void shouldUseDefaultWebClientWhenCustomSslContextIsNotProvided() {
-            gatewayIndexService = new GatewayIndexService(webClient, 60, null, null, null);
-
-            StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance))
-                .verifyComplete();
-
-            verify(webClient).mutate();
-        }
-
-    }
 }
