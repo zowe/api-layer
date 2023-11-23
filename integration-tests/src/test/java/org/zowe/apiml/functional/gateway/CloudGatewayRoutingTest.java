@@ -138,7 +138,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     }
 
     @SuppressWarnings("unused")
-    private static Stream<Arguments> noCredentials() {
+    private static Stream<Arguments> noAuthTransformation() {
         Consumer<Response> assertions = response -> {
             assertEquals(200, response.getStatusCode());
             assertNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
@@ -183,7 +183,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
         <T> void givenValidRequest_thenPatIsTransformed(String title, String basePath, Consumer<Response> assertions) {
-            String serviceId = basePath.substring(1,basePath.indexOf('/',1));
+            String serviceId = basePath.substring(1, basePath.indexOf('/', 1));
             String pat = personalAccessToken(Collections.singleton(serviceId));
 
             Response response = given()
@@ -194,8 +194,21 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
             assertEquals(200, response.getStatusCode());
         }
 
+        @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
+        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
+        <T> void givenValidRequest_thenIncorrectPatIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
+            String pat = personalAccessToken(Collections.singleton("anotherService"));
+
+            Response response = given()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
+            .when()
+                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+            assertions.accept(response);
+            assertEquals(200, response.getStatusCode());
+        }
+
         @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noCredentials")
+        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
         <T> void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = given().when()
                 .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
@@ -204,7 +217,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenInvalidCredentials_thenNoCredentialsAreProvided {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noCredentials")
+        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
         <T> void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = given().header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
                 .when()
