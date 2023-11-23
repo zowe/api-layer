@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { shallow } from 'enzyme';
-import jest from 'jest-mock';
+import { jest } from '@jest/globals';
 import ErrorDialog from './ErrorDialog';
 
 describe('>>> ErrorDialog component tests', () => {
