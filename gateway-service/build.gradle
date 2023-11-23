@@ -53,10 +53,10 @@ gitProperties {
 }
 
 dependencies {
-
     api project(':apiml-security-common')
     api project(':apiml-tomcat-common')
     api project(':apiml-extension-loader')
+
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.web
