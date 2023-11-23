@@ -12,7 +12,9 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -31,8 +33,9 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
@@ -156,74 +159,106 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     }
 
     @Nested
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class AuthSchema {
 
-        private String token;
+        @Nested
+        class ValidAuthScheme {
 
-        @BeforeAll
-        void setCredentials() {
-            token = SecurityUtils.gatewayToken(
-                ConfigReader.environmentConfiguration().getCredentials().getUser(),
-                ConfigReader.environmentConfiguration().getCredentials().getPassword()
-            );
-        }
+            @ParameterizedTest(name = "givenValidRequest_thenCredentialsAreTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
+            <T> void givenValidRequest_thenCredentialsAreTransformed(String title, String basePath, Consumer<Response> assertions) {
+                String gatewayToken = SecurityUtils.gatewayToken(
+                    ConfigReader.environmentConfiguration().getCredentials().getUser(),
+                    ConfigReader.environmentConfiguration().getCredentials().getPassword()
+                );
 
-        @ParameterizedTest(name = "givenValidRequest_thenCredentialsAreTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
-        <T> void givenValidRequest_thenCredentialsAreTransformed(String title, String basePath, Consumer<Response> assertions) {
-            Response response = given()
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                Response response = given()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken)
                 .when()
                     .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
-            assertEquals(200, response.getStatusCode());
-        }
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
 
-        @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
-        <T> void givenValidRequest_thenPatIsTransformed(String title, String basePath, Consumer<Response> assertions) {
-            String serviceId = basePath.substring(1, basePath.indexOf('/', 1));
-            String pat = personalAccessToken(Collections.singleton(serviceId));
+            @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
+            <T> void givenValidRequest_thenPatIsTransformed(String title, String basePath, Consumer<Response> assertions) {
+                String serviceId = basePath.substring(1, basePath.indexOf('/', 1));
+                String pat = personalAccessToken(Collections.singleton(serviceId));
 
-            Response response = given()
+                Response response = given()
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
                 .when()
                     .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
-            assertEquals(200, response.getStatusCode());
-        }
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
 
-        @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
-        <T> void givenValidRequest_thenIncorrectPatIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
-            String pat = personalAccessToken(Collections.singleton("anotherService"));
+            @ParameterizedTest(name = "givenValidRequest_thenOidcIsTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
+            <T> void givenValidRequest_thenOidcIsTransformed(String title, String basePath, Consumer<Response> assertions) {
+                String oAuthToken = validOktaAccessToken(true);
 
-            Response response = given()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
-            assertEquals(200, response.getStatusCode());
-        }
-
-        @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
-        <T> void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
-            Response response = given().when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
-            assertEquals(200, response.getStatusCode());
-        }
-
-        @ParameterizedTest(name = "givenInvalidCredentials_thenNoCredentialsAreProvided {0} [{index}]")
-        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
-        <T> void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
-            Response response = given().header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
+                Response response = given()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
                 .when()
                     .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
-            assertEquals(200, response.getStatusCode());
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
+        }
+
+        @Nested
+        class InvalidAuthScheme {
+
+            @ParameterizedTest(name = "givenInvalidPatRequest_thenPatIsNotTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
+            <T> void givenInvalidPatRequest_thenPatIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
+                String pat = personalAccessToken(Collections.singleton("anotherService"));
+
+                Response response = given()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
+                .when()
+                    .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
+            @ParameterizedTest(name = "givenInvalidRequest_thenOidcIsNotTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
+            <T> void givenInvalidRequest_thenOidcIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
+                String oAuthToken = generateJwtWithRandomSignature("https://localhost:10010");
+
+                Response response = given()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
+                    .when()
+                    .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
+
+            @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
+            <T> void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
+                Response response = when()
+                    .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
+            @ParameterizedTest(name = "givenInvalidCredentials_thenNoCredentialsAreProvided {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
+            <T> void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
+                Response response = given()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
+                .when()
+                    .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
         }
 
     }
