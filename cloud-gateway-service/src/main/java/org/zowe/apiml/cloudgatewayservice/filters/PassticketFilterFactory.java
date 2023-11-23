@@ -19,6 +19,7 @@ import org.apache.http.HttpHeaders;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -35,7 +36,7 @@ import java.util.Base64;
 @Service
 public class PassticketFilterFactory extends AbstractAuthSchemeFactory<PassticketFilterFactory.Config, TicketResponse, String> {
 
-    private static final String TICKET_URL = "%s://%s:%s/%s/api/v1/auth/ticket";
+    private static final String TICKET_URL = "%s://%s:%d/%s/zaas/ticket";
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
     public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
@@ -56,6 +57,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
         return webClient.post()
             .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .bodyValue(requestBody);
     }
 

@@ -26,11 +26,13 @@ import org.zowe.apiml.util.config.ConfigReader;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @DiscoverableClientDependentTest
@@ -172,6 +174,20 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
         <T> void givenValidRequest_thenCredentialsAreTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .when()
+                    .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+            assertions.accept(response);
+            assertEquals(200, response.getStatusCode());
+        }
+
+        @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
+        @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
+        <T> void givenValidRequest_thenPatIsTransformed(String title, String basePath, Consumer<Response> assertions) {
+            String serviceId = basePath.substring(1,basePath.indexOf('/',1));
+            String pat = personalAccessToken(Collections.singleton(serviceId));
+
+            Response response = given()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
                 .when()
                     .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
             assertions.accept(response);
