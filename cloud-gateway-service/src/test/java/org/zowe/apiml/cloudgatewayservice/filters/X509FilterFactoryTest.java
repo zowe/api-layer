@@ -32,12 +32,15 @@ import java.net.URI;
 import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 class X509FilterFactoryTest {
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
@@ -74,9 +77,11 @@ class X509FilterFactoryTest {
 
         when(sslInfo.getPeerCertificates()).thenReturn(x509Certificates);
 
-
         when(certificate.getSubjectDN()).thenReturn(new X500Principal("CN=user, OU=JavaSoft, O=Sun Microsystems, C=US"));
         when(exchange.mutate()).thenReturn(exchangeBuilder);
+
+        Map<String, Object> attributes = new HashMap<>();
+        when(exchange.getAttributes()).thenReturn(attributes);
 
         when(chain.filter(exchange)).thenReturn(Mono.empty());
     }
@@ -88,6 +93,7 @@ class X509FilterFactoryTest {
         Mono<Void> result = filter.filter(exchange, chain);
         result.block();
         assertEquals("user", exchange.getRequest().getHeaders().get("X-Certificate-CommonName").get(0));
+        assertEquals(Boolean.TRUE, exchange.getAttributes().get(HTTP_CLIENT_USE_CLIENT_CERTIFICATE));
     }
 
     @Test
@@ -98,6 +104,7 @@ class X509FilterFactoryTest {
         Mono<Void> result = filter.filter(exchange, chain);
         result.block();
         assertEquals("Invalid client certificate in request. Error message: incorrect encoding", exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER).get(0));
+        assertNull(exchange.getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE));
     }
 
     @Test
@@ -115,6 +122,7 @@ class X509FilterFactoryTest {
         result.block();
         assertEquals("ZWEAG167E No client certificate provided in the request", exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER).get(0));
         assertEquals("ZWEAG167E No client certificate provided in the request", responseHeaders.get(ApimlConstants.AUTH_FAIL_HEADER).get(0));
+        assertNull(exchange.getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE));
     }
 
     @Test
@@ -179,9 +187,8 @@ class X509FilterFactoryTest {
         }
     }
 
-    ;
-
     public class ServerWebExchangeBuilderMock implements ServerWebExchange.Builder {
+
         ServerHttpRequest request;
 
         @Override
@@ -210,8 +217,7 @@ class X509FilterFactoryTest {
             when(exchange.getRequest()).thenReturn(request);
             return exchange;
         }
-    }
 
-    ;
+    }
 
 }

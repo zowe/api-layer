@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -39,7 +40,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     private static final String TICKET_URL = "%s://%s:%d/%s/zaas/ticket";
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
-    public PassticketFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+    public PassticketFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(Config.class, webClient, instanceInfoService, messageService);
     }
 

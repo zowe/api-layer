@@ -13,7 +13,9 @@ package org.zowe.apiml.gateway.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
@@ -34,8 +36,7 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @Configuration
 @RequiredArgsConstructor

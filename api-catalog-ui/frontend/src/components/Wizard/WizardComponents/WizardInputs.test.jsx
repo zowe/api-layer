@@ -10,7 +10,7 @@
 import * as enzyme from 'enzyme';
 import { render, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import WizardInputs from './WizardInputs';
 
 describe('>>> WizardInputs tests', () => {

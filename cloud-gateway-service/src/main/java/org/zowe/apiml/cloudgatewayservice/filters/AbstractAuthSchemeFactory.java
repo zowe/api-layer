@@ -142,6 +142,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         StringUtils.equalsIgnoreCase(headerName, "X-Certificate-Public") ||
         StringUtils.equalsIgnoreCase(headerName, "X-Certificate-DistinguishedName") ||
         StringUtils.equalsIgnoreCase(headerName, "X-Certificate-CommonName") ||
+        StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
 
     private static final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
