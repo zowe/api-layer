@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
 import org.zowe.commons.attls.InboundAttls;
 
+import javax.annotation.PostConstruct;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
@@ -31,7 +34,13 @@ import java.util.Set;
 
 @Component
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
+@Slf4j
 public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        log.debug("AT-TLS mode is enabled");
+    }
 
     @Override
     public void customize(TomcatServletWebServerFactory factory) {
@@ -109,6 +118,4 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             handler.recycle();
         }
     }
-
-
 }

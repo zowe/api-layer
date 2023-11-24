@@ -148,7 +148,7 @@ public class ConnectionsConfig {
     }
 
 
-    HttpsFactory factory() {
+    public HttpsFactory factory() {
         HttpsConfig config = HttpsConfig.builder()
             .protocol(protocol)
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
