@@ -10,9 +10,22 @@
 
 /* eslint-disable no-undef */
 
+function login() {
+    const username = Cypress.env('username');
+    const password = Cypress.env('password');
+
+    cy.get('button[type="submit"').as('submitButton').should('exist');
+
+    cy.get('#username').type(username);
+    cy.get('#password').type(password);
+
+    cy.get('@submitButton').should('not.be.disabled');
+    cy.get('@submitButton').click();
+}
+
 describe('>>> Login page tests', () => {
     describe('>>> Login ok page test', () => {
-        it('succesfully loads login page', () => {
+        beforeEach('succesfully loads login page', () => {
             cy.visit(`${Cypress.env('metricsHomePage')}`);
         });
 
@@ -21,16 +34,7 @@ describe('>>> Login page tests', () => {
         });
 
         it('should log in user and check session cookie', () => {
-            const username = Cypress.env('username');
-            const password = Cypress.env('password');
-
-            cy.get('button[type="submit"').as('submitButton').should('exist');
-
-            cy.get('#username').type(username);
-            cy.get('#password').type(password);
-
-            cy.get('@submitButton').should('not.be.disabled');
-            cy.get('@submitButton').click();
+            login();
 
             cy.url().should('contain', '/dashboard');
             cy.get('.header').should('exist');
@@ -39,7 +43,9 @@ describe('>>> Login page tests', () => {
         });
 
         it('should logout and delete session cookie', () => {
-            cy.get('button[id="logout"]').click();
+            login();
+
+            cy.get('#logout').click();
             cy.contains('Metrics Service');
 
             cy.getCookie('apimlAuthenticationToken').should('not.exist');
@@ -47,7 +53,7 @@ describe('>>> Login page tests', () => {
     });
 
     describe('>>> Login bad test', () => {
-        it('succesfully loads login page', () => {
+        beforeEach('succesfully loads login page', () => {
             cy.visit(`${Cypress.env('metricsHomePage')}/`);
         });
 
