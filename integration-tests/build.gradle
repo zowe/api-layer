@@ -29,6 +29,7 @@ dependencies {
     testImplementation libs.spring.web.test.client
     testImplementation libs.spring4Test
     testImplementation libs.json
+    testImplementation libs.json.smart
     testImplementation libs.jjwt
     testImplementation libs.reactorTest
     testImplementation libs.bcpkix;

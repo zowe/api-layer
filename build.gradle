@@ -109,6 +109,7 @@ allprojects {
         resolutionStrategy.force libs.slf4j.api
         resolutionStrategy.force libs.log4j.api
         resolutionStrategy.force libs.log4j.to.slf4j
+        resolutionStrategy.force libs.caffeine
     }
 }
 
