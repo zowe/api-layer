@@ -11,17 +11,17 @@ import React, { useState, useEffect } from 'react';
 import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
 
-function BlogContainer({ mediumUser, mediumBlogUrl }) {
-    if (!isValidUrl(mediumBlogUrl)) {
+function BlogContainer({ user, url, title }) {
+    if (!isValidUrl(url)) {
         return null;
     }
-    if (mediumBlogUrl.includes('medium.com') && !mediumUser) {
+    if (url.includes('medium.com') && !user) {
         return null;
     }
-    const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${mediumUser}`;
+    const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${user}`;
     const [myBlog, setMyBlog] = useState([]);
     const fetchData = async () => {
-        fetch(mediumBlogUrl)
+        fetch(url)
             .then((res) => res.text())
             .then((data) => {
                 const parser = new DOMParser();
@@ -31,21 +31,29 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
                     divs.parentNode.removeChild(divs);
                 }
                 const content = doc.querySelector('.shortdesc');
-                const title = doc.querySelector('h1.title');
-                const blogTitle = title.textContent;
+                const tutorialTitle = doc.querySelector('h1.title');
+                const blogTitle = tutorialTitle.textContent;
                 const blogContent = content.textContent;
                 const blogData = {
                     content: blogContent,
                     description: blogContent,
                     title: blogTitle,
-                    link: mediumBlogUrl,
+                    link: url,
                 };
                 setMyBlog(blogData);
             });
     };
     useEffect(() => {
-        if (!mediumBlogUrl.includes('medium.com')) {
+        if (!url.includes('medium.com') && !url.includes('docs.zowe.org')) {
             fetchData();
+        } else if (url.includes('docs.zowe.org')) {
+            const blogData = {
+                content: '',
+                description: `Tutorial from the Zowe documentation related to ${user}`,
+                title,
+                link: url,
+            };
+            setMyBlog(blogData);
         } else {
             fetch(rss2json)
                 .then((res) => res.json())
@@ -57,11 +65,11 @@ function BlogContainer({ mediumUser, mediumBlogUrl }) {
 
     function displayBlogs() {
         if (myBlog?.items) {
-            const correctBlog = myBlog.items.find((blog) => blog?.link.includes(mediumBlogUrl));
+            const correctBlog = myBlog.items.find((blog) => blog?.link.includes(url));
             return correctBlog && <BlogTile blogData={correctBlog} />;
         }
     }
-    if (mediumBlogUrl.includes('medium.com')) {
+    if (url.includes('medium.com')) {
         return (
             <div data-testid="medium-blog-container" className="BlogsContainer">
                 {displayBlogs()}

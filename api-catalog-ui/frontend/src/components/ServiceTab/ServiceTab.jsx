@@ -360,9 +360,7 @@ export default class ServiceTab extends Component {
                                     {useCases &&
                                         useCases
                                             .slice(0, displayUseCasesCount)
-                                            .map((useCase) => (
-                                                <BlogContainer mediumUser={useCase.user} mediumBlogUrl={useCase.url} />
-                                            ))}
+                                            .map((useCase) => <BlogContainer user={useCase.user} url={useCase.url} />)}
                                 </div>
                                 {useCasesCounter > displayUseCasesCount && displayUseCasesCount < useCases.length && (
                                     <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
@@ -388,8 +386,9 @@ export default class ServiceTab extends Component {
                                             .slice(0, displayBlogsCount)
                                             .map((tutorial) => (
                                                 <BlogContainer
-                                                    mediumUser={tutorial.user}
-                                                    mediumBlogUrl={tutorial.url}
+                                                    user={tutorial.user}
+                                                    url={tutorial.url}
+                                                    title={tutorial.title}
                                                 />
                                             ))}
                                 </div>
