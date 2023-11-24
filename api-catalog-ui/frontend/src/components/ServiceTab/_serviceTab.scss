@@ -78,12 +78,15 @@ body #version-div {
     margin-right: auto;
     padding: 0;
 }
-#more-content-button {
+button.MuiButtonBase-root.MuiIconButton-root.more-content-button {
+    @extend .button-link;
     width: fit-content;
     border-radius: 3px;
+    margin-left: 25%;
     border: 1px solid var(--tertiary, #0056B3);
     margin-top: 13px;
     padding: 8px 12px;
+    align-items: center;
 }
 .BlogsContainer {
     width: 229px;

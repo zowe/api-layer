@@ -365,11 +365,7 @@ export default class ServiceTab extends Component {
                                             ))}
                                 </div>
                                 {useCasesCounter > displayUseCasesCount && displayUseCasesCount < useCases.length && (
-                                    <IconButton
-                                        id="more-content-button"
-                                        className="button-link"
-                                        onClick={this.showMoreUseCases}
-                                    >
+                                    <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
                                         Show all ({useCasesCounter} articles)
                                     </IconButton>
                                 )}
@@ -398,11 +394,7 @@ export default class ServiceTab extends Component {
                                             ))}
                                 </div>
                                 {tutorialsCounter > displayBlogsCount && displayBlogsCount < tutorials.length && (
-                                    <IconButton
-                                        id="more-content-button"
-                                        className="button-link"
-                                        onClick={this.showMoreBlogs}
-                                    >
+                                    <IconButton className="more-content-button" onClick={this.showMoreBlogs}>
                                         Show all ({tutorialsCounter} articles)
                                     </IconButton>
                                 )}
@@ -424,11 +416,7 @@ export default class ServiceTab extends Component {
                                         videos.slice(0, displayVideosCount).map((url) => <VideoWrapper url={url} />)}
                                 </div>
                                 {videosCounter > displayVideosCount && displayVideosCount < videos.length && (
-                                    <IconButton
-                                        id="more-content-button"
-                                        className="button-link"
-                                        onClick={this.showMoreVideos}
-                                    >
+                                    <IconButton className="more-content-button" onClick={this.showMoreVideos}>
                                         Show all ({videosCounter})
                                     </IconButton>
                                 )}
