@@ -42,8 +42,6 @@ function checkForSwagger(service) {
  * @returns {{videosCounter: number, useCasesCounter: number, tutorialsCounter: number}}
  */
 export default function countAdditionalContents(service) {
-    // eslint-disable-next-line no-console
-    console.log(service);
     let videos;
     let tutorials;
     let useCases;

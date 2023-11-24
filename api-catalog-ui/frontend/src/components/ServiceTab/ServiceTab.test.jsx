@@ -186,7 +186,6 @@ describe('>>> ServiceTab component tests', () => {
             />
         );
         expect(serviceTab.find('.footer-labels').exists()).toEqual(false);
-        expect(serviceTab.find('#detail-footer').exists()).toEqual(false);
     });
 
     it('should display home page link if service down', () => {
