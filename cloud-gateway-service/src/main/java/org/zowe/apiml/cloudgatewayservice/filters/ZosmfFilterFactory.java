@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
@@ -23,7 +24,7 @@ public class ZosmfFilterFactory extends TokenFilterFactory {
         return "%s://%s:%d/%s/zaas/zosmf";
     }
 
-    public ZosmfFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+    public ZosmfFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(webClient, instanceInfoService, messageService);
     }
 

@@ -268,6 +268,7 @@ public abstract class TokenSchemeTest {
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("Client-Cert")))
 
                     .assertion(he -> assertNull(getCookie(he, "mycookie")))
                     .assertion(he -> assertEquals("pat", getCookie(he, "personalAccessToken")))
@@ -316,6 +317,7 @@ public abstract class TokenSchemeTest {
                 .header("X-Certificate-Public", "X-Certificate-Public")
                 .header("X-Certificate-DistinguishedName", "X-Certificate-DistinguishedName")
                 .header("X-Certificate-CommonName", "X-Certificate-CommonName")
+                .header("Client-Cert", "certData")
 
                 .cookie("mycookie", "mycookievalue")
                 .cookie("personalAccessToken", "pat")
