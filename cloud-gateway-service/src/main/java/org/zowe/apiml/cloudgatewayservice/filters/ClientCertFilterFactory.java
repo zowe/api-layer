@@ -30,7 +30,7 @@ import java.util.Base64;
 @Slf4j
 public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<ClientCertFilterFactory.Config> {
 
-    private static final String CLIENT_CERT_HEADER = "Client-Cert";
+    public static final String CLIENT_CERT_HEADER = "Client-Cert";
 
     public ClientCertFilterFactory() {
         super(Config.class);

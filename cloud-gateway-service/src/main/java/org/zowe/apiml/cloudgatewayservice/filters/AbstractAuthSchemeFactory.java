@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.zowe.apiml.cloudgatewayservice.filters.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
@@ -133,6 +134,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     private static final Predicate<String> CREDENTIALS_HEADER_INPUT = headerName ->
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.AUTHORIZATION) ||
+        StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
         StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
     private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
         CREDENTIALS_HEADER_INPUT.test(headerName) ||

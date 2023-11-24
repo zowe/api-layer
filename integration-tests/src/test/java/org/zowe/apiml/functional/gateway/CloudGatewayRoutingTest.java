@@ -12,7 +12,7 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,6 +25,8 @@ import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -49,8 +51,10 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
-    @BeforeEach
-    void setup() {
+    @BeforeAll
+    static void setup() throws Exception {
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -194,6 +198,17 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
                 assertEquals(200, response.getStatusCode());
             }
 
+            @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
+            void givenValidRequest_thenClientCertIsTransformed(String title, String basePath, Consumer<Response> assertions) throws Exception {
+                Response response = given()
+                        .config(SslContext.clientCertValid)
+                    .when()
+                        .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
             @ParameterizedTest(name = "givenValidRequest_thenOidcIsTransformed {0} [{index}]")
             @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#validToBeTransformed")
             <T> void givenValidRequest_thenOidcIsTransformed(String title, String basePath, Consumer<Response> assertions) {
@@ -225,6 +240,17 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
                 assertEquals(200, response.getStatusCode());
             }
 
+            @ParameterizedTest(name = "givenInvalidRequest_thenClientCertIsNotTransformed {0} [{index}]")
+            @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
+            void givenInvalidRequest_thenClientCertIsNotTransformed(String title, String basePath, Consumer<Response> assertions) throws Exception {
+                Response response = given()
+                    .config(SslContext.selfSignedUntrusted)
+                .when()
+                    .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                assertions.accept(response);
+                assertEquals(200, response.getStatusCode());
+            }
+
             @ParameterizedTest(name = "givenInvalidRequest_thenOidcIsNotTransformed {0} [{index}]")
             @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
             <T> void givenInvalidRequest_thenOidcIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
@@ -237,7 +263,6 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
                 assertions.accept(response);
                 assertEquals(200, response.getStatusCode());
             }
-
 
             @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
             @MethodSource("org.zowe.apiml.functional.gateway.CloudGatewayRoutingTest#noAuthTransformation")
