@@ -116,12 +116,10 @@ dependencyResolutionManagement {
 
             //version('ribbon', '2.7.18')
             version('ribbon', '2.3.0')
-            //version('reactor', '3.6.0')
             version('reactor') {
-                // because of conflict with spring-security-config:5.7.8
-                // removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
-                strictly '[3.4.0, 3.5.0['
-                prefer '3.4.29'
+                // 3.5.x+: removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
+                strictly '[3.4.34, 3.5.0['
+                prefer '3.4.34'
             }
             version('restAssured', '5.3.2')
             version('rhino', '1.7.14')
@@ -161,7 +159,8 @@ dependencyResolutionManagement {
             version('gradleDependencyCheck', '8.2.1')
             version('gradleJibPlugin', '3.2.1')
             version('taskTree', '2.1.1')
-            version('reactorBom', '2022.0.7')
+            //version('reactorBom', '2022.0.7')
+            version('reactorBom', '2023.0')
             version('gradleTestLogger', '3.2.0')
             version('testLogger', '3.2.0')
             version('micronaut', '3.8.9')
