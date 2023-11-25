@@ -143,9 +143,10 @@ dependencyResolutionManagement {
                 prefer '1.4.20'
             }
 
-            //version('jgit', '6.7.0.202309050840-r')
+            // version 6.x is not compatible with gradleGitProperties and requires Java 11
             version('jgit') {
-                strictly '5.13.1.202206130422-r'
+                strictly '[5.13.2.202306221912-r,6.0.0.0['
+                prefer '5.13.2.202306221912-r'
             }
             version('gradleNode', '7.0.1')
             // the next version (4.1.0.3113) requires Java 11
@@ -157,9 +158,7 @@ dependencyResolutionManagement {
             version('taskTree', '2.1.1')
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
-            //version('gradleTestLogger', '3.2.0')
-            //version('testLogger', '4.0.0')
-            version('testLogger', '3.2.0')
+            version('testLogger', '4.0.0')
             // version 4.x is not compatible with Java 8
             version('micronaut', '3.10.3')
             version('micronautPlugin', '3.7.10')
