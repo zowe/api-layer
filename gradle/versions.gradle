@@ -37,12 +37,7 @@ dependencyResolutionManagement {
             version('commonsLang3', '3.14.0')
             version('commonsLogging', '1.2')
             version('commonsText', '1.11.0')
-            //version('commonsIo', '2.15.0')
-            version('commonsIo') {
-                // older versions are vulnerable to CVE-2021-29425
-                strictly '[2.7,2.8.0['
-                prefer '2.7'
-            }
+            version('commonsIo', '2.15.0')
             version('commonsFileUpload', '1.5')
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
@@ -180,7 +175,8 @@ dependencyResolutionManagement {
             version('shadow', '8.1.1')
             //version('gradleTomcatPlugin', '2.7.0')
             version('gradleTomcatPlugin', '2.7.0')
-            version('checkstyle', '10.12.5')
+            // version 10.x+ requires Java 11
+            version('checkstyle', '9.3')
             version('jacoco', '0.8.11')
             version('gradle', '8.4')
             version('assertjCore', '3.24.2')
