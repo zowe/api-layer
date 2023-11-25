@@ -153,8 +153,6 @@ dependencyResolutionManagement {
             // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
-            //version('gradleDependencyCheck', '9.0.0')
-            version('gradleDependencyCheck', '8.2.1')
             //version('gradleJibPlugin', '3.4.0')
             version('gradleJibPlugin', '3.2.1')
             version('taskTree', '2.1.1')
@@ -394,7 +392,6 @@ dependencyResolutionManagement {
             library('gradle_sonar_plugin', 'org.sonarsource.scanner.gradle', 'sonarqube-gradle-plugin').versionRef('sonarGradlePlugin')
             library('gradle_release', 'net.researchgate', 'gradle-release').versionRef('gradleRelease')
             library('gradle_licencer', 'gradle.plugin.org.cadixdev.gradle', 'licenser').versionRef('gradleLicencer')
-            library('gradle_dependency_check', 'org.owasp', 'dependency-check-gradle').versionRef('gradleDependencyCheck')
             library('gradle_jib_plugin', 'gradle.plugin.com.google.cloud.tools', 'jib-gradle-plugin').versionRef('gradleJibPlugin')
             library('gradle_test_logger', 'com.adarshr', 'gradle-test-logger-plugin').versionRef('gradleTestLogger')
             library('gradle_tomcat_plugin', 'com.bmuschko', 'gradle-tomcat-plugin').versionRef('gradleTomcatPlugin')
