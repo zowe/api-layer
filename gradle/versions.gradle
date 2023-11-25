@@ -86,8 +86,8 @@ dependencyResolutionManagement {
             version('jquery', '3.7.1')
             version('lettuce', '6.3.0.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
-            //version('log4j', '2.22.0')
-            version('log4j', '2.19.0')
+            version('log4j', '2.22.0')
+            //version('log4j', '2.19.0')
             version('logback') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
@@ -115,6 +115,7 @@ dependencyResolutionManagement {
             version('picocli', '4.7.5')
 
             //version('ribbon', '2.7.18')
+            //version('ribbon', '2.6.7')
             version('ribbon', '2.3.0')
             version('reactor') {
                 // 3.5.x+: removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
@@ -149,49 +150,44 @@ dependencyResolutionManagement {
                 prefer '1.4.20'
             }
 
+            //version('jgit', '6.7.0.202309050840-r')
             version('jgit') {
                 strictly '5.13.1.202206130422-r'
             }
+            //version('gradleNode', '7.0.1')
             version('gradleNode', '3.5.0')
+            //version('sonarGradlePlugin', '4.4.1.3373')
             version('sonarGradlePlugin', '4.0.0.2929')
+            //version('gradleRelease', '3.0.2')
             version('gradleRelease', '2.8.1')
+            //version('gradleLicencer', '0.6.1')
             version('gradleLicencer', '0.6.1')
+            //version('gradleDependencyCheck', '9.0.0')
             version('gradleDependencyCheck', '8.2.1')
+            //version('gradleJibPlugin', '3.4.0')
             version('gradleJibPlugin', '3.2.1')
+            //version('taskTree', '2.1.1')
             version('taskTree', '2.1.1')
-            //version('reactorBom', '2022.0.7')
+            //version('reactorBom', '2023.0.0')
             version('reactorBom', '2023.0')
+            //version('gradleTestLogger', '4.0.0')
             version('gradleTestLogger', '3.2.0')
+            //version('testLogger', '4.0.0')
             version('testLogger', '3.2.0')
-            version('micronaut', '3.8.9')
+            //version('micronaut', '4.2.0')
+            version('micronaut', '3.10.3')
+            //version('micronautPlugin', '4.2.0')
             version('micronautPlugin', '3.7.10')
+            //version('shadow', '8.1.1')
             version('shadow', '8.1.1')
-            version('gradleTomcatPlugin', '2.7.0')
-            version('checkstyle', '9.3')
-            version('jacoco', '0.8.10')
-            version('gradle', '8.1.1')
-            version('assertjCore', '3.24.2')
-            /*
-            version('jgit', '6.7.0.202309050840-r')
-            version('gradleNode', '7.0.1')
-            version('sonarGradlePlugin', '4.4.1.3373')
-            version('gradleRelease', '3.0.2')
-            version('gradleLicencer', '0.6.1')
-            version('gradleDependencyCheck', '9.0.0')
-            version('gradleJibPlugin', '3.4.0')
-            version('taskTree', '2.1.1')
-            version('reactorBom', '2023.0.0')
-            version('gradleTestLogger', '4.0.0')
-            version('testLogger', '4.0.0')
-            version('micronaut', '4.2.0')
-            version('micronautPlugin', '4.2.0')
-            version('shadow', '8.1.1')
+            //version('gradleTomcatPlugin', '2.7.0')
             version('gradleTomcatPlugin', '2.7.0')
             version('checkstyle', '10.12.5')
+            //version('checkstyle', '9.3')
             version('jacoco', '0.8.11')
+            //version('jacoco', '0.8.10')
             version('gradle', '8.4')
             version('assertjCore', '3.24.2')
-             */
 
             library('zowe_attls', 'org.zowe.apiml.sdk', 'attls').versionRef('attls')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
