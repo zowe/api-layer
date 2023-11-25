@@ -82,7 +82,6 @@ dependencyResolutionManagement {
             version('lettuce', '6.3.0.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.22.0')
-            //version('log4j', '2.19.0')
             version('logback') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
@@ -109,8 +108,7 @@ dependencyResolutionManagement {
             version('ow2asm', '9.6')
             version('picocli', '4.7.5')
 
-            //version('ribbon', '2.7.18')
-            //version('ribbon', '2.6.7')
+            // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
             version('ribbon', '2.3.0')
             version('reactor') {
                 // 3.5.x+: removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
@@ -150,17 +148,15 @@ dependencyResolutionManagement {
                 strictly '5.13.1.202206130422-r'
             }
             version('gradleNode', '7.0.1')
-            //version('sonarGradlePlugin', '4.4.1.3373')
+            // the next version (4.1.0.3113) requires Java 11
             version('sonarGradlePlugin', '4.0.0.2929')
-            //version('gradleRelease', '3.0.2')
+            // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
-            //version('gradleLicencer', '0.6.1')
             version('gradleLicencer', '0.6.1')
             //version('gradleDependencyCheck', '9.0.0')
             version('gradleDependencyCheck', '8.2.1')
             //version('gradleJibPlugin', '3.4.0')
             version('gradleJibPlugin', '3.2.1')
-            //version('taskTree', '2.1.1')
             version('taskTree', '2.1.1')
             version('reactorBom', '2023.0')
             //version('gradleTestLogger', '4.0.0')
@@ -170,9 +166,7 @@ dependencyResolutionManagement {
             // version 4.x is not compatible with Java 8
             version('micronaut', '3.10.3')
             version('micronautPlugin', '3.7.10')
-            //version('shadow', '8.1.1')
             version('shadow', '8.1.1')
-            //version('gradleTomcatPlugin', '2.7.0')
             version('gradleTomcatPlugin', '2.7.0')
             // version 10.x+ requires Java 11
             version('checkstyle', '9.3')
