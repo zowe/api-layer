@@ -153,12 +153,11 @@ dependencyResolutionManagement {
             // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
-            //version('gradleJibPlugin', '3.4.0')
             version('gradleJibPlugin', '3.2.1')
             version('taskTree', '2.1.1')
             version('reactorBom', '2023.0')
-            //version('gradleTestLogger', '4.0.0')
-            version('gradleTestLogger', '3.2.0')
+            version('gradleTestLogger', '4.0.0')
+            //version('gradleTestLogger', '3.2.0')
             //version('testLogger', '4.0.0')
             version('testLogger', '3.2.0')
             // version 4.x is not compatible with Java 8
