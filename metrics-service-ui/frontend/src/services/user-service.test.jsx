@@ -10,7 +10,7 @@
 
 /* eslint-disable no-undef */
 
-import jest from 'jest-mock';
+import { jest } from '@jest/globals';
 import { userService } from './user-service';
 
 function mockFetch(data, resultOk = true) {
