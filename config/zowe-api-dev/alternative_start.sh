@@ -93,6 +93,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Djava.library.path=${LIBPATH} \
     -jar ${ROOT_DIR}"/components/api-mediation/gateway-service-lite.jar" &
 
+gw_pid=$!
+
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
@@ -106,11 +108,15 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xqu
     -Dserver.ssl.keyPassword="${KEYSTORE_PASSWORD}" \
     -Dserver.ssl.keyStore="${KEYSTORE}" \
     -Dserver.ssl.keyStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.keyStoreType="${KEYSTORE_TYPE}" \
     -Dserver.ssl.trustStore="${TRUSTSTORE}" \
     -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
+    -Dserver.ssl.trustStoreType="${KEYSTORE_TYPE}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dapiml.service.preferIpAddress=false \
     -jar ${ROOT_DIR}"/components/api-mediation/discoverable-client.jar" &
+
+dclient_pid=$!
 
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
     -Dibm.serversocket.recover=true \
@@ -144,6 +150,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Djava.library.path=${LIBPATH} \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service-lite.jar" &
 
+ds_pid=$!
+
 _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Xms16m -Xmx512m \
     ${QUICK_START} \
@@ -175,6 +183,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services-lite.jar" &
+
+ac_pid=$!
 
 _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
    ${QUICK_START} \
@@ -210,6 +220,20 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dserver.ssl.trustStorePassword="${KEYSTORE_PASSWORD}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Djava.library.path=${LIBPATH} \
-  -jar ${ROOT_DIR}"/components/api-mediation/caching-service.jar"
+  -jar ${ROOT_DIR}"/components/api-mediation/caching-service.jar" &
+
+cs_pid=$!
+
+echo "Gateway Service PID: $gw_pid"
+echo "Discovery Service PID: $ds_pid"
+echo "API Catalog Service PID: $ac_pid"
+echo "Caching Service PID: $cs_pid"
+echo "Discoverable Client PID: $dclient_pid"
+
+wait $gw_pid
+wait $ds_pid
+wait $ac_pid
+wait $cs_pid
+wait $dclient_pid
 
 echo "Done"

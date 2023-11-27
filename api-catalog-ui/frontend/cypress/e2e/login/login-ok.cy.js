@@ -11,8 +11,8 @@
 /// <reference types="Cypress" />
 
 describe('>>> Login ok page test', () => {
-    it('succesfully loads login page', () => {
-        cy.visit(`${Cypress.env('catalogHomePage')}`);
+    beforeEach('succesfully loads login page', () => {
+        cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
     });
 
     it('should not display header', () => {

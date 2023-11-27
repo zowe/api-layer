@@ -1,4 +1,4 @@
-## Ad-Hoc deployment of API Mediation Layer to Mainframe system
+# Ad-Hoc deployment of API Mediation Layer to Mainframe system
 
 ## Technology
 
@@ -9,13 +9,16 @@ Underlying technology is Zowe CLI.
 **WARNING: TECHNOLOGY AND IMPLEMENTATION IS STILL IN EXPERIMENTAL STAGE**
 
 ### Prerequisites
- - Install [Zowe CLI](https://docs.zowe.org/stable/user-guide/cli-installcli.html#installing-zowe-cli).
- - Install zowe-api-dev: `npm -g install @zowedev/zowe-api-dev`.
- - Create Zowe CLI profiles for Z/OSMF and USS:
-   ```
+
+- Install [Zowe CLI](https://docs.zowe.org/stable/user-guide/cli-installcli.html#installing-zowe-cli).
+- Install zowe-api-dev: `npm -g install @zowedev/zowe-api-dev`.
+- Create Zowe CLI profiles for Z/OSMF and USS:
+
+   ```shell
    zowe profiles create zosmf-profile <profile_id> --host <hostname> --port <port> --user <userid> --pass "<password>" --reject-unauthorized false
    zowe profiles create ssh-profile <profile_id> --host <hostname> --user <userid> --password "<password>"
    ```
+
 ### Procedure
 
 Procedure is separated into 3 distinct phases.
@@ -26,54 +29,58 @@ Procedure is separated into 3 distinct phases.
 
 The objective of this phase is to setup `zowe-api-dev` and perform the first deployment.
 
- - Build deployment artifacts.
-    - Run Gradle clean and build task. `./gradlew clean build`
-    
- - Create `user-zowe-api.json` file in the repository's root folder. Fill in specific information. 
+- Build deployment artifacts.
+  - Run Gradle clean and build task. `./gradlew clean build`
+
+- Create `user-zowe-api.json` file in the repository's root folder. Fill in specific information.
   
-    * Keep ports and job identifiers unique so you do not overlap other developers deployments
+  - Keep ports and job identifiers unique so you do not overlap other developers deployments
 
-    * Sample user-zowe-api.json:
-        ```json
+  - Sample user-zowe-api.json:
+
+    ```json
         {
-        "javaHome": "<java home path>",
-        "javaLoadlib": "",
-        "jobcard": [
-            "//<job id> JOB <your mainframe account number>,'APIML',MSGCLASS=A,CLASS=A,",
-            "//  MSGLEVEL=(1,1),REGION=0M",
-            "/*JOBPARM SYSAFF=*"
-        ],
-        "zosHlq": "<dataset hlq for zfs>",
-        "zosTargetDir": "<deployment directory, use home directory>",
-        "zoweProfileName": "<name of zowe profile for zosmf  and uss>",
-        "basePort": <base port for deployment>,
-        "systemHostname": "<hostname of deployment system>"
+            "javaHome": "<java home path>",
+            "javaLoadlib": "",
+            "jobcard": [
+                "//<job id> JOB <your mainframe account number>,'APIML',MSGCLASS=A,CLASS=A,",
+                "//  MSGLEVEL=(1,1),REGION=0M",
+                "/*JOBPARM SYSAFF=*"
+            ],
+            "zosHlq": "<dataset hlq for zfs>",
+            "zosTargetDir": "<deployment directory, use home directory>",
+            "zoweProfileName": "<name of zowe profile for zosmf  and uss>",
+            "basePort": <base port for deployment>,
+            "systemHostname": "<hostname of deployment system>"
         }
-        ```
- - Create a directory next to your API Mediation Layer repository called `api-layer-deploy`. Place the following files inside:
+    ```
 
+- Create a directory next to your API Mediation Layer repository called `api-layer-deploy`. Place the following files inside:
+
+   ```plaintext
+    |
+    +- api-layer
+    | +- / api layer repository /
+    | ...
+    +- api-layer-deploy
+        +- apiml.keystore.p12
+        +- apiml.truststore.p12
+        +- zosmf.yml
+        +- libzowe-attls.so
    ```
-   |
-   +- api-layer
-   | +- / api layer repository /
-   | ...
-   +- api-layer-deploy
-     +- apiml.keystore.p12
-     +- apiml.truststore.p12
-     +- zosmf.yml
-   ```
 
-    - apiml.keystore.p12 - Keystore containing certificate with alias `apiml` to be used by deployed services.
-    - apiml.truststore.p12 - Kestore with CA certs and trust chain to be used to verify certificates.
-    - zosmf.yml - z/OSMF static API definition.
+  - `apiml.keystore.p12` - Keystore containing certificate with alias `apiml` to be used by deployed services.
+  - `apiml.truststore.p12` - Kestore with CA certs and trust chain to be used to verify certificates.
+  - `zosmf.yml` - z/OSMF static API definition.
+  - `libzowe-attls.so` - Native library for AT-TLS support in 64-bit version. Can be obtained from the java-common-lib-package JFrog artifact.
 
- - Run `zowe-api-dev zfs`. ZFS filesystem will be created and mounted to the `zosTargetDir`.
- 
- - Run `zowe-api-dev deploy`. Binaries will be deployed. 
- 
- - Run `zowe-api-dev config --name zos`. Configuration will be deployed.
- 
- - Start deployed instance by running `zowe-api-dev start --job`. JES Job will be started. You will get the job ID of started job.
+- Run `zowe-api-dev zfs`. ZFS filesystem will be created and mounted to the `zosTargetDir`.
+
+- Run `zowe-api-dev deploy`. Binaries will be deployed.
+
+- Run `zowe-api-dev config --name zos`. Configuration will be deployed.
+
+- Start deployed instance by running `zowe-api-dev start --job`. JES Job will be started. You will get the job ID of started job.
 
  *At this point you can go and use the deployment. You will not have to repeat these steps (Except the zfs mount if you dispose of it)*
 
@@ -105,8 +112,8 @@ Wrapper script `config/zowe-api-dev/run-wrapper.sh` is launched on the mainframe
 
 ### Notes and Known issues
 
- - `zowe-api-dev` is not perfect. Sometimes a manual delete of `.zowe-api-dev/uploadedFiles` cache is needed to force a specific deployment.
- - Zowe CLI sometimes fails to upload large files with error: `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`.
+- `zowe-api-dev` is not perfect. Sometimes a manual delete of `.zowe-api-dev/uploadedFiles` cache is needed to force a specific deployment.
+- Zowe CLI sometimes fails to upload large files with error: `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`.
    When retried, upload passes. Further optimization can be done to reduce size of our deployment.
 
 ### Deployment size optimization

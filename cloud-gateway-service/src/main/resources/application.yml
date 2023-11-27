@@ -6,7 +6,9 @@ eureka:
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
         metadata-map:
             apiml:
-                service.apimlId :  ${apiml.service.apimlId}
+                service:
+                    apimlId:  ${apiml.service.apimlId}
+                    supportClientCertForwarding: true
     client:
         fetchRegistry: true
         registerWithEureka: true

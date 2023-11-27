@@ -24,4 +24,6 @@ public final class ApimlConstants {
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
     public static final String PAT_HEADER_NAME = "PRIVATE-TOKEN";
     public static final String AUTH_FAIL_HEADER = "X-Zowe-Auth-Failure";
+    public static final String HTTP_CLIENT_USE_CLIENT_CERTIFICATE = "apiml.useClientCert";
+
 }

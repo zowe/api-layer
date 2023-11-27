@@ -27,6 +27,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
+
 @Service
 @Slf4j
 public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFactory.Config> {
@@ -51,6 +53,7 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
                 if (certificates != null && certificates.length > 0) {
                     ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
                         try {
+                            exchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
                             setHeader(headers, config.getHeaders().split(","), certificates[0]);
                         } catch (CertificateEncodingException | InvalidNameException e) {
                             headers.add(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());

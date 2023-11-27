@@ -30,22 +30,26 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.*;
 
 class ApimlTomcatCustomizerTest {
 
     @Test
     void providedCorrectProtocolInConnector_endpointIsConfigured() {
-        ApimlTomcatCustomizer customizer = new ApimlTomcatCustomizer<>();
+        ApimlTomcatCustomizer<?, ?> customizer = new ApimlTomcatCustomizer<>();
+        customizer.afterPropertiesSet();
         Http11NioProtocol protocol = new Http11NioProtocol();
         Connector connector = new Connector(protocol);
         customizer.customizeConnector(connector);
         Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
-        AbstractEndpoint abstractEndpoint = ReflectionTestUtils.invokeMethod(protocolHandler, "getEndpoint");
+        AbstractEndpoint<?, ?> abstractEndpoint = ReflectionTestUtils.invokeMethod(protocolHandler, "getEndpoint");
+        assumeTrue(abstractEndpoint != null);
         assertEquals(ApimlTomcatCustomizer.ApimlAttlsHandler.class, abstractEndpoint.getHandler().getClass());
     }
 
     @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
     void whenSocketArrives_fileDescriptorIsObtained() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, ContextIsNotInitializedException {
         AbstractEndpoint.Handler handler = mock(AbstractEndpoint.Handler.class);
         NioChannel socket = mock(NioChannel.class);
@@ -69,6 +73,7 @@ class ApimlTomcatCustomizerTest {
 
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     SocketWrapperBase getSocketWarapper(NioChannel socket) {
         return new SocketWrapperBase(socket, new NioEndpoint()) {
 

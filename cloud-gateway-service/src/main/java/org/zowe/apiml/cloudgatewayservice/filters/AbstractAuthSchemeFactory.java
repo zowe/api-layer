@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.zowe.apiml.cloudgatewayservice.filters.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
@@ -140,6 +141,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         StringUtils.equalsIgnoreCase(headerName, "X-Certificate-Public") ||
         StringUtils.equalsIgnoreCase(headerName, "X-Certificate-DistinguishedName") ||
         StringUtils.equalsIgnoreCase(headerName, "X-Certificate-CommonName") ||
+        StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
 
     private static final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
