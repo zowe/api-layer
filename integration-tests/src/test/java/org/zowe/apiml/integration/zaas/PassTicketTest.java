@@ -11,7 +11,6 @@
 package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import java.io.IOException;
@@ -44,8 +43,7 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
  */
-@Slf4j
-@GeneralAuthenticationTest
+@ZaasTest
 class PassTicketTest implements TestWithStartedInstances {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
