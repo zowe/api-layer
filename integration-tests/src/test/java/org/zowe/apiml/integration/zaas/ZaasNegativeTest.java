@@ -86,7 +86,7 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpointsWithAllTokens")
-        void givenInvalidOAuthToken(URI uri, String token) {
+        void givenInvalidToken(URI uri, String token) {
             //@formatter:off
             given()
                 .header("Authorization", "Bearer " + token)

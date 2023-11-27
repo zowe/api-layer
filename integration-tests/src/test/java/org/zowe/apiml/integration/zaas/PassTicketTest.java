@@ -15,214 +15,190 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
-import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
-import org.zowe.apiml.util.config.EnvironmentConfiguration;
+
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
-import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.hamcrest.core.IsNot.not;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
- * Verify integration of the API ML Passticket support with the zOS provider of the Passticket.
+ * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
  */
 @Slf4j
 @GeneralAuthenticationTest
 class PassTicketTest implements TestWithStartedInstances {
 
-    private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
-    private final static DiscoverableClientConfiguration DISCOVERABLE_CLIENT_CONFIGURATION =
-        ENVIRONMENT_CONFIGURATION.getDiscoverableClientConfiguration();
-
-    private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
-    private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
-
-    private final static String COOKIE = "apimlAuthenticationToken";
+    private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
 
     @BeforeEach
-    void setUp() {
-        RestAssured.useRelaxedHTTPSValidation();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    void setUpCertificate() {
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
     @Nested
-    class WhenGeneratingPassticket {
-        private String jwt;
-        private TicketRequest ticketRequest;
+    class WhenGeneratingPassTicket_returnValidPassTicket {
 
-        @BeforeEach
-        void setUpToken() {
-            jwt = gatewayToken();
-            ticketRequest = new TicketRequest(APPLICATION_NAME);
+        private final TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        @Test
+        void givenValidZosmfToken() {
+            String zosmfToken = getZosmfJwtToken();
+
+            //@formatter:off
+            given()
+                .cookie(COOKIE, zosmfToken)
+                .body(ticketRequest)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(SC_OK)
+                .body("ticket", not(""))
+                .body("userId", is(USERNAME))
+                .body("applicationName", is(APPLICATION_NAME));
+            //@formatter:on
         }
 
-        @Nested
-        class ReturnValidPassticket {
-            @BeforeEach
-            void setUpCertificate() {
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-            }
+        @Test
+        void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+            String ltpaToken = getZosmfToken(LTPA_COOKIE);
+            String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
-            @Test
-            void givenValidTokenInCookieAndCertificate() {
-                TicketResponse ticketResponse = given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_OK))
-                    .extract().body().as(TicketResponse.class);
-
-                assertPassTicketIsValid(ticketResponse);
-            }
-
-            @Test
-            void givenValidTokenInHeaderAndCertificate() {
-                TicketResponse ticketResponse = given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .header("Authorization", "Bearer " + jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_OK))
-                    .extract().body().as(TicketResponse.class);
-
-                assertPassTicketIsValid(ticketResponse);
-            }
+            //@formatter:off
+            given()
+                .header("Authorization", "Bearer " + zoweToken)
+                .body(ticketRequest)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(SC_OK)
+                .body("ticket", not(""))
+                .body("userId", is(USERNAME))
+                .body("applicationName", is(APPLICATION_NAME));
+            //@formatter:on
         }
 
-        @Nested
-        class ReturnUnauthorized {
-            @BeforeEach
-            void setUpCertificateAndToken() {
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-            }
+        @Test
+        void givenValidAccessToken() {
+            String serviceId = "gateway";
+            String pat = personalAccessToken(Collections.singleton(serviceId));
 
-            @Test
-            void givenNoToken() {
-                String expectedMessage = "Authentication is required for URL '" + ZAAS_TICKET_URI.getPath() + "'";
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG105E' }.messageContent", equalTo(expectedMessage));
-            }
-
-            @Test
-            void givenInvalidTokenInCookie() {
-                String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + ZAAS_TICKET_URI.getPath() + "'";
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
-            }
-
-            @Test
-            void givenInvalidTokenInHeader() {
-                String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + ZAAS_TICKET_URI.getPath() + "'";
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .header("Authorization", "Bearer " + jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
-            }
+            //@formatter:off
+            given()
+                .header("Authorization", "Bearer " + pat)
+                .header("X-Service-Id", serviceId)
+                .body(ticketRequest)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(SC_OK)
+                .body("ticket", not(""))
+                .body("userId", is(USERNAME))
+                .body("applicationName", is(APPLICATION_NAME));
+            //@formatter:on
         }
 
-        @Nested
-        class ReturnBadRequest {
-            @BeforeEach
-            void setUpCertificateAndToken() {
-                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-            }
-
-            @Test
-            void givenNoApplicationName() {
-                String expectedMessage = "The 'applicationName' parameter name is missing.";
-
-                given()
-                    .contentType(JSON)
-                    .body(new TicketRequest())
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_BAD_REQUEST))
-                    .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
-
-            }
-
-            @Test
-            void givenInvalidApplicationName() {
-                String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
-                TicketRequest ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
-
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_BAD_REQUEST))
-                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
-
-            }
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
+        void givenX509Certificate(String certificate) {
+            //@formatter:off
+            given()
+                .header("Client-Cert", certificate)
+                .body(ticketRequest)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(SC_OK)
+                .body("ticket", not(""))
+                .body("userId", not(""))
+                .body("applicationName", is(APPLICATION_NAME));
+            //@formatter:on
         }
 
-        @Nested
-        class GivenNoCertificate {
-            @Test
-            void thenReturnUnauthorized() {
-                String expectedMessage = "Authentication is required for URL '" + ZAAS_TICKET_URI.getPath() + "'";
+        @Test
+        void givenValidOAuthToken() {
+            String oAuthToken = validOktaAccessToken(true);
 
-                given()
-                    .contentType(JSON)
-                    .body(ticketRequest)
-                    .cookie(COOKIE, jwt)
-                .when()
-                    .post(ZAAS_TICKET_URI)
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG105E' }.messageContent", equalTo(expectedMessage));
-            }
+            //@formatter:off
+            given()
+                .cookie(COOKIE, oAuthToken)
+                .body(ticketRequest)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(SC_OK)
+                .body("ticket", not(""))
+                .body("userId", is(USERNAME))
+                .body("applicationName", is(APPLICATION_NAME));
+            //@formatter:on
         }
     }
 
-    private void assertPassTicketIsValid(TicketResponse ticketResponse) {
-        assertEquals(USERNAME, ticketResponse.getUserId());
-        assertEquals(APPLICATION_NAME, ticketResponse.getApplicationName());
+    @Nested
+    class WhenGeneratingPassTicket_returnBadRequest {
+
+        private final String jwt = getZosmfJwtToken();
+
+        @Test
+        void givenNoApplicationName() {
+            String expectedMessage = "The 'applicationName' parameter name is missing.";
+
+            //@formatter:off
+            given()
+                .contentType(JSON)
+                .body(new TicketRequest())
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(is(SC_BAD_REQUEST))
+                .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
+            //@formatter:on
+        }
+
+        @Test
+        void givenInvalidApplicationName() {
+            String expectedMessage = "The generation of the PassTicket failed. Reason:";
+            TicketRequest ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
+
+            //@formatter:off
+            given()
+                .contentType(JSON)
+                .body(ticketRequest)
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(is(SC_BAD_REQUEST))
+                .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
+            //@formatter:on
+        }
     }
-    //@formatter:on
+
+    // Additional negative tests are in ZaasNegativeTest since they are common for the whole service
 
 }
