@@ -36,55 +36,26 @@ function checkForSwagger(service) {
     return hasSwagger;
 }
 
+function countValidItems(items, validator) {
+    return items.reduce((counter, item) => (validator(item) ? counter + 1 : counter), 0);
+}
+
 /**
  * Counts the additional contents
  * @param service
  * @returns {{videosCounter: number, useCasesCounter: number, tutorialsCounter: number}}
  */
 export default function countAdditionalContents(service) {
-    let videos;
-    let tutorials;
-    let useCases;
-    let useCasesCounter = 0;
-    let tutorialsCounter = 0;
-    let videosCounter = 0;
-    let documentation;
-    let hasSwagger = false;
-    if (contents?.products?.length > 0 && service?.serviceId) {
-        const correctProduct = contents.products.find((product) => service.serviceId === product.name);
-        if (correctProduct?.useCases) {
-            correctProduct.useCases.forEach((cases) => {
-                if (isValidUrl(cases.url)) {
-                    useCasesCounter += 1;
-                }
-            });
-            useCases = correctProduct.useCases;
-        }
-        if (correctProduct?.tutorials) {
-            correctProduct.tutorials.forEach((tutorial) => {
-                if (isValidUrl(tutorial.url)) {
-                    tutorialsCounter += 1;
-                }
-            });
-            tutorials = correctProduct.tutorials;
-        }
-        if (correctProduct?.videos) {
-            correctProduct.videos.forEach((video) => {
-                if (isValidUrl(video)) {
-                    videosCounter += 1;
-                }
-            });
-            videos = correctProduct.videos;
-        }
-        if (correctProduct?.documentation) {
-            if (isValidUrl(correctProduct.documentation?.url)) {
-                documentation = correctProduct.documentation;
-            }
-        }
-    }
-    if (service?.apis) {
-        hasSwagger = checkForSwagger(service);
-    }
+    const { useCases, tutorials, videos, documentation } = contents.products.find(
+        (product) => service?.serviceId === product.name
+    ) || { useCases: [], tutorials: [], videos: [], documentation: null };
+
+    const useCasesCounter = countValidItems(useCases, (item) => isValidUrl(item.url));
+    const tutorialsCounter = countValidItems(tutorials, (item) => isValidUrl(item.url));
+    const videosCounter = countValidItems(videos, (item) => isValidUrl(item));
+
+    const hasSwagger = checkForSwagger(service);
+
     return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger, useCases, tutorials, videos, documentation };
 }
 
