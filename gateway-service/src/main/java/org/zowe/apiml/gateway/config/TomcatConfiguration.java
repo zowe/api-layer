@@ -30,6 +30,7 @@ import java.util.List;
  */
 @Configuration
 public class TomcatConfiguration {
+
     @Value("${server.internal.enabled:false}")
     private boolean enableInternalPort;
     @Value("${server.internal.ssl.enabled:true}")

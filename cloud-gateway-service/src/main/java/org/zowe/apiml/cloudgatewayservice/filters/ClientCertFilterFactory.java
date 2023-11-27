@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -22,6 +21,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
+import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
+
 /**
  * Objective is to include new header in the request which contains incoming client certificate
  * so that further processing (mapping to mainframe userId) is possible by the domain gateway.
@@ -30,7 +31,7 @@ import java.util.Base64;
 @Slf4j
 public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<ClientCertFilterFactory.Config> {
 
-    private static final String CLIENT_CERT_HEADER = "Client-Cert";
+    public static final String CLIENT_CERT_HEADER = "Client-Cert";
 
     public ClientCertFilterFactory() {
         super(Config.class);
@@ -49,11 +50,12 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
         return ((exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
                 headers.remove(CLIENT_CERT_HEADER);
-                if (config.isForwardingEnabled() && exchange.getRequest().getSslInfo() != null) {
+                if (exchange.getRequest().getSslInfo() != null) {
                     X509Certificate[] certificates = exchange.getRequest().getSslInfo().getPeerCertificates();
                     if (certificates != null && certificates.length > 0) {
                         try {
                             final String encodedCert = Base64.getEncoder().encodeToString(certificates[0].getEncoded());
+                            exchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
                             headers.add(CLIENT_CERT_HEADER, encodedCert);
                             log.debug("Incoming client certificate has been added to the {} header.", CLIENT_CERT_HEADER);
                         } catch (CertificateEncodingException e) {
@@ -67,12 +69,8 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
         });
     }
 
+    @SuppressWarnings("squid:S2094")
     public static class Config {
-        @Setter
-        private String forwardingEnabled;
-
-        public boolean isForwardingEnabled() {
-            return Boolean.parseBoolean(forwardingEnabled);
-        }
     }
+
 }

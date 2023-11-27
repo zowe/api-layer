@@ -14,7 +14,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCache;
 import org.zowe.apiml.cache.CompositeKey;
+
+import javax.cache.Cache.Entry;
 
 import java.util.*;
 
@@ -24,7 +27,6 @@ import static org.mockito.Mockito.*;
 class CacheUtilsTest {
 
     private CacheUtils underTest;
-    private int removeCounter;
 
     @BeforeEach
     void setUp() {
@@ -44,6 +46,7 @@ class CacheUtilsTest {
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public <T> T unwrap(Class<T> clazz) {
                 return (T) value;
             }
@@ -51,6 +54,7 @@ class CacheUtilsTest {
     }
 
     @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void testEvictSubset() {
         CacheManager cacheManager = mock(CacheManager.class);
 
@@ -114,6 +118,16 @@ class CacheUtilsTest {
     }
 
     @Test
+    void givenNoOpCache_whenGetAllRecords_thenEmpty() {
+        CacheManager cacheManager = mock(CacheManager.class);
+        Cache cache = mock(Cache.class);
+        when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
+        when(cache.getNativeCache()).thenReturn(new NoOpCache("knownCacheName"));
+
+        assertEquals(0, underTest.getAllRecords(cacheManager, "knownCacheName").size());
+    }
+
+    @Test
     void givenUnsupportedCacheManager_whenGetAllRecords_thenThrowsException() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
@@ -130,9 +144,9 @@ class CacheUtilsTest {
     void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
-        javax.cache.Cache ehCache = mock(javax.cache.Cache.class);
+        javax.cache.Cache<?, ?> ehCache = mock(javax.cache.Cache.class);
 
-        List entries = Arrays.asList(
+        List<Entry<Object, Object>> entries = Arrays.asList(
             createEntry(1, "a"),
             createEntry(2, "b"),
             createEntry(3, "c")

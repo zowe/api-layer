@@ -18,11 +18,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ import java.util.Optional;
 public class TokenCreationService {
     private final Providers providers;
     private final Optional<ZosmfAuthenticationProvider> zosmfAuthenticationProvider;
+    private final ZosmfService zosmfService;
     private final PassTicketService passTicketService;
     private final AuthenticationService authenticationService;
 
@@ -45,26 +49,13 @@ public class TokenCreationService {
      * @return Valid JWT token or null
      */
     public String createJwtTokenWithoutCredentials(String user) {
-        boolean isZosmfUsedAndAvailable = false;
-        try {
-            isZosmfUsedAndAvailable = providers.isZosfmUsed() && providers.isZosmfAvailable();
-        } catch (AuthenticationServiceException ex) {
-            // Intentionally do nothing. The issue is logged deeper.
-        }
-
-        if (isZosmfUsedAndAvailable) {
-            try {
-                log.debug("ZOSMF is available and used. Attempt to authenticate with PassTicket");
-                log.debug("Generating PassTicket for user: {} and ZOSMF applid: {}", user, zosmfApplId);
-                String passTicket = passTicketService.generate(user, zosmfApplId);
-                log.debug("Generated passticket: {}", passTicket);
-                return ((TokenAuthentication) zosmfAuthenticationProvider
-                    .orElseThrow(() -> new IllegalStateException("The z/OSMF is not configured. The config value `apiml.security.auth.provider` should be set to `zosmf`."))
-                    .authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
-                    .getCredentials();
-            } catch (IRRPassTicketGenerationException e) {
-                throw new AuthenticationTokenException("Problem with generating PassTicket");
-            }
+        if (isZosmfAvailable()) {
+            log.debug("ZOSMF is available and used. Attempt to authenticate with PassTicket");
+            final String passTicket = generatePassTicket(user);
+            return ((TokenAuthentication) zosmfAuthenticationProvider
+                .orElseThrow(() -> new IllegalStateException("The z/OSMF is not configured. The config value `apiml.security.auth.provider` should be set to `zosmf`."))
+                .authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)))
+                .getCredentials();
         } else {
             final String domain = "security-domain";
             log.debug("ZOSMF is not available or used. Generating APIML's JWT Token.");
@@ -73,4 +64,36 @@ public class TokenCreationService {
             return authenticationService.createTokenAuthentication(user, jwtTokenString).getCredentials();
         }
     }
+
+    public Map<ZosmfService.TokenType, String> createZosmfTokensWithoutCredentials(String user) {
+        if (!isZosmfAvailable()) return Collections.emptyMap();
+
+        log.debug("ZOSMF is available and used. Attempt to authenticate with PassTicket");
+        final String passTicket = generatePassTicket(user);
+
+        return zosmfService.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)).getTokens();
+    }
+
+    private boolean isZosmfAvailable() {
+        try {
+            return providers.isZosfmUsed() && providers.isZosmfAvailable();
+        } catch (AuthenticationServiceException ex) {
+            // Intentionally do nothing. The issue is logged deeper.
+        }
+
+        return false;
+    }
+
+    private String generatePassTicket(String user) {
+        try {
+            log.debug("Generating PassTicket for user: {} and ZOSMF applid: {}", user, zosmfApplId);
+            String passTicket = passTicketService.generate(user, zosmfApplId);
+            log.debug("Generated PassTicket: {}", passTicket);
+
+            return passTicket;
+        } catch (IRRPassTicketGenerationException e) {
+            throw new AuthenticationTokenException("Generation of PassTicket failed", e);
+        }
+    }
+
 }

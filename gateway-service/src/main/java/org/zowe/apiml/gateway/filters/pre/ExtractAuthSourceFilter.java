@@ -28,7 +28,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class ExtractAuthSourceFilter extends OncePerRequestFilter {
-    static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
+    public static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
+    public static final String AUTH_SOURCE_PARSED_ATTR = "zaas.auth.source.parsed";
 
     private final AuthSourceService authSourceService;
     private final AuthExceptionHandler authExceptionHandler;
@@ -39,7 +40,8 @@ public class ExtractAuthSourceFilter extends OncePerRequestFilter {
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isPresent()) {
                 AuthSource.Parsed parsed = authSourceService.parse(authSource.get());
-                request.setAttribute(AUTH_SOURCE_ATTR, parsed);
+                request.setAttribute(AUTH_SOURCE_ATTR, authSource.get());
+                request.setAttribute(AUTH_SOURCE_PARSED_ATTR, parsed);
                 filterChain.doFilter(request, response);
             } else {
                 throw new InsufficientAuthenticationException("No authentication source found in the request.");

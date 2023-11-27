@@ -13,15 +13,20 @@ package org.zowe.apiml.gateway.security.service.schema.source;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PATAuthSource implements AuthSource {
+
     public static final AuthSource.AuthSourceType type = AuthSource.AuthSourceType.PAT;
 
     @EqualsAndHashCode.Include
     private final String source;
+
+    @Setter
+    private String defaultServiceId;
 
     @Override
     public Object getRawSource() {

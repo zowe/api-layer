@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.routing;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,41 @@ class ApimlRouteLocatorTest {
         routedServicesUserList.add(user2);
 
         underTest = new ApimlRouteLocator("", eurekaDiscoveryClient, new ZuulProperties(), serviceRouteMapper, routedServicesUserList);
+    }
+
+    @Nested
+    class GivenServiceIsIgnored {
+
+        @BeforeEach
+        void setup() {
+            ZuulProperties properties = new ZuulProperties();
+            properties.setIgnoredServices(Collections.singleton("discovery"));
+            underTest = new ApimlRouteLocator("", eurekaDiscoveryClient, properties, serviceRouteMapper, routedServicesUserList);
+        }
+
+        @Test
+        void whenLocateRoutes_thenIgnoreService() {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put(ROUTES + ".ws-v1." + ROUTES_GATEWAY_URL, "ws/v1");
+            metadata.put(ROUTES + ".ws-v1." + ROUTES_SERVICE_URL, "/");
+            metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
+            metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
+
+            when(eurekaDiscoveryClient.getServices()).thenReturn(ImmutableList.of("discovery", "service"));
+            when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
+                Collections.singletonList(new DefaultServiceInstance("localhost:service:80", "service", "localhost", 80, false, metadata)));
+            when(eurekaDiscoveryClient.getInstances("discovery")).thenReturn(
+                Collections.singletonList(new DefaultServiceInstance("localhost:discovery:80", "discovery", "localhost", 80, false, metadata)));
+            when(serviceRouteMapper.apply("service")).thenReturn("service");
+            when(serviceRouteMapper.apply("discovery")).thenReturn("discovery");
+
+            Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
+            assertEquals(2, zuulRouteMap.size());
+            assertFalse(zuulRouteMap.containsKey("/discovery/api/v1/**"));
+            assertFalse(zuulRouteMap.containsKey("/discovery/ws/v1/**"));
+            assertTrue(zuulRouteMap.containsKey("/service/api/v1/**"));
+            assertTrue(zuulRouteMap.containsKey("/service/ws/v1/**"));
+        }
     }
 
     @Nested
