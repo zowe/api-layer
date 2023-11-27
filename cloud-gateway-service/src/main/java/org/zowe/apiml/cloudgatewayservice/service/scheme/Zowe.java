@@ -28,10 +28,10 @@ public class Zowe implements SchemeHandler {
 
     @Override
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
-        FilterDefinition filerDef = new FilterDefinition();
-        filerDef.setName("ZoweFilterFactory");
-        filerDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
-        routeDefinition.getFilters().add(filerDef);
+        FilterDefinition filterDef = new FilterDefinition();
+        filterDef.setName("ZoweFilterFactory");
+        filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+        routeDefinition.getFilters().add(filterDef);
     }
 
 }

@@ -14,10 +14,12 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 
 public class ZoweSchemeTest extends TokenSchemeTest {
 
+    @Override
     public String getTokenEndpoint() {
         return "/gateway/zaas/zoweJwt";
     }
 
+    @Override
     public AuthenticationScheme getAuthenticationScheme() {
         return AuthenticationScheme.ZOWE_JWT;
     }

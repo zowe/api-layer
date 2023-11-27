@@ -14,10 +14,12 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 
 public class ZosmfSchemeTest extends TokenSchemeTest {
 
+    @Override
     public String getTokenEndpoint() {
         return "/gateway/zaas/zosmf";
     }
 
+    @Override
     public AuthenticationScheme getAuthenticationScheme() {
         return AuthenticationScheme.ZOSMF;
     }
