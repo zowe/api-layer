@@ -8,7 +8,9 @@ body .detail-content {
   }
   h2#title {
     color: $color_1;
-    font-weight: initial;
+      font-size: 34px;
+      font-style: normal;
+      font-weight: 400;
   }
   .swagger-ui {
     display: block;

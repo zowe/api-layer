@@ -18,6 +18,7 @@ $font-family_1: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Sego
     }
     #diff-button {
         @extend .button-tertiary;
+        margin-top: 15px;
     }
 }
 .api-diff-content {

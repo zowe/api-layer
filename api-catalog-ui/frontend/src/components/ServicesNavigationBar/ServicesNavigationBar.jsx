@@ -92,7 +92,13 @@ export default class ServicesNavigationBar extends Component {
         return (
             <div>
                 {isAPIPortal() && (
-                    <IconButton id="go-back-button-portal" className="button-link" onClick={closeMobileMenu} size="medium" href={dashboard}>
+                    <IconButton
+                        id="go-back-button-portal"
+                        className="button-link"
+                        onClick={closeMobileMenu}
+                        size="medium"
+                        href={dashboard}
+                    >
                         <BackArrowImage className="icon-img" alt="" />
                         {backButtonText}
                     </IconButton>
@@ -111,11 +117,7 @@ export default class ServicesNavigationBar extends Component {
                 )}
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
-                        <SearchCriteria
-                            data-testid="search-bar"
-                            placeholder="Search..."
-                            doSearch={this.handleSearch}
-                        />
+                        <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={this.handleSearch} />
                     </Shield>
                 </div>
                 <Typography id="serviceIdTabs" variant="h5">
