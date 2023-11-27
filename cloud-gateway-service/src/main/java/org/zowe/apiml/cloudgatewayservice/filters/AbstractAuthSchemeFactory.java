@@ -19,6 +19,7 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
@@ -247,14 +248,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
                 zaasCallBuilder.header(HEADER_SERVICE_ID, config.serviceId);
 
                 // add client certificate when present
-                try {
-                    String encodedCertificate = X509Util.getEncodedClientCertificate(request.getSslInfo());
-                    if (encodedCertificate != null) {
-                        zaasCallBuilder.header(CLIENT_CERT_HEADER, encodedCertificate);
-                    }
-                } catch (CertificateEncodingException e) {
-                    zaasCallBuilder.header(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());
-                }
+                setClientCertificate(zaasCallBuilder, request.getSslInfo());
 
                 // update original request - to remove all potential headers and cookies with credentials
                 Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
@@ -315,6 +309,17 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             .map(StringUtils::trim)
             .map(HttpCookie::parse)
             .flatMap(List::stream);
+    }
+
+    private void setClientCertificate(WebClient.RequestHeadersSpec<?> callBuilder, SslInfo sslInfo) {
+        try {
+            String encodedCertificate = X509Util.getEncodedClientCertificate(sslInfo);
+            if (encodedCertificate != null) {
+                callBuilder.header(CLIENT_CERT_HEADER, encodedCertificate);
+            }
+        } catch (CertificateEncodingException e) {
+            callBuilder.header(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());
+        }
     }
 
     @Data

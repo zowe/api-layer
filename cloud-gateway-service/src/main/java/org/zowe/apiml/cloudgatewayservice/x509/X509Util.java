@@ -18,6 +18,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
+
 @Slf4j
 @UtilityClass
 public class X509Util {
@@ -26,7 +28,7 @@ public class X509Util {
         if (sslInfo == null) return null;
 
         X509Certificate[] certificates = sslInfo.getPeerCertificates();
-        if (certificates == null || certificates.length == 0) return null;
+        if (isEmpty(certificates)) return null;
 
         return Base64.getEncoder().encodeToString(certificates[0].getEncoded());
     }

@@ -32,7 +32,7 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
         super(Config.class, webClient, instanceInfoService, messageService);
     }
 
-    public abstract String getEndpointUrl();
+    public abstract String getEndpointUrl(ServiceInstance instance);
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -58,7 +58,7 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
 
     @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
-        String tokensUrl = String.format(getEndpointUrl(), instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        String tokensUrl = getEndpointUrl(instance);
         return webClient.post()
             .uri(tokensUrl);
     }
