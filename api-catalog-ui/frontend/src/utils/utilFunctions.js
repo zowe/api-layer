@@ -52,8 +52,6 @@ export default function countAdditionalContents(service) {
     let hasSwagger = false;
     if (contents?.products?.length > 0 && service?.serviceId) {
         const correctProduct = contents.products.find((product) => service.serviceId === product.name);
-        // eslint-disable-next-line no-console
-        console.log(correctProduct);
         if (correctProduct?.useCases) {
             correctProduct.useCases.forEach((cases) => {
                 if (isValidUrl(cases.url)) {
