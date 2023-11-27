@@ -11,18 +11,6 @@ import { shallow, mount } from 'enzyme';
 import BlogContainer from './BlogContainer';
 
 describe('>>> BlogContainer component tests', () => {
-    it('should render medium blogs', () => {
-        const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
-
-        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
-    });
-
-    it('should render other blogs', () => {
-        const blogContainer = shallow(<BlogContainer user="user" url="https://docs.zowe.org/doc" title="title" />);
-
-        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
-    });
-
     it('should return null if URL is not valid', () => {
         const blogContainer = mount(<BlogContainer user="user" url="wrong_url" title="title" />);
 
@@ -34,9 +22,91 @@ describe('>>> BlogContainer component tests', () => {
 
         expect(blogContainer.isEmptyRender()).toBe(true);
     });
+
     it('should return null if medium user is not provided', () => {
         const blogContainer = mount(<BlogContainer url="https://medium.com/some/medium" title="title" />);
 
         expect(blogContainer.isEmptyRender()).toBe(true);
+    });
+
+    it('should render medium blogs', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce(),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
+    it('should render other blogs (non-Medium and non-Zowe)', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce(),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://example.com" title="title" />);
+
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
+    it('should render correctly for Zowe documentation URL', () => {
+        const blogContainer = shallow(<BlogContainer user="user" url="https://docs.zowe.org/doc" title="title" />);
+
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+    });
+
+    it('should return null for Medium URL with an invalid URL', () => {
+        const blogContainer = mount(<BlogContainer user="user" url="invalid_medium_url" title="title" />);
+
+        expect(blogContainer.isEmptyRender()).toBe(true);
+    });
+
+    it('should handle errors during data fetching', async () => {
+        jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Fetch error'));
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://example.com" title="title" />);
+
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
+    it('should handle missing items in the fetched data', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce('HTML content with missing items'),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://example.com" title="title" />);
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
+    it('should handle empty content and description', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce('<div class="shortdesc"></div>'),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://example.com" title="title" />);
+
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
+    it('should handle missing RSS feed items', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValueOnce({}),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
     });
 });
