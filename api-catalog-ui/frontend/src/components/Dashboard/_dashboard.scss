@@ -27,7 +27,7 @@
   .tile-ctn,
   .dashboard-grid-header {
     display: flex;
-    margin: 0 var( --spaceSmaller );
+    margin: 0 var( --spaceSmallest );
     flex: 1 1 100%;
 
     .empty, .tile-title {
@@ -36,10 +36,27 @@
     }
   }
 
+  $gridHeaderSpacing: calc( #{var( --spaceMedium )} + #{var( --scrollPadding )});
+
   .dashboard-grid-header {
     flex-basis: content;
     padding: 0 var( --spaceMedium );
-    padding-right: calc( #{var( --spaceMedium )} + #{var( --scrollPadding )});
+    padding-right: $gridHeaderSpacing;
+    border-bottom: 2px solid var( --criticalShade10 );
+    margin-bottom: var( --spaceMedium );
+    background: var( --surface05 );
+  }
+  .apis {
+    position: relative;
+  }
+  #grid-container.fixed-header {
+    .dashboard-grid-header {
+      position: absolute;
+      width: calc(100% - (#{$gridHeaderSpacing} - #{var( --spaceTinier )}));
+      top: -1px;
+      z-index: 100;
+      background: white;
+    }
   }
 
   #grid-container,
@@ -49,7 +66,7 @@
   }
   .tile-container {
     height: 100%;
-    overflow: auto;
+    // overflow: auto;
 
     &::-webkit-scrollbar {
       width: 0px;
@@ -113,16 +130,6 @@
     width: 128px;
     height: 200px;
   }
-}
-
-#separator2 {
-    background-color: var( --criticalShade10 );
-    margin-bottom: var( --spaceMedium );
-    margin-top: auto;
-    height: var( --spaceTinier );
-    width: 99%;
-    display: block;
-    border-color: var( --criticalShade10 );
 }
 
 .floating-button {
@@ -255,6 +262,7 @@ body {
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+            border: 1px solid transparent;
       
             &:not(:first-child) {
               margin-left: var( --spaceLarger);
@@ -279,8 +287,8 @@ body {
             &, * {
               text-decoration: none;
             }
-            &:hover {
-              background-color: var( --surface15 );
+            &:hover, &:focus {
+              border-color: var( --linkHover );
 
               &, * {
                 color: var( --text10 );

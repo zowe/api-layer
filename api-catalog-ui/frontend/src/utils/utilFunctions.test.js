@@ -21,7 +21,6 @@ describe('>>> Util Functions tests', () => {
     }
     beforeEach(() => {
         document.body.innerHTML = `
-      <div id="separator2"></div>
       <div id="go-back-button"></div>
       <div id="title"></div>
       <div id="swagger-label"></div>
@@ -95,7 +94,6 @@ describe('>>> Util Functions tests', () => {
         await customUIStyle(uiConfig);
         const logo = document.getElementById('logo');
         const header = document.getElementsByClassName('header')[0];
-        const divider = document.getElementById('separator2');
         const title = document.getElementById('title');
         const swaggerLabel = document.getElementById('swagger-label');
         const logoutButton = document.getElementById('go-back-button');
@@ -106,7 +104,6 @@ describe('>>> Util Functions tests', () => {
         const refreshButton = document.querySelector('#refresh-api-button > span.MuiIconButton-label');
         expect(logo.src).toContain('img-url');
         expect(header.style.getPropertyValue('background-color')).toBe('red');
-        expect(divider.style.getPropertyValue('background-color')).toBe('red');
         expect(title.style.getPropertyValue('color')).toBe('red');
         expect(swaggerLabel.style.getPropertyValue('color')).toBe('red');
         expect(wizardButton.style.getPropertyValue('color')).toBe('red');

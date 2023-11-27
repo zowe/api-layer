@@ -171,6 +171,20 @@ body {
       span {
         font-size: var( --fontSmall );
       }
+      .icon-img {
+        rect, path {
+          transition: fill .25s ease;
+        }
+      }
+
+      &:hover .icon-img {
+        rect {
+          fill: var( --criticalShade10 );
+        }
+        path {
+          fill: var( --surface05 );
+        }
+      }
     }
   }//end button-cta
 
