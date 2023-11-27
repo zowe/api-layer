@@ -311,7 +311,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             .flatMap(List::stream);
     }
 
-    private void setClientCertificate(WebClient.RequestHeadersSpec<?> callBuilder, SslInfo sslInfo) {
+    protected void setClientCertificate(WebClient.RequestHeadersSpec<?> callBuilder, SslInfo sslInfo) {
         try {
             String encodedCertificate = X509Util.getEncodedClientCertificate(sslInfo);
             if (encodedCertificate != null) {

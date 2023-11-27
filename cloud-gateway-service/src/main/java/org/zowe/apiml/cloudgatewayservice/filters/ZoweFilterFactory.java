@@ -21,12 +21,13 @@ import org.zowe.apiml.message.core.MessageService;
 @Service
 public class ZoweFilterFactory extends TokenFilterFactory {
 
-    public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/zaas/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
-    }
-
     public ZoweFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(webClient, instanceInfoService, messageService);
+    }
+
+    @Override
+    public String getEndpointUrl(ServiceInstance instance) {
+        return String.format("%s://%s:%d/%s/zaas/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
 }
