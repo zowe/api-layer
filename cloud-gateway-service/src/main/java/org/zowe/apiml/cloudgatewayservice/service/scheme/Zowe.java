@@ -19,17 +19,17 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 @Component
-public class Zosmf implements SchemeHandler {
+public class Zowe implements SchemeHandler {
 
     @Override
     public AuthenticationScheme getAuthenticationScheme() {
-        return AuthenticationScheme.ZOSMF;
+        return AuthenticationScheme.ZOWE_JWT;
     }
 
     @Override
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
         FilterDefinition filterDef = new FilterDefinition();
-        filterDef.setName("ZosmfFilterFactory");
+        filterDef.setName("ZoweFilterFactory");
         filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
         routeDefinition.getFilters().add(filterDef);
     }

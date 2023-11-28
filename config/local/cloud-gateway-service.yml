@@ -2,6 +2,7 @@ apiml:
     cloudGateway.registry.enabled: true
     security.x509.registry.allowedUsers: Zowe Service
     service:
+        forwardClientCertEnabled: true
         hostname: localhost
 eureka:
     client:

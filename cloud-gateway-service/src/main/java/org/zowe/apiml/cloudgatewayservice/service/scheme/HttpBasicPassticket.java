@@ -28,11 +28,11 @@ public class HttpBasicPassticket implements SchemeHandler {
 
     @Override
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
-        FilterDefinition filerDef = new FilterDefinition();
-        filerDef.setName("PassticketFilterFactory");
-        filerDef.addArg("applicationName", auth.getApplid());
-        filerDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
-        routeDefinition.getFilters().add(filerDef);
+        FilterDefinition filterDef = new FilterDefinition();
+        filterDef.setName("PassticketFilterFactory");
+        filterDef.addArg("applicationName", auth.getApplid());
+        filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+        routeDefinition.getFilters().add(filterDef);
     }
 
 }
