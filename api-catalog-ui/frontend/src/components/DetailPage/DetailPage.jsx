@@ -277,4 +277,5 @@ DetailPage.propTypes = {
     history: PropTypes.shape({
         push: PropTypes.func.isRequired,
     }).isRequired,
+    selectedService: PropTypes.object.isRequired,
 };

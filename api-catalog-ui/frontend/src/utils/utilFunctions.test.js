@@ -51,9 +51,13 @@ describe('>>> Util Functions tests', () => {
             hasSwagger: false,
         };
         expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
             hasSwagger: false,
+            tutorials: [],
             tutorialsCounter: 0,
+            useCases: [],
             useCasesCounter: 0,
+            videos: [],
             videosCounter: 0,
         });
     });
@@ -68,9 +72,13 @@ describe('>>> Util Functions tests', () => {
             },
         };
         expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
             hasSwagger: true,
+            tutorials: [],
             tutorialsCounter: 0,
+            useCases: [],
             useCasesCounter: 0,
+            videos: [],
             videosCounter: 0,
         });
     });

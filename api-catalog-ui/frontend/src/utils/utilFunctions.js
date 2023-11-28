@@ -43,9 +43,10 @@ function countValidItems(items, validator) {
 /**
  * Counts the additional contents
  * @param service
- * @returns {{videosCounter: number, useCasesCounter: number, tutorialsCounter: number}}
+ * @returns {{videosCounter, useCases: *[], useCasesCounter, tutorialsCounter, tutorials: *[], documentation: null, hasSwagger: boolean, videos: *[]}}
  */
 export default function countAdditionalContents(service) {
+    let hasSwagger = false;
     const { useCases, tutorials, videos, documentation } = contents.products.find(
         (product) => service?.serviceId === product.name
     ) || { useCases: [], tutorials: [], videos: [], documentation: null };
@@ -54,7 +55,9 @@ export default function countAdditionalContents(service) {
     const tutorialsCounter = countValidItems(tutorials, (item) => isValidUrl(item.url));
     const videosCounter = countValidItems(videos, (item) => isValidUrl(item));
 
-    const hasSwagger = checkForSwagger(service);
+    if (service?.apis) {
+        hasSwagger = checkForSwagger(service);
+    }
 
     return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger, useCases, tutorials, videos, documentation };
 }

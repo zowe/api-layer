@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Link, Typography, Tooltip, MenuItem, Select, Button, IconButton } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
@@ -357,10 +358,14 @@ export default class ServiceTab extends Component {
                                 <br />
                                 <br />
                                 <div id="blogs-container">
-                                    {useCases &&
-                                        useCases
-                                            .slice(0, displayUseCasesCount)
-                                            .map((useCase) => <BlogContainer user={useCase.user} url={useCase.url} />)}
+                                    {useCases?.slice(0, displayUseCasesCount).map((useCase) => (
+                                        <BlogContainer
+                                            key={useCase.url}
+                                            user={useCase.user}
+                                            url={useCase.url}
+                                            title={useCase.title}
+                                        />
+                                    ))}
                                 </div>
                                 {useCasesCounter > displayUseCasesCount && displayUseCasesCount < useCases.length && (
                                     <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
@@ -381,16 +386,14 @@ export default class ServiceTab extends Component {
                                 )}
                                 <br />
                                 <div id="blogs-container">
-                                    {tutorials &&
-                                        tutorials
-                                            .slice(0, displayBlogsCount)
-                                            .map((tutorial) => (
-                                                <BlogContainer
-                                                    user={tutorial.user}
-                                                    url={tutorial.url}
-                                                    title={tutorial.title}
-                                                />
-                                            ))}
+                                    {tutorials?.slice(0, displayBlogsCount).map((tutorial) => (
+                                        <BlogContainer
+                                            key={tutorial.url}
+                                            user={tutorial.user}
+                                            url={tutorial.url}
+                                            title={tutorial.title}
+                                        />
+                                    ))}
                                 </div>
                                 {tutorialsCounter > displayBlogsCount && displayBlogsCount < tutorials.length && (
                                     <IconButton className="more-content-button" onClick={this.showMoreBlogs}>
@@ -411,8 +414,9 @@ export default class ServiceTab extends Component {
                                 )}
                                 <br />
                                 <div>
-                                    {videos &&
-                                        videos.slice(0, displayVideosCount).map((url) => <VideoWrapper url={url} />)}
+                                    {videos?.slice(0, displayVideosCount).map((url) => (
+                                        <VideoWrapper url={url} />
+                                    ))}
                                 </div>
                                 {videosCounter > displayVideosCount && displayVideosCount < videos.length && (
                                     <IconButton className="more-content-button" onClick={this.showMoreVideos}>
@@ -427,3 +431,24 @@ export default class ServiceTab extends Component {
         );
     }
 }
+
+ServiceTab.propTypes = {
+    videos: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+    }).isRequired,
+    tutorials: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+        slice: PropTypes.func.isRequired,
+    }).isRequired,
+    useCases: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+        slice: PropTypes.func.isRequired,
+    }).isRequired,
+    documentation: PropTypes.shape({
+        label: PropTypes.string.isRequired,
+        url: PropTypes.string.isRequired,
+    }).isRequired,
+    selectedService: PropTypes.shape({
+        title: PropTypes.string.isRequired,
+    }).isRequired,
+};

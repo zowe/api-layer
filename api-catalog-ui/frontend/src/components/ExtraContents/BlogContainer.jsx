@@ -8,10 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
 
-function BlogContainer({ user, url, title }) {
+export default function BlogContainer({ user, url, title }) {
     if (!isValidUrl(url)) {
         return null;
     }
@@ -86,4 +87,10 @@ function BlogContainer({ user, url, title }) {
     );
 }
 
-export default BlogContainer;
+BlogContainer.propTypes = {
+    url: PropTypes.shape({
+        includes: PropTypes.func.isRequired,
+    }).isRequired,
+    user: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+};
