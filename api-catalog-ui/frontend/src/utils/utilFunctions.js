@@ -47,7 +47,7 @@ function countValidItems(items, validator) {
  */
 export default function countAdditionalContents(service) {
     let hasSwagger = false;
-    const { useCases, tutorials, videos, documentation } = contents.products.find(
+    const { useCases, tutorials, videos, documentation } = contents?.products?.find(
         (product) => service?.serviceId === product.name
     ) || { useCases: [], tutorials: [], videos: [], documentation: null };
 
