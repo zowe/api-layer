@@ -19,7 +19,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
+import org.zowe.apiml.util.config.SslContext;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,6 +32,7 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
@@ -100,18 +103,14 @@ public class ZaasNegativeTest {
     }
 
     @Nested
-    class GivenNoCertificate {
-
-        @BeforeEach
-        void setUpCertificateAndToken() {
-            RestAssured.useRelaxedHTTPSValidation();
-        }
+    class GivenBadCertificate {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void thenReturnUnauthorized(URI uri) {
+        void givenNoCertificate_thenReturnUnauthorized(URI uri) {
             //@formatter:off
             given()
+                .relaxedHTTPSValidation()
                 .cookie(COOKIE, SecurityUtils.gatewayToken())
             .when()
                 .post(uri)
@@ -120,5 +119,20 @@ public class ZaasNegativeTest {
             //@formatter:on
         }
 
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        void givenClientCertificate_thenNoConnection(URI uri) {
+            assertThrows(SSLHandshakeException.class, () ->
+                    //@formatter:off
+                    given()
+                        .config(SslContext.clientCertValid)
+                        .cookie(COOKIE, SecurityUtils.gatewayToken())
+                    .when()
+                        .post(uri)
+                    .then()
+                        .statusCode(SC_UNAUTHORIZED)
+                    //@formatter:on
+            );
+        }
     }
 }

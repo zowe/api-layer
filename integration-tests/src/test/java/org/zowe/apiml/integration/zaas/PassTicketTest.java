@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,10 +32,11 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_OK;
+import static io.restassured.http.ContentType.XML;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
@@ -71,7 +73,7 @@ class PassTicketTest implements TestWithStartedInstances {
                 .post(ZAAS_TICKET_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(""))
+                .body("ticket", not(isEmptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -91,7 +93,7 @@ class PassTicketTest implements TestWithStartedInstances {
                 .post(ZAAS_TICKET_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(""))
+                .body("ticket", not(isEmptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -112,7 +114,7 @@ class PassTicketTest implements TestWithStartedInstances {
                 .post(ZAAS_TICKET_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(""))
+                .body("ticket", not(isEmptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -130,8 +132,8 @@ class PassTicketTest implements TestWithStartedInstances {
                 .post(ZAAS_TICKET_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(""))
-                .body("userId", not(""))
+                .body("ticket", not(isEmptyOrNullString()))
+                .body("userId", not(isEmptyOrNullString()))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
         }
@@ -149,7 +151,7 @@ class PassTicketTest implements TestWithStartedInstances {
                 .post(ZAAS_TICKET_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(""))
+                .body("ticket", not(isEmptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -195,6 +197,49 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             //@formatter:on
         }
+
+        @Test
+        @Disabled("Enable once it runs on z/OS. Mimic the behaviour in Mock service.")
+        void givenLongApplicationName() {
+            //@formatter:off
+            given()
+                .body(new TicketRequest("TooLongAppName"))
+                .cookie(COOKIE, jwt)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(is(SC_BAD_REQUEST));
+            //@formatter:on
+        }
+
+        @Test
+        void givenNoContentType() {
+            //@formatter:off
+             given()
+                .body(new TicketRequest(APPLICATION_NAME))
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(is(SC_NOT_FOUND));
+            //@formatter:on
+        }
+
+        @Test
+        void givenInvalidContentType() {
+            //@formatter:off
+            given()
+                .body(new TicketRequest(APPLICATION_NAME))
+                .cookie(COOKIE, jwt)
+                .contentType(XML)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(is(SC_NOT_FOUND));
+            //@formatter:on
+        }
+
     }
 
     // Additional negative tests are in ZaasNegativeTest since they are common for the whole service
