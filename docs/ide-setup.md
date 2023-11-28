@@ -12,6 +12,12 @@
 
 Guidelines relevant for development of the API Mediation Layer in the IntelliJ IDEA.
 
+Be aware that Idea contains 
+[a bug since 2023.1.4](https://youtrack.jetbrains.com/issue/IDEA-323055/Gradle-with-GraalVM-buildtools-plugin-fails-to-import-on-2023.2-EAP-5).
+This bug break reading Gradle model, and it is not possible to load the project correctly. To avoid this issue it is 
+possible to disable parallel processing by setting `org.gradle.parallel` to `false` in the
+[gradle.properties](../gradle.properties) file.
+
 ### Code Development
 
 - Enable _Annotations processing_ if you haven't done so already (Just go to settings and search for 'annotation')
