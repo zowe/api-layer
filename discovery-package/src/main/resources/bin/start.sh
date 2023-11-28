@@ -99,6 +99,12 @@ if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
 fi
 
+# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
+ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
+if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+fi
+
 # setting the cookieName based on the instances
 ZWE_components_gateway_apiml_security_auth_uniqueCookie="${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}"
 if [ "${ZWE_components_gateway_apiml_security_auth_uniqueCookie}" = "true" ]; then
@@ -147,7 +153,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
-    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7553}/eureka/"} \
+    -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
