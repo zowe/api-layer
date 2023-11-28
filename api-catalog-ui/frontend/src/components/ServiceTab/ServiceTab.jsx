@@ -435,6 +435,7 @@ export default class ServiceTab extends Component {
 ServiceTab.propTypes = {
     videos: PropTypes.shape({
         length: PropTypes.func.isRequired,
+        slice: PropTypes.func.isRequired,
     }).isRequired,
     tutorials: PropTypes.shape({
         length: PropTypes.func.isRequired,
