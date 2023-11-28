@@ -21,47 +21,63 @@ export default function BlogContainer({ user, url, title }) {
     }
     const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${user}`;
     const [myBlog, setMyBlog] = useState([]);
+
     const fetchData = async () => {
-        fetch(url)
-            .then((res) => res.text())
-            .then((data) => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(data, 'text/html');
-                const divs = doc.querySelector('.linklist.relatedlinks');
-                if (divs) {
-                    divs.parentNode.removeChild(divs);
-                }
-                const content = doc.querySelector('.shortdesc');
-                const tutorialTitle = doc.querySelector('h1.title');
-                const blogTitle = tutorialTitle.textContent;
-                const blogContent = content.textContent;
+        try {
+            const res = await fetch(url);
+            const data = await res.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data, 'text/html');
+            const divs = doc.querySelector('.linklist.relatedlinks');
+            if (divs) {
+                divs.parentNode.removeChild(divs);
+            }
+
+            const content = doc.querySelector('.shortdesc');
+            const tutorialTitle = doc.querySelector('h1.title');
+            const blogTitle = tutorialTitle.textContent;
+            const blogContent = content.textContent;
+
+            const blogData = {
+                content: blogContent,
+                description: blogContent,
+                title: blogTitle,
+                link: url,
+            };
+
+            setMyBlog(blogData);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchDataEffect = async () => {
+            if (!url.includes('medium.com') && !url.includes('docs.zowe.org')) {
+                await fetchData();
+            } else if (url.includes('docs.zowe.org')) {
                 const blogData = {
-                    content: blogContent,
-                    description: blogContent,
-                    title: blogTitle,
+                    content: '',
+                    description: `Tutorial from the Zowe documentation related to ${user}`,
+                    title,
                     link: url,
                 };
                 setMyBlog(blogData);
-            });
-    };
-    useEffect(() => {
-        if (!url.includes('medium.com') && !url.includes('docs.zowe.org')) {
-            fetchData();
-        } else if (url.includes('docs.zowe.org')) {
-            const blogData = {
-                content: '',
-                description: `Tutorial from the Zowe documentation related to ${user}`,
-                title,
-                link: url,
-            };
-            setMyBlog(blogData);
-        } else {
-            fetch(rss2json)
-                .then((res) => res.json())
-                .then((data) => {
+            } else {
+                try {
+                    const res = await fetch(rss2json);
+                    const data = await res.json();
                     setMyBlog(data);
-                });
-        }
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.error('Error fetching data:', error);
+                }
+            }
+        };
+
+        fetchDataEffect();
     }, [rss2json]);
 
     function displayBlogs() {
