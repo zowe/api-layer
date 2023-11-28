@@ -41,6 +41,7 @@ public class ZaasNegativeTest {
         add(ZAAS_TICKET_URI);
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
+        add(ZAAS_SAFIDT_URI);
     }};
 
     private static final Set<String> tokens = new HashSet<String>() {{
