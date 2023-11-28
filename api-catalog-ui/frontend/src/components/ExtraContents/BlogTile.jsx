@@ -73,12 +73,24 @@ export default function BlogTile(props) {
 }
 
 BlogTile.propTypes = {
-    blogData: PropTypes.shape({
-        author: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-        link: PropTypes.string.isRequired,
-        thumbnail: PropTypes.string.isRequired,
-        description: PropTypes.string.isRequired,
-        pubDate: PropTypes.string.isRequired,
-    }).isRequired,
+    blogData: PropTypes.oneOfType([
+        PropTypes.shape({
+            author: PropTypes.string,
+            title: PropTypes.string.isRequired,
+            link: PropTypes.string.isRequired,
+            thumbnail: PropTypes.string,
+            description: PropTypes.string.isRequired,
+            pubDate: PropTypes.string,
+        }),
+        PropTypes.arrayOf(
+            PropTypes.shape({
+                author: PropTypes.string,
+                title: PropTypes.string.isRequired,
+                link: PropTypes.string.isRequired,
+                thumbnail: PropTypes.string,
+                description: PropTypes.string.isRequired,
+                pubDate: PropTypes.string,
+            })
+        ),
+    ]).isRequired,
 };

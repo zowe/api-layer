@@ -415,7 +415,7 @@ export default class ServiceTab extends Component {
                                 <br />
                                 <div>
                                     {videos?.slice(0, displayVideosCount).map((url) => (
-                                        <VideoWrapper url={url} />
+                                        <VideoWrapper key={url.url} url={url} />
                                     ))}
                                 </div>
                                 {videosCounter > displayVideosCount && displayVideosCount < videos.length && (
@@ -444,10 +444,18 @@ ServiceTab.propTypes = {
         length: PropTypes.func.isRequired,
         slice: PropTypes.func.isRequired,
     }).isRequired,
-    documentation: PropTypes.shape({
-        label: PropTypes.string.isRequired,
-        url: PropTypes.string.isRequired,
-    }).isRequired,
+    documentation: PropTypes.oneOfType([
+        PropTypes.shape({
+            label: PropTypes.string.isRequired,
+            url: PropTypes.string.isRequired,
+        }),
+        PropTypes.arrayOf(
+            PropTypes.shape({
+                label: PropTypes.string.isRequired,
+                url: PropTypes.string.isRequired,
+            })
+        ),
+    ]).isRequired,
     selectedService: PropTypes.shape({
         title: PropTypes.string.isRequired,
     }).isRequired,
