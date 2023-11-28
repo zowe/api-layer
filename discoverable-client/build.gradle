@@ -52,6 +52,8 @@ dependencies {
     api project(':onboarding-enabler-java')
     api project(':onboarding-enabler-spring')
     api project(':zaas-client')
+    api project(':apiml-tomcat-common')
+
     implementation libs.spring.doc
     implementation libs.spring.boot.starter
     implementation libs.spring.boot.starter.actuator
