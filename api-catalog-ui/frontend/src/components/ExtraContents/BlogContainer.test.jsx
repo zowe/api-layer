@@ -12,25 +12,7 @@ import React from 'react';
 import BlogContainer from './BlogContainer';
 
 describe('>>> BlogContainer component tests', () => {
-    it('should return null if URL is not valid', () => {
-        const blogContainer = mount(<BlogContainer user="user" url="wrong_url" title="title" />);
-
-        expect(blogContainer.isEmptyRender()).toBe(true);
-    });
-
-    it('should return null if medium user is null', () => {
-        const blogContainer = mount(<BlogContainer user="" url="https://medium.com/some/medium" title="title" />);
-
-        expect(blogContainer.isEmptyRender()).toBe(true);
-    });
-
-    it('should return null if medium user is not provided', () => {
-        const blogContainer = mount(<BlogContainer url="https://medium.com/some/medium" title="title" />);
-
-        expect(blogContainer.isEmptyRender()).toBe(true);
-    });
-
-    it('should render medium blogs', async () => {
+    it('should render medium blog', async () => {
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             text: jest.fn().mockResolvedValueOnce(),
         });
@@ -42,7 +24,7 @@ describe('>>> BlogContainer component tests', () => {
         global.fetch.mockRestore();
     });
 
-    it('should render other blogs (non-Medium and non-Zowe)', async () => {
+    it('should render other blog (non-Medium and non-Zowe)', async () => {
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             text: jest.fn().mockResolvedValueOnce(),
         });
@@ -96,18 +78,6 @@ describe('>>> BlogContainer component tests', () => {
     it('should handle missing RSS feed items', async () => {
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             json: jest.fn().mockResolvedValueOnce({}),
-        });
-
-        const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
-
-        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
-
-        global.fetch.mockRestore();
-    });
-
-    it('should render medium blogs', async () => {
-        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
-            text: jest.fn().mockResolvedValueOnce(),
         });
 
         const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);

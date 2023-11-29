@@ -53,9 +53,9 @@ describe('>>> Util Functions tests', () => {
         expect(countAdditionalContents(service)).toEqual({
             documentation: null,
             hasSwagger: false,
-            tutorials: [],
+            filteredTutorials: [],
             tutorialsCounter: 0,
-            useCases: [],
+            filteredUseCases: [],
             useCasesCounter: 0,
             videos: [],
             videosCounter: 0,
@@ -74,9 +74,9 @@ describe('>>> Util Functions tests', () => {
         expect(countAdditionalContents(service)).toEqual({
             documentation: null,
             hasSwagger: true,
-            tutorials: [],
+            filteredTutorials: [],
             tutorialsCounter: 0,
-            useCases: [],
+            filteredUseCases: [],
             useCasesCounter: 0,
             videos: [],
             videosCounter: 0,

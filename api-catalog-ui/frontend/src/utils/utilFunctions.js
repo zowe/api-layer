@@ -51,15 +51,26 @@ export default function countAdditionalContents(service) {
         (product) => service?.serviceId === product.name
     ) || { useCases: [], tutorials: [], videos: [], documentation: null };
 
-    const useCasesCounter = countValidItems(useCases, (item) => isValidUrl(item.url));
-    const tutorialsCounter = countValidItems(tutorials, (item) => isValidUrl(item.url));
+    const filteredUseCases = useCases?.filter(({ url, user }) => isValidUrl(url) && user);
+    const filteredTutorials = tutorials?.filter(({ url }) => isValidUrl(url));
+    const useCasesCounter = countValidItems(filteredUseCases, (item) => isValidUrl(item.url));
+    const tutorialsCounter = countValidItems(filteredTutorials, (item) => isValidUrl(item.url));
     const videosCounter = countValidItems(videos, (item) => isValidUrl(item));
 
     if (service?.apis) {
         hasSwagger = checkForSwagger(service);
     }
 
-    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger, useCases, tutorials, videos, documentation };
+    return {
+        useCasesCounter,
+        tutorialsCounter,
+        videosCounter,
+        hasSwagger,
+        filteredUseCases,
+        filteredTutorials,
+        videos,
+        documentation,
+    };
 }
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
