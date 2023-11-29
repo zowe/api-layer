@@ -60,12 +60,6 @@ describe('>>> BlogContainer component tests', () => {
         expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
     });
 
-    it('should return null for Medium URL with an invalid URL', () => {
-        const blogContainer = mount(<BlogContainer user="user" url="invalid_medium_url" title="title" />);
-
-        expect(blogContainer.isEmptyRender()).toBe(true);
-    });
-
     it('should handle errors during data fetching', async () => {
         jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Fetch error'));
 

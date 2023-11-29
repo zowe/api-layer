@@ -47,13 +47,13 @@ export default function BlogContainer({ user, url, title }) {
         }
     };
 
+    if (!isValidUrl(url)) {
+        return null;
+    }
+    if (url.includes('medium.com') && !user) {
+        return null;
+    }
     useEffect(() => {
-        if (!isValidUrl(url)) {
-            return null;
-        }
-        if (url.includes('medium.com') && !user) {
-            return null;
-        }
         const fetchDataEffect = async () => {
             if (!url.includes('medium.com') && !url.includes('docs.zowe.org')) {
                 await fetchData();
