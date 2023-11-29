@@ -58,6 +58,16 @@ const tiles = {
         'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
     services: [selectedService],
 };
+
+const videos = ['url1', 'url2'];
+const tutorials = [
+    { url: 'url1', user: 'user', title: 'title' },
+    { url: 'url2', user: 'user', title: 'title' },
+];
+const useCases = [
+    { url: 'url1', user: 'user' },
+    { url: 'url2', user: 'user' },
+];
 describe('>>> ServiceTab component tests', () => {
     beforeEach(() => {
         process.env.REACT_APP_API_PORTAL = false;
@@ -275,5 +285,71 @@ describe('>>> ServiceTab component tests', () => {
             backgroundColor: '#fff',
             color: '#0056B3',
         });
+    });
+
+    it('should show more videos', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+                videos={videos}
+                tutorials={tutorials}
+                useCases={useCases}
+            />
+        );
+
+        wrapper.instance().showMoreVideos();
+
+        expect(wrapper.state().displayVideosCount).toEqual(4);
+        expect(wrapper.state().displayBlogsCount).toEqual(3);
+        expect(wrapper.state().displayUseCasesCount).toEqual(3);
+    });
+
+    it('should show more use cases', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+                videos={videos}
+                tutorials={tutorials}
+                useCases={useCases}
+            />
+        );
+
+        wrapper.instance().showMoreUseCases();
+
+        expect(wrapper.state().displayVideosCount).toEqual(2);
+        expect(wrapper.state().displayBlogsCount).toEqual(3);
+        expect(wrapper.state().displayUseCasesCount).toEqual(5);
+    });
+
+    it('should show more tutorials', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+                videos={videos}
+                tutorials={tutorials}
+                useCases={useCases}
+            />
+        );
+
+        wrapper.instance().showMoreBlogs();
+
+        expect(wrapper.state().displayVideosCount).toEqual(2);
+        expect(wrapper.state().displayBlogsCount).toEqual(5);
+        expect(wrapper.state().displayUseCasesCount).toEqual(3);
     });
 });

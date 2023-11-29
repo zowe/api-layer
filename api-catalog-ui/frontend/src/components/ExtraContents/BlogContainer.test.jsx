@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { shallow, mount } from 'enzyme';
+import React from 'react';
 import BlogContainer from './BlogContainer';
 
 describe('>>> BlogContainer component tests', () => {
@@ -108,5 +109,53 @@ describe('>>> BlogContainer component tests', () => {
         expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
 
         global.fetch.mockRestore();
+    });
+
+    it('should render medium blogs', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce(),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
+    it('should fetch data and render blog correctly', async () => {
+        const mockFetch = jest.spyOn(global, 'fetch');
+        mockFetch.mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce('<div class="shortdesc"><h1 class="title">Blog content</h1></div>'),
+        });
+
+        const wrapper = shallow(<BlogContainer user="user" url="https://example.com/hello" title="title" />);
+        expect(wrapper.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        // Restore the original fetch function
+        mockFetch.mockRestore();
+    });
+
+    it('should render multiple medium blogs', async () => {
+        const myBlogData = {
+            items: [{ link: 'https://medium.com/blog1' }, { link: 'https:///medium.com/blog2' }],
+        };
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValueOnce(myBlogData),
+        });
+
+        const useStateSpy = jest.spyOn(React, 'useState');
+        const setMyBlog = jest.fn();
+        useStateSpy.mockImplementation((init) => [init, setMyBlog]);
+
+        const blogContainer = mount(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
+
+        blogContainer.update();
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        // Clean up mocks
+        global.fetch.mockRestore();
+        useStateSpy.mockRestore();
     });
 });
