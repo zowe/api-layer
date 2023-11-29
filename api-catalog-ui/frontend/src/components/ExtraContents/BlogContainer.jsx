@@ -10,7 +10,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import BlogTile from './BlogTile';
-import { isValidUrl } from '../../utils/utilFunctions';
 
 export default function BlogContainer({ user, url, title }) {
     const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${user}`;
@@ -47,17 +46,11 @@ export default function BlogContainer({ user, url, title }) {
         }
     };
 
-    if (!isValidUrl(url)) {
-        return null;
-    }
-    if (url.includes('medium.com') && !user) {
-        return null;
-    }
     useEffect(() => {
         const fetchDataEffect = async () => {
-            if (!url.includes('medium.com') && !url.includes('docs.zowe.org')) {
+            if (!url?.includes('medium.com') && !url?.includes('docs.zowe.org')) {
                 await fetchData();
-            } else if (url.includes('docs.zowe.org')) {
+            } else if (url?.includes('docs.zowe.org')) {
                 const blogData = {
                     content: '',
                     description: `Tutorial from the Zowe documentation related to ${user}`,
@@ -86,7 +79,7 @@ export default function BlogContainer({ user, url, title }) {
             return correctBlog && <BlogTile blogData={correctBlog} />;
         }
     }
-    if (url.includes('medium.com')) {
+    if (url?.includes('medium.com')) {
         return (
             <div data-testid="medium-blog-container" className="BlogsContainer">
                 {displayBlogs()}
