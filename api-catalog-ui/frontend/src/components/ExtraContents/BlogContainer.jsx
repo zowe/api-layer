@@ -67,8 +67,6 @@ export default function BlogContainer({ user, url, title }) {
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.error('Error fetching data:', error);
-                    // eslint-disable-next-line no-console
-                    console.log('CIAOONE');
                     return null;
                 }
             }

@@ -103,8 +103,15 @@ export default class DetailPage extends Component {
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
-        const { useCasesCounter, tutorialsCounter, videosCounter, useCases, tutorials, videos, documentation } =
-            countAdditionalContents(selectedService);
+        const {
+            useCasesCounter,
+            tutorialsCounter,
+            videosCounter,
+            filteredUseCases,
+            filteredTutorials,
+            videos,
+            documentation,
+        } = countAdditionalContents(selectedService);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         const showSideBar = false;
         if (
@@ -239,8 +246,8 @@ export default class DetailPage extends Component {
                                                 <div className="tabs-swagger">
                                                     <ServiceTabContainer
                                                         videos={videos}
-                                                        useCases={useCases}
-                                                        tutorials={tutorials}
+                                                        useCases={filteredUseCases}
+                                                        tutorials={filteredTutorials}
                                                         videosCounter={videosCounter}
                                                         tutorialsCounter={tutorialsCounter}
                                                         useCasesCounter={useCasesCounter}

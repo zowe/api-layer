@@ -259,7 +259,7 @@ describe('>>> Detailed Page component tests', () => {
         // eslint-disable-next-line global-require
         const utils = require('../../utils/utilFunctions');
         const spyOnCountAdditionalContents = jest.spyOn(utils, 'default');
-        spyOnCountAdditionalContents.mockImplementation((_services) => ({
+        spyOnCountAdditionalContents.mockImplementation(() => ({
             useCasesCounter: 2,
             tutorialsCounter: 2,
             videosCounter: 2,
