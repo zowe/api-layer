@@ -123,6 +123,18 @@ describe('>>> BlogContainer component tests', () => {
         global.fetch.mockRestore();
     });
 
+    it('should render zowe blogs', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce(),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" url="https://docs.zowe.org/some" title="title" />);
+
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
     it('should fetch data and render blog correctly', async () => {
         const mockFetch = jest.spyOn(global, 'fetch');
         mockFetch.mockResolvedValueOnce({
