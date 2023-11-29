@@ -76,12 +76,8 @@ export default function countAdditionalContents(service) {
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
     const color =
         uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF' ? 'black' : uiConfig.headerColor;
-    if (wizardButton) {
-        wizardButton.style.setProperty('color', color);
-    }
-    if (refreshButton) {
-        refreshButton.style.setProperty('color', color);
-    }
+    wizardButton?.style?.setProperty('color', color);
+    refreshButton?.style?.setProperty('color', color);
 }
 
 function setMultipleElements(uiConfig) {
@@ -96,18 +92,10 @@ function setMultipleElements(uiConfig) {
         if (header && header.length > 0) {
             header[0].style.setProperty('background-color', uiConfig.headerColor);
         }
-        if (divider) {
-            divider.style.setProperty('background-color', uiConfig.headerColor);
-        }
-        if (title1) {
-            title1.style.setProperty('color', uiConfig.headerColor);
-        }
-        if (swaggerLabel) {
-            swaggerLabel.style.setProperty('color', uiConfig.headerColor);
-        }
-        if (logoutButton) {
-            logoutButton.style.setProperty('color', uiConfig.headerColor);
-        }
+        divider?.style?.setProperty('background-color', uiConfig.headerColor);
+        title1?.style?.setProperty('color', uiConfig.headerColor);
+        swaggerLabel?.style?.setProperty('color', uiConfig.headerColor);
+        logoutButton?.style?.setProperty('color', uiConfig.headerColor);
         setButtonsColor(wizardButton, uiConfig, refreshButton);
     }
 }
@@ -152,15 +140,9 @@ function handleWhiteHeader(uiConfig) {
         if (goBackButton) {
             goBackButton.style.color = 'black';
         }
-        if (swaggerLabel) {
-            swaggerLabel.style.color = 'black';
-        }
-        if (title) {
-            title.style.color = 'black';
-        }
-        if (productTitle) {
-            productTitle.style.color = 'black';
-        }
+        swaggerLabel?.style?.setProperty('color', 'black');
+        title?.style?.setProperty('color', 'black');
+        productTitle?.style?.setProperty('color', 'black');
     }
 }
 

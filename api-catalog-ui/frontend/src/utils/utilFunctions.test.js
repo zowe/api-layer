@@ -83,6 +83,25 @@ describe('>>> Util Functions tests', () => {
         });
     });
 
+    it('should check for swagger when default API is available', () => {
+        const service = {
+            id: 'service',
+            apis: {
+                default: { apiId: 'enabler' },
+            },
+        };
+        expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
+            hasSwagger: false,
+            filteredTutorials: [],
+            tutorialsCounter: 0,
+            filteredUseCases: [],
+            useCasesCounter: 0,
+            videos: [],
+            videosCounter: 0,
+        });
+    });
+
     it('should apply UI changes', async () => {
         const uiConfig = {
             logo: '/path/img.png',
