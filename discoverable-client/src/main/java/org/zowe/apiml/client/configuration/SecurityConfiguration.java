@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.client.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,21 +20,31 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.zowe.apiml.filter.AttlsFilter;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
 
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable() // NOSONAR
-            .authorizeRequests()
-            .antMatchers("/ws/**").authenticated()
-            .antMatchers("/**").permitAll()
-            .and().httpBasic()
-            .and().build();
-    }
+        HttpSecurity newConf = http.csrf(csrf -> csrf.disable()) // NOSONAR
+                .authorizeRequests(requests -> requests
+                        .antMatchers("/ws/**").authenticated()
+                        .antMatchers("/**").permitAll())
+                            .httpBasic(withDefaults());
 
+        if (isAttlsEnabled) {
+            newConf.addFilterBefore(new AttlsFilter(), UsernamePasswordAuthenticationFilter.class);
+        }
+        return newConf.build();
+    }
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
