@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 public class CorsUtils {
     private static final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
+    private final List<String> allowedOrigins;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
 
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
@@ -75,6 +76,8 @@ public class CorsUtils {
     public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> pathMapper) {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
+
+        config.setAllowedOrigins(allowedOrigins);
         if (corsEnabled) {
             config.setAllowCredentials(true);
             config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
