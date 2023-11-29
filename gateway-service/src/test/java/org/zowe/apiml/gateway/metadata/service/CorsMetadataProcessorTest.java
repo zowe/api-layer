@@ -29,8 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class CorsMetadataProcessorTest {
-    private CorsMetadataProcessor underTest;
-    private CorsUtils corsUtils = new CorsUtils(true);
+    private CorsUtils corsUtils = new CorsUtils(true, null);
     ;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
@@ -39,8 +38,8 @@ class CorsMetadataProcessorTest {
     void setUp() {
         EurekaApplications applications = mock(EurekaApplications.class);
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        underTest = new CorsMetadataProcessor(applications, configurationSource, corsUtils);
-        corsUtils = new CorsUtils(true);
+        new CorsMetadataProcessor(applications, configurationSource, corsUtils);
+        corsUtils = new CorsUtils(true, null);
     }
 
     @Nested
@@ -102,6 +101,4 @@ class CorsMetadataProcessorTest {
 
         }
     }
-
-
 }

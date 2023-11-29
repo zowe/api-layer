@@ -69,6 +69,8 @@ public class CorsUtils {
             config.setAllowCredentials(true);
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods);
+        } else {
+            config.setAllowedOrigins(allowedOrigins);
         }
         return config;
     }
