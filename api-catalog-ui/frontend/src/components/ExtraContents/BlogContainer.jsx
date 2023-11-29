@@ -13,12 +13,6 @@ import BlogTile from './BlogTile';
 import { isValidUrl } from '../../utils/utilFunctions';
 
 export default function BlogContainer({ user, url, title }) {
-    if (!isValidUrl(url)) {
-        return null;
-    }
-    if (url.includes('medium.com') && !user) {
-        return null;
-    }
     const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${user}`;
     const [myBlog, setMyBlog] = useState([]);
 
@@ -54,6 +48,12 @@ export default function BlogContainer({ user, url, title }) {
     };
 
     useEffect(() => {
+        if (!isValidUrl(url)) {
+            return null;
+        }
+        if (url.includes('medium.com') && !user) {
+            return null;
+        }
         const fetchDataEffect = async () => {
             if (!url.includes('medium.com') && !url.includes('docs.zowe.org')) {
                 await fetchData();
