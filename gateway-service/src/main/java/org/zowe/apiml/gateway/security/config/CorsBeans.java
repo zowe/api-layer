@@ -64,12 +64,10 @@ public class CorsBeans {
         String hostname,
         int port
     ) throws URISyntaxException {
-        if (corsEnabled) return null;
-
-        boolean attls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
-        if (!attls) {
+        boolean isAttls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
+        if (corsEnabled || !isAttls) {
             // TODO: this method is a hotfix for AT-TLS, but it could be a breaking change, verify no-ATTLS configuration in v3
-            return null;
+            return null; // NOSONAR
         }
 
         Set<String> gatewayOrigins = new HashSet<>();
@@ -77,7 +75,7 @@ public class CorsBeans {
             gatewayOrigins.add(externalUrl);
         }
         gatewayOrigins.add(new URIBuilder()
-            .setScheme(attls || ssl ? "https" : "http")
+            .setScheme("https")
             .setHost(hostname)
             .setPort(port)
             .build().toString()
