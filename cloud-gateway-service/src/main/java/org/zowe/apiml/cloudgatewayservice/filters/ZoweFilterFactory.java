@@ -19,15 +19,15 @@ import org.zowe.apiml.message.core.MessageService;
 
 
 @Service
-public class ZosmfFilterFactory extends TokenFilterFactory {
+public class ZoweFilterFactory extends TokenFilterFactory {
 
-    public ZosmfFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+    public ZoweFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(webClient, instanceInfoService, messageService);
     }
 
     @Override
     public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/zaas/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        return String.format("%s://%s:%d/%s/zaas/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
 }

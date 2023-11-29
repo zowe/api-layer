@@ -19,22 +19,25 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
+import org.zowe.apiml.cloudgatewayservice.x509.X509Util;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
+import java.security.cert.CertificateEncodingException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.zowe.apiml.cloudgatewayservice.filters.ClientCertFilterFactory.CLIENT_CERT_HEADER;
+import static org.zowe.apiml.cloudgatewayservice.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
@@ -42,15 +45,15 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 /**
  * This class is responsible for the shared part about decoration of user request with authentication scheme. The
  * service defines its own authentication scheme, and it could evaluate a request mutation. The aim is to have as
- * small implementation as possible. Therefore, the implemntation itself should construct the request to ZAAS with
+ * small implementation as possible. Therefore, the implementation itself should construct the request to ZAAS with
  * a minimal requirements and process the result. The rest (common values for ZAAS, retrying, HA evaluation and
  * sanitation of user request should be done by this class).
  *
  * To prepare a new implementation of authentication scheme decoration is required to implement those methods:
  * - {@link AbstractAuthSchemeFactory#getResponseClass()} - define class of the response body (see T)
  * - {@link AbstractAuthSchemeFactory#getResponseFor401()} - construct empty response body for 401 response
- * - {@link AbstractAuthSchemeFactory#createRequest(AbstractConfig, ServerHttpRequest.Builder, ServiceInstance, Object)}
- *   - create the base part of request to the ZAAS. It requires only related request properties to the releated scheme
+ * - {@link AbstractAuthSchemeFactory#createRequest(AbstractConfig, ServerHttpRequest.Builder, ServiceInstance, Object, ServerHttpRequest request)}
+ *   - create the base part of request to the ZAAS. It requires only related request properties to the related scheme
  * - {@link AbstractAuthSchemeFactory#processResponse(ServerWebExchange, GatewayFilterChain, Object)}
  *   - it is responsible for reading the response from the ZAAS and modifying the clients request to provide new credentials
  *
@@ -94,7 +97,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  *                 headers.add("mySchemeHeader", response.getToken())
  *             ).build();
  *         } else {
- *             request = updateHeadersForError(exchange, "Invalid or missing authentication.");
+ *             request = updateHeadersForError(exchange, "Invalid or missing authentication");
  *         }
  *
  *         exchange = exchange.mutate().request(request).build();
@@ -208,13 +211,13 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return builder of the request
      */
     @SuppressWarnings({
-        "squid:S1452",  // the internal API cannot define generic more specificly
+        "squid:S1452",  // the internal API cannot define generic more specifically
         "squid:S2092"   // the cookie is used just for internal purposes (off the browser)
     })
     protected abstract WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data);
 
     /**
-     * The method responsible for reading a response from a ZAAS component and decorating of user request (ie. set
+     * The method responsible for reading a response from a ZAAS component and decorating of user request (i.e. set
      * credentials as header, etc.)
      * @param clientCallBuilder builder of customer request (to set new credentials)
      * @param chain chain of filter to be evaluated. Method should return `return chain.filter(exchange)`
@@ -225,7 +228,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     protected abstract Mono<Void> processResponse(ServerWebExchange clientCallBuilder, GatewayFilterChain chain, R response);
 
     @SuppressWarnings("squid:S1452")    // the internal API cannot define generic more specifically
-    protected WebClient.RequestHeadersSpec<?> createRequest(AbstractConfig config, ServerHttpRequest.Builder clientRequestbuilder, ServiceInstance instance, D data) {
+    protected WebClient.RequestHeadersSpec<?> createRequest(AbstractConfig config, ServerHttpRequest.Builder clientRequestbuilder, ServiceInstance instance, D data, ServerHttpRequest request) {
         WebClient.RequestHeadersSpec<?> zaasCallBuilder = createRequest(instance, data);
 
         clientRequestbuilder
@@ -243,6 +246,9 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
                 // add common headers to ZAAS
                 zaasCallBuilder.header(HEADER_SERVICE_ID, config.serviceId);
+
+                // add client certificate when present
+                setClientCertificate(zaasCallBuilder, request.getSslInfo());
 
                 // update original request - to remove all potential headers and cookies with credentials
                 Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
@@ -270,7 +276,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
                 ServerHttpRequest.Builder clientCallBuilder = exchange.getRequest().mutate();
                 return invoke(
                     instances,
-                    instance -> createRequest(config, clientCallBuilder, instance, data),
+                    instance -> createRequest(config, clientCallBuilder, instance, data, exchange.getRequest()),
                     response -> processResponse(exchange.mutate().request(clientCallBuilder.build()).build(), chain, response)
                 );
             }
@@ -289,8 +295,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     protected ServerHttpRequest updateHeadersForError(ServerWebExchange exchange, String errorMessage) {
-        ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
-        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", errorMessage).mapToLogMessage());
+        ServerHttpRequest request = addRequestHeader(exchange, ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
+        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
         return request;
     }
 
@@ -303,6 +309,17 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             .map(StringUtils::trim)
             .map(HttpCookie::parse)
             .flatMap(List::stream);
+    }
+
+    protected void setClientCertificate(WebClient.RequestHeadersSpec<?> callBuilder, SslInfo sslInfo) {
+        try {
+            String encodedCertificate = X509Util.getEncodedClientCertificate(sslInfo);
+            if (encodedCertificate != null) {
+                callBuilder.header(CLIENT_CERT_HEADER, encodedCertificate);
+            }
+        } catch (CertificateEncodingException e) {
+            callBuilder.header(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());
+        }
     }
 
     @Data

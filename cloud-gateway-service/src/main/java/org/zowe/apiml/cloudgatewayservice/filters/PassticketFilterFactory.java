@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -36,7 +37,7 @@ import java.util.Base64;
 @Service
 public class PassticketFilterFactory extends AbstractAuthSchemeFactory<PassticketFilterFactory.Config, TicketResponse, String> {
 
-    private static final String TICKET_URL = "%s://%s:%s/%s/api/v1/auth/ticket";
+    private static final String TICKET_URL = "%s://%s:%d/%s/zaas/ticket";
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
     public PassticketFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
@@ -57,6 +58,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
         return webClient.post()
             .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .bodyValue(requestBody);
     }
 
@@ -68,7 +70,8 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
             final String headerValue = "Basic " + encodedCredentials;
             request = setRequestHeader(exchange, HttpHeaders.AUTHORIZATION, headerValue);
         } else {
-            request = updateHeadersForError(exchange, "Invalid or missing authentication.");
+            String message = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication").mapToLogMessage();
+            request = updateHeadersForError(exchange, message);
         }
 
         exchange = exchange.mutate().request(request).build();

@@ -43,7 +43,7 @@ public class SafMethodSecurityExpressionRoot extends SecurityExpressionRoot
     }
 
     public boolean hasSafResourceAccess(String resourceClass, String resourceName, String accessLevel) {
-        return safResourceAccessVerifying.hasSafResourceAccess(authentication, resourceClass, resourceName, accessLevel);
+        return safResourceAccessVerifying.hasSafResourceAccess(getAuthentication(), resourceClass, resourceName, accessLevel);
     }
 
     public boolean hasSafServiceResourceAccess(String resourceNameSuffix, String accessLevel) {

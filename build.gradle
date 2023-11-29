@@ -38,7 +38,6 @@ buildscript {
         classpath libs.gradle.sonar.plugin
         classpath libs.gradle.release
         classpath libs.gradle.licencer
-        classpath libs.gradle.dependency.check
         classpath libs.gradle.jib.plugin
     }
 }
@@ -53,7 +52,6 @@ apply from: 'gradle/lite.gradle'
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'org.cadixdev.licenser'
-    apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'eclipse'
 
     repositories mavenRepositories
@@ -109,6 +107,7 @@ allprojects {
         resolutionStrategy.force libs.slf4j.api
         resolutionStrategy.force libs.log4j.api
         resolutionStrategy.force libs.log4j.to.slf4j
+        resolutionStrategy.force libs.caffeine
     }
 }
 
