@@ -22,6 +22,7 @@ import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -49,7 +50,8 @@ public class ZaasController {
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
-    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
+    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
+        throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
 
         if (StringUtils.isEmpty(authSourceParsed.getUserId())) {
             return ResponseEntity
@@ -59,22 +61,11 @@ public class ZaasController {
 
         final String applicationName = ticketRequest.getApplicationName();
         if (StringUtils.isBlank(applicationName)) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
-            return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(messageView);
+            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
         }
 
-        String ticket = null;
-        try {
-            ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
-        } catch (IRRPassTicketGenerationException e) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                e.getErrorCode().getMessage()).mapToView();
-            return ResponseEntity
-                .status(e.getHttpStatus())
-                .body(messageView);
-        }
+        String ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
+
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(new TicketResponse(null, authSourceParsed.getUserId(), applicationName, ticket));
@@ -120,7 +111,8 @@ public class ZaasController {
 
     @PostMapping(path = "safIdt", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides SAF Identity Token for authenticated user.")
-    public ResponseEntity<Object> getSafIdToken(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
+    public ResponseEntity<Object> getSafIdToken(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
+        throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
 
         final String userId = authSourceParsed.getUserId();
         if (StringUtils.isEmpty(userId)) {
@@ -131,30 +123,13 @@ public class ZaasController {
 
         final String applicationName = ticketRequest.getApplicationName();
         if (StringUtils.isBlank(applicationName)) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
-            return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(messageView);
+            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
         }
 
-        try {
-            String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(userId, applicationName);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new ZaasTokenResponse("", safIdToken));
-
-        } catch (IRRPassTicketGenerationException e) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                e.getErrorCode().getMessage()).mapToView();
-            return ResponseEntity
-                .status(e.getHttpStatus())
-                .body(messageView);
-        } catch (Exception e) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.idt.failed", e.getMessage()).mapToView();
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(messageView);
-        }
+        String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(userId, applicationName);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(new ZaasTokenResponse("", safIdToken));
     }
 
 }

@@ -164,7 +164,7 @@ class TokenCreationServiceTest {
                 underTest.createSafIdTokenWithoutCredentials(VALID_USER_ID, VALID_ZOSMF_APPLID);
             });
 
-        assertEquals(e.getMessage(), "Error on generation of PassTicket: An internal error was encountered.");
+        assertEquals("Error on generation of PassTicket: An internal error was encountered.", e.getMessage());
     }
 
     @Test
@@ -176,6 +176,6 @@ class TokenCreationServiceTest {
             underTest.createSafIdTokenWithoutCredentials(VALID_USER_ID, VALID_ZOSMF_APPLID);
         });
 
-        assertEquals(e.getMessage(), "Test exception");
+        assertEquals("Test exception", e.getMessage());
     }
 }

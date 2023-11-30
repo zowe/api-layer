@@ -89,7 +89,7 @@ class ZaasControllerTest {
 
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
         ZaasController zaasController = new ZaasController(authSourceService, messageService, passTicketService, zosmfService, tokenCreationService);
-        mockMvc = MockMvcBuilders.standaloneSetup(zaasController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(zaasController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         ticketBody = new JSONObject()
             .put("applicationName", APPLID);
     }
