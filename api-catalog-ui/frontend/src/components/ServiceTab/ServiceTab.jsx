@@ -13,7 +13,7 @@ import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import { isAPIPortal, isValidUrl } from '../../utils/utilFunctions';
+import { isAPIPortal } from '../../utils/utilFunctions';
 import VideoWrapper from '../ExtraContents/VideoWrapper';
 import BlogContainer from '../ExtraContents/BlogContainer';
 
@@ -189,12 +189,6 @@ export default class ServiceTab extends Component {
         const useCasesPresent = useCasesCounter !== 0;
         const videosPresent = videosCounter !== 0;
         const tutorialsPresent = tutorialsCounter !== 0;
-        const filteredUseCases = useCases?.filter(
-            ({ url, user }) => isValidUrl(url) || (url?.includes('medium.com') && !user)
-        );
-        const filteredTutorials = tutorials?.filter(
-            ({ url, user }) => isValidUrl(url) || (url?.includes('medium.com') && !user)
-        );
         return (
             <>
                 {currentService === null && (
@@ -364,7 +358,7 @@ export default class ServiceTab extends Component {
                                 <br />
                                 <br />
                                 <div id="blogs-container">
-                                    {filteredUseCases?.slice(0, displayUseCasesCount).map((useCase) => (
+                                    {useCases?.slice(0, displayUseCasesCount).map((useCase) => (
                                         <BlogContainer
                                             key={useCase.url}
                                             user={useCase.user}
@@ -373,12 +367,11 @@ export default class ServiceTab extends Component {
                                         />
                                     ))}
                                 </div>
-                                {useCasesCounter > displayUseCasesCount &&
-                                    displayUseCasesCount < filteredUseCases.length && (
-                                        <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
-                                            Show all ({useCasesCounter} articles)
-                                        </IconButton>
-                                    )}
+                                {useCasesCounter > displayUseCasesCount && displayUseCasesCount < useCases.length && (
+                                    <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
+                                        Show all ({useCasesCounter} articles)
+                                    </IconButton>
+                                )}
                                 <br />
                                 <br />
                                 {tutorialsPresent && (
@@ -393,7 +386,7 @@ export default class ServiceTab extends Component {
                                 )}
                                 <br />
                                 <div id="blogs-container">
-                                    {filteredTutorials?.slice(0, displayBlogsCount).map((tutorial) => (
+                                    {tutorials?.slice(0, displayBlogsCount).map((tutorial) => (
                                         <BlogContainer
                                             key={tutorial.url}
                                             user={tutorial.user}
@@ -402,7 +395,7 @@ export default class ServiceTab extends Component {
                                         />
                                     ))}
                                 </div>
-                                {tutorialsCounter > displayBlogsCount && displayBlogsCount < filteredTutorials.length && (
+                                {tutorialsCounter > displayBlogsCount && displayBlogsCount < tutorials.length && (
                                     <IconButton className="more-content-button" onClick={this.showMoreBlogs}>
                                         Show all ({tutorialsCounter} articles)
                                     </IconButton>
