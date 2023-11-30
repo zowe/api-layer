@@ -83,6 +83,25 @@ describe('>>> Util Functions tests', () => {
         });
     });
 
+    it('should check for swagger and set false when no swagger URL available', () => {
+        const service = {
+            id: 'service',
+            apis: {
+                'org.zowe v1': {},
+            },
+        };
+        expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
+            hasSwagger: false,
+            filteredTutorials: [],
+            tutorialsCounter: 0,
+            filteredUseCases: [],
+            useCasesCounter: 0,
+            videos: [],
+            videosCounter: 0,
+        });
+    });
+
     it('should check for swagger when default API is available', () => {
         const service = {
             id: 'service',
@@ -139,6 +158,28 @@ describe('>>> Util Functions tests', () => {
         expect(document.documentElement.style.backgroundColor).toBe('blue');
         expect(description.style.color).toBe('white');
         expect(document.body.style.fontFamily).toBe('Arial');
+        // Clean up the mocks
+        jest.restoreAllMocks();
+        global.fetch.mockRestore();
+    });
+
+    it('should not set color if header not found', async () => {
+        document.body.innerHTML = `
+      <div></div>
+    `;
+        const uiConfig = {
+            logo: '/path/img.png',
+            headerColor: 'red',
+            backgroundColor: 'blue',
+            fontFamily: 'Arial',
+            textColor: 'white',
+        };
+
+        global.URL.createObjectURL = jest.fn().mockReturnValue('img-url');
+        global.fetch = mockFetch();
+        await customUIStyle(uiConfig);
+        const header = document.getElementsByClassName('header')[0];
+        expect(header).toBeUndefined();
         // Clean up the mocks
         jest.restoreAllMocks();
         global.fetch.mockRestore();

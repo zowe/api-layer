@@ -24,6 +24,18 @@ describe('>>> BlogContainer component tests', () => {
         global.fetch.mockRestore();
     });
 
+    it('should not render medium blog if url missing', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce(),
+        });
+
+        const blogContainer = shallow(<BlogContainer user="user" title="title" />);
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(false);
+
+        global.fetch.mockRestore();
+    });
+
     it('should render other blog (non-Medium and non-Zowe)', async () => {
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             text: jest.fn().mockResolvedValueOnce(),
@@ -40,16 +52,6 @@ describe('>>> BlogContainer component tests', () => {
         const blogContainer = shallow(<BlogContainer user="user" url="https://docs.zowe.org/doc" title="title" />);
 
         expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
-    });
-
-    it('should handle errors during data fetching', async () => {
-        jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Fetch error'));
-
-        const blogContainer = shallow(<BlogContainer user="user" url="https://example.com" title="title" />);
-
-        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
-
-        global.fetch.mockRestore();
     });
 
     it('should handle missing items in the fetched data', async () => {
@@ -133,5 +135,64 @@ describe('>>> BlogContainer component tests', () => {
         // Clean up mocks
         global.fetch.mockRestore();
         useStateSpy.mockRestore();
+    });
+
+    it('should not render a blog when items do not contain matching URLs', async () => {
+        const myBlogData = {
+            items: [{ link: 'https://someother.com/blog1' }],
+        };
+
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValueOnce(myBlogData),
+        });
+
+        const setMyBlog = jest.fn();
+        jest.spyOn(React, 'useState').mockImplementation((init) => [init, setMyBlog]);
+
+        const blogContainer = mount(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        expect(blogContainer.find('BlogTile').exists()).toEqual(false);
+
+        // Clean up mocks
+        global.fetch.mockRestore();
+        React.useState.mockRestore();
+    });
+
+    it('should handle errors during data fetching inside fetchDataEffect and return null', async () => {
+        jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Fetch error'));
+
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        const setMyBlog = jest.fn();
+        jest.spyOn(React, 'useState').mockImplementation((init) => [init, setMyBlog]);
+
+        const blogContainer = mount(<BlogContainer user="user" url="https://example.com" title="title" />);
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        expect(blogContainer.find('BlogTile').exists()).toEqual(false);
+
+        // Clean up mocks
+        global.fetch.mockRestore();
+        React.useState.mockRestore();
+    });
+
+    it('should handle errors during data fetching when url is medium', async () => {
+        jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Fetch error'));
+
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        const setMyBlog = jest.fn();
+        jest.spyOn(React, 'useState').mockImplementation((init) => [init, setMyBlog]);
+
+        const blogContainer = mount(<BlogContainer user="user" url="https://medium.com" title="title" />);
+        expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(false);
+
+        expect(blogContainer.find('BlogTile').exists()).toEqual(false);
+
+        // Clean up mocks
+        global.fetch.mockRestore();
+        React.useState.mockRestore();
     });
 });

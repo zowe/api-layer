@@ -133,13 +133,9 @@ function handleWhiteHeader(uiConfig) {
     if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
         if (uiConfig.docLink) {
             const docText = document.querySelector('#internal-link');
-            if (docText) {
-                docText.style.color = 'black';
-            }
+            docText?.style?.setProperty('color', 'black');
         }
-        if (goBackButton) {
-            goBackButton.style.color = 'black';
-        }
+        goBackButton?.style?.setProperty('color', 'black');
         swaggerLabel?.style?.setProperty('color', 'black');
         title?.style?.setProperty('color', 'black');
         productTitle?.style?.setProperty('color', 'black');
@@ -190,16 +186,12 @@ export const customUIStyle = async (uiConfig) => {
             element.style.setProperty('font-family', uiConfig.fontFamily);
         });
         const tileLabel = document.querySelector('p#tileLabel');
-        if (tileLabel) {
-            tileLabel.style.removeProperty('font-family');
-            tileLabel.style.fontFamily = uiConfig.fontFamily;
-        }
+        tileLabel?.style?.removeProperty('font-family');
+        tileLabel?.style?.setProperty('font-family', uiConfig.fontFamily);
     }
     if (uiConfig.textColor) {
         const description = document.getElementById('description');
-        if (description) {
-            description.style.color = uiConfig.textColor;
-        }
+        description?.style?.setProperty('color', uiConfig.fontFamily);
     }
     handleWhiteHeader(uiConfig);
 };
