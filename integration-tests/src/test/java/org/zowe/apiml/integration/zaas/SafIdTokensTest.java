@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,8 +32,8 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static io.restassured.http.ContentType.XML;
+import static javax.servlet.http.HttpServletResponse.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.*;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
@@ -62,11 +63,12 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .cookie(COOKIE, zosmfToken)
                 .body(ticketRequest)
                 .contentType(JSON)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(""));
+                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -80,11 +82,12 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .header("Authorization", "Bearer " + zoweToken)
                 .body(ticketRequest)
                 .contentType(JSON)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(""));
+                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -99,11 +102,12 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .header("X-Service-Id", serviceId)
                 .body(ticketRequest)
                 .contentType(JSON)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(""));
+                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -115,11 +119,12 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .header("Client-Cert", certificate)
                 .body(ticketRequest)
                 .contentType(JSON)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(""));
+                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -132,11 +137,12 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .cookie(COOKIE, oAuthToken)
                 .body(ticketRequest)
                 .contentType(JSON)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(""));
+                .body("ticket", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
     }
@@ -155,9 +161,9 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .contentType(JSON)
                 .body(new TicketRequest())
                 .cookie(COOKIE, jwt)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
             //@formatter:on
@@ -173,15 +179,74 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .contentType(JSON)
                 .body(ticketRequest)
                 .cookie(COOKIE, jwt)
-                .when()
+            .when()
                 .post(ZAAS_SAFIDT_URI)
-                .then()
+            .then()
                 .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             //@formatter:on
         }
-    }
-    //@formatter:on
 
+        @Test
+        @Disabled("Enable once it runs on z/OS. Mimic the behaviour in Mock service.")
+        void givenLongApplicationName() {
+            //@formatter:off
+            given()
+                .contentType(JSON)
+                .body(new TicketRequest("TooLongAppName"))
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_SAFIDT_URI)
+            .then()
+                .statusCode(is(SC_BAD_REQUEST));
+            //@formatter:on
+        }
+
+    }
+
+    @Nested
+    class WhenGeneratingSafIdToken_returnNotFound {
+
+        private final String jwt = getZosmfJwtToken();
+
+        @Test
+        void givenNoContentType() {
+            //@formatter:off
+            given()
+                .body(new TicketRequest(APPLICATION_NAME))
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_SAFIDT_URI)
+            .then()
+                .statusCode(is(SC_NOT_FOUND));
+            //@formatter:on
+        }
+
+        @Test
+        void givenInvalidContentType() {
+            //@formatter:off
+            given()
+                .contentType(XML)
+                .body(new TicketRequest(APPLICATION_NAME))
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_SAFIDT_URI)
+            .then()
+                .statusCode(is(SC_NOT_FOUND));
+            //@formatter:on
+        }
+
+        @Test
+        void givenNoBody() {
+            //@formatter:off
+            given()
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_SAFIDT_URI)
+            .then()
+                .statusCode(is(SC_NOT_FOUND));
+            //@formatter:on
+        }
+    }
     // Additional negative tests are in ZaasNegativeTest since they are common for the whole service
 }

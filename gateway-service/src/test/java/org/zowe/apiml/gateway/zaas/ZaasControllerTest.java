@@ -23,8 +23,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
-import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
@@ -65,7 +65,7 @@ class ZaasControllerTest {
     private ZosmfService zosmfService;
 
     @Mock
-    private SafIdtProvider safIdtProvider;
+    private TokenCreationService tokenCreationService;
 
     private MockMvc mockMvc;
     private JSONObject ticketBody;
@@ -88,7 +88,7 @@ class ZaasControllerTest {
         MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
-        ZaasController zaasController = new ZaasController(authSourceService, messageService, passTicketService, zosmfService, safIdtProvider);
+        ZaasController zaasController = new ZaasController(authSourceService, messageService, passTicketService, zosmfService, tokenCreationService);
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).build();
         ticketBody = new JSONObject()
             .put("applicationName", APPLID);
@@ -155,7 +155,7 @@ class ZaasControllerTest {
 
         @Test
         void whenRequestSafIdtAndApplNameProvided_thenResponseOk() throws Exception {
-            when(safIdtProvider.generate(USER, PASSTICKET.toCharArray(), APPLID)).thenReturn(SAFIDT);
+            when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, APPLID)).thenReturn(SAFIDT);
             mockMvc.perform(post(SAFIDT_URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ticketBody.toString())
@@ -166,7 +166,7 @@ class ZaasControllerTest {
 
         @Test
         void whenRequestSafIdtAndNoApplNameProvided_thenBadRequest() throws Exception {
-            when(safIdtProvider.generate(USER, PASSTICKET.toCharArray(), APPLID)).thenReturn(SAFIDT);
+            when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, APPLID)).thenReturn(SAFIDT);
             ticketBody.put("applicationName", "");
 
             mockMvc.perform(post(SAFIDT_URL)
@@ -244,7 +244,7 @@ class ZaasControllerTest {
 
             @Test
             void whenRequestingSafIdtAndSafIdtException_thenInternalServerError() throws Exception {
-                when(safIdtProvider.generate(USER, PASSTICKET.toCharArray(), APPLID)).thenThrow(new SafIdtException("Test exception message."));
+                when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, APPLID)).thenThrow(new SafIdtException("Test exception message."));
 
                 mockMvc.perform(post(SAFIDT_URL)
                         .contentType(MediaType.APPLICATION_JSON)

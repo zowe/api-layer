@@ -18,9 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
-import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
-import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
@@ -30,10 +28,7 @@ import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.zaas.ZaasSafIdtResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
-
-import java.util.Arrays;
 
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
@@ -50,7 +45,7 @@ public class ZaasController {
     private final MessageService messageService;
     private final PassTicketService passTicketService;
     private final ZosmfService zosmfService;
-    private final SafIdtProvider safIdtProvider;
+    private final TokenCreationService tokenCreationService;
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
@@ -142,14 +137,11 @@ public class ZaasController {
                 .body(messageView);
         }
 
-        char[] passTicket = "".toCharArray();
         try {
-            passTicket = passTicketService.generate(userId, applicationName).toCharArray();
-            String safIdToken = safIdtProvider.generate(userId, passTicket, applicationName);
-
+            String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(userId, applicationName);
             return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new ZaasSafIdtResponse(safIdToken));
+                .body(new ZaasTokenResponse(null, safIdToken));
 
         } catch (IRRPassTicketGenerationException e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
@@ -157,13 +149,11 @@ public class ZaasController {
             return ResponseEntity
                 .status(e.getHttpStatus())
                 .body(messageView);
-        } catch (SafIdtException | SafIdtAuthException e) {
+        } catch (Exception e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.idt.failed", e.getMessage()).mapToView();
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(messageView);
-        } finally {
-            Arrays.fill(passTicket, (char) 0);
         }
     }
 
