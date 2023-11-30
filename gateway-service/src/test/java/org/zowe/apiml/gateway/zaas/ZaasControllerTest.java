@@ -161,7 +161,7 @@ class ZaasControllerTest {
                     .content(ticketBody.toString())
                     .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
                 .andExpect(status().is(SC_OK))
-                .andExpect(jsonPath("$.safIdToken", is(SAFIDT)));
+                .andExpect(jsonPath("$.token", is(SAFIDT)));
         }
 
         @Test
@@ -229,7 +229,7 @@ class ZaasControllerTest {
 
             @Test
             void whenRequestingSafIdtAndPassticketException_thenInternalServerError() throws Exception {
-                when(passTicketService.generate(USER, APPLID)).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
+                when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, APPLID)).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
 
                 mockMvc.perform(post(SAFIDT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
