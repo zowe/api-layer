@@ -5,58 +5,58 @@ dependencyResolutionManagement {
             version('projectNode', '18.14.0')
             version('projectNpm', '9.3.1')
 
-            version('springBoot', '2.7.15')
+            version('springBoot', '2.7.17')
             version('springCloud', '2.2.10.RELEASE')
             version('springCloudCommons', '3.1.7')
             version('springCloudVersion3', '3.1.7')
             version('springCloudCB', '2.1.7')
-            version('springCloudGateway', '3.1.7')
+            version('springCloudGateway', '3.1.9')
             version('springSecurity') {
                 // older versions are vulnerable to CVE-2023-20862
-                strictly '[5.7.11,6.0.0['
-                prefer '5.7.11'
+                strictly '[5.8.8,6.0.0['
+                prefer '5.8.8'
             }
             version('springFramework') {
                 // older versions are vulnerable to CVE-2023-20863
-                strictly '[5.3.29,6.0.0['
-                prefer '5.3.30'
+                strictly '[5.3.31,6.0.0['
+                prefer '5.3.31'
             }
-            version('springRetry', '1.2.5.RELEASE')
-            version('springWebTestClient', '5.3.0')
+            version('springRetry', '1.3.4')
+            version('springWebTestClient', '5.3.2')
 
-            version('awsJavaSdk', '1.12.565')
-            version('attls', '1.21.3')
+            version('aopalliance', '3.0.3')
+            version('attls', '2.0.2')
             version('archaius', '0.7.7')
-            version('awaitility', '4.0.3')
-            version('bouncyCastle', '1.76')
+            version('awaitility', '4.2.0')
+            version('awsJavaSdk', '1.12.594')
+            version('bouncyCastle', '1.77')
             version('bootstrap', '4.3.1')
-            version('commonsCodec', '1.15')
+            // forced version in root gradle.build file. Version 3.x requieres Java 11
+            version('caffeine', '2.9.3')
+            version('commonsCodec', '1.16.0')
             version('commonsConfiguration', '1.10')
-            version('commonsLang3', '3.12.0')
+            version('commonsLang3', '3.14.0')
             version('commonsLogging', '1.2')
-            version('commonsText', '1.10.0')
-            version('commonsIo') {
-                // older versions are vulnerable to CVE-2021-29425
-                strictly '[2.7,2.8.0['
-                prefer '2.7'
-            }
+            version('commonsText', '1.11.0')
+            version('commonsIo', '2.15.0')
             version('commonsFileUpload', '1.5')
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
-            version('githubClassgraph', '4.8.154')
+            version('githubClassgraph', '4.8.165')
             version('gradleGitProperties', '2.2.4') // Used in classpath dependencies
-            version('gradleNode', '3.0.1') // Used in classpath dependencies
-            version('gson', '2.9.1')
-            version('guava', '32.1.2-jre')
+            version('gradleNode', '3.6.0') // Used in classpath dependencies
+            version('gson', '2.10.1')
+            version('guava', '32.1.3-jre')
             version('hamcrest', '1.3')
             version('httpClient', '4.5.14')
             version('httpCore', '4.4.16')
             version('hystrix', '1.5.18')
+            // version 14.x requires Java 11
             version('infinispan', '13.0.20.Final')
-            version('jacksonCore', '2.15.3')
-            version('jacksonDatabind', '2.15.3')
-            version('jacksonDataformatYaml', '2.15.3')
+            version('jacksonCore', '2.16.0')
+            version('jacksonDatabind', '2.16.0')
+            version('jacksonDataformatYaml', '2.16.0')
             version('jacksonMapperAsl', '1.9.16-TALEND')
             version('janino', '3.1.10')
             version('javassist', '3.29.2-GA')
@@ -64,51 +64,61 @@ dependencyResolutionManagement {
             version('jakartaInject', '1.0.5')
             version('javaxServletApi', '4.0.1')
             version('jaxbApi', '2.3.1')
-            version('jersey', '2.39.1')
+            version('jersey', '2.41')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.53.v20231009')
             version('jettison', '1.5.4')
             version('jjwt', '0.11.5')
             version('jjwtFull', '0.9.1')
-            version('joda', '2.10.14')
-            version('jsonPath', '2.7.0')
-            version('jsonSmart', '2.4.10')
-            version('jsonUnit', '1.31.1')
-            version('json', '20230227')
-            version('jsoup', '1.16.1')
+            version('joda', '2.12.5')
+            version('jsonPath', '2.8.0')
+            version('jsonSmart', '2.5.0')
+            version('jsonUnit', '3.2.2')
+            version('json', '20231013')
+            version('jsoup', '1.16.2')
             version('jsr305', '3.0.2')
-            version('junitJupiter', '5.9.3')
-            version('junitPlatform', '1.9.3')
-            version('jquery', '3.6.4')
-            version('lettuce', '6.1.10.RELEASE')
-            version('log4j', '2.19.0')
+            version('junitJupiter', '5.10.1')
+            version('junitPlatform', '1.10.1')
+            version('jquery', '3.7.1')
+            version('lettuce', '6.3.0.RELEASE')
+            // force version in build.gradle file - compatibility with Slf4j
+            version('log4j', '2.22.0')
             version('logback') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
                 strictly '[1.2, 1.3['
                 prefer '1.2.12'
             }
-            version('lombok', '1.18.26')
-            version('mockitoCore', '4.9.0')
-            version('mockitoInline', '4.5.1')
+            version('lombok', '1.18.30')
+            version('mockitoCore') {
+                // version 5.x requires Java 11
+                strictly '[4.11.0, 5.0.0['
+                prefer '4.11.0'
+            }
+            version('mockitoInline') {
+                // version 5.x requires Java 11
+                strictly '[4.11.0, 5.0.0['
+                prefer '4.11.0'
+            }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.100.Final')
-            version('nettyReactor', '1.1.7')
-            version('nimbusJoseJwt', '9.31')
+            version('netty', '4.1.101.Final')
+            version('nettyReactor', '1.1.13')
+            version('nimbusJoseJwt', '9.37.1')
             version('openApiDiff', '2.0.1')
             version('ow2asm', '9.6')
-            version('picocli', '4.7.3')
+            version('picocli', '4.7.5')
 
+            // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
             version('ribbon', '2.3.0')
             version('reactor') {
-                // because of conflict with spring-security-config:5.7.8
-                // removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
-                strictly '[3.4.0, 3.5.0['
-                prefer '3.4.29'
+                // 3.5.x+: removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
+                strictly '[3.4.34, 3.5.0['
+                prefer '3.4.34'
             }
-            version('restAssured', '5.3.0')
+            version('restAssured', '5.3.2')
             version('rhino', '1.7.14')
+            // force version in build.gradle file, version 2.x is not compatible
             version('slf4j', '1.7.36')
             version('snakeyaml', '2.2')
             version('springFox', '2.9.2')
@@ -117,42 +127,48 @@ dependencyResolutionManagement {
                 strictly '[1.6.15, 1.7.0['
                 prefer '1.6.15'
             }
-            version('spring4', '5.3.27') // Used within PJE in tests
-            version('swagger3Core', '2.2.9')
-            version('swagger3Parser', '2.1.13')
-            version('swaggerCore', '1.6.10')
-            version('swaggerInflector', '2.0.9')
-            version('swaggerJaxrs2', '2.2.9')
+            version('spring4', '5.3.31') // Used within PJE in tests
+            version('swagger3Core', '2.2.19')
+            version('swagger3Parser', '2.1.18')
+            version('swaggerCore', '1.6.12')
+            version('swaggerInflector', '2.0.10')
+            version('swaggerJaxrs2', '2.2.19')
             version('thymeleaf', '3.1.2.RELEASE')
-            version('tomcat', '9.0.82')
+            version('tomcat', '9.0.83')
             version('velocity', '2.3')
             version('woodstoxCore', '6.5.1')
-            version('woodstoxStax2', '4.2.1')
+            version('woodstoxStax2', '4.2.2')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
                 strictly '[1.4.20,2.0['
                 prefer '1.4.20'
             }
+
+            // version 6.x is not compatible with gradleGitProperties and requires Java 11
             version('jgit') {
-                strictly '5.13.1.202206130422-r'
+                strictly '[5.13.2.202306221912-r,6.0.0.0['
+                prefer '5.13.2.202306221912-r'
             }
-            version('gradleNode', '3.5.0')
+            version('gradleNode', '7.0.1')
+            // the next version (4.1.0.3113) requires Java 11
             version('sonarGradlePlugin', '4.0.0.2929')
+            // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
-            version('gradleDependencyCheck', '8.2.1')
             version('gradleJibPlugin', '3.2.1')
             version('taskTree', '2.1.1')
-            version('reactorBom', '2022.0.7')
-            version('gradleTestLogger', '3.2.0')
-            version('testLogger', '3.2.0')
-            version('micronaut', '3.8.9')
+            version('reactorBom', '2023.0')
+            version('gradleTestLogger', '4.0.0')
+            version('testLogger', '4.0.0')
+            // version 4.x is not compatible with Java 8
+            version('micronaut', '3.10.3')
             version('micronautPlugin', '3.7.10')
             version('shadow', '8.1.1')
             version('gradleTomcatPlugin', '2.7.0')
+            // version 10.x+ requires Java 11
             version('checkstyle', '9.3')
-            version('jacoco', '0.8.10')
-            version('gradle', '8.1.1')
+            version('jacoco', '0.8.11')
+            version('gradle', '8.4')
             version('assertjCore', '3.24.2')
 
             library('zowe_attls', 'org.zowe.apiml.sdk', 'attls').versionRef('attls')
@@ -205,6 +221,7 @@ dependencyResolutionManagement {
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
             library('spring_websocket', 'org.springframework', 'spring-websocket').versionRef('springFramework')
 
+            library('aopalliance', 'org.glassfish.hk2.external', 'aopalliance-repackaged').versionRef('aopalliance')
             library('archaius', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
             library('amazon_aws_autoscaling', 'com.amazonaws', 'aws-java-sdk-autoscaling').versionRef('awsJavaSdk')
             library('amazon_aws_core', 'com.amazonaws', 'aws-java-sdk-core').versionRef('awsJavaSdk')
@@ -223,6 +240,7 @@ dependencyResolutionManagement {
             library('bcprov', 'org.bouncycastle', 'bcprov-jdk18on').versionRef('bouncyCastle')
             library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk18on').versionRef('bouncyCastle')
             library('bootstrap', 'org.webjars', 'bootstrap').versionRef('bootstrap')
+            library('caffeine', 'com.github.ben-manes.caffeine', 'caffeine').versionRef('caffeine')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eureka')
@@ -374,7 +392,6 @@ dependencyResolutionManagement {
             library('gradle_sonar_plugin', 'org.sonarsource.scanner.gradle', 'sonarqube-gradle-plugin').versionRef('sonarGradlePlugin')
             library('gradle_release', 'net.researchgate', 'gradle-release').versionRef('gradleRelease')
             library('gradle_licencer', 'gradle.plugin.org.cadixdev.gradle', 'licenser').versionRef('gradleLicencer')
-            library('gradle_dependency_check', 'org.owasp', 'dependency-check-gradle').versionRef('gradleDependencyCheck')
             library('gradle_jib_plugin', 'gradle.plugin.com.google.cloud.tools', 'jib-gradle-plugin').versionRef('gradleJibPlugin')
             library('gradle_test_logger', 'com.adarshr', 'gradle-test-logger-plugin').versionRef('gradleTestLogger')
             library('gradle_tomcat_plugin', 'com.bmuschko', 'gradle-tomcat-plugin').versionRef('gradleTomcatPlugin')

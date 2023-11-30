@@ -28,6 +28,7 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
@@ -91,7 +92,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
-                .body("token", not(""));
+                .body("token", not(isEmptyOrNullString()));
             //@formatter:on
         }
 
@@ -106,7 +107,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
-                .body("token", not(""));
+                .body("token", not(isEmptyOrNullString()));
             //@formatter:on
         }
 
@@ -122,7 +123,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
-                .body("token", not(""));
+                .body("token", not(isEmptyOrNullString()));
             //@formatter:on
         }
     }
