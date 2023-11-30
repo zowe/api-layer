@@ -47,11 +47,11 @@ public class ZaasNegativeTest {
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
-        add(ZAAS_SAFIDT_URI);
     }};
 
     private static final Set<URI> endpoints = new HashSet<URI>() {{
         add(ZAAS_TICKET_URI);
+        add(ZAAS_SAFIDT_URI);
         addAll(tokenEndpoints);
     }};
 

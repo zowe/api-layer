@@ -226,9 +226,9 @@ public class SafIdTokensTest implements TestWithStartedInstances {
         void givenInvalidContentType() {
             //@formatter:off
             given()
-                .contentType(XML)
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
+                .contentType(XML)
             .when()
                 .post(ZAAS_SAFIDT_URI)
             .then()
