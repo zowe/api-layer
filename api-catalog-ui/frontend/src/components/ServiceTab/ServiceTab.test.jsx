@@ -352,4 +352,38 @@ describe('>>> ServiceTab component tests', () => {
         expect(wrapper.state().displayBlogsCount).toEqual(5);
         expect(wrapper.state().displayUseCasesCount).toEqual(3);
     });
+
+    it('should call handle dialog close', () => {
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        const instance = wrapper.instance();
+
+        // Call the handleDialogClose method
+        instance.handleDialogClose();
+
+        // Check if the state is updated correctly
+        expect(wrapper.state('isDialogOpen')).toEqual(false);
+        expect(wrapper.state('selectedVersion')).toBeNull();
+    });
+
+    it('should call handle dialog open with selected version null', () => {
+        const currentService = {
+            defaultApiVersion: '1.0.0',
+        };
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab match={params} selectedService={selectService} tiles={[tiles]} selectService={selectService} />
+        );
+        const instance = wrapper.instance();
+
+        // Call the handleDialogClose method
+        instance.handleDialogOpen(currentService);
+
+        // Check if the state is updated correctly
+        expect(wrapper.state('isDialogOpen')).toEqual(true);
+        expect(wrapper.state('selectedVersion')).toEqual('diff');
+        expect(wrapper.state('previousVersion')).toEqual('1.0.0');
+    });
 });
