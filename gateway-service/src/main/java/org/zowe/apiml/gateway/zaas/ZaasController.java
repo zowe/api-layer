@@ -141,7 +141,7 @@ public class ZaasController {
             String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(userId, applicationName);
             return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new ZaasTokenResponse(null, safIdToken));
+                .body(new ZaasTokenResponse("", safIdToken));
 
         } catch (IRRPassTicketGenerationException e) {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",

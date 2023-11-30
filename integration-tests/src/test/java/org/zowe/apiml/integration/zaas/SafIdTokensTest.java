@@ -67,7 +67,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("token", not(isEmptyOrNullString()))
                 .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
@@ -86,7 +86,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("token", not(isEmptyOrNullString()))
                 .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
@@ -106,7 +106,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("token", not(isEmptyOrNullString()))
                 .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
@@ -123,7 +123,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("safIdToken", not(isEmptyOrNullString()))
+                .body("token", not(isEmptyOrNullString()))
                 .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
@@ -141,7 +141,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
+                .body("token", not(isEmptyOrNullString()))
                 .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
