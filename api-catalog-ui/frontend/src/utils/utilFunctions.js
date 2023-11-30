@@ -191,7 +191,7 @@ export const customUIStyle = async (uiConfig) => {
     }
     if (uiConfig.textColor) {
         const description = document.getElementById('description');
-        description?.style?.setProperty('color', uiConfig.fontFamily);
+        description?.style?.setProperty('color', uiConfig.textColor);
     }
     handleWhiteHeader(uiConfig);
 };

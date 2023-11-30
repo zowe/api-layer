@@ -171,7 +171,8 @@ describe('>>> BlogContainer component tests', () => {
         const blogContainer = mount(<BlogContainer user="user" url="https://example.com" title="title" />);
         expect(blogContainer.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
 
-        expect(blogContainer.find('BlogTile').exists()).toEqual(false);
+        expect(blogContainer.find('BlogTile').exists()).toEqual(true);
+        expect(blogContainer.find('.blog-description').exists()).toEqual(false);
 
         // Clean up mocks
         global.fetch.mockRestore();
