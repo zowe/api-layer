@@ -57,16 +57,14 @@ public class CorsBeans {
         ));
     }
 
-    List<String> getDefaultAllowedOrigins(
+    List<String> getDefaultAllowedOrigins( // TODO: this method is a hotfix for AT-TLS, but it could be a breaking change, verify no-ATTLS configuration in v3
         Environment environment,
-        boolean ssl,
         String externalUrl,
         String hostname,
         int port
     ) throws URISyntaxException {
         boolean isAttls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
         if (corsEnabled || !isAttls) {
-            // TODO: this method is a hotfix for AT-TLS, but it could be a breaking change, verify no-ATTLS configuration in v3
             return null; // NOSONAR
         }
 
@@ -86,12 +84,10 @@ public class CorsBeans {
     @Bean
     CorsUtils corsUtils(
         Environment environment,
-        @Value("${server.ssl.enabled}") boolean ssl,
         @Value("${apiml.service.externalUrl:}") String externalUrl,
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
-
-        return new CorsUtils(corsEnabled, getDefaultAllowedOrigins(environment, ssl, externalUrl, hostname, port));
+        return new CorsUtils(corsEnabled, getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
     }
 }
