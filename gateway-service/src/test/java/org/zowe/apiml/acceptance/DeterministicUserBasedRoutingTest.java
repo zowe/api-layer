@@ -16,9 +16,10 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicStatusLine;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.RepetitionInfo;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +41,18 @@ import static org.mockito.Mockito.*;
  * Verify that the behavior configured for the routing chooses for the same user the same service instance.
  */
 @AcceptanceTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     @Autowired
     protected LoadBalancerCache cache;
 
+    @Override
     public void prepareApplications() {
+        // to stop updating before each method
+    }
+
+    @BeforeAll
+    public void prepareApplicationsAll() {
         cache.getLocalCache().clear();
         applicationRegistry.clearApplications();
         MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
@@ -62,13 +70,7 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
         class WhenCallingToServiceMultipleTimes {
 
             @RepeatedTest(3)
-            void thenCallTheSameInstance(RepetitionInfo repetitionInfo) throws IOException {
-
-                // initialize the cache and registry only once on first repetition
-                if (repetitionInfo.getCurrentRepetition() == 1) {
-                    prepareApplications();
-                }
-
+            void thenCallTheSameInstance() throws IOException {
                 Cookie token = securityRequests.validJwtToken();
 
                 applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
