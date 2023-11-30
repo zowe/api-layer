@@ -77,8 +77,14 @@ class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
                 URI selectedInSecondCall = routeToService(token, SC_OK);
                 URI selectedInThirdCall = routeToService(token, SC_OK);
 
-                assertThat(selectedInFirstCall.compareTo(selectedInSecondCall), is(0));
-                assertThat(selectedInFirstCall.compareTo(selectedInThirdCall), is(0));
+                String message = String.format("URLs of the same calls are not the same: `%s`, `%s`, `%s`",
+                    selectedInFirstCall,
+                    selectedInSecondCall,
+                    selectedInThirdCall
+                );
+
+                assertThat(message, selectedInFirstCall.compareTo(selectedInSecondCall), is(0));
+                assertThat(message, selectedInFirstCall.compareTo(selectedInThirdCall), is(0));
             }
         }
 
