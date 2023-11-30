@@ -10,15 +10,21 @@
 
 package org.zowe.apiml.integration.zaas;
 
+import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
+import org.zowe.apiml.util.config.TlsConfiguration;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,19 +35,24 @@ import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
-import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
 public class ZaasNegativeTest {
 
-    private static final Set<URI> endpoints = new HashSet<URI>() {{
-        add(ZAAS_TICKET_URI);
+    private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
         add(ZAAS_SAFIDT_URI);
+    }};
+
+    private static final Set<URI> endpoints = new HashSet<URI>() {{
+        add(ZAAS_TICKET_URI);
+        addAll(tokenEndpoints);
     }};
 
     private static final Set<String> tokens = new HashSet<String>() {{
@@ -66,6 +77,10 @@ public class ZaasNegativeTest {
         return endpoints.stream().map(Arguments::of);
     }
 
+    private static Stream<Arguments> provideZaasTokenEndpoints() {
+        return tokenEndpoints.stream().map(Arguments::of);
+    }
+
     @Nested
     class ReturnUnauthorized {
 
@@ -87,7 +102,7 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpointsWithAllTokens")
-        void givenInvalidOAuthToken(URI uri, String token) {
+        void givenInvalidToken(URI uri, String token) {
             //@formatter:off
             given()
                 .header("Authorization", "Bearer " + token)
@@ -101,18 +116,21 @@ public class ZaasNegativeTest {
     }
 
     @Nested
-    class GivenNoCertificate {
+    class GivenBadCertificate {
 
-        @BeforeEach
-        void setUpCertificateAndToken() {
-            RestAssured.useRelaxedHTTPSValidation();
-        }
+        @Value("${server.ssl.keyPassword}")
+        char[] password;
+        @Value("${server.ssl.keyStore}")
+        String client_cert_keystore;
+        @Value("${server.ssl.keyStore}")
+        String keystore;
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void thenReturnUnauthorized(URI uri) {
+        void givenNoCertificate_thenReturnUnauthorized(URI uri) {
             //@formatter:off
             given()
+                .relaxedHTTPSValidation()
                 .cookie(COOKIE, SecurityUtils.gatewayToken())
             .when()
                 .post(uri)
@@ -121,5 +139,31 @@ public class ZaasNegativeTest {
             //@formatter:on
         }
 
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
+        void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri) throws Exception {
+            TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
+            SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
+            SslContext.prepareSslAuthentication(sslContextConfigurer);
+
+            //@formatter:off
+            String token = given()
+                .config(SslContext.clientCertValid)
+                .header("Client-Cert", getDummyClientCertificate())
+            .when()
+                .post(uri)
+            .then()
+                .statusCode(SC_OK)
+            .extract()
+                .jsonPath().getString("token");
+            //@formatter:on
+
+            String userId = Jwts.parserBuilder().build()
+                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .getBody()
+                .getSubject();
+
+            assertEquals("APIMTST", userId);
+        }
     }
 }
