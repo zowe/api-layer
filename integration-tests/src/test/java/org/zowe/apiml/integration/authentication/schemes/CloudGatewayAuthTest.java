@@ -56,7 +56,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
                 assertNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             }),
-            Arguments.of("SAF IDT auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
+            Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
                 assertNull(response.jsonPath().getString("cookies.jwtToken"));
                 assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
