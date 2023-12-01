@@ -19,7 +19,7 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 @Component
-public class SafIdt implements SchemeHandler{
+public class SafIdt implements SchemeHandler {
 
     @Override
     public AuthenticationScheme getAuthenticationScheme() {

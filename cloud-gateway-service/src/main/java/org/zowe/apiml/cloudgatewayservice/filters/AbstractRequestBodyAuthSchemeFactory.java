@@ -15,7 +15,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.http.HttpHeaders;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,8 +30,18 @@ import org.zowe.apiml.ticket.TicketRequest;
 public abstract class AbstractRequestBodyAuthSchemeFactory<R> extends AbstractAuthSchemeFactory<AbstractRequestBodyAuthSchemeFactory.Config, R, String> {
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
-    public AbstractRequestBodyAuthSchemeFactory(Class<Config> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(configClazz, webClient, instanceInfoService, messageService);
+    public AbstractRequestBodyAuthSchemeFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+        super(Config.class, webClient, instanceInfoService, messageService);
+    }
+
+    public abstract String getEndpointUrl(ServiceInstance instance);
+
+    @Override
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
+        String tokensUrl = getEndpointUrl(instance);
+        return webClient.post()
+            .uri(tokensUrl).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .bodyValue(requestBody);
     }
 
     @Override
