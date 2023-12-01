@@ -11,16 +11,20 @@ import { shallow } from 'enzyme';
 import BlogTile from './BlogTile';
 
 describe('>>> BlogTile component tests', () => {
-    const props = {
-        blogData: {
-            title: 'title',
-            link: 'link',
-            thumbnail: 'img',
-            description: 'desc',
-            pubDate: '123343',
-            author: 'author',
-        },
-    };
+    let props;
+    beforeEach(() => {
+        process.env.REACT_APP_API_PORTAL = false;
+        props = {
+            blogData: {
+                title: 'title',
+                link: 'link',
+                thumbnail: 'img',
+                description: 'desc',
+                pubDate: '123343',
+                author: 'author',
+            },
+        };
+    });
     it('should render blog tile', () => {
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blogs-image"]').exists()).toEqual(true);
@@ -28,5 +32,14 @@ describe('>>> BlogTile component tests', () => {
         expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
         expect(blogTile.find('[data-testid="author"]').first().prop('children')).toEqual('author');
         expect(blogTile.find('[data-testid="pub-date"]').first().prop('children')).toEqual('Published: 123343');
+    });
+
+    it('should truncate text', () => {
+        props.blogData.title =
+            'looooong title hdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqw';
+        const blogTile = shallow(<BlogTile blogData={props.blogData} />);
+        expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
+            'looooong title hdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhds'
+        );
     });
 });

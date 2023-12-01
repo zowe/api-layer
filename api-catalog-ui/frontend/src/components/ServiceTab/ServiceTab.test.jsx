@@ -58,19 +58,21 @@ const tiles = {
         'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
     services: [selectedService],
 };
-
-const videos = ['url1', 'url2'];
-const tutorials = [
-    { url: 'url1', user: 'user', title: 'title' },
-    { url: 'url2', user: 'user', title: 'title' },
-];
-const useCases = [
-    { url: 'url1', user: 'user' },
-    { url: 'url2', user: 'user' },
-];
+let videos;
+let tutorials;
+let useCases;
 describe('>>> ServiceTab component tests', () => {
     beforeEach(() => {
         process.env.REACT_APP_API_PORTAL = false;
+        videos = ['url1', 'url2'];
+        tutorials = [
+            { url: 'url1', user: 'user', title: 'title' },
+            { url: 'url2', user: 'user', title: 'title' },
+        ];
+        useCases = [
+            { url: 'url1', user: 'user' },
+            { url: 'url2', user: 'user' },
+        ];
     });
     it('should display service tab information', () => {
         const selectService = jest.fn();
@@ -385,5 +387,63 @@ describe('>>> ServiceTab component tests', () => {
         expect(wrapper.state('isDialogOpen')).toEqual(true);
         expect(wrapper.state('selectedVersion')).toEqual('diff');
         expect(wrapper.state('previousVersion')).toEqual('1.0.0');
+    });
+
+    it('should display documentation when portal enabled', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const documentation = { label: 'title', url: 'url' };
+        const selectService = jest.fn();
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+                videos={videos}
+                tutorials={tutorials}
+                useCases={useCases}
+                documentation={documentation}
+            />
+        );
+
+        expect(wrapper.find('.service-doc-link')).toExist();
+        expect(wrapper.find('.more-content-button').exists()).toEqual(false);
+    });
+
+    it('extra contents should be more than the default counters', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        videos = ['url1', 'url2', 'url3', 'url4', 'url5'];
+        tutorials = [
+            { url: 'url1', user: 'user', title: 'title' },
+            { url: 'url2', user: 'user', title: 'title' },
+            { url: 'url3', user: 'user', title: 'title' },
+            { url: 'url4', user: 'user', title: 'title' },
+            { url: 'url5', user: 'user', title: 'title' },
+            { url: 'url6', user: 'user', title: 'title' },
+        ];
+        useCases = [
+            { url: 'url1', user: 'user' },
+            { url: 'url2', user: 'user' },
+            { url: 'url3', user: 'user' },
+            { url: 'url4', user: 'user' },
+            { url: 'url5', user: 'user' },
+        ];
+        const wrapper = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedServiceDown}
+                tiles={[tiles]}
+                selectService={selectService}
+                videos={videos}
+                tutorials={tutorials}
+                useCases={useCases}
+                useCasesCounter={8}
+                tutorialsCounter={8}
+                videosCounter={8}
+            />
+        );
+
+        expect(wrapper.find('.more-content-button').exists()).toEqual(true);
     });
 });
