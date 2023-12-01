@@ -30,7 +30,6 @@ import static org.mockito.Mockito.verify;
 
 class CorsMetadataProcessorTest {
     private CorsUtils corsUtils = new CorsUtils(true, null);
-    ;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
 
