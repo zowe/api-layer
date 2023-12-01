@@ -33,20 +33,14 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.ContentType.XML;
-import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
+import static javax.servlet.http.HttpServletResponse.*;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
-/**
- * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
- */
 @ZaasTest
-class PassTicketTest implements TestWithStartedInstances {
+public class SafIdTokensTest implements TestWithStartedInstances {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
 
@@ -56,7 +50,7 @@ class PassTicketTest implements TestWithStartedInstances {
     }
 
     @Nested
-    class WhenGeneratingPassTicket_returnValidPassTicket {
+    class WhenGeneratingSafIdToken_thenReturnValidToken {
 
         private final TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
 
@@ -70,12 +64,11 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", is(USERNAME))
-                .body("applicationName", is(APPLICATION_NAME));
+                .body("token", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -90,12 +83,11 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", is(USERNAME))
-                .body("applicationName", is(APPLICATION_NAME));
+                .body("token", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -111,12 +103,11 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", is(USERNAME))
-                .body("applicationName", is(APPLICATION_NAME));
+                .body("token", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -129,12 +120,11 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", not(isEmptyOrNullString()))
-                .body("applicationName", is(APPLICATION_NAME));
+                .body("token", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
 
@@ -148,18 +138,17 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", is(USERNAME))
-                .body("applicationName", is(APPLICATION_NAME));
+                .body("token", not(isEmptyOrNullString()))
+                .body("cookieName", isEmptyOrNullString());
             //@formatter:on
         }
     }
 
     @Nested
-    class WhenGeneratingPassTicket_returnBadRequest {
+    class WhenGeneratingSafIdToken_returnBadRequest {
 
         private final String jwt = getZosmfJwtToken();
 
@@ -173,7 +162,7 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(new TicketRequest())
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
@@ -191,7 +180,7 @@ class PassTicketTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
@@ -203,24 +192,31 @@ class PassTicketTest implements TestWithStartedInstances {
         void givenLongApplicationName() {
             //@formatter:off
             given()
+                .contentType(JSON)
                 .body(new TicketRequest("TooLongAppName"))
                 .cookie(COOKIE, jwt)
-                .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
         }
 
+    }
+
+    @Nested
+    class WhenGeneratingSafIdToken_returnNotFound {
+
+        private final String jwt = getZosmfJwtToken();
+
         @Test
         void givenNoContentType() {
             //@formatter:off
-             given()
+            given()
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(is(SC_NOT_FOUND));
             //@formatter:on
@@ -234,14 +230,23 @@ class PassTicketTest implements TestWithStartedInstances {
                 .cookie(COOKIE, jwt)
                 .contentType(XML)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_SAFIDT_URI)
             .then()
                 .statusCode(is(SC_NOT_FOUND));
             //@formatter:on
         }
 
+        @Test
+        void givenNoBody() {
+            //@formatter:off
+            given()
+                .cookie(COOKIE, jwt)
+            .when()
+                .post(ZAAS_SAFIDT_URI)
+            .then()
+                .statusCode(is(SC_NOT_FOUND));
+            //@formatter:on
+        }
     }
-
     // Additional negative tests are in ZaasNegativeTest since they are common for the whole service
-
 }

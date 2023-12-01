@@ -18,12 +18,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +39,7 @@ public class TokenCreationService {
     private final ZosmfService zosmfService;
     private final PassTicketService passTicketService;
     private final AuthenticationService authenticationService;
+    private final SafIdtProvider safIdtProvider;
 
     @Value("${apiml.security.zosmf.applid:IZUDFLT}")
     protected String zosmfApplId;
@@ -72,6 +75,17 @@ public class TokenCreationService {
         final String passTicket = generatePassTicket(user);
 
         return zosmfService.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)).getTokens();
+    }
+
+    public String createSafIdTokenWithoutCredentials(String user, String applId) throws IRRPassTicketGenerationException {
+
+        char[] passTicket = "".toCharArray();
+        try {
+            passTicket = passTicketService.generate(user, applId).toCharArray();
+            return safIdtProvider.generate(user, passTicket, applId);
+        } finally {
+            Arrays.fill(passTicket, (char) 0);
+        }
     }
 
     private boolean isZosmfAvailable() {
