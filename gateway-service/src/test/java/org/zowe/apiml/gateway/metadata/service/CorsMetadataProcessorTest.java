@@ -36,9 +36,7 @@ class CorsMetadataProcessorTest {
 
     @BeforeEach
     void setUp() {
-        EurekaApplications applications = mock(EurekaApplications.class);
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        new CorsMetadataProcessor(applications, configurationSource, corsUtils);
         corsUtils = new CorsUtils(true, null);
     }
 
