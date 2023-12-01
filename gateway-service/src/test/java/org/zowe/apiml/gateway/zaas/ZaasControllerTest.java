@@ -16,8 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -85,10 +83,9 @@ class ZaasControllerTest {
 
     @BeforeEach
     void setUp() throws IRRPassTicketGenerationException, JSONException {
-        MessageService messageService = new YamlMessageService("/gateway-messages.yml");
-
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
-        ZaasController zaasController = new ZaasController(authSourceService, messageService, passTicketService, zosmfService, tokenCreationService);
+        ZaasController zaasController = new ZaasController(authSourceService, passTicketService, zosmfService, tokenCreationService);
+        MessageService messageService = new YamlMessageService("/gateway-messages.yml");
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         ticketBody = new JSONObject()
             .put("applicationName", APPLID);
@@ -257,26 +254,5 @@ class ZaasControllerTest {
                     .andExpect(jsonPath("$.messages[0].messageContent", is("SAF IDT generation failed. Reason: Test exception message.")));
             }
         }
-    }
-
-    @Nested
-    class GivenNotAuthenticated {
-
-        @BeforeEach
-        void setUp() {
-            authParsedSource = new ParsedTokenAuthSource(null, null, null, null);
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {PASSTICKET_URL, SAFIDT_URL})
-        void thenRespondUnauthorized(String url) throws Exception {
-            mockMvc.perform(post(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(ticketBody.toString())
-                    .requestAttr(AUTH_SOURCE_ATTR, authParsedSource)
-                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
-                .andExpect(status().is(SC_UNAUTHORIZED));
-        }
-
     }
 }

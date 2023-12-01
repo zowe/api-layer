@@ -18,10 +18,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import javax.management.ServiceNotFoundException;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -49,10 +53,28 @@ public class ZaasExceptionHandler {
 
     @ExceptionHandler(value = {ApplicationNameNotFoundException.class})
     public ResponseEntity<ApiMessageView> handleApplIdNotFoundException(ApplicationNameNotFoundException ex) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
-            return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(messageView);
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
+    }
+
+    @ExceptionHandler(value = {ServiceNotFoundException.class})
+    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ServiceNotFoundException ex) {
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived", ex.getMessage()).mapToView();
+        return ResponseEntity
+            .status(HttpStatus.SERVICE_UNAVAILABLE)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
+    }
+
+    @ExceptionHandler(value = {TokenNotValidException.class, IllegalStateException.class, AuthSchemeException.class})
+    public ResponseEntity<ApiMessageView> handleZoweJwtCreationErrors(RuntimeException ex) {
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zoweJwt.noToken", ex.getMessage()).mapToView();
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
     }
 }
