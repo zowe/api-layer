@@ -54,7 +54,7 @@ export default function BlogContainer({ user, url, title }) {
             } else if (url?.includes('docs.zowe.org')) {
                 const blogData = {
                     content: '',
-                    description: `Tutorial from the Zowe documentation related to ${user}`,
+                    description: `Tutorial from the Zowe documentation related to ${title}`,
                     title,
                     link: url,
                 };
