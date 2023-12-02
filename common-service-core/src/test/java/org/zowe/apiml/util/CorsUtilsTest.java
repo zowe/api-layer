@@ -13,11 +13,15 @@ package org.zowe.apiml.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.web.cors.CorsConfiguration;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class CorsUtilsTest {
 
@@ -31,7 +35,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsEnabled {
-        CorsUtils corsUtils = new CorsUtils(true);
+        CorsUtils corsUtils = new CorsUtils(true, Collections.emptyList());
 
         @Test
         void registerDefaultConfig() {
@@ -86,7 +90,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsDisabled {
-        CorsUtils corsUtils = new CorsUtils(false);
+        CorsUtils corsUtils = new CorsUtils(false, Collections.emptyList());
 
         @Test
         void registerEmptyDefaultConfig() {
@@ -106,4 +110,24 @@ class CorsUtilsTest {
             );
         }
     }
+
+    @Nested
+    class Attls {
+
+        @Test
+        void setAllowedOrigins() {
+            List<String> allowedOrigins = Arrays.asList("a");
+            CorsUtils corsUtils = new CorsUtils(true, allowedOrigins);
+            BiConsumer<String, CorsConfiguration> pathMapper = mock(BiConsumer.class);
+            corsUtils.registerDefaultCorsConfiguration(pathMapper);
+
+            ArgumentCaptor<CorsConfiguration> corsConfigurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
+
+            verify(pathMapper, times(3)).accept(any(), corsConfigurationCaptor.capture());
+            assertEquals(1, corsConfigurationCaptor.getValue().getAllowedOrigins().size());
+            assertEquals("a", corsConfigurationCaptor.getValue().getAllowedOrigins().get(0));
+        }
+
+    }
+
 }
