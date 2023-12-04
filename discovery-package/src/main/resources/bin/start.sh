@@ -99,9 +99,14 @@ if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
 fi
 
+ATTLS_ENABLED="false"
+if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+    ATTLS_ENABLED="true"
+fi
+
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+if [ "$ATTLS_ENABLED" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 

@@ -70,6 +70,7 @@ import reactor.netty.http.client.HttpClient;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -322,7 +323,7 @@ public class ConnectionsConfig {
 
     @Bean
     public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled);
+        return new CorsUtils(corsEnabled, null);
     }
 
     @Bean
