@@ -84,13 +84,12 @@ public class ZaasNegativeTest {
 
     private static Stream<Arguments> provideZaasTokenEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
+        RequestSpecification requestSpec = given();
         for (URI uri : tokenEndpoints) {
             if (uri.equals(ZAAS_SAFIDT_URI)) {
-                TicketRequest body = new TicketRequest(APPLICATION_NAME);
-                argumentsList.add(Arguments.of(uri, body));
-            } else {
-                argumentsList.add(Arguments.of(uri, null));
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
+            argumentsList.add(Arguments.of(uri, requestSpec));
         }
         return argumentsList.stream();
     }
@@ -155,21 +154,15 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
-        void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, Object requestBody) throws Exception {
+        void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, RequestSpecification requestSpecification) throws Exception {
             TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
             SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
             SslContext.prepareSslAuthentication(sslContextConfigurer);
 
-            RequestSpecification requestSpecification = given()
-                .config(SslContext.clientCertValid)
-                .header("Client-Cert", getDummyClientCertificate());
-
-            if (requestBody != null) {
-                requestSpecification.contentType(ContentType.JSON).body(requestBody);
-            }
-
             //@formatter:off
             String token = requestSpecification
+                .config(SslContext.clientCertValid)
+                .header("Client-Cert", getDummyClientCertificate())
             .when()
                 .post(uri)
             .then()
