@@ -28,7 +28,7 @@ body {
       &:hover, &:focus {
         cursor: pointer;
         box-shadow: 0 0 0 2px var( --linkHover ) inset;
-
+  
         .tile-title #tiles-service-title {
           color: var( --linkHover );
         }
@@ -58,7 +58,7 @@ body {
               fill: var( --linkHover );
             }
           }
-        }
+        } 
         &.disabled-counter {
           svg path {
             fill: var( --control00Disabled );
@@ -164,7 +164,7 @@ body {
         font-size: 14px;
     }
     #tutorials-counter,
-    #videos-counter {
+    #videos-counter { 
       margin-right: var( --spaceSmaller );
     }
     #videos-counter {

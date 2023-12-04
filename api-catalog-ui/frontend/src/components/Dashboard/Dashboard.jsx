@@ -100,6 +100,26 @@ export default class Dashboard extends Component {
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
         }
+        const dashboardTileScroll = (e) => {
+            const getHeader = document.querySelectorAll('.dashboard-grid-header')[0];
+            const getHeaderHeight = getHeader?.offsetHeight;
+            const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
+
+            if (e.target.scrollTop > getFilterHeight) {
+                e.target.classList.add('fixed-header');
+                e.target.style.paddingTop = (
+                    (
+                        getHeaderHeight
+                        + getHeader.style.marginBottom
+                        + getHeader.style.marginTop
+                    ) + 'px'
+                );
+            } else {
+                e.target.classList.remove('fixed-header');
+                e.target.style.paddingTop = 0;
+            }
+        }
+
         return (
             <div className="main-content dashboard-content">
                 {isAPIPortal() && <FeedbackButton />}
@@ -147,7 +167,7 @@ export default class Dashboard extends Component {
                 <ErrorDialog refreshedStaticApisError={refreshedStaticApisError} clearError={clearError} />
                 {!fetchTilesError && (
                     <div className="apis">
-                        <div id="grid-container">
+                        <div id="grid-container" onScroll={(e) => { dashboardTileScroll(e) }}>
                             <div className="filtering-container">
                                 {apiPortalEnabled && (
                                     <div>
@@ -173,7 +193,7 @@ export default class Dashboard extends Component {
                                     <h4 className="description-header">Videos</h4>
                                 </div>
                             )}
-                            <hr id="separator2" />
+
                             <div className="tile-container">
                                 {isLoading && <div className="loadingDiv" />}
 
