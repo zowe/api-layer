@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,8 +71,12 @@ public class ZaasNegativeTest {
     private static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
             for (String token : tokens) {
-                argumentsList.add(Arguments.of(uri, token));
+                argumentsList.add(Arguments.of(uri, requestSpec, token));
             }
         }
 
@@ -81,14 +84,22 @@ public class ZaasNegativeTest {
     }
 
     private static Stream<Arguments> provideZaasEndpoints() {
-        return endpoints.stream().map(Arguments::of);
+        List<Arguments> argumentsList = new ArrayList<>();
+        for (URI uri : endpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
+            argumentsList.add(Arguments.of(uri, requestSpec));
+        }
+        return argumentsList.stream();
     }
 
     private static Stream<Arguments> provideZaasTokenEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
-        RequestSpecification requestSpec = given();
         for (URI uri : tokenEndpoints) {
-            if (uri.equals(ZAAS_SAFIDT_URI)) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri)) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
@@ -106,9 +117,10 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void givenNoToken(URI uri) {
+        void givenNoToken(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
-            when()
+            requestSpecification
+            .when()
                 .post(uri)
             .then()
                 .statusCode(SC_UNAUTHORIZED);
@@ -117,9 +129,9 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpointsWithAllTokens")
-        void givenInvalidToken(URI uri, String token) {
+        void givenInvalidToken(URI uri, RequestSpecification requestSpecification, String token) {
             //@formatter:off
-            given()
+            requestSpecification
                 .header("Authorization", "Bearer " + token)
             .when()
                 .post(uri)
@@ -129,7 +141,7 @@ public class ZaasNegativeTest {
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
         void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
             requestSpecification
@@ -154,9 +166,9 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void givenNoCertificate_thenReturnUnauthorized(URI uri) {
+        void givenNoCertificate_thenReturnUnauthorized(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
-            given()
+            requestSpecification
                 .relaxedHTTPSValidation()
                 .cookie(COOKIE, SecurityUtils.gatewayToken())
             .when()
