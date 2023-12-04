@@ -346,6 +346,7 @@ server:
         scheme: http
 apiml:
     service:
+        corsEnabled: true
         scheme: http
 eureka:
     instance:
