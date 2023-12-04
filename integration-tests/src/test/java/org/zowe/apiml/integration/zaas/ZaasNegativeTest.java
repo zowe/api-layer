@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.zaas;
 
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,6 +20,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -44,14 +46,16 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 @ZaasTest
 public class ZaasNegativeTest {
 
+    private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
+
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
+        add(ZAAS_SAFIDT_URI);
     }};
 
     private static final Set<URI> endpoints = new HashSet<URI>() {{
         add(ZAAS_TICKET_URI);
-        add(ZAAS_SAFIDT_URI);
         addAll(tokenEndpoints);
     }};
 
@@ -146,10 +150,14 @@ public class ZaasNegativeTest {
             SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
             SslContext.prepareSslAuthentication(sslContextConfigurer);
 
+            TicketRequest request = new TicketRequest(APPLICATION_NAME);
+
             //@formatter:off
             String token = given()
                 .config(SslContext.clientCertValid)
                 .header("Client-Cert", getDummyClientCertificate())
+                .contentType(ContentType.JSON)
+                .body(request)
             .when()
                 .post(uri)
             .then()
