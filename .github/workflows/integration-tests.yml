@@ -413,7 +413,8 @@ jobs:
                     ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
-                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
+                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
+                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
 
             -   name: Dump DC jacoco data
                 run: >

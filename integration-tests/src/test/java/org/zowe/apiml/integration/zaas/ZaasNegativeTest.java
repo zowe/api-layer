@@ -49,6 +49,8 @@ public class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
 
+    private static final String OKTA_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
@@ -126,6 +128,18 @@ public class ZaasNegativeTest {
             //@formatter:on
         }
 
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
+        void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
+            //@formatter:off
+            requestSpecification
+                .header("Authorization", "Bearer " + OKTA_TOKEN_NO_MAPPING)
+            .when()
+                .post(uri)
+            .then()
+                .statusCode(SC_UNAUTHORIZED);
+            //@formatter:on
+        }
     }
 
     @Nested
