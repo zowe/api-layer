@@ -1496,6 +1496,9 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
                 with:
+                    ref: v2.x.x
+            -   uses: actions/checkout@v3
+                with:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
