@@ -86,8 +86,8 @@ dependencyResolutionManagement {
             version('logback') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
-                strictly '[1.2, 1.3['
-                prefer '1.2.12'
+                strictly '[1.2.13, 1.3['
+                prefer '1.2.13'
             }
             version('lombok', '1.18.30')
             version('mockitoCore') {
