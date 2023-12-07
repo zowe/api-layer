@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as enzyme from 'enzyme';
-import jest from 'jest-mock';
+import { jest } from '@jest/globals';
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import Login from './Login';
 
 describe('>>> Login page component tests', () => {

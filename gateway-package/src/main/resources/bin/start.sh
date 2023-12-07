@@ -137,12 +137,6 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
-    httpProtocol="https"
-else
-    httpProtocol="http"
-fi
-
 if [ -z "${ZWE_configs_apiml_catalog_serviceId}" ]
 then
     APIML_GATEWAY_CATALOG_ID="apicatalog"
@@ -159,6 +153,23 @@ then
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
+fi
+
+ATTLS_ENABLED="false"
+if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+    ATTLS_ENABLED="true"
+fi
+
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
+    httpProtocol="https"
+else
+    httpProtocol="http"
+fi
+
+# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
+ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
+if [ "$ATTLS_ENABLED" = "true" ]; then
+    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 
 # Check if the directory containing the Gateway shared JARs was set and append it to the GW loader path
@@ -209,7 +220,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
