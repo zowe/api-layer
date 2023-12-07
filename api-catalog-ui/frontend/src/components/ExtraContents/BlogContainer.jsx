@@ -27,10 +27,13 @@ export default function BlogContainer({ user, url, title }) {
                 divs.parentNode.removeChild(divs);
             }
 
-            const content = doc.querySelector('.shortdesc');
+            let content = doc.querySelector('.shortdesc');
+            if (!content?.textContent) {
+                content = doc.querySelector('.p');
+            }
             const tutorialTitle = doc.querySelector('h1.title');
-            const blogTitle = tutorialTitle.textContent;
-            const blogContent = content.textContent;
+            const blogTitle = tutorialTitle?.textContent;
+            const blogContent = content?.textContent;
 
             const blogData = {
                 content: blogContent,

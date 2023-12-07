@@ -114,6 +114,19 @@ describe('>>> BlogContainer component tests', () => {
         mockFetch.mockRestore();
     });
 
+    it('should use description from diffeent element', async () => {
+        const mockFetch = jest.spyOn(global, 'fetch');
+        mockFetch.mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce('<div class="p"><h1 class="title">Blog content</h1></div>'),
+        });
+
+        const wrapper = shallow(<BlogContainer user="user" url="https://example.com/hello" title="title" />);
+        expect(wrapper.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+
+        // Restore the original fetch function
+        mockFetch.mockRestore();
+    });
+
     it('should render multiple medium blogs', async () => {
         const myBlogData = {
             items: [{ link: 'https://medium.com/blog1' }, { link: 'https:///medium.com/blog2' }],
