@@ -38,14 +38,6 @@ public class SafIdtFilterFactory extends AbstractRequestBodyAuthSchemeFactory<Za
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
-        String tokensUrl = getEndpointUrl(instance);
-        return webClient.post()
-            .uri(tokensUrl).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .bodyValue(requestBody);
-    }
-
-    @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
         ServerHttpRequest request;
         if (response.getToken() != null) {

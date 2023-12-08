@@ -52,15 +52,6 @@ public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactor
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
-        String url = getEndpointUrl(instance);
-        return webClient.post()
-            .uri(url)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .bodyValue(requestBody);
-    }
-
-    @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, TicketResponse response) {
         ServerHttpRequest request;
         if (response.getTicket() != null) {

@@ -38,9 +38,9 @@ public abstract class AbstractRequestBodyAuthSchemeFactory<R> extends AbstractAu
 
     @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
-        String tokensUrl = getEndpointUrl(instance);
+        String url = getEndpointUrl(instance);
         return webClient.post()
-            .uri(tokensUrl).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .uri(url).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .bodyValue(requestBody);
     }
 
