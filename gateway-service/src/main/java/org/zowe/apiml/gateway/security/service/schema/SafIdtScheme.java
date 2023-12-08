@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
@@ -148,14 +149,13 @@ public class SafIdtScheme implements IAuthenticationScheme {
         @Getter
         private final Long expireAt;
 
-        protected static final String SAF_TOKEN_HEADER = "X-SAF-Token";
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             if (safIdentityToken != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 // add header with SafIdt token to request and remove APIML token from Cookie if exists
-                context.addZuulRequestHeader(SAF_TOKEN_HEADER, safIdentityToken);
+                context.addZuulRequestHeader(ApimlConstants.SAF_TOKEN_HEADER, safIdentityToken);
                 String[] cookiesToBeRemoved = new String[]{authConfigurationProperties.getCookieProperties().getCookieName(), authConfigurationProperties.getCookieProperties().getCookieNamePAT()};
                 JwtCommand.removeCookie(context, cookiesToBeRemoved);
             }
