@@ -23,15 +23,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.*;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 
@@ -211,10 +209,49 @@ class ZaasControllerTest {
             }
 
             @Test
-            void whenRequestingZoweTokens_thenInternalServerError() throws Exception {
-                String expectedMessage = "No mainframe identity found.";
+            void whenRequestingZoweTokensAndTokenNotValidException_thenUnauthorized() throws Exception {
                 when(authSourceService.getJWT(authSource))
-                    .thenThrow(new TokenNotValidException(expectedMessage));
+                    .thenThrow(new TokenNotValidException("token_not_valid"));
+
+                mockMvc.perform(post(ZOWE_TOKEN_URL)
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource))
+                    .andExpect(status().is(SC_UNAUTHORIZED))
+                    .andExpect(jsonPath("$.messages", hasSize(1)))
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG102E"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", is("Token is not valid")));
+            }
+
+            @Test
+            void whenRequestingZoweTokensAndTokenExpireException_thenUnauthorized() throws Exception {
+                when(authSourceService.getJWT(authSource))
+                    .thenThrow(new TokenExpireException("token_expired"));
+
+                mockMvc.perform(post(ZOWE_TOKEN_URL)
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource))
+                    .andExpect(status().is(SC_UNAUTHORIZED))
+                    .andExpect(jsonPath("$.messages", hasSize(1)))
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG103E"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", is("The token has expired")));
+            }
+
+            @Test
+            void whenRequestingZoweTokensAndAuthSchemeException_thenUnauthorized() throws Exception {
+                when(authSourceService.getJWT(authSource))
+                    .thenThrow(new AuthSchemeException("No mainframe identity found."));
+
+                mockMvc.perform(post(ZOWE_TOKEN_URL)
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource))
+                    .andExpect(status().is(SC_UNAUTHORIZED))
+                    .andExpect(jsonPath("$.messages", hasSize(1)))
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG102E"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", is("Token is not valid")));
+            }
+
+            @Test
+            void whenRequestingZoweTokensAndIllegalStateException_thenInternalServerError() throws Exception {
+                String expectedMessage = "The z/OSMF is not configured.";
+                when(authSourceService.getJWT(authSource))
+                    .thenThrow(new IllegalStateException(expectedMessage));
 
                 mockMvc.perform(post(ZOWE_TOKEN_URL)
                         .requestAttr(AUTH_SOURCE_ATTR, authSource))

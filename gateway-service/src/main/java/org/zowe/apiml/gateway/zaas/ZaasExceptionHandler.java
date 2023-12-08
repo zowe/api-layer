@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.management.ServiceNotFoundException;
@@ -69,11 +70,29 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    @ExceptionHandler(value = {TokenNotValidException.class, IllegalStateException.class, AuthSchemeException.class})
-    public ResponseEntity<ApiMessageView> handleZoweJwtCreationErrors(RuntimeException ex) {
+    @ExceptionHandler(value = {IllegalStateException.class})
+    public ResponseEntity<ApiMessageView> handleZoweJwtCreationErrors(IllegalStateException ex) {
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zoweJwt.noToken", ex.getMessage()).mapToView();
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
+    }
+
+    @ExceptionHandler(value = {TokenNotValidException.class, AuthSchemeException.class})
+    public ResponseEntity<ApiMessageView> handleTokenNotValidException(RuntimeException ex) {
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToView();
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
+    }
+
+    @ExceptionHandler(value = {TokenExpireException.class})
+    public ResponseEntity<ApiMessageView> handleTokenExpiredException(TokenExpireException ex) {
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToView();
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
             .contentType(MediaType.APPLICATION_JSON)
             .body(messageView);
     }
