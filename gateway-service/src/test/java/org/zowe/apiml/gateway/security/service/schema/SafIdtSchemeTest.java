@@ -18,9 +18,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
-import org.zowe.apiml.gateway.security.service.schema.source.*;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -33,8 +39,19 @@ import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.auth.AuthenticationScheme.SAF_IDT;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 
@@ -120,7 +137,7 @@ class SafIdtSchemeTest {
                     assertTrue(ac.isRequiredValidSource());
 
                     ac.apply(null);
-                    assertThat(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER), is(safIdt));
+                    assertThat(getValueOfZuulHeader(ApimlConstants.SAF_TOKEN_HEADER), is(safIdt));
                     assertNull(getValueOfZuulHeader(AUTH_FAIL_HEADER));
                 }
 
@@ -138,7 +155,7 @@ class SafIdtSchemeTest {
                     assertTrue(ac.isRequiredValidSource());
 
                     ac.apply(null);
-                    assertThat(getValueOfZuulHeader(SafIdtScheme.SafIdtCommand.SAF_TOKEN_HEADER), is(safIdt));
+                    assertThat(getValueOfZuulHeader(ApimlConstants.SAF_TOKEN_HEADER), is(safIdt));
                     assertNull(getValueOfZuulHeader(AUTH_FAIL_HEADER));
                 }
             }
