@@ -12,6 +12,8 @@ package org.zowe.apiml.integration.zaas;
 
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,6 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -34,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,9 +46,14 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 @ZaasTest
 public class ZaasNegativeTest {
 
+    private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
+
+    private static final String OKTA_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
+        add(ZAAS_SAFIDT_URI);
     }};
 
     private static final Set<URI> endpoints = new HashSet<URI>() {{
@@ -64,8 +71,12 @@ public class ZaasNegativeTest {
     private static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
             for (String token : tokens) {
-                argumentsList.add(Arguments.of(uri, token));
+                argumentsList.add(Arguments.of(uri, requestSpec, token));
             }
         }
 
@@ -73,11 +84,27 @@ public class ZaasNegativeTest {
     }
 
     private static Stream<Arguments> provideZaasEndpoints() {
-        return endpoints.stream().map(Arguments::of);
+        List<Arguments> argumentsList = new ArrayList<>();
+        for (URI uri : endpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
+            argumentsList.add(Arguments.of(uri, requestSpec));
+        }
+        return argumentsList.stream();
     }
 
     private static Stream<Arguments> provideZaasTokenEndpoints() {
-        return tokenEndpoints.stream().map(Arguments::of);
+        List<Arguments> argumentsList = new ArrayList<>();
+        for (URI uri : tokenEndpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
+            argumentsList.add(Arguments.of(uri, requestSpec));
+        }
+        return argumentsList.stream();
     }
 
     @Nested
@@ -90,9 +117,10 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void givenNoToken(URI uri) {
+        void givenNoToken(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
-            when()
+            requestSpecification
+            .when()
                 .post(uri)
             .then()
                 .statusCode(SC_UNAUTHORIZED);
@@ -101,9 +129,9 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpointsWithAllTokens")
-        void givenInvalidToken(URI uri, String token) {
+        void givenInvalidToken(URI uri, RequestSpecification requestSpecification, String token) {
             //@formatter:off
-            given()
+            requestSpecification
                 .header("Authorization", "Bearer " + token)
             .when()
                 .post(uri)
@@ -112,6 +140,18 @@ public class ZaasNegativeTest {
             //@formatter:on
         }
 
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
+            //@formatter:off
+            requestSpecification
+                .header("Authorization", "Bearer " + OKTA_TOKEN_NO_MAPPING)
+            .when()
+                .post(uri)
+            .then()
+                .statusCode(SC_UNAUTHORIZED);
+            //@formatter:on
+        }
     }
 
     @Nested
@@ -126,9 +166,9 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void givenNoCertificate_thenReturnUnauthorized(URI uri) {
+        void givenNoCertificate_thenReturnUnauthorized(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
-            given()
+            requestSpecification
                 .relaxedHTTPSValidation()
                 .cookie(COOKIE, SecurityUtils.gatewayToken())
             .when()
@@ -140,13 +180,13 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
-        void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri) throws Exception {
+        void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, RequestSpecification requestSpecification) throws Exception {
             TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
             SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
             SslContext.prepareSslAuthentication(sslContextConfigurer);
 
             //@formatter:off
-            String token = given()
+            String token = requestSpecification
                 .config(SslContext.clientCertValid)
                 .header("Client-Cert", getDummyClientCertificate())
             .when()
