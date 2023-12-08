@@ -34,6 +34,8 @@ public class ZaasTestUtil {
     static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromGateway(ZAAS_ZOSMF_ENDPOINT);
     static final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromGateway(ZAAS_ZOWE_ENDPOINT);
 
+    static final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromGateway(ZAAS_SAFIDT_ENDPOINT);
+
     static final String COOKIE = "apimlAuthenticationToken";
     static final String LTPA_COOKIE = "LtpaToken2";
 

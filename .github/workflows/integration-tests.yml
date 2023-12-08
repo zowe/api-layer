@@ -413,7 +413,8 @@ jobs:
                     ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
-                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
+                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
+                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
 
             -   name: Dump DC jacoco data
                 run: >
@@ -1493,8 +1494,9 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
+                    fetch-depth: 0
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
@@ -1541,8 +1543,7 @@ jobs:
             -   name: Code coverage and publish results
                 run: >
                     ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
-                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
