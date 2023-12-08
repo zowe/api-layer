@@ -203,7 +203,7 @@ General info about workflows https://docs.github.com/en/actions/using-workflows/
 Reusable workflows are stored either in local repo .github/actions or https://github.com/zowe-actions/shared-actions e.g. for publishing the images https://github.com/zowe-actions/shared-actions/tree/main/prepare-workflow
 
 Usage of workflows:
-- release https://github.com/zowe/api-layer/blob/v2.x.x/docs/release.md#github-actions
+- release https://github.com/zowe/api-layer/blob/v3.x.x/docs/release.md#github-actions
 - build + unit tests + test of correct registration of all services: service-registration.yml
 - generate changelog after release: changelog.yml
 - update docs with new error messages: docs.yml

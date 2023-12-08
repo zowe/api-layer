@@ -1,6 +1,6 @@
 {
     "name": "api-layer",
-    "version": "0.3.0",
+    "version": "3.0.0",
     "description": "Zowe API Mediation Layer",
     "directories": {
         "doc": "docs"

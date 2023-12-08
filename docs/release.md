@@ -45,7 +45,7 @@ The following sections of the manifest need to have their version tag updated to
 For some releases there are two workflows, one to release binaries and one to release images. This is because Marist is used to build the images and is unstable,
 causing failures that shouldn't impact the binary release.
 
-- **Snapshot release** - runs on push to `master` or `v2.x.x` to create a snapshot
+- **Snapshot release** - runs on push to `v3.x.x` or `v2.x.x` to create a snapshot
   - https://github.com/zowe/api-layer/actions/workflows/binary-snapshot-release.yml
   - https://github.com/zowe/api-layer/actions/workflows/image-snapshot-release.yml
 - **Automated release** (patch, minor, major) - runs every Friday to create a patch release, or manually to create a patch, minor, or major release

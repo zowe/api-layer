@@ -2,7 +2,7 @@
 module.exports = {
     branches: [
         {
-            name: "v2.x.x",
+            name: "v3.x.x",
             level: "minor"
         },
         {

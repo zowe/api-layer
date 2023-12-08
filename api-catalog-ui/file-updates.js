@@ -5,7 +5,7 @@ let hashFileName = "changed-files-hashes";
 let fileChangedFlag = "updateflag";
 const args = process.argv.slice(2)
 execSync("git fetch");
-exec("git diff --name-only origin/v2.x.x", (error,stdout,stderr) => {
+exec("git diff --name-only origin/v3.x.x", (error,stdout,stderr) => {
     const rootDir = args[0];
     if(error) {
         console.log(`error ${error.message}`);

@@ -2,7 +2,7 @@ name: Image snapshot release
 
 on:
     push:
-        branches: [ master, v2.x.x ]
+        branches: [ v2.x.x, v3.x.x ]
 
 jobs:
     build-services:
@@ -22,7 +22,7 @@ jobs:
     publish-images:
         needs:
             - build-services
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v3.x.x
         with:
             forceNoRelease: true
         secrets:

@@ -2,9 +2,9 @@ name: zowe-cli-plugin-deployment
 
 on:
     push:
-        branches: [ v2.x.x ]
+        branches: [ v2.x.x, v3.x.x ]
     pull_request:
-        branches: [ v2.x.x ]
+        branches: [ v2.x.x, v3.x.x ]
     workflow_dispatch:
 
 jobs:

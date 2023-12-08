@@ -42,7 +42,7 @@ jobs:
     publish-images:
         needs:
             - build-services
-        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v2.x.x
+        uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v3.x.x
         with:
             service: ${{ github.event.inputs.service }}
             forceNoRelease: true

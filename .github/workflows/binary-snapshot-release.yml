@@ -4,7 +4,7 @@ name: Binary snapshot release
 
 on:
     push:
-        branches: [ v1.x.x, v2.x.x ]
+        branches: [ v2.x.x, v3.x.x ]
 
 jobs:
     release:
