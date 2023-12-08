@@ -12,7 +12,7 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 @RequestMapping("/")
@@ -33,37 +30,40 @@ public class ImageController {
     @Value("${apiml.catalog.customStyle.logo:}")
     private String image;
 
+    private String getExtension(String fileName) {
+        int lastIndex = fileName.lastIndexOf(".");
+        if (lastIndex < 0) return "";
+        return fileName.substring(lastIndex + 1);
+    }
+
+    private MediaType getMediaType(String fileName) {
+        switch (getExtension(fileName).toLowerCase()) {
+            case "png":
+                return MediaType.IMAGE_PNG;
+            case "jpg":
+            case "jpeg":
+                return  MediaType.IMAGE_JPEG;
+            case "svg":
+                return MediaType.valueOf("image/svg+xml");
+            default:
+                return MediaType.APPLICATION_OCTET_STREAM;
+        }
+    }
+
     @GetMapping(value = "/custom-logo")
     @HystrixCommand()
     @ResponseBody
-    public ResponseEntity<InputStreamResource> downloadImage() {
-        try {
-            File imageFile = new File(image);
-            String extension = image.substring(image.lastIndexOf(".") + 1);
-            MediaType mediaType;
-            InputStream imageStream = new FileInputStream(imageFile);
-            switch (extension.toLowerCase()) {
-                case "png":
-                    mediaType = MediaType.IMAGE_PNG;
-                    break;
-                case "jpg":
-                case "jpeg":
-                    mediaType = MediaType.IMAGE_JPEG;
-                    break;
-                case "svg":
-                    mediaType = MediaType.valueOf("image/svg+xml");
-                    break;
-                default:
-                    mediaType = MediaType.APPLICATION_OCTET_STREAM;
-                    break;
-            }
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(mediaType);
-            return ResponseEntity.ok()
-                .headers(headers)
-                .body(new InputStreamResource(imageStream));
-        } catch (IOException e) {
+    public ResponseEntity<FileSystemResource> downloadImage() {
+        File imageFile = new File(image);
+        if (!imageFile.exists()) {
             return ResponseEntity.notFound().build();
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(getMediaType(image));
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(new FileSystemResource(imageFile));
     }
+
 }
