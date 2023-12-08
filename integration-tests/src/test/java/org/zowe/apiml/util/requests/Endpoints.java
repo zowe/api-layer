@@ -27,6 +27,7 @@ public class Endpoints {
     public final static String ZAAS_TICKET_ENDPOINT = "/gateway/zaas/ticket";
     public final static String ZAAS_ZOSMF_ENDPOINT = "/gateway/zaas/zosmf";
     public final static String ZAAS_ZOWE_ENDPOINT = "/gateway/zaas/zoweJwt";
+    public final static String ZAAS_SAFIDT_ENDPOINT = "/gateway/zaas/safIdt";
 
     public final static String ROUTED_LOGIN_OLD_FORMAT = "/gateway/api/v1/auth/login";
     public final static String ROUTED_LOGOUT_OLD_FORMAT = "/gateway/api/v1/auth/logout";
