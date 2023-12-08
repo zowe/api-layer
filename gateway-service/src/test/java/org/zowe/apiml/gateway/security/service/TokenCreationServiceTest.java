@@ -19,6 +19,8 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
+import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -58,15 +60,19 @@ class TokenCreationServiceTest {
     @Mock
     private ZosmfService zosmfService;
 
+    @Mock
+    private SafIdtProvider safIdtProvider;
+
     private final String VALID_USER_ID = "validUserId";
     private final String VALID_ZOSMF_TOKEN = "validZosmfToken";
     private final String VALID_APIML_TOKEN = "validApimlToken";
     private final String PASSTICKET = "passTicket";
     private final String VALID_ZOSMF_APPLID = "IZUDFLT";
+    private final String VALID_SAFIDT = "validSAFIdentityToken";
 
     @BeforeEach
     void setUp() {
-        underTest = new TokenCreationService(providers, Optional.of(zosmfAuthenticationProvider), zosmfService, passTicketService, authenticationService);
+        underTest = new TokenCreationService(providers, Optional.of(zosmfAuthenticationProvider), zosmfService, passTicketService, authenticationService, safIdtProvider);
         underTest.zosmfApplId = "IZUDFLT";
     }
 
@@ -140,4 +146,36 @@ class TokenCreationServiceTest {
         assertEquals(expectedTokens, tokens);
     }
 
+    @Test
+    void givenPassTicketGenerated_whenCreatingSafIdToken_thenTokenReturned() throws IRRPassTicketGenerationException {
+        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
+        when(safIdtProvider.generate(VALID_USER_ID, PASSTICKET.toCharArray(), VALID_ZOSMF_APPLID)).thenReturn(VALID_SAFIDT);
+
+        String safIdt = underTest.createSafIdTokenWithoutCredentials(VALID_USER_ID, VALID_ZOSMF_APPLID);
+
+        assertEquals(VALID_SAFIDT, safIdt);
+    }
+
+    @Test
+    void givenPassTicketException_whenCreatingSafIdToken_thenExceptionThrown() throws IRRPassTicketGenerationException {
+        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
+
+        Exception e = assertThrows(IRRPassTicketGenerationException.class, () -> {
+                underTest.createSafIdTokenWithoutCredentials(VALID_USER_ID, VALID_ZOSMF_APPLID);
+            });
+
+        assertEquals("Error on generation of PassTicket: An internal error was encountered.", e.getMessage());
+    }
+
+    @Test
+    void givenSafIdtException_whenCreatingSafIdToken_thenExceptionThrown() throws IRRPassTicketGenerationException {
+        when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
+        when(safIdtProvider.generate(VALID_USER_ID, PASSTICKET.toCharArray(), VALID_ZOSMF_APPLID)).thenThrow(new SafIdtException("Test exception"));
+
+        Exception e = assertThrows(SafIdtException.class, () -> {
+            underTest.createSafIdTokenWithoutCredentials(VALID_USER_ID, VALID_ZOSMF_APPLID);
+        });
+
+        assertEquals("Test exception", e.getMessage());
+    }
 }
