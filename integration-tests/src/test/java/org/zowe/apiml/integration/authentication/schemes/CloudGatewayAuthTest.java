@@ -56,6 +56,11 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
                 assertNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             }),
+            Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
+                assertNull(response.jsonPath().getString("cookies.jwtToken"));
+                assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+            }),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
@@ -77,6 +82,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         return Stream.of(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, assertions),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
+            Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
         );
     }
