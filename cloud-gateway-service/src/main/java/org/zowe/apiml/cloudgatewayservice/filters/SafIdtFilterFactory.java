@@ -10,11 +10,9 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
-import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
