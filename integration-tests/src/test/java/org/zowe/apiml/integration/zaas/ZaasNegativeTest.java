@@ -10,44 +10,104 @@
 
 package org.zowe.apiml.integration.zaas;
 
+import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
-import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.ZaasTest;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
+import org.zowe.apiml.util.config.TlsConfiguration;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.hamcrest.core.Is.is;
-import static org.zowe.apiml.integration.zaas.ZosmfTokensTest.WhenGeneratingZosmfTokens_returnValidZosmfToken.COOKIE;
-import static org.zowe.apiml.integration.zaas.ZosmfTokensTest.ZAAS_ZOSMF_URI;
-import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
 public class ZaasNegativeTest {
 
-    private static Stream<Arguments> provideToken() {
-        return Stream.of(
-            Arguments.of(generateJwtWithRandomSignature(QueryResponse.Source.ZOSMF.value)),
-            Arguments.of(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE.value)),
-            Arguments.of(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE_PAT.value)),
-            Arguments.of(generateJwtWithRandomSignature("https://localhost:10010"))
-        );
+    private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
+
+    private static final String OKTA_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+
+    private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
+        add(ZAAS_ZOWE_URI);
+        add(ZAAS_ZOSMF_URI);
+        add(ZAAS_SAFIDT_URI);
+    }};
+
+    private static final Set<URI> endpoints = new HashSet<URI>() {{
+        add(ZAAS_TICKET_URI);
+        addAll(tokenEndpoints);
+    }};
+
+    private static final Set<String> tokens = new HashSet<String>() {{
+        add(generateJwtWithRandomSignature(QueryResponse.Source.ZOSMF.value));
+        add(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE.value));
+        add(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE_PAT.value));
+        add(generateJwtWithRandomSignature("https://localhost:10010"));
+    }};
+
+    private static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
+        List<Arguments> argumentsList = new ArrayList<>();
+        for (URI uri : endpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
+            for (String token : tokens) {
+                argumentsList.add(Arguments.of(uri, requestSpec, token));
+            }
+        }
+
+        return argumentsList.stream();
     }
 
+    private static Stream<Arguments> provideZaasEndpoints() {
+        List<Arguments> argumentsList = new ArrayList<>();
+        for (URI uri : endpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
+            argumentsList.add(Arguments.of(uri, requestSpec));
+        }
+        return argumentsList.stream();
+    }
+
+    private static Stream<Arguments> provideZaasTokenEndpoints() {
+        List<Arguments> argumentsList = new ArrayList<>();
+        for (URI uri : tokenEndpoints) {
+            RequestSpecification requestSpec = given();
+            if (ZAAS_SAFIDT_URI.equals(uri)) {
+                requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
+            }
+            argumentsList.add(Arguments.of(uri, requestSpec));
+        }
+        return argumentsList.stream();
+    }
 
     @Nested
-    @GeneralAuthenticationTest
     class ReturnUnauthorized {
 
         @BeforeEach
@@ -55,51 +115,94 @@ public class ZaasNegativeTest {
             RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         }
 
-        @Test
-        void givenNoToken() {
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        void givenNoToken(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
-            when()
-                .post(ZAAS_ZOSMF_URI)
+            requestSpecification
+            .when()
+                .post(uri)
             .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                .statusCode(SC_UNAUTHORIZED);
             //@formatter:on
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideToken")
-        void givenInvalidOAuthToken(String token) {
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpointsWithAllTokens")
+        void givenInvalidToken(URI uri, RequestSpecification requestSpecification, String token) {
             //@formatter:off
-            given()
+            requestSpecification
                 .header("Authorization", "Bearer " + token)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(uri)
             .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                .statusCode(SC_UNAUTHORIZED);
             //@formatter:on
         }
 
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
+            //@formatter:off
+            requestSpecification
+                .header("Authorization", "Bearer " + OKTA_TOKEN_NO_MAPPING)
+            .when()
+                .post(uri)
+            .then()
+                .statusCode(SC_UNAUTHORIZED);
+            //@formatter:on
+        }
     }
 
     @Nested
-    @GeneralAuthenticationTest
-    class GivenNoCertificate {
+    class GivenBadCertificate {
 
-        @BeforeEach
-        void setUpCertificateAndToken() {
-            RestAssured.useRelaxedHTTPSValidation();
-        }
+        @Value("${server.ssl.keyPassword}")
+        char[] password;
+        @Value("${server.ssl.keyStore}")
+        String client_cert_keystore;
+        @Value("${server.ssl.keyStore}")
+        String keystore;
 
-        @Test
-        void thenReturnUnauthorized() {
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        void givenNoCertificate_thenReturnUnauthorized(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
-            given()
+            requestSpecification
+                .relaxedHTTPSValidation()
                 .cookie(COOKIE, SecurityUtils.gatewayToken())
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(uri)
             .then()
-                .statusCode(is(SC_UNAUTHORIZED));
+                .statusCode(SC_UNAUTHORIZED);
             //@formatter:on
         }
 
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
+        void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, RequestSpecification requestSpecification) throws Exception {
+            TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
+            SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
+            SslContext.prepareSslAuthentication(sslContextConfigurer);
+
+            //@formatter:off
+            String token = requestSpecification
+                .config(SslContext.clientCertValid)
+                .header("Client-Cert", getDummyClientCertificate())
+            .when()
+                .post(uri)
+            .then()
+                .statusCode(SC_OK)
+            .extract()
+                .jsonPath().getString("token");
+            //@formatter:on
+
+            String userId = Jwts.parserBuilder().build()
+                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .getBody()
+                .getSubject();
+
+            assertEquals("APIMTST", userId);
+        }
     }
 }

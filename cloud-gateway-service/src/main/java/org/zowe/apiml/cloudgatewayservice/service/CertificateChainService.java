@@ -10,10 +10,11 @@
 
 package org.zowe.apiml.cloudgatewayservice.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.cloudgatewayservice.config.ConnectionsConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
@@ -29,27 +30,13 @@ import java.security.cert.Certificate;
  * This service provides gateway's certificate chain which is used for the southbound communication
  */
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class CertificateChainService {
-
-    //TODO Once the separate configuration of keystore for client is implemented (PR https://github.com/zowe/api-layer/pull/3051) then update this SSL configuration.
-    @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
-
-    @Value("${server.ssl.keyStorePassword:#{null}}")
-    private char[] keyStorePassword;
-
-    @Value("${server.ssl.keyPassword:#{null}}")
-    private char[] keyPassword;
-
-    @Value("${server.ssl.keyStoreType:PKCS12}")
-    private String keyStoreType;
-
-    @Value("${server.ssl.keyAlias:#{null}}")
-    private String keyAlias;
-
     private static final ApimlLogger apimlLog = ApimlLogger.of(CertificateChainService.class, YamlMessageServiceInstance.getInstance());
     Certificate[] certificates;
+
+    private final ConnectionsConfig connectionsConfig;
 
     public String getCertificatesInPEMFormat() {
         StringWriter stringWriter = new StringWriter();
@@ -69,13 +56,7 @@ public class CertificateChainService {
 
     @PostConstruct
     void loadCertChain() {
-        HttpsConfig config = HttpsConfig.builder()
-            .keyAlias(keyAlias)
-            .keyStore(keyStore)
-            .keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword)
-            .keyStoreType(keyStoreType)
-            .build();
+        HttpsConfig config = connectionsConfig.factory().getConfig();
         try {
             certificates = SecurityUtils.loadCertificateChain(config);
         } catch (Exception e) {

@@ -376,8 +376,12 @@ jobs:
                     JGROUPS_BIND_PORT: "7099"
             cloud-gateway-service:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -409,7 +413,8 @@ jobs:
                     ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
-                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
+                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
+                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
 
             -   name: Dump DC jacoco data
                 run: >
@@ -1392,16 +1397,22 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            metrics-service:
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v3
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
-            -   name: Install npm dependencies
+            -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
                     working-directory: api-catalog-ui/frontend
+            -   name: Install npm dependencies Metrics service
+                uses: bahmutov/npm-install@v1
+                with:
+                   working-directory: metrics-service-ui/frontend
             -   name: Cache NPM and Cypress 📦
                 uses: actions/cache@v2
                 with:
@@ -1409,16 +1420,26 @@ jobs:
                         ~/.cache/Cypress
                         node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-            -   name: Cypress run
+            -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
                     npm run cy:e2e:ci
-            -   name: Upload screenshots
+            -   name: Cypress run Metrics service
+                run: |
+                    cd metrics-service-ui/frontend
+                    npm run cy:e2e:ci
+            -   name: Upload screenshots API Catalog
                 uses: actions/upload-artifact@v2
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
+            -   name: Upload screenshots Metrics service
+                uses: actions/upload-artifact@v2
+                if: failure()
+                with:
+                    name: cypress-snapshots
+                    path: metrics-service-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
 
     CITestsServicePrefixReplacer:
@@ -1473,8 +1494,9 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
+                    fetch-depth: 0
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
@@ -1521,8 +1543,7 @@ jobs:
             -   name: Code coverage and publish results
                 run: >
                     ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
-                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}

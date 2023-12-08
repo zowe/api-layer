@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.cloudgatewayservice.config.ConnectionsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
 
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.*;
 
 class CertificateChainServiceTest {
     private CertificateChainService certificateChainService;
+    ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
 
     private static final String CERTIFICATE_1 =
         "-----BEGIN CERTIFICATE-----\n" +
@@ -94,7 +96,7 @@ class CertificateChainServiceTest {
         void setup() throws CertificateException {
             certificates[0] = generateCert(CERTIFICATE_1);
             certificates[1] = generateCert(CERTIFICATE_2);
-            certificateChainService = new CertificateChainService();
+            certificateChainService = new CertificateChainService(connectionsConfig);
             ReflectionTestUtils.setField(certificateChainService, "certificates", certificates, Certificate[].class);
         }
 
@@ -114,7 +116,7 @@ class CertificateChainServiceTest {
     class GivenNoCertificatesInChain {
         @BeforeEach
         void setup() {
-            certificateChainService = new CertificateChainService();
+            certificateChainService = new CertificateChainService(connectionsConfig);
             ReflectionTestUtils.setField(certificateChainService, "certificates", new Certificate[0], Certificate[].class);
         }
 
@@ -133,7 +135,7 @@ class CertificateChainServiceTest {
             certificates[0] = generateCert(CERTIFICATE_1);
             certificates[1] = mock(Certificate.class);
             when(certificates[1].getEncoded()).thenReturn("INVALID_CERT_CONTENT".getBytes());
-            certificateChainService = new CertificateChainService();
+            certificateChainService = new CertificateChainService(connectionsConfig);
             ReflectionTestUtils.setField(certificateChainService, "certificates", certificates, Certificate[].class);
         }
 
@@ -149,7 +151,7 @@ class CertificateChainServiceTest {
 
         @BeforeEach
         void setup() {
-            certificateChainService = new CertificateChainService();
+            certificateChainService = new CertificateChainService(connectionsConfig);
         }
 
         @Test

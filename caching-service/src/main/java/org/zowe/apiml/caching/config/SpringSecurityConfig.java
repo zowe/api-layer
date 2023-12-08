@@ -61,19 +61,18 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()   // NOSONAR
-            .headers().httpStrictTransportSecurity().disable()
-            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.csrf(csrf -> csrf.disable())   // NOSONAR
+                .headers(headers -> headers.httpStrictTransportSecurity().disable()).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.authorizeRequests().anyRequest().authenticated().and()
-                .x509().userDetailsService(x509UserDetailsService());
+            http.authorizeRequests(requests -> requests.anyRequest().authenticated())
+                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authorizeRequests().anyRequest().permitAll();
+            http.authorizeRequests(requests -> requests.anyRequest().permitAll());
         }
 
         return http.build();

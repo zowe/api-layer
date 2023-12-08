@@ -12,88 +12,94 @@ package org.zowe.apiml.gateway.zaas;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.zaas.zosmf.ZosmfResponse;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
+
+import javax.management.ServiceNotFoundException;
 
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(ZaasController.CONTROLLER_PATH)
-@Slf4j
 public class ZaasController {
     public static final String CONTROLLER_PATH = "gateway/zaas";
 
-    private final MessageService messageService;
+    private final AuthSourceService authSourceService;
     private final PassTicketService passTicketService;
     private final ZosmfService zosmfService;
+    private final TokenCreationService tokenCreationService;
 
     @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
-    @ResponseBody
-    public ResponseEntity<Object> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
-
-        if (StringUtils.isEmpty(authSourceParsed.getUserId())) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .build();
-        }
+    public ResponseEntity<TicketResponse> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
+        throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
 
         final String applicationName = ticketRequest.getApplicationName();
         if (StringUtils.isBlank(applicationName)) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
-            return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(messageView);
+            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
         }
 
-        String ticket = null;
-        try {
-            ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
-        } catch (IRRPassTicketGenerationException e) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                e.getErrorCode().getMessage()).mapToView();
-            return ResponseEntity
-                .status(e.getHttpStatus())
-                .body(messageView);
-        }
+        String ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new TicketResponse(null, authSourceParsed.getUserId(), applicationName, ticket));
+            .body(new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket));
     }
 
     @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides z/OSMF JWT or LTPA token for authenticated user.")
-    @ResponseBody
-    public ResponseEntity<Object> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
-                                                @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) {
-        try {
-            ZosmfResponse zosmfResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
+    public ResponseEntity<ZaasTokenResponse> getZosmfToken(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource,
+                                                           @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) throws ServiceNotFoundException {
 
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(zosmfResponse);
+        ZaasTokenResponse zaasTokenResponse = zosmfService.exchangeAuthenticationForZosmfToken(authSource.getRawSource().toString(), authSourceParsed);
 
-        } catch (Exception e) {
-            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived", e.getMessage()).mapToView();
-            return ResponseEntity
-                .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(messageView);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(zaasTokenResponse);
+    }
+
+
+    @PostMapping(path = "zoweJwt", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Provides zoweJwt for authenticated user.")
+    public ResponseEntity<ZaasTokenResponse> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
+
+        String token = authSourceService.getJWT(authSource);
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(new ZaasTokenResponse(COOKIE_AUTH_NAME, token));
+    }
+
+    @PostMapping(path = "safIdt", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Provides SAF Identity Token for authenticated user.")
+    public ResponseEntity<ZaasTokenResponse> getSafIdToken(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
+        throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
+
+        final String applicationName = ticketRequest.getApplicationName();
+        if (StringUtils.isBlank(applicationName)) {
+            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
         }
+
+        String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(new ZaasTokenResponse("", safIdToken));
     }
 
 }

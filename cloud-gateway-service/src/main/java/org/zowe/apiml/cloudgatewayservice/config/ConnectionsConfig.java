@@ -25,16 +25,20 @@ import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
-import org.springframework.cloud.gateway.config.HttpClientCustomizer;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
@@ -44,7 +48,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.StandardEnvironment;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -66,6 +70,7 @@ import reactor.netty.http.client.HttpClient;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -147,8 +152,7 @@ public class ConnectionsConfig {
         }
     }
 
-
-    HttpsFactory factory() {
+    public HttpsFactory factory() {
         HttpsConfig config = HttpsConfig.builder()
             .protocol(protocol)
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
@@ -162,26 +166,56 @@ public class ConnectionsConfig {
         return new HttpsFactory(config);
     }
 
+    /**
+     * This bean processor is used to override bean routingFilter defined at
+     * org.springframework.cloud.gateway.config.GatewayAutoConfiguration.NettyConfiguration#routingFilter(HttpClient, ObjectProvider, HttpClientProperties)
+     *
+     * There is no simple way how to override this specific bean, but bean processing could handle that.
+     *
+     * @param httpClient default http client
+     * @param headersFiltersProvider header filter for spring cloud gateway router
+     * @param properties client HTTP properties
+     * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
+     */
     @Bean
-    HttpClientCustomizer secureCustomizer() {
-        return httpClient -> httpClient.secure(b -> b.sslContext(sslContext()));
-    }
+    public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+        // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
+        SslContext justTruststore = sslContext(false);
+        SslContext withKeystore = sslContext(true);
 
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                if ("routingFilter".equals(beanName)) {
+                    // once is creating original bean by autoconfiguration replace it with custom implementation
+                    return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
+                }
+                // do not touch any other bean
+                return bean;
+            }
+        };
+    }
 
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
      */
-    SslContext sslContext() {
+    SslContext sslContext(boolean setKeystore) {
         try {
-            KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
+            SslContextBuilder builder = SslContextBuilder.forClient();
+
             KeyStore trustStore = SecurityUtils.loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
-
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            keyManagerFactory.init(keyStore, keyStorePassword);
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-
             trustManagerFactory.init(trustStore);
-            return SslContextBuilder.forClient().keyManager(keyManagerFactory).trustManager(trustManagerFactory).build();
+            builder.trustManager(trustManagerFactory);
+
+            if (setKeystore) {
+                KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                keyManagerFactory.init(keyStore, keyStorePassword);
+                builder.keyManager(keyManagerFactory);
+            }
+
+            return builder.build();
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
@@ -216,7 +250,7 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
+    public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
@@ -267,10 +301,15 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public WebClient webClient() {
-        HttpClient client = HttpClient.create().secure(ssl -> ssl.sslContext(sslContext()));
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(client)).build();
+    @Primary
+    public WebClient webClient(HttpClient httpClient) {
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+    }
 
+    @Bean
+    public WebClient webClientClientCert(HttpClient httpClient) {
+        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
+        return webClient(httpClient);
     }
 
     @Bean
@@ -284,7 +323,7 @@ public class ConnectionsConfig {
 
     @Bean
     public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled);
+        return new CorsUtils(corsEnabled, null);
     }
 
     @Bean
