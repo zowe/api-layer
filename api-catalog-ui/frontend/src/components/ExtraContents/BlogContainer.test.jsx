@@ -114,6 +114,31 @@ describe('>>> BlogContainer component tests', () => {
         global.fetch.mockRestore();
     });
 
+    it('should not render medium articles if the URL is not in the items from feed response', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValueOnce({
+                items: [
+                    {
+                        link: 'https://medium.com/some/medium',
+                        title: 'Zowe Blog Title',
+                        description: 'Zowe Blog Description',
+                        content: 'Zowe Blog Content',
+                    },
+                ],
+            }),
+        });
+
+        const wrapper = mount(<BlogContainer user="user" url="https://medium.com/differentUrl" title="title" />);
+
+        await wrapper.update();
+
+        expect(wrapper.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        expect(wrapper.find('BlogTile').exists()).toEqual(false);
+
+        global.fetch.mockRestore();
+    });
+
     it('should fetch data and render blog correctly', async () => {
         const mockFetch = jest.spyOn(global, 'fetch');
         mockFetch.mockResolvedValueOnce({
