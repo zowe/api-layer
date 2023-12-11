@@ -16,6 +16,7 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.zowe.apiml.acceptance.netflix.ApimlRouteLocatorStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
+@Profile("acceptance")
 public class ApimlRoutingConfig {
 
     @Bean

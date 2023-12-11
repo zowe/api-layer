@@ -10,70 +10,77 @@
 
 package org.zowe.apiml.gateway.security.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+
+import javax.net.ssl.SSLException;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 /**
  * Simple Spring Context test to verify attls filter chain setup is in place with the right properties being sent
  */
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+@AcceptanceTest
+@TestPropertySource(
     properties = {
         "server.internal.ssl.enabled=false",
         "server.attls.enabled=true",
         "server.ssl.enabled=false",
         "server.service.scheme=http"
-    },
-    classes = NewSecurityConfiguration.class
+    }
 )
-@DirtiesContext
-@ActiveProfiles("GatewayAttlsConfigTest")
-@Disabled
-public class AttlsConfigTest {
+@ActiveProfiles({"acceptance", "AttlsConfigTest"})
+@TestInstance(Lifecycle.PER_CLASS)
+public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
 
     @Autowired
     HttpSecurity http;
 
     @Nested
     class GivenAttlsModeEnabled {
-        // verify spring context loads
-        // verify the security filter chain is complete with the attls filter in place.
 
         @Test
-        void test() {
-
-            // load the configuration and test that a request to a controller fails with a http 500 due to at-tls
-            // context not being available?
-
-        }
-    }
-
-    @RestController
-    @Profile("GatewayAttlsConfigTest")
-    class TestController {
-
-    }
-
-    @Configuration
-    @Profile("GatewayAttlsConfigTest")
-    class TestConfiguration {
-
-        @Bean
-        public ObjectMapper mapper() {
-            return new ObjectMapper();
+        void whenContextLoads_RequestFailsWithHttps() {
+            try {
+                given()
+                    .log().all()
+                    .cookie(COOKIE_AUTH_NAME, "jwttoken")
+                .when()
+                    .get(basePath + serviceWithDefaultConfiguration.getPath())
+                .then()
+                    .log().all()
+                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+                fail("Expected SSL failure");
+            } catch (Exception e) {
+                assertInstanceOf(SSLException.class, e);
+            }
         }
 
+        @Test
+        void whenContextLoads_RequestFailsWithAttlsContextReason() {
+            given()
+                .log().all()
+                .cookie(COOKIE_AUTH_NAME, "jwttoken")
+            .when()
+                .get(String.format("http://localhost:%d", port) + serviceWithDefaultConfiguration.getPath())
+            .then()
+                .log().all()
+                .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
+                .body("messages[0].messageContent", containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
+        }
     }
-
 }

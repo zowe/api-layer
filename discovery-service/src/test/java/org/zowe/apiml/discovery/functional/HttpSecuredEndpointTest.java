@@ -77,7 +77,6 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
         }
     }
 
-
     @ParameterizedTest(name = "givenATTLS_testApplicationBeansEndpoints_Get {index} {0} ")
     @ValueSource(strings = {"/application/beans", "/"})
     void givenATTLS_testApplicationBeansEndpoints_Get(String path) {
@@ -142,6 +141,5 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
         }
 
     }
-
 
 }

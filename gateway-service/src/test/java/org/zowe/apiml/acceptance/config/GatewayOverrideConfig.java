@@ -22,6 +22,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.cloud.netflix.zuul.filters.discovery.SimpleServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @TestConfiguration
+@Profile("acceptance")
 public class GatewayOverrideConfig {
 
     protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
@@ -78,7 +80,6 @@ public class GatewayOverrideConfig {
 
     @Bean
     public ApplicationRegistry registry() {
-
         MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
         defaultBuilder.withZosmf();
         ApplicationRegistry applicationRegistry = new ApplicationRegistry();
