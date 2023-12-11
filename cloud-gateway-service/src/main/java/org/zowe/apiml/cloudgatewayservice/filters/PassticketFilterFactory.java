@@ -10,24 +10,16 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cloudgatewayservice.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 import reactor.core.publisher.Mono;
 
@@ -35,13 +27,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Service
-public class PassticketFilterFactory extends AbstractAuthSchemeFactory<PassticketFilterFactory.Config, TicketResponse, String> {
+public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactory<TicketResponse> {
 
     private static final String TICKET_URL = "%s://%s:%d/%s/zaas/ticket";
-    private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
     public PassticketFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(Config.class, webClient, instanceInfoService, messageService);
+        super(webClient, instanceInfoService, messageService);
     }
 
     @Override
@@ -55,11 +46,8 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
-        return webClient.post()
-            .uri(String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase()))
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .bodyValue(requestBody);
+    public String getEndpointUrl(ServiceInstance instance) {
+        return String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
     @Override
@@ -78,23 +66,4 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
         return chain.filter(exchange);
     }
 
-    @Override
-    public GatewayFilter apply(Config config) {
-        try {
-            return createGatewayFilter(config, WRITER.writeValueAsString(new TicketRequest(config.getApplicationName())));
-        } catch (JsonProcessingException e) {
-            return ((exchange, chain) -> {
-                ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
-                return chain.filter(exchange.mutate().request(request).build());
-            });
-        }
-    }
-
-    @Data
-    @EqualsAndHashCode(callSuper = true)
-    public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
-
-        private String applicationName;
-
-    }
 }
