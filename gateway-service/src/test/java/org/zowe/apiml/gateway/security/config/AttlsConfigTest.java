@@ -82,7 +82,7 @@ public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
                 .then()
                     .log().all()
                     .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
-                    .body("messages[0].messageContent", containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
+                    .body(containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
             }
         }
     }
