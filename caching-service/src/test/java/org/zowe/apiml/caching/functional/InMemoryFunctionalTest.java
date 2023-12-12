@@ -23,7 +23,7 @@ import org.zowe.apiml.util.config.SslContextConfigurer;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class InMemoryFunctionalTest {
 
     @Value("${server.ssl.keyPassword}")
