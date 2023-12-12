@@ -107,18 +107,14 @@ export default class Dashboard extends Component {
 
             if (e.target.scrollTop > getFilterHeight) {
                 e.target.classList.add('fixed-header');
-                e.target.style.paddingTop = (
-                    (
-                        getHeaderHeight
-                        + getHeader.style.marginBottom
-                        + getHeader.style.marginTop
-                    ) + 'px'
-                );
+                e.target.style.paddingTop = `${
+                    getHeaderHeight + getHeader.style.marginBottom + getHeader.style.marginTop
+                }px`;
             } else {
                 e.target.classList.remove('fixed-header');
                 e.target.style.paddingTop = 0;
             }
-        }
+        };
 
         return (
             <div className="main-content dashboard-content">
@@ -167,7 +163,12 @@ export default class Dashboard extends Component {
                 <ErrorDialog refreshedStaticApisError={refreshedStaticApisError} clearError={clearError} />
                 {!fetchTilesError && (
                     <div className="apis">
-                        <div id="grid-container" onScroll={(e) => { dashboardTileScroll(e) }}>
+                        <div
+                            id="grid-container"
+                            onScroll={(e) => {
+                                dashboardTileScroll(e);
+                            }}
+                        >
                             <div className="filtering-container">
                                 {apiPortalEnabled && (
                                     <div>

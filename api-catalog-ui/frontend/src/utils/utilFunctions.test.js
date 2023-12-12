@@ -21,6 +21,7 @@ describe('>>> Util Functions tests', () => {
     }
     beforeEach(() => {
         document.body.innerHTML = `
+      <div id="separator2"></div>
       <div id="go-back-button"></div>
       <div id="title"></div>
       <div id="swagger-label"></div>
