@@ -79,6 +79,7 @@ export default class DetailPage extends Component {
             history,
             currentTileId,
             fetchNewTiles,
+            selectedService,
         } = this.props;
         let { tiles } = this.props;
         const iconBack = <ChevronLeftIcon />;
@@ -102,7 +103,15 @@ export default class DetailPage extends Component {
         }
         const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
-        const { useCasesCounter, tutorialsCounter, videosCounter } = countAdditionalContents(services);
+        const {
+            useCasesCounter,
+            tutorialsCounter,
+            videosCounter,
+            filteredUseCases,
+            filteredTutorials,
+            videos,
+            documentation,
+        } = countAdditionalContents(selectedService);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         const showSideBar = false;
         if (
@@ -202,7 +211,7 @@ export default class DetailPage extends Component {
                                             className="links"
                                             onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
                                         >
-                                            Tutorials ({tutorialsCounter})
+                                            TechDocs Resources ({tutorialsCounter})
                                         </Link>
                                         <Link
                                             className="links"
@@ -236,9 +245,13 @@ export default class DetailPage extends Component {
                                             render={() => (
                                                 <div className="tabs-swagger">
                                                     <ServiceTabContainer
+                                                        videos={videos}
+                                                        useCases={filteredUseCases}
+                                                        tutorials={filteredTutorials}
                                                         videosCounter={videosCounter}
                                                         tutorialsCounter={tutorialsCounter}
                                                         useCasesCounter={useCasesCounter}
+                                                        documentation={documentation}
                                                         tiles={tiles}
                                                     />
                                                 </div>
@@ -271,4 +284,5 @@ DetailPage.propTypes = {
     history: PropTypes.shape({
         push: PropTypes.func.isRequired,
     }).isRequired,
+    selectedService: PropTypes.object.isRequired,
 };
