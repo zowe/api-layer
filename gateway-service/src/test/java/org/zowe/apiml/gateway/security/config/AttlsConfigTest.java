@@ -53,34 +53,37 @@ public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
     @Nested
     class GivenAttlsModeEnabled {
 
-        @Test
-        void whenContextLoads_RequestFailsWithHttps() {
-            try {
+        @Nested
+        class WhenContextLoads {
+            @Test
+            void requestFailsWithHttps() {
+                try {
+                    given()
+                        .log().all()
+                        .cookie(COOKIE_AUTH_NAME, "jwttoken")
+                    .when()
+                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                    .then()
+                        .log().all()
+                        .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+                    fail("Expected SSL failure");
+                } catch (Exception e) {
+                    assertInstanceOf(SSLException.class, e);
+                }
+            }
+
+            @Test
+            void requestFailsWithAttlsContextReasonWithHttp() {
                 given()
                     .log().all()
                     .cookie(COOKIE_AUTH_NAME, "jwttoken")
                 .when()
-                    .get(basePath + serviceWithDefaultConfiguration.getPath())
+                    .get(String.format("http://localhost:%d", port) + serviceWithDefaultConfiguration.getPath())
                 .then()
                     .log().all()
-                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
-                fail("Expected SSL failure");
-            } catch (Exception e) {
-                assertInstanceOf(SSLException.class, e);
+                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
+                    .body("messages[0].messageContent", containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
             }
-        }
-
-        @Test
-        void whenContextLoads_RequestFailsWithAttlsContextReason() {
-            given()
-                .log().all()
-                .cookie(COOKIE_AUTH_NAME, "jwttoken")
-            .when()
-                .get(String.format("http://localhost:%d", port) + serviceWithDefaultConfiguration.getPath())
-            .then()
-                .log().all()
-                .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
-                .body("messages[0].messageContent", containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
         }
     }
 }
