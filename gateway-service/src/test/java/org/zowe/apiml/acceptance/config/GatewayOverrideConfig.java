@@ -78,6 +78,7 @@ public class GatewayOverrideConfig {
 
     @Bean
     public ApplicationRegistry registry() {
+
         MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
         defaultBuilder.withZosmf();
         ApplicationRegistry applicationRegistry = new ApplicationRegistry();

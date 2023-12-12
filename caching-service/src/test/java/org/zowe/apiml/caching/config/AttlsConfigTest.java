@@ -54,7 +54,7 @@ public class AttlsConfigTest {
     class GivenAttlsModeEnabled {
 
         private String getUri(String scheme, String endpoint) {
-            return String.format("%s://%s:%s%s%s", scheme, hostname, port, "/api/v1", endpoint);
+            return String.format("%s://%s:%d/%s/%s", scheme, hostname, port, "api/v1", endpoint);
         }
 
         @Nested
@@ -66,7 +66,7 @@ public class AttlsConfigTest {
                     given()
                         .config(SslContext.clientCertUnknownUser)
                         .header("Content-type", "application/json")
-                        .get(getUri("https", "/cache"))
+                        .get(getUri("https", "cache"))
                     .then()
                         .statusCode(HttpStatus.FORBIDDEN.value());
                     fail("");
@@ -80,7 +80,7 @@ public class AttlsConfigTest {
                 given()
                     .config(SslContext.clientCertUnknownUser)
                     .header("Content-type", "application/json")
-                    .get(getUri("http", "/cache"))
+                    .get(getUri("http", "cache"))
                 .then()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .body(containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));

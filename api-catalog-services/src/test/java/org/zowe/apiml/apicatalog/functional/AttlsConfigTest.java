@@ -42,7 +42,7 @@ public class AttlsConfigTest extends ApiCatalogFunctionalTest {
                     given()
                         .log().all()
                     .when()
-                        .get(getCatalogUriWithPath("/containers"))
+                        .get(getCatalogUriWithPath("containers"))
                     .then()
                         .log().all()
                         .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -57,7 +57,7 @@ public class AttlsConfigTest extends ApiCatalogFunctionalTest {
                 given()
                     .log().all()
                 .when()
-                    .get(getCatalogUriWithPath("http", "/apicatalog/api/v1/containers"))
+                    .get(getCatalogUriWithPath("http", "apicatalog/api/v1/containers"))
                 .then()
                     .log().all()
                     .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)

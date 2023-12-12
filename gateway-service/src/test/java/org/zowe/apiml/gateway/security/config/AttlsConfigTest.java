@@ -78,7 +78,7 @@ public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
                     .log().all()
                     .cookie(COOKIE_AUTH_NAME, "jwttoken")
                 .when()
-                    .get(String.format("http://localhost:%d", port) + serviceWithDefaultConfiguration.getPath())
+                    .get(String.format("http://localhost:%d%s", port, serviceWithDefaultConfiguration.getPath()))
                 .then()
                     .log().all()
                     .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
