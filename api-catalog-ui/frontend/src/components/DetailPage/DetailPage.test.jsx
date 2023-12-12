@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { shallow } from 'enzyme';
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import DetailPage from './DetailPage';
 
 const tile = {
@@ -49,6 +49,10 @@ const history = {
 describe('>>> Detailed Page component tests', () => {
     beforeEach(() => {
         process.env.REACT_APP_API_PORTAL = false;
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     it('should start epic on mount', () => {
@@ -252,9 +256,19 @@ describe('>>> Detailed Page component tests', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
-        tile.services[0].videos = ['video1', 'video2'];
-        tile.services[0].tutorials = ['tutorial1', 'tutorial2'];
-        tile.services[0].useCases = ['useCase1', 'useCase2'];
+        // eslint-disable-next-line global-require
+        const utils = require('../../utils/utilFunctions');
+        const spyOnCountAdditionalContents = jest.spyOn(utils, 'default');
+        spyOnCountAdditionalContents.mockImplementation(() => ({
+            useCasesCounter: 2,
+            tutorialsCounter: 2,
+            videosCounter: 2,
+            hasSwagger: true,
+            useCases: [],
+            tutorials: [],
+            videos: [],
+            documentation: '',
+        }));
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
@@ -268,6 +282,7 @@ describe('>>> Detailed Page component tests', () => {
             />
         );
         expect(wrapper.find('#right-resources-menu').exists()).toEqual(true);
+        spyOnCountAdditionalContents.mockRestore();
     });
 
     it('should click on the links', () => {

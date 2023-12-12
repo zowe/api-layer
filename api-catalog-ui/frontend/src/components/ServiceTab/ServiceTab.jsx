@@ -7,12 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select, Button, IconButton } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 import { isAPIPortal } from '../../utils/utilFunctions';
+import VideoWrapper from '../ExtraContents/VideoWrapper';
+import BlogContainer from '../ExtraContents/BlogContainer';
 
 export default class ServiceTab extends Component {
     constructor(props) {
@@ -21,6 +24,9 @@ export default class ServiceTab extends Component {
             selectedVersion: null,
             previousVersion: null,
             isDialogOpen: false,
+            displayVideosCount: 2,
+            displayUseCasesCount: 3,
+            displayBlogsCount: 3,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
     }
@@ -137,6 +143,21 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
+    showMoreVideos = () => {
+        const { videos } = this.props;
+        this.setState((prevState) => ({ displayVideosCount: prevState.displayVideosCount + videos.length }));
+    };
+
+    showMoreBlogs = () => {
+        const { tutorials } = this.props;
+        this.setState((prevState) => ({ displayBlogsCount: prevState.displayBlogsCount + tutorials.length }));
+    };
+
+    showMoreUseCases = () => {
+        const { useCases } = this.props;
+        this.setState((prevState) => ({ displayUseCasesCount: prevState.displayUseCasesCount + useCases.length }));
+    };
+
     render() {
         const {
             match: {
@@ -144,10 +165,15 @@ export default class ServiceTab extends Component {
             },
             tiles,
             selectedService,
+            useCases,
+            tutorials,
+            videos,
             useCasesCounter,
             tutorialsCounter,
             videosCounter,
+            documentation,
         } = this.props;
+        const { displayVideosCount, displayBlogsCount, displayUseCasesCount } = this.state;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -160,7 +186,9 @@ export default class ServiceTab extends Component {
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         const apiPortalEnabled = isAPIPortal();
-        const additionalContentsPresent = useCasesCounter !== 0 && tutorialsCounter !== 0 && videosCounter !== 0;
+        const useCasesPresent = useCasesCounter !== 0;
+        const videosPresent = videosCounter !== 0;
+        const tutorialsPresent = tutorialsCounter !== 0;
         return (
             <>
                 {currentService === null && (
@@ -245,6 +273,21 @@ export default class ServiceTab extends Component {
                                 {selectedService.description}
                             </Typography>
                             <br />
+                            {isAPIPortal() && documentation?.label && documentation?.url && (
+                                <Typography variant="subtitle2">
+                                    To know more about the {selectedService.title} service, see the
+                                    <Link
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                        style={{ color: '#0056B3', marginLeft: '4px' }}
+                                        className="service-doc-link"
+                                        href={documentation.url}
+                                    >
+                                        {documentation.label}
+                                    </Link>
+                                    .
+                                </Typography>
+                            )}
                             <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
@@ -300,37 +343,86 @@ export default class ServiceTab extends Component {
                                 isDialogOpen={isDialogOpen}
                             />
                         )}
-                        {isAPIPortal() && additionalContentsPresent && (
+                        {isAPIPortal() && (
                             <div id="detail-footer">
-                                <Typography
-                                    className="footer-labels"
-                                    id="use-cases-label"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    Use Cases ({useCasesCounter})
-                                </Typography>
+                                {useCasesPresent && (
+                                    <Typography
+                                        className="footer-labels"
+                                        id="use-cases-label"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        Use Cases ({useCasesCounter})
+                                    </Typography>
+                                )}
                                 <br />
                                 <br />
-                                <Typography
-                                    className="footer-labels"
-                                    id="tutorials-label"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    Tutorials ({tutorialsCounter} articles)
-                                </Typography>
+                                <div id="blogs-container">
+                                    {useCases?.slice(0, displayUseCasesCount).map((useCase) => (
+                                        <BlogContainer
+                                            key={useCase.url}
+                                            user={useCase.user}
+                                            url={useCase.url}
+                                            title={useCase.title}
+                                        />
+                                    ))}
+                                </div>
+                                {useCasesCounter > displayUseCasesCount && displayUseCasesCount < useCases.length && (
+                                    <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
+                                        Show all ({useCasesCounter} articles)
+                                    </IconButton>
+                                )}
                                 <br />
                                 <br />
-                                <Typography
-                                    className="footer-labels"
-                                    id="videos-label"
-                                    size="medium"
-                                    variant="outlined"
-                                >
-                                    Videos ({videosCounter})
-                                </Typography>
+                                {tutorialsPresent && (
+                                    <Typography
+                                        className="footer-labels"
+                                        id="tutorials-label"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        TechDocs Resources ({tutorialsCounter})
+                                    </Typography>
+                                )}
                                 <br />
+                                <div id="blogs-container">
+                                    {tutorials?.slice(0, displayBlogsCount).map((tutorial) => (
+                                        <BlogContainer
+                                            key={tutorial.url}
+                                            user={tutorial.user}
+                                            url={tutorial.url}
+                                            title={tutorial.title}
+                                        />
+                                    ))}
+                                </div>
+                                {tutorialsCounter > displayBlogsCount && displayBlogsCount < tutorials.length && (
+                                    <IconButton className="more-content-button" onClick={this.showMoreBlogs}>
+                                        Show all ({tutorialsCounter} articles)
+                                    </IconButton>
+                                )}
+                                <br />
+                                <br />
+                                {videosPresent && (
+                                    <Typography
+                                        className="footer-labels"
+                                        id="videos-label"
+                                        size="medium"
+                                        variant="outlined"
+                                    >
+                                        Videos ({videosCounter})
+                                    </Typography>
+                                )}
+                                <br />
+                                <div>
+                                    {videos?.slice(0, displayVideosCount).map((url) => (
+                                        <VideoWrapper key={url.url} url={url} />
+                                    ))}
+                                </div>
+                                {videosCounter > displayVideosCount && displayVideosCount < videos.length && (
+                                    <IconButton className="more-content-button" onClick={this.showMoreVideos}>
+                                        Show all ({videosCounter})
+                                    </IconButton>
+                                )}
                             </div>
                         )}
                     </div>
@@ -339,3 +431,33 @@ export default class ServiceTab extends Component {
         );
     }
 }
+
+ServiceTab.propTypes = {
+    videos: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+        slice: PropTypes.func.isRequired,
+    }).isRequired,
+    tutorials: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+        slice: PropTypes.func.isRequired,
+    }).isRequired,
+    useCases: PropTypes.shape({
+        length: PropTypes.func.isRequired,
+        slice: PropTypes.func.isRequired,
+    }).isRequired,
+    documentation: PropTypes.oneOfType([
+        PropTypes.shape({
+            label: PropTypes.string.isRequired,
+            url: PropTypes.string.isRequired,
+        }),
+        PropTypes.arrayOf(
+            PropTypes.shape({
+                label: PropTypes.string.isRequired,
+                url: PropTypes.string.isRequired,
+            })
+        ),
+    ]).isRequired,
+    selectedService: PropTypes.shape({
+        title: PropTypes.string.isRequired,
+    }).isRequired,
+};
