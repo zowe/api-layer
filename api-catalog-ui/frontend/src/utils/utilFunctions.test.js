@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContents, { closeMobileMenu, customUIStyle, openMobileMenu } from './utilFunctions';
+import countAdditionalContents, { closeMobileMenu, customUIStyle, isValidUrl, openMobileMenu } from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
     function mockFetch() {
@@ -45,18 +45,19 @@ describe('>>> Util Functions tests', () => {
     afterEach(() => {
         document.body.innerHTML = '';
     });
-    it('should count medias', () => {
+    it('should return default count when no medias are provided', () => {
         const service = {
-            id: 'service',
+            id: 'apicatalog',
             hasSwagger: false,
-            useCases: ['usecase1', 'usecase2'],
-            tutorials: [],
-            videos: [],
         };
         expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
             hasSwagger: false,
+            filteredTutorials: [],
             tutorialsCounter: 0,
-            useCasesCounter: 2,
+            filteredUseCases: [],
+            useCasesCounter: 0,
+            videos: [],
             videosCounter: 0,
         });
     });
@@ -64,9 +65,6 @@ describe('>>> Util Functions tests', () => {
     it('should check for swagger when not default one available', () => {
         const service = {
             id: 'service',
-            useCases: ['usecase1', 'usecase2'],
-            tutorials: [],
-            videos: [],
             apis: {
                 'org.zowe v1': {
                     swaggerUrl: 'swagger',
@@ -74,9 +72,51 @@ describe('>>> Util Functions tests', () => {
             },
         };
         expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
             hasSwagger: true,
+            filteredTutorials: [],
             tutorialsCounter: 0,
-            useCasesCounter: 2,
+            filteredUseCases: [],
+            useCasesCounter: 0,
+            videos: [],
+            videosCounter: 0,
+        });
+    });
+
+    it('should check for swagger and set false when no swagger URL available', () => {
+        const service = {
+            id: 'service',
+            apis: {
+                'org.zowe v1': {},
+            },
+        };
+        expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
+            hasSwagger: false,
+            filteredTutorials: [],
+            tutorialsCounter: 0,
+            filteredUseCases: [],
+            useCasesCounter: 0,
+            videos: [],
+            videosCounter: 0,
+        });
+    });
+
+    it('should check for swagger when default API is available', () => {
+        const service = {
+            id: 'service',
+            apis: {
+                default: { apiId: 'enabler' },
+            },
+        };
+        expect(countAdditionalContents(service)).toEqual({
+            documentation: null,
+            hasSwagger: false,
+            filteredTutorials: [],
+            tutorialsCounter: 0,
+            filteredUseCases: [],
+            useCasesCounter: 0,
+            videos: [],
             videosCounter: 0,
         });
     });
@@ -118,6 +158,28 @@ describe('>>> Util Functions tests', () => {
         expect(document.documentElement.style.backgroundColor).toBe('blue');
         expect(description.style.color).toBe('white');
         expect(document.body.style.fontFamily).toBe('Arial');
+        // Clean up the mocks
+        jest.restoreAllMocks();
+        global.fetch.mockRestore();
+    });
+
+    it('should not set color if header not found', async () => {
+        document.body.innerHTML = `
+      <div></div>
+    `;
+        const uiConfig = {
+            logo: '/path/img.png',
+            headerColor: 'red',
+            backgroundColor: 'blue',
+            fontFamily: 'Arial',
+            textColor: 'white',
+        };
+
+        global.URL.createObjectURL = jest.fn().mockReturnValue('img-url');
+        global.fetch = mockFetch();
+        await customUIStyle(uiConfig);
+        const header = document.getElementsByClassName('header')[0];
+        expect(header).toBeUndefined();
         // Clean up the mocks
         jest.restoreAllMocks();
         global.fetch.mockRestore();
@@ -177,5 +239,13 @@ describe('>>> Util Functions tests', () => {
         const spyToggle = jest.spyOn(document.body.classList, 'remove');
         closeMobileMenu();
         expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
+    });
+
+    it('should return false when URL is invalid', async () => {
+        expect(isValidUrl('invalidurl')).toBe(false);
+    });
+
+    it('should return true when URL is valid', async () => {
+        expect(isValidUrl('https://localhost.com/hello')).toBe(true);
     });
 });
