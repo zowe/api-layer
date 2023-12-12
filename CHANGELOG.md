@@ -2,18 +2,18 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.13.0 / Zowe 2.13.0 (2023-12-04)`
+## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
 
 * Feature:  CORS enabled in default mode with AT-TLS profile (#3221) ([047ec144](https://github.com/zowe/api-layer/commit/047ec144)), closes [#3221](https://github.com/zowe/api-layer/issues/3221)
 * Feature:  Add Zowe authentication scheme to Cloud Gateway (#3214) ([b71fbc1](https://github.com/zowe/api-layer/commit/b71fbc1)), closes [#3214](https://github.com/zowe/api-layer/issues/3214)
 * Feature:  Add new `/zaas/zoweJwt` endpoint to provide Zowe JWT token for Spring cloud Gateway (#3199) ([7d42791d](https://github.com/zowe/api-layer/commit/7d42791d)), closes [#3199](https://github.com/zowe/api-layer/issues/3199)
 * Feature:  Add new `/zaas/zosmf` endpoint to provide z/OSMF JWT/LTPA2 token for Spring cloud Gateway (#3153) ([cc96c81](https://github.com/zowe/api-layer/commit/cc96c81)), closes [#3153](https://github.com/zowe/api-layer/issues/3153)
+* Feature:  Add new `/zaas/safIdt` endpoint to provide SAF IDT token for Spring cloud Gateway (#3220) ([c72adbc8](https://github.com/zowe/api-layer/commit/c72adbc8)), closes [#3220](https://github.com/zowe/api-layer/issues/3220)
 * Feature:  Support z/OSMF scheme in Spring Cloud Gateway (#3190) ([c059322](https://github.com/zowe/api-layer/commit/c059322)), closes [#3190](https://github.com/zowe/api-layer/issues/3190)
 * Feature:  Fixes for Azure JWKS reader (#3201) ([f24695ed](https://github.com/zowe/api-layer/commit/f24695ed)), closes [#3200](https://github.com/zowe/api-layer/issues/3200)
 * Feature:  Supporting additional Discovery Service registration by Spring Cloud Gateway (#3181) ([c6cc561](https://github.com/zowe/api-layer/commit/c6cc561)), closes [#3181](https://github.com/zowe/api-layer/issues/3181)
 * Feature:  Gateway additional registrations HA (#3127) ([a367380](https://github.com/zowe/api-layer/commit/a367380)), closes [#3127](https://github.com/zowe/api-layer/issues/3127)
 * Feature:  Fetch JWK from OIDC providers (#3137) ([b23bb8f](https://github.com/zowe/api-layer/commit/b23bb8f)), closes [#3137](https://github.com/zowe/api-layer/issues/3137)
-
 
 * Bugfix:  Fix signing outgoing call from Cloud Gateway just if necessary (#3203) ([12ca262](https://github.com/zowe/api-layer/commit/12ca262)), closes [#3203](https://github.com/zowe/api-layer/issues/3203)
 * Bugfix:  AT-TLS support (#3186) ([8a26c44](https://github.com/zowe/api-layer/commit/8a26c44)), closes [#3186](https://github.com/zowe/api-layer/issues/3186)
@@ -28,6 +28,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Qualifier for clock to avoid conflict in extension (#3166) ([d1aa345a](https://github.com/zowe/api-layer/commit/d1aa345a)), closes [#3166](https://github.com/zowe/api-layer/pull/3166)
 * Bugfix:  Enhance error handling in the UI (#3158) ([ee39a4b](https://github.com/zowe/api-layer/commit/ee39a4b)), closes [#3158](https://github.com/zowe/api-layer/issues/3158)
 * Bugfix:  Fix context oath (#3159) ([a0715938](https://github.com/zowe/api-layer/commit/a0715938)), closes [#3159](https://github.com/zowe/api-layer/issues/3159)
+* Bugfix:  Fix of resource leak in loading of images in API Catalog (#3233) ([29424cd7](https://github.com/zowe/api-layer/commit/29424cd7)), closes [#3159](https://github.com/zowe/api-layer/issues/3233)
 
 ## `APIML 2.12.2 / Zowe 2.12.0 (2023-10-10)`
 
