@@ -9,6 +9,15 @@
  */
 
 import getBaseUrl from '../helpers/urls';
+import contents from '../components/ExtraContents/educational_contents.json';
+
+export const isValidUrl = (url) => {
+    try {
+        return Boolean(new URL(url));
+    } catch (e) {
+        return false;
+    }
+};
 
 function checkForSwagger(service) {
     let hasSwagger = false;
@@ -27,42 +36,48 @@ function checkForSwagger(service) {
     return hasSwagger;
 }
 
+function countValidItems(items, validator) {
+    return items.reduce((counter, item) => (validator(item) ? counter + 1 : counter), 0);
+}
+
 /**
  * Counts the additional contents
  * @param service
- * @returns {{videosCounter: number, useCasesCounter: number, tutorialsCounter: number}}
+ * @returns {{videosCounter, useCases: *[], useCasesCounter, tutorialsCounter, tutorials: *[], documentation: null, hasSwagger: boolean, videos: *[]}}
  */
 export default function countAdditionalContents(service) {
-    let useCasesCounter = 0;
-    let tutorialsCounter = 0;
-    let videosCounter = 0;
     let hasSwagger = false;
-    if (service) {
-        if ('useCases' in service && service.useCases) {
-            useCasesCounter = service.useCases.length;
-        }
-        if ('tutorials' in service && service.tutorials) {
-            tutorialsCounter = service.tutorials.length;
-        }
-        if ('videos' in service && service.videos) {
-            videosCounter = service.videos.length;
-        }
-        if (service.apis) {
-            hasSwagger = checkForSwagger(service);
-        }
+    const { useCases, tutorials, videos, documentation } = contents?.products?.find(
+        (product) => service?.serviceId === product.name
+    ) || { useCases: [], tutorials: [], videos: [], documentation: null };
+
+    const filteredUseCases = useCases?.filter(({ url, user }) => isValidUrl(url) && user);
+    const filteredTutorials = tutorials?.filter(({ url }) => isValidUrl(url));
+    const useCasesCounter = countValidItems(filteredUseCases, (item) => isValidUrl(item.url));
+    const tutorialsCounter = countValidItems(filteredTutorials, (item) => isValidUrl(item.url));
+    const videosCounter = countValidItems(videos, (item) => isValidUrl(item));
+
+    if (service?.apis) {
+        hasSwagger = checkForSwagger(service);
     }
-    return { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger };
+
+    return {
+        useCasesCounter,
+        tutorialsCounter,
+        videosCounter,
+        hasSwagger,
+        filteredUseCases,
+        filteredTutorials,
+        videos,
+        documentation,
+    };
 }
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
     const color =
         uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF' ? 'black' : uiConfig.headerColor;
-    if (wizardButton) {
-        wizardButton.style.setProperty('color', color);
-    }
-    if (refreshButton) {
-        refreshButton.style.setProperty('color', color);
-    }
+    wizardButton?.style?.setProperty('color', color);
+    refreshButton?.style?.setProperty('color', color);
 }
 
 function setMultipleElements(uiConfig) {
@@ -77,18 +92,10 @@ function setMultipleElements(uiConfig) {
         if (header && header.length > 0) {
             header[0].style.setProperty('background-color', uiConfig.headerColor);
         }
-        if (divider) {
-            divider.style.setProperty('background-color', uiConfig.headerColor);
-        }
-        if (title1) {
-            title1.style.setProperty('color', uiConfig.headerColor);
-        }
-        if (swaggerLabel) {
-            swaggerLabel.style.setProperty('color', uiConfig.headerColor);
-        }
-        if (logoutButton) {
-            logoutButton.style.setProperty('color', uiConfig.headerColor);
-        }
+        divider?.style?.setProperty('background-color', uiConfig.headerColor);
+        title1?.style?.setProperty('color', uiConfig.headerColor);
+        swaggerLabel?.style?.setProperty('color', uiConfig.headerColor);
+        logoutButton?.style?.setProperty('color', uiConfig.headerColor);
         setButtonsColor(wizardButton, uiConfig, refreshButton);
     }
 }
@@ -126,22 +133,12 @@ function handleWhiteHeader(uiConfig) {
     if (uiConfig.headerColor === 'white' || uiConfig.headerColor === '#FFFFFF') {
         if (uiConfig.docLink) {
             const docText = document.querySelector('#internal-link');
-            if (docText) {
-                docText.style.color = 'black';
-            }
+            docText?.style?.setProperty('color', 'black');
         }
-        if (goBackButton) {
-            goBackButton.style.color = 'black';
-        }
-        if (swaggerLabel) {
-            swaggerLabel.style.color = 'black';
-        }
-        if (title) {
-            title.style.color = 'black';
-        }
-        if (productTitle) {
-            productTitle.style.color = 'black';
-        }
+        goBackButton?.style?.setProperty('color', 'black');
+        swaggerLabel?.style?.setProperty('color', 'black');
+        title?.style?.setProperty('color', 'black');
+        productTitle?.style?.setProperty('color', 'black');
     }
 }
 
@@ -189,16 +186,12 @@ export const customUIStyle = async (uiConfig) => {
             element.style.setProperty('font-family', uiConfig.fontFamily);
         });
         const tileLabel = document.querySelector('p#tileLabel');
-        if (tileLabel) {
-            tileLabel.style.removeProperty('font-family');
-            tileLabel.style.fontFamily = uiConfig.fontFamily;
-        }
+        tileLabel?.style?.removeProperty('font-family');
+        tileLabel?.style?.setProperty('font-family', uiConfig.fontFamily);
     }
     if (uiConfig.textColor) {
         const description = document.getElementById('description');
-        if (description) {
-            description.style.color = uiConfig.textColor;
-        }
+        description?.style?.setProperty('color', uiConfig.textColor);
     }
     handleWhiteHeader(uiConfig);
 };
