@@ -26,7 +26,6 @@ import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
 import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 
@@ -41,7 +40,6 @@ import java.util.List;
  * changes in whole gateway.
  */
 @TestConfiguration
-@Profile("acceptance")
 @RequiredArgsConstructor
 public class DiscoveryClientTestConfig {
     private final ApplicationContext context;
