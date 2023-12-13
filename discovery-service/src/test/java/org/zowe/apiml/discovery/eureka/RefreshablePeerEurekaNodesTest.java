@@ -16,6 +16,7 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -25,7 +26,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import java.util.Collections;
@@ -35,8 +35,6 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -57,17 +55,18 @@ class RefreshablePeerEurekaNodesTest {
 
     ApplicationInfoManager applicationInfoManager;
 
+    RefreshablePeerEurekaNodes eurekaNodes;
+
+    @BeforeEach
+    void setUp() {
+        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
+    }
+
     @Test
     void givenEurekaNodeUrl_thenCreateNode() {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
-        RefreshablePeerEurekaNodes eurekaNodes = mock(RefreshablePeerEurekaNodes.class);
-        ReflectionTestUtils.setField(eurekaNodes, "serverCodecs", serverCodecs);
-        ReflectionTestUtils.setField(eurekaNodes, "serverConfig", serverConfig);
-        ReflectionTestUtils.setField(eurekaNodes, "replicationClientAdditionalFilters", replicationClientAdditionalFilters);
-
-        when(eurekaNodes.createPeerEurekaNode(any())).thenCallRealMethod();
 
         PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
         assertTrue(node instanceof ApimlPeerEurekaNode);
@@ -85,7 +84,6 @@ class RefreshablePeerEurekaNodesTest {
     @ParameterizedTest
     @MethodSource("values")
     void givenClientEvent_thenUpdate(Set<String> changedKeys) {
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(false);
 
         assertTrue(eurekaNodes.shouldUpdate(changedKeys));
@@ -93,16 +91,13 @@ class RefreshablePeerEurekaNodesTest {
 
     @Test
     void givenDNSShoudBeUsed_thenDoNotUpdate() {
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(true);
         assertFalse(eurekaNodes.shouldUpdate(new HashSet<>()));
     }
 
     @Test
     void givenNoEvents_thenDoNotUpdate() {
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(false);
         assertFalse(eurekaNodes.shouldUpdate(new HashSet<>()));
     }
-
 }
