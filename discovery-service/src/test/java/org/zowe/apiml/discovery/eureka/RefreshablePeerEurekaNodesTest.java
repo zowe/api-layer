@@ -28,9 +28,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,11 +74,17 @@ class RefreshablePeerEurekaNodesTest {
     }
 
     @Test
-    void givenEurekaNodeUrl_thenCreateNode() {
+    void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
-        ReflectionTestUtils.setField(StatsMonitor.class, "DEFAULT_EXECUTOR", Executors.newSingleThreadScheduledExecutor());
+
+        Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
+        defaultExecutor.setAccessible(true);
+        defaultExecutor.set(null, Executors.newSingleThreadScheduledExecutor());
 
         PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
         assertTrue(node instanceof ApimlPeerEurekaNode);
