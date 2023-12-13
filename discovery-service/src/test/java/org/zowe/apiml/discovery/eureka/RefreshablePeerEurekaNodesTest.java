@@ -16,6 +16,8 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
+import com.netflix.servo.monitor.StatsMonitor;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -26,11 +28,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -57,6 +61,12 @@ class RefreshablePeerEurekaNodesTest {
 
     RefreshablePeerEurekaNodes eurekaNodes;
 
+    @BeforeAll
+    @SuppressWarnings("unused")
+    void init() {
+        Class<?> monitor = StatsMonitor.class;
+    }
+
     @BeforeEach
     void setUp() {
         eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
@@ -67,6 +77,7 @@ class RefreshablePeerEurekaNodesTest {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
+        ReflectionTestUtils.setField(StatsMonitor.class, "DEFAULT_EXECUTOR", Executors.newSingleThreadScheduledExecutor());
 
         PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
         assertTrue(node instanceof ApimlPeerEurekaNode);
