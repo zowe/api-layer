@@ -87,7 +87,8 @@ class AttlsConfigTest extends DiscoveryFunctionalTest {
             .then()
                 .log().all()
                 .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
-                .body(containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
+                .body(containsString("Connection is not secure."))
+                .body(containsString("AttlsContext.getStatConn"));
         }
     }
 }

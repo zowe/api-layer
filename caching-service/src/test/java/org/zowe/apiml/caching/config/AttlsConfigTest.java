@@ -83,7 +83,8 @@ public class AttlsConfigTest {
                     .get(getUri("http", "cache"))
                 .then()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .body(containsString("Connection is not secure. org/zowe/commons/attls/AttlsContext.getStatConn"));
+                    .body(containsString("Connection is not secure."))
+                    .body(containsString("AttlsContext.getStatConn"));
             }
         }
     }
