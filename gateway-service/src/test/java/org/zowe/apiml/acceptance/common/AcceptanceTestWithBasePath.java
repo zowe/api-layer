@@ -11,7 +11,7 @@
 package org.zowe.apiml.acceptance.common;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.zowe.apiml.acceptance.requests.SecurityRequests;
 
 @AcceptanceTest

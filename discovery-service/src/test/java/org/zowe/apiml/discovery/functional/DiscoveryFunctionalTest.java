@@ -14,10 +14,14 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
+import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(
+    classes = DiscoveryServiceApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
+)
 @DirtiesContext
 public abstract class DiscoveryFunctionalTest {
 
