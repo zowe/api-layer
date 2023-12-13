@@ -22,6 +22,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import java.util.Collections;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,7 +53,13 @@ class RefreshablePeerEurekaNodesTest {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
-        RefreshablePeerEurekaNodes eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
+        RefreshablePeerEurekaNodes eurekaNodes = mock(RefreshablePeerEurekaNodes.class);
+        ReflectionTestUtils.setField(eurekaNodes, "serverCodecs", serverCodecs);
+        ReflectionTestUtils.setField(eurekaNodes, "serverConfig", serverConfig);
+        ReflectionTestUtils.setField(eurekaNodes, "replicationClientAdditionalFilters", replicationClientAdditionalFilters);
+
+        when(eurekaNodes.createPeerEurekaNode(any())).thenCallRealMethod();
+
         PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
         assertTrue(node instanceof ApimlPeerEurekaNode);
     }
@@ -61,7 +69,6 @@ class RefreshablePeerEurekaNodesTest {
         clientRegion.add("eureka.client.region");
         Set<String> zones = new HashSet<>();
         zones.add("eureka.client.availability-zones.");
-        Set<String> urls = new HashSet<>();
         zones.add("eureka.client.service-url.");
         return Stream.of(clientRegion, zones);
     }
