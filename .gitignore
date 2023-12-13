@@ -119,3 +119,5 @@ onboarding-enabler-micronaut/out/
 onboarding-enabler-nodejs-sample-app/tools/
 
 file/
+
+zowe-cli-id-federation-plugin/*.jcl
