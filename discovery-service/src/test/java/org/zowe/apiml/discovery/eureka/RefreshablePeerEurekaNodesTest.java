@@ -19,8 +19,11 @@ import com.netflix.eureka.resources.ServerCodecs;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
@@ -37,16 +40,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 class RefreshablePeerEurekaNodesTest {
 
     private static final int DEFAULT_MAX_RETRIES = 10;
 
     PeerAwareInstanceRegistry registry;
-    EurekaServerConfig serverConfig = mock(EurekaServerConfig.class);
-    EurekaClientConfig clientConfig = mock(EurekaClientConfig.class);
-    ServerCodecs serverCodecs = mock(ServerCodecs.class);
+    @Mock
+    EurekaServerConfig serverConfig;
+    @Mock
+    EurekaClientConfig clientConfig;
+    @Mock
+    ServerCodecs serverCodecs;
+    @Mock
+    ReplicationClientAdditionalFilters replicationClientAdditionalFilters;
+
     ApplicationInfoManager applicationInfoManager;
-    ReplicationClientAdditionalFilters replicationClientAdditionalFilters = mock(ReplicationClientAdditionalFilters.class);
 
     @Test
     void givenEurekaNodeUrl_thenCreateNode() {
