@@ -17,6 +17,8 @@ import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
@@ -32,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@TestInstance(Lifecycle.PER_CLASS)
 class RefreshablePeerEurekaNodesTest {
 
     private static final int DEFAULT_MAX_RETRIES = 10;
