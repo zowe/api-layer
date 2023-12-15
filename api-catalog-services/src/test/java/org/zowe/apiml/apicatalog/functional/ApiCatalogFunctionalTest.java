@@ -14,10 +14,14 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ContextConfiguration;
+import org.zowe.apiml.apicatalog.ApiCatalogApplication;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = ApiCatalogApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @ContextConfiguration
 public abstract class ApiCatalogFunctionalTest {
 
@@ -33,6 +37,10 @@ public abstract class ApiCatalogFunctionalTest {
     }
 
     protected String getCatalogUriWithPath(String path) {
-        return String.format("https://%s:%d", hostname, port) + path;
+        return getCatalogUriWithPath("https", path);
+    }
+
+    protected String getCatalogUriWithPath(String scheme, String path) {
+        return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
     }
 }
