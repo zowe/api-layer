@@ -84,13 +84,6 @@ export default function BlogContainer({ user, url, title }) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(url));
             return correctBlog && <BlogTile blogData={correctBlog} />;
         }
-        const blogData = {
-            content: '',
-            description: 'Blog preview not available',
-            title: url,
-            link: url,
-        };
-        return <BlogTile blogData={blogData} />;
     }
     if (url?.includes('medium.com')) {
         return (
