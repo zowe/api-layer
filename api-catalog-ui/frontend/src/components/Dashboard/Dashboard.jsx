@@ -22,6 +22,7 @@ import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import { sortServices } from '../../selectors/selectors';
 
 const loadFeedbackButton = () => {
     if (isAPIPortal()) {
@@ -99,6 +100,10 @@ export default class Dashboard extends Component {
 
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
+        }
+        let allServices;
+        if (hasTiles) {
+            allServices = sortServices(tiles);
         }
         const dashboardTileScroll = (e) => {
             const getHeader = document.querySelectorAll('.dashboard-grid-header')[0];
@@ -199,16 +204,18 @@ export default class Dashboard extends Component {
                                 {isLoading && <div className="loadingDiv" />}
 
                                 {hasTiles &&
-                                    tiles.map((tile) =>
-                                        tile.services.map((service) => (
-                                            <Tile
-                                                storeCurrentTileId={storeCurrentTileId}
-                                                service={service}
-                                                key={service}
-                                                tile={tile}
-                                                history={history}
-                                            />
-                                        ))
+                                    allServices.map((service) =>
+                                        tiles
+                                            .filter((tile) => tile.services.includes(service))
+                                            .map((tile) => (
+                                                <Tile
+                                                    storeCurrentTileId={storeCurrentTileId}
+                                                    service={service}
+                                                    key={service}
+                                                    tile={tile}
+                                                    history={history}
+                                                />
+                                            ))
                                     )}
                                 {!hasTiles && hasSearchCriteria && (
                                     <Typography id="search_no_results" variant="subtitle2" className="no-content">
