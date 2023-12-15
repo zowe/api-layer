@@ -36,10 +36,10 @@ describe('>>> BlogTile component tests', () => {
 
     it('should truncate text', () => {
         props.blogData.title =
-            'looooong title hdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqw';
+            'long  title to text that word are not truncated in the middle eheheqwdqwdwqdqwdwqdwqdqw dwqdwqdwqdq dwqdqwdwq dwqdwqdwqdqwdwqdwqdqwdqwdqw ';
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
-            'looooong title hdswqduwqduqwdhuwqdqwhdswqduwqduqwdhuwqdqwhds'
+            'long  title to text that word are not truncated in the'
         );
     });
 });

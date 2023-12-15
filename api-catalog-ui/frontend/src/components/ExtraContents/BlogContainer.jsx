@@ -79,7 +79,7 @@ export default function BlogContainer({ user, url, title }) {
         fetchDataEffect();
     }, [rss2json]);
 
-    function displayBlogs() {
+    function displayBlog() {
         if (myBlog?.items) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(url));
             return correctBlog && <BlogTile blogData={correctBlog} />;
@@ -95,7 +95,7 @@ export default function BlogContainer({ user, url, title }) {
     if (url?.includes('medium.com')) {
         return (
             <div data-testid="medium-blog-container" className="BlogsContainer">
-                {displayBlogs()}
+                {displayBlog()}
             </div>
         );
     }
