@@ -29,10 +29,9 @@ public class SecureConnectionFilter extends OncePerRequestFilter {
             } else {
                 AttlsErrorHandler.handleError(response, "Inbound AT-TLS context is not initialized or connection is not secure." );
             }
-        } catch (ContextIsNotInitializedException | UnknownEnumValueException | IoctlCallException e) {
+        } catch (ContextIsNotInitializedException | UnknownEnumValueException | IoctlCallException | UnsatisfiedLinkError e) {
             logger.error("Can't read from AT-TLS context", e);
             AttlsErrorHandler.handleError(response, "Connection is not secure. " + e.getMessage());
         }
-
     }
 }
