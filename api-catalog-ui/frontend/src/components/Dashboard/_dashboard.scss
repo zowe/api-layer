@@ -59,6 +59,13 @@
     }
   }
 
+  #grid-container::-webkit-scrollbar {
+      display: none;  /* Chrome, Safari, and Opera */
+  }
+  #grid-container {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;      /* Firefox */
+  }
   #grid-container,
   .apis {
     display: flex;
