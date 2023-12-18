@@ -10,6 +10,7 @@
 import { Typography, IconButton, Snackbar } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -82,7 +83,7 @@ export default class Dashboard extends Component {
             e.target.style.paddingTop = `${
                 getHeaderHeight + parseFloat(getHeader.style.marginBottom) + parseFloat(getHeader.style.marginTop)
             }px`;
-        } else if (e.target && e.target.classList) {
+        } else if (e.target?.classList) {
             e.target.classList.remove('fixed-header');
             e.target.style.paddingTop = 0;
         }
@@ -232,3 +233,9 @@ export default class Dashboard extends Component {
         );
     }
 }
+
+Dashboard.propTypes = {
+    tiles: PropTypes.shape({
+        filter: PropTypes.func.isRequired,
+    }).isRequired,
+};
