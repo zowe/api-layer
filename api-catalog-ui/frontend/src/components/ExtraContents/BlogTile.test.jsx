@@ -34,12 +34,31 @@ describe('>>> BlogTile component tests', () => {
         expect(blogTile.find('[data-testid="pub-date"]').first().prop('children')).toEqual('Published: 123343');
     });
 
-    it('should truncate text', () => {
+    it('should truncate text with space', () => {
         props.blogData.title =
             'long  title to text that word are not truncated in the middle eheheqwdqwdwqdqwdwqdwqdqw dwqdwqdwqdq dwqdqwdwq dwqdwqdwqdqwdwqdwqdqwdqwdqw ';
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
             'long  title to text that word are not truncated in the'
         );
+    });
+
+    it('should truncate if no space', () => {
+        props.blogData.title =
+            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherange.';
+        const blogTile = shallow(<BlogTile blogData={props.blogData} />);
+        expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
+            'Thisisaverylongstringwithnospacesanditisusedtodemonstratethe...'
+        );
+    });
+
+    it('should render non-truncated text in BlogTile component when length is less than maxLength', () => {
+        const shortTitle = 'short title';
+        props.blogData.title = shortTitle;
+
+        const blogTile = shallow(<BlogTile blogData={props.blogData} />);
+        const renderedText = blogTile.find('[data-testid="blog-title"]').first().prop('children');
+
+        expect(renderedText).toEqual(shortTitle);
     });
 });

@@ -72,6 +72,22 @@ export default class Dashboard extends Component {
         closeAlert();
     };
 
+    dashboardTileScroll = (e) => {
+        const getHeader = document.querySelectorAll('.dashboard-grid-header')[0];
+        const getHeaderHeight = getHeader?.offsetHeight;
+        const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
+
+        if (getHeader && getHeaderHeight && e.target && e.target.classList && e.target.scrollTop > getFilterHeight) {
+            e.target.classList.add('fixed-header');
+            e.target.style.paddingTop = `${
+                getHeaderHeight + parseFloat(getHeader.style.marginBottom) + parseFloat(getHeader.style.marginTop)
+            }px`;
+        } else if (e.target && e.target.classList) {
+            e.target.classList.remove('fixed-header');
+            e.target.style.paddingTop = 0;
+        }
+    };
+
     render() {
         const {
             tiles,
@@ -105,21 +121,6 @@ export default class Dashboard extends Component {
         if (hasTiles) {
             allServices = sortServices(tiles);
         }
-        const dashboardTileScroll = (e) => {
-            const getHeader = document.querySelectorAll('.dashboard-grid-header')[0];
-            const getHeaderHeight = getHeader?.offsetHeight;
-            const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
-
-            if (e.target.scrollTop > getFilterHeight) {
-                e.target.classList.add('fixed-header');
-                e.target.style.paddingTop = `${
-                    getHeaderHeight + getHeader.style.marginBottom + getHeader.style.marginTop
-                }px`;
-            } else {
-                e.target.classList.remove('fixed-header');
-                e.target.style.paddingTop = 0;
-            }
-        };
 
         return (
             <div className="main-content dashboard-content">
@@ -171,7 +172,7 @@ export default class Dashboard extends Component {
                         <div
                             id="grid-container"
                             onScroll={(e) => {
-                                dashboardTileScroll(e);
+                                this.dashboardTileScroll(e);
                             }}
                         >
                             <div className="filtering-container">
