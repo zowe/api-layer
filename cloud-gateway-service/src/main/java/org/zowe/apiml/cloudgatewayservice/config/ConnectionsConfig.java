@@ -150,6 +150,8 @@ public class ConnectionsConfig {
             trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
+
+        factory().setSystemSslProperties();
     }
 
     public HttpsFactory factory() {
