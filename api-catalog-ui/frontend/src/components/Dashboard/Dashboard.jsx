@@ -73,6 +73,10 @@ export default class Dashboard extends Component {
         closeAlert();
     };
 
+    /**
+     * This method is used only in the portal in combination with CSS, to scroll the tiles.
+     * @param e
+     */
     dashboardTileScroll = (e) => {
         const getHeader = document.querySelectorAll('.dashboard-grid-header')[0];
         const getHeaderHeight = getHeader?.offsetHeight;

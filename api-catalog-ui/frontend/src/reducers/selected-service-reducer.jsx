@@ -13,6 +13,7 @@ import { CLEAR_SERVICE, SELECT_SERVICE, STORE_CONTENT_ANCHOR } from '../constant
 const defaultState = {
     selectedService: {},
     selectedTile: null,
+    selectedContentAnchor: null,
 };
 
 const selectedServiceReducer = (state = defaultState, action = {}) => {

@@ -382,4 +382,30 @@ describe('>>> Detailed Page component tests', () => {
         expect(spyElementById).toHaveBeenCalledWith('go-back-button-portal');
         expect(removePropSpy).toHaveBeenCalled();
     });
+
+    it('should scroll into view when selectedContentAnchor prop is updated', () => {
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        const wrapper = shallow(
+            <DetailPage
+                tiles={[tile]}
+                services={tile.services}
+                currentTileId="apicatalog"
+                fetchTilesStart={fetchTilesStart}
+                fetchNewTiles={fetchNewTiles}
+                fetchTilesStop={jest.fn()}
+                match={match}
+                history={history}
+                selectedContentAnchor="#id"
+            />
+        );
+        const scrollIntoViewMock = jest.fn();
+        const elementMock = { scrollIntoView: scrollIntoViewMock };
+        const spyQuerySelector = jest.spyOn(document, 'querySelector').mockReturnValue(elementMock);
+
+        wrapper.setProps({ selectedContentAnchor: '#new-selected-content-anchor' });
+
+        expect(spyQuerySelector).toHaveBeenCalledWith('#new-selected-content-anchor');
+        expect(scrollIntoViewMock).toHaveBeenCalled();
+    });
 });
