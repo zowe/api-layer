@@ -28,6 +28,7 @@ const mapStateToProps = (state) => ({
     fetchTilesError: state.tilesReducer.error,
     selectedTile: state.selectedServiceReducer.selectedTile,
     selectedService: state.selectedServiceReducer.selectedService,
+    selectedContentAnchor: state.selectedServiceReducer.selectedContentAnchor,
     isLoading: loadingSelector(state),
     currentTileId: state.tilesReducer.currentTileId,
 });

@@ -101,6 +101,7 @@ export default class Dashboard extends Component {
             clearError,
             authentication,
             storeCurrentTileId,
+            storeContentAnchor,
         } = this.props;
         const hasSearchCriteria =
             typeof searchCriteria !== 'undefined' &&
@@ -212,6 +213,7 @@ export default class Dashboard extends Component {
                                             .map((tile) => (
                                                 <Tile
                                                     storeCurrentTileId={storeCurrentTileId}
+                                                    storeContentAnchor={storeContentAnchor}
                                                     service={service}
                                                     key={service}
                                                     tile={tile}

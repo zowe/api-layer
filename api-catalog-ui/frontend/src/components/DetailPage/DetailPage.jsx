@@ -32,6 +32,14 @@ const loadFeedbackButton = () => {
 const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class DetailPage extends Component {
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const { selectedContentAnchor } = this.props;
+        const elementToView = document.querySelector(selectedContentAnchor);
+        if (elementToView) {
+            elementToView.scrollIntoView();
+        }
+    }
+
     componentDidMount() {
         if (isAPIPortal()) {
             closeMobileMenu();
@@ -62,7 +70,7 @@ export default class DetailPage extends Component {
         e.preventDefault();
         const elementToView = document.querySelector(id);
         if (elementToView) {
-            elementToView.scrollIntoView();
+            elementToView.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
