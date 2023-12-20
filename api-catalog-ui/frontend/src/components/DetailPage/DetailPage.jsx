@@ -293,4 +293,5 @@ DetailPage.propTypes = {
         push: PropTypes.func.isRequired,
     }).isRequired,
     selectedService: PropTypes.object.isRequired,
+    selectedContentAnchor: PropTypes.string.isRequired,
 };

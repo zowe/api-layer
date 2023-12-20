@@ -244,4 +244,5 @@ Dashboard.propTypes = {
     tiles: PropTypes.shape({
         filter: PropTypes.func.isRequired,
     }).isRequired,
+    storeContentAnchor: PropTypes.func.isRequired,
 };
