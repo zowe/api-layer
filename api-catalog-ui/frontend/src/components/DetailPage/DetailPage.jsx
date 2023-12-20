@@ -32,7 +32,7 @@ const loadFeedbackButton = () => {
 const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class DetailPage extends Component {
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate() {
         const { selectedContentAnchor } = this.props;
         const elementToView = document.querySelector(selectedContentAnchor);
         if (elementToView) {
