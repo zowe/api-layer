@@ -318,6 +318,7 @@ describe('>>> Dashboard component tests', () => {
     });
 
     it('should add fixed-header class and update padding when scrolled below filter height', () => {
+        process.env.REACT_APP_API_PORTAL = true;
         const wrapper = shallow(
             <Dashboard
                 tiles={null}
@@ -363,6 +364,7 @@ describe('>>> Dashboard component tests', () => {
     });
 
     it('should handle cases where elements are not found', () => {
+        process.env.REACT_APP_API_PORTAL = true;
         const wrapper = shallow(
             <Dashboard
                 tiles={null}

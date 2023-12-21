@@ -36,7 +36,9 @@ export default class DetailPage extends Component {
         const { selectedContentAnchor } = this.props;
         const elementToView = document.querySelector(selectedContentAnchor);
         if (elementToView) {
-            elementToView.scrollIntoView();
+            setTimeout(() => {
+                elementToView.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
         }
     }
 

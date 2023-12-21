@@ -75,21 +75,29 @@ export default class Dashboard extends Component {
 
     /**
      * This method is used only in the portal in combination with CSS, to scroll the tiles.
-     * @param e
+     * @param event
      */
-    dashboardTileScroll = (e) => {
-        const getHeader = document.querySelectorAll('.dashboard-grid-header')[0];
-        const getHeaderHeight = getHeader?.offsetHeight;
-        const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
+    dashboardTileScroll = (event) => {
+        if (isAPIPortal()) {
+            const gridHeader = document.querySelectorAll('.dashboard-grid-header')[0];
+            const getHeaderHeight = gridHeader?.offsetHeight;
+            const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
 
-        if (getHeader && getHeaderHeight && e.target && e.target.classList && e.target.scrollTop > getFilterHeight) {
-            e.target.classList.add('fixed-header');
-            e.target.style.paddingTop = `${
-                getHeaderHeight + parseFloat(getHeader.style.marginBottom) + parseFloat(getHeader.style.marginTop)
-            }px`;
-        } else if (e.target?.classList) {
-            e.target.classList.remove('fixed-header');
-            e.target.style.paddingTop = 0;
+            if (
+                gridHeader &&
+                getHeaderHeight &&
+                event.target &&
+                event.target.classList &&
+                event.target.scrollTop > getFilterHeight
+            ) {
+                event.target.classList.add('fixed-header');
+                event.target.style.paddingTop = `${
+                    getHeaderHeight + parseFloat(gridHeader.style.marginBottom) + parseFloat(gridHeader.style.marginTop)
+                }px`;
+            } else if (event.target?.classList) {
+                event.target.classList.remove('fixed-header');
+                event.target.style.paddingTop = 0;
+            }
         }
     };
 
