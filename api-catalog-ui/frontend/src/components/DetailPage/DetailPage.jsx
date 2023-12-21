@@ -32,6 +32,16 @@ const loadFeedbackButton = () => {
 const FeedbackButton = React.lazy(loadFeedbackButton);
 
 export default class DetailPage extends Component {
+    componentDidUpdate() {
+        const { selectedContentAnchor } = this.props;
+        const elementToView = document.querySelector(selectedContentAnchor);
+        if (elementToView) {
+            setTimeout(() => {
+                elementToView.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        }
+    }
+
     componentDidMount() {
         if (isAPIPortal()) {
             closeMobileMenu();
@@ -62,7 +72,7 @@ export default class DetailPage extends Component {
         e.preventDefault();
         const elementToView = document.querySelector(id);
         if (elementToView) {
-            elementToView.scrollIntoView();
+            elementToView.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
@@ -211,7 +221,7 @@ export default class DetailPage extends Component {
                                             className="links"
                                             onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
                                         >
-                                            TechDocs Resources ({tutorialsCounter})
+                                            Getting Started ({tutorialsCounter})
                                         </Link>
                                         <Link
                                             className="links"
@@ -285,4 +295,5 @@ DetailPage.propTypes = {
         push: PropTypes.func.isRequired,
     }).isRequired,
     selectedService: PropTypes.object.isRequired,
+    selectedContentAnchor: PropTypes.string.isRequired,
 };

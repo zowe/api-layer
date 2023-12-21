@@ -82,7 +82,6 @@ function setButtonsColor(wizardButton, uiConfig, refreshButton) {
 
 function setMultipleElements(uiConfig) {
     if (uiConfig.headerColor) {
-        const divider = document.getElementById('separator2');
         const logoutButton = document.getElementById('go-back-button');
         const title1 = document.getElementById('title');
         const swaggerLabel = document.getElementById('swagger-label');
@@ -92,7 +91,6 @@ function setMultipleElements(uiConfig) {
         if (header && header.length > 0) {
             header[0].style.setProperty('background-color', uiConfig.headerColor);
         }
-        divider?.style?.setProperty('background-color', uiConfig.headerColor);
         title1?.style?.setProperty('color', uiConfig.headerColor);
         swaggerLabel?.style?.setProperty('color', uiConfig.headerColor);
         logoutButton?.style?.setProperty('color', uiConfig.headerColor);

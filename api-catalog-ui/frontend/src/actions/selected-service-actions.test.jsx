@@ -8,8 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
-import { selectService, clearService } from './selected-service-actions';
+import { CLEAR_SERVICE, SELECT_SERVICE, STORE_CONTENT_ANCHOR } from '../constants/selected-service-constants';
+import { selectService, clearService, storeContentAnchor } from './selected-service-actions';
 
 describe('>>> Selected Service actions tests', () => {
     it('should return selected service', () => {
@@ -30,5 +30,13 @@ describe('>>> Selected Service actions tests', () => {
             selectedTile: '',
         };
         expect(clearService()).toEqual(expectedAction);
+    });
+
+    it('should return store content anchor', () => {
+        const expectedAction = {
+            type: STORE_CONTENT_ANCHOR,
+            payload: '#id',
+        };
+        expect(storeContentAnchor('#id')).toEqual(expectedAction);
     });
 });
