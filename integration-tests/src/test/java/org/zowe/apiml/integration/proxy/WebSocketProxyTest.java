@@ -16,6 +16,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -25,6 +28,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.WebsocketTest;
+import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -35,10 +39,10 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,7 +51,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
 @WebsocketTest
 class WebSocketProxyTest implements TestWithStartedInstances {
-    private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+
     private static final URI DC_WS_REST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/ws");
 
     private static final int WAIT_TIMEOUT_MS = 10000;
@@ -56,6 +60,44 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     private static final WebSocketHttpHeaders INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
     private static final String validToken = "apimlAuthenticationToken=tokenValue";
 
+    private static String getUrl(String scheme, String host, int port, String path) throws URISyntaxException {
+        return new URIBuilder()
+            .setScheme(scheme.equals("http") ? "ws" : "wss" )
+            .setHost(host)
+            .setPort(port)
+            .setPath(path)
+            .build().toString();
+    }
+
+    private static Stream<Arguments> gatewayUrls(String gatewayUrl) throws URISyntaxException {
+        GatewayServiceConfiguration zuulGateway = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        CloudGatewayConfiguration cloudGateway = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+
+        return Stream.of(
+            Arguments.of(getUrl(zuulGateway.getScheme(), zuulGateway.getHost(), zuulGateway.getPort(), gatewayUrl)),
+            Arguments.of(getUrl(cloudGateway.getScheme(), cloudGateway.getHost(), cloudGateway.getPort(), gatewayUrl))
+        );
+    }
+
+    private static Stream<Arguments> discoverableWsHeader() throws URISyntaxException {
+        return gatewayUrls(DISCOVERABLE_WS_HEADER);
+    }
+
+    private static Stream<Arguments> discoverableWsUppercase() throws URISyntaxException {
+        return gatewayUrls(DISCOVERABLE_WS_UPPERCASE);
+    }
+
+    private static Stream<Arguments> discoverableWsBad() throws URISyntaxException {
+        return gatewayUrls("/discoverableclient/ws/v1/bad");
+    }
+
+    private static Stream<Arguments> discoverableWsWrongServiceUppercase() throws URISyntaxException {
+        return gatewayUrls("/wrong-service/ws/v1/uppercase");
+    }
+
+    private static Stream<Arguments> discoverableWsIncorrectFormat() throws URISyntaxException {
+        return gatewayUrls("/ws/wrong");
+    }
 
     @BeforeAll
     static void setup() {
@@ -94,18 +136,10 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         };
     }
 
-    private String discoverableClientGatewayUrl(String gatewayUrl) throws URISyntaxException {
-        String scheme = serviceConfiguration.getScheme().equals("http") ? "ws" : "wss";
-        String host = serviceConfiguration.getHost();
-        int port = serviceConfiguration.getPort();
-
-        return new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(gatewayUrl).build().toString();
-    }
-
     private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
         throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
-        client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
+        client.setSslContext(HttpClientUtils.ignoreSslContext());
         URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
         return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
@@ -115,20 +149,24 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         return appendingWebSocketSession(url, null, response, countToNotify);
     }
 
-
     @Nested
     class WhenRoutingSession {
+
         @Nested
         class Authentication {
+
             @Nested
             class WhenValid {
+
                 @Nested
                 class ReturnSuccess {
-                    @Test
-                    void message() throws Exception {
+
+                    @ParameterizedTest
+                    @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsUppercase")
+                    void message(String url) throws Exception {
                         final StringBuilder response = new StringBuilder();
 
-                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
+                        WebSocketSession session = appendingWebSocketSession(url, VALID_AUTH_HEADERS, response, 1);
 
                         session.sendMessage(new TextMessage("hello world!"));
                         synchronized (response) {
@@ -139,14 +177,15 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         session.close();
                     }
 
-                    @Test
-                    void headers() throws Exception {
+                    @ParameterizedTest
+                    @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsHeader")
+                    void headers(String url) throws Exception {
                         final StringBuilder response = new StringBuilder();
                         if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
                             VALID_AUTH_HEADERS.add("X-Test", "value");
                         }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
-                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_HEADER), VALID_AUTH_HEADERS, response, 1);
+                        WebSocketSession session = appendingWebSocketSession(url, VALID_AUTH_HEADERS, response, 1);
 
                         session.sendMessage(new TextMessage("gimme those headers"));
                         synchronized (response) {
@@ -162,11 +201,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                 @Nested
                 class ReturnError {
-                    @Test
-                    void whenPathIsNotCorrect() throws Exception {
-                        String path = "/discoverableclient/ws/v1/bad";
+
+                    @ParameterizedTest
+                    @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsBad")
+                    void whenPathIsNotCorrect(String url) throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 1);
+                        appendingWebSocketSession(url, VALID_AUTH_HEADERS, response, 1);
 
                         synchronized (response) {
                             response.wait(WAIT_TIMEOUT_MS);
@@ -176,10 +216,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         assertEquals(0, response.toString().indexOf("CloseStatus[code=1003,"));
                     }
 
-                    @Test
-                    void whenServiceIsNotCorrect() throws Exception {
+                    @ParameterizedTest
+                    @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsWrongServiceUppercase")
+                    void whenServiceIsNotCorrect(String url) throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/wrong-service/ws/v1/uppercase"), VALID_AUTH_HEADERS, response, 1);
+                        appendingWebSocketSession(url, VALID_AUTH_HEADERS, response, 1);
 
                         synchronized (response) {
                             response.wait(WAIT_TIMEOUT_MS);
@@ -189,10 +230,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.toString());
                     }
 
-                    @Test
-                    void whenUrlFormatIsNotCorrect() throws Exception {
+                    @ParameterizedTest
+                    @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsIncorrectFormat")
+                    void whenUrlFormatIsNotCorrect(String url) throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);
+                        appendingWebSocketSession(url, response, 1);
 
                         synchronized (response) {
                             response.wait(WAIT_TIMEOUT_MS);
@@ -200,16 +242,20 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                         assertEquals("CloseStatus[code=1003, reason=Invalid URL format]", response.toString());
                     }
+
                 }
+
             }
 
             @Nested
             class WhenInvalid {
-                @Test
-                void returnError() throws Exception {
+
+                @ParameterizedTest
+                @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsUppercase")
+                void returnError(String url) throws Exception {
                     final StringBuilder response = new StringBuilder();
 
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_UPPERCASE), INVALID_AUTH_HEADERS, response, 1);
+                    WebSocketSession session = appendingWebSocketSession(url, INVALID_AUTH_HEADERS, response, 1);
 
                     session.sendMessage(new TextMessage("hello world!"));
                     synchronized (response) {
@@ -219,17 +265,21 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     assertEquals("CloseStatus[code=1003, reason=Invalid login credentials]", response.toString());
                     session.close();
                 }
+
             }
+
         }
 
     }
 
     @Nested
     class WhenClosingSession {
-        @Test
-        void getCorrectResponse() throws Exception {
+
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.proxy.WebSocketProxyTest#discoverableWsUppercase")
+        void getCorrectResponse(String url) throws Exception {
             final StringBuilder response = new StringBuilder();
-            WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 2);
+            WebSocketSession session = appendingWebSocketSession(url, VALID_AUTH_HEADERS, response, 2);
 
             session.sendMessage(new TextMessage("bye"));
             synchronized (response) {
@@ -238,6 +288,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
             assertEquals("BYECloseStatus[code=1000, reason=null]", response.toString());
         }
+
     }
 
     @Nested
@@ -256,7 +307,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                 .and()
                 .statusCode(SC_OK);
         }
-    }
 
+    }
 
 }
