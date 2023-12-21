@@ -17,8 +17,16 @@ export default function BlogTile(props) {
         return checkTitle?.replace('amp;', '');
     }
 
-    function truncateText(text, start, len) {
-        return text?.length > len ? text?.slice(start, len) : text;
+    function truncateText(text, maxLength) {
+        if (text?.length > maxLength) {
+            const lastSpaceIndex = text?.lastIndexOf(' ', maxLength);
+
+            if (lastSpaceIndex !== -1) {
+                return `${text?.slice(0, lastSpaceIndex)}`;
+            }
+            return `${text?.slice(0, maxLength)}...`;
+        }
+        return text;
     }
 
     function toText(block) {
@@ -41,18 +49,17 @@ export default function BlogTile(props) {
                         data-testid="blogs-image"
                         src={`${thumbnail}`}
                         className="blogs-image"
-                        alt={truncateText(cleanTitle(title), 0, 60)}
+                        alt={truncateText(cleanTitle(title), 60)}
                     />
                 )}
                 {title && (
                     <h3 data-testid="blog-title" className="blog-title">
-                        {truncateText(cleanTitle(title), 0, 60)}
+                        {truncateText(cleanTitle(title), 60)}
                     </h3>
                 )}
                 {description && (
                     <Typography data-testid="blog-description" className="blog-description">{`${truncateText(
                         toText(description),
-                        0,
                         180
                     )}...`}</Typography>
                 )}

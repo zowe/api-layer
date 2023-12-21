@@ -316,4 +316,98 @@ describe('>>> Dashboard component tests', () => {
             expect(getByText('Feedback Button')).toBeInTheDocument();
         });
     });
+
+    it('should add fixed-header class and update padding when scrolled below filter height', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+        const eventMock = {
+            target: {
+                scrollTop: 40,
+                classList: {
+                    add: jest.fn(),
+                    remove: jest.fn(),
+                },
+                style: {
+                    paddingTop: '0px',
+                },
+            },
+        };
+        const getHeaderMock = {
+            offsetHeight: 50,
+            style: {
+                marginBottom: '10px',
+                marginTop: '5px',
+            },
+        };
+        const getFilterHeightMock = { offsetHeight: 30 };
+
+        jest.spyOn(document, 'querySelectorAll')
+            .mockReturnValueOnce([getHeaderMock])
+            .mockReturnValueOnce([getFilterHeightMock]);
+
+        instance.dashboardTileScroll(eventMock);
+
+        expect(eventMock.target.classList.add).toHaveBeenCalledWith('fixed-header');
+        expect(eventMock.target.classList.add).toHaveBeenCalledTimes(1);
+        expect(eventMock.target.style.paddingTop).toBe('65px');
+    });
+
+    it('should handle cases where elements are not found', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const wrapper = shallow(
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
+        );
+        const instance = wrapper.instance();
+
+        const eventMock = {
+            target: {
+                scrollTop: 40,
+                classList: {
+                    add: jest.fn(),
+                    remove: jest.fn(),
+                },
+                style: {
+                    paddingTop: '0px',
+                },
+            },
+        };
+
+        const getHeaderMock = {
+            style: {
+                marginBottom: '10px',
+                marginTop: '5px',
+            },
+        };
+        const getFilterHeightMock = { offsetHeight: 30 };
+
+        jest.spyOn(document, 'querySelectorAll')
+            .mockReturnValueOnce([getHeaderMock])
+            .mockReturnValueOnce([getFilterHeightMock]);
+
+        instance.dashboardTileScroll(eventMock);
+
+        expect(eventMock.target.classList.add).toHaveBeenCalledTimes(0);
+        expect(eventMock.target.classList.remove).toHaveBeenCalledWith('fixed-header');
+        expect(eventMock.target.classList.remove).toHaveBeenCalledTimes(1);
+        expect(eventMock.target.style.paddingTop).toBe(0);
+    });
 });

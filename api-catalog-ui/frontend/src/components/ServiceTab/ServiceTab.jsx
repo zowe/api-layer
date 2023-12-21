@@ -381,7 +381,7 @@ export default class ServiceTab extends Component {
                                         size="medium"
                                         variant="outlined"
                                     >
-                                        TechDocs Resources ({tutorialsCounter})
+                                        Getting Started ({tutorialsCounter})
                                     </Typography>
                                 )}
                                 <br />
