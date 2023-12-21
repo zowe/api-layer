@@ -384,8 +384,11 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should scroll into view when selectedContentAnchor prop is updated', () => {
+        jest.useFakeTimers();
+
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
+
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
@@ -399,13 +402,19 @@ describe('>>> Detailed Page component tests', () => {
                 selectedContentAnchor="#id"
             />
         );
+
         const scrollIntoViewMock = jest.fn();
         const elementMock = { scrollIntoView: scrollIntoViewMock };
         const spyQuerySelector = jest.spyOn(document, 'querySelector').mockReturnValue(elementMock);
 
         wrapper.setProps({ selectedContentAnchor: '#new-selected-content-anchor' });
 
+        // Run all timers to execute the setTimeout
+        jest.runAllTimers();
+
         expect(spyQuerySelector).toHaveBeenCalledWith('#new-selected-content-anchor');
         expect(scrollIntoViewMock).toHaveBeenCalled();
+
+        jest.useRealTimers(); // restore the real timers
     });
 });
