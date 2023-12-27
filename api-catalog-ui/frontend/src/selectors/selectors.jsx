@@ -59,6 +59,11 @@ export const getFilteredServices = (tiles, searchCriteria) => {
 
             tile.services = filteredServices.sort((service1, service2) => service1.title.localeCompare(service2.title));
             return compareResult(searchCriteria, tile, filteredServices);
-        })
-        .sort((tile1, tile2) => tile1.title.localeCompare(tile2.title));
+        });
 };
+
+export function sortServices(tiles) {
+    return tiles
+        .flatMap((tile) => tile.services)
+        .sort((service1, service2) => service1.title.localeCompare(service2.title));
+}

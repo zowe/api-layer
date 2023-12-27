@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { getFilteredServices } from './selectors';
+import { getFilteredServices, sortServices } from './selectors';
 
 const tiles = [
     {
@@ -117,5 +117,37 @@ describe('>>> Selector tests', () => {
         expect(result.length).toEqual(0);
         result = getFilteredServices([], '');
         expect(result.length).toEqual(0);
+    });
+    it('should sort services alphabetically by title', () => {
+        const unsortedServices = [
+            { title: 'B Service' },
+            { title: 'D Service' },
+            { title: 'A Service' },
+            { title: 'C Service' },
+        ];
+
+        const unsortedTiles = [
+            { services: [unsortedServices[2], unsortedServices[1]] },
+            { services: [unsortedServices[0], unsortedServices[3]] },
+        ];
+
+        const sortedServices = sortServices(unsortedTiles);
+
+        const expectedSortedServices = [
+            unsortedServices[2], // A Service
+            unsortedServices[0], // B Service
+            unsortedServices[3], // C Service
+            unsortedServices[1], // D Service
+        ];
+
+        expect(sortedServices).toEqual(expectedSortedServices);
+    });
+
+    it('should handle empty services', () => {
+        const unsortedTiles = [{ services: [] }, { services: [] }];
+
+        const sortedServices = sortServices(unsortedTiles);
+
+        expect(sortedServices).toEqual([]);
     });
 });
