@@ -66,6 +66,8 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            metrics-service:
+                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v4
@@ -669,6 +671,8 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v4
