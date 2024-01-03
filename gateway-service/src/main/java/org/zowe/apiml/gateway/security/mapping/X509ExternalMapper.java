@@ -33,7 +33,9 @@ import java.security.cert.X509Certificate;
 
 @Slf4j
 @Component("x509Mapper")
-@ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')")
+@ConditionalOnExpression(
+    "T(org.apache.commons.lang3.StringUtils).isNotEmpty('${apiml.security.x509.externalMapperUrl:}') && '${apiml.security.useInternalMapper:false}' == 'false'"
+)
 public class X509ExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
     public X509ExternalMapper(@Value("${apiml.security.x509.externalMapperUrl:}") String mapperUrl,

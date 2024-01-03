@@ -32,7 +32,7 @@ import java.io.UnsupportedEncodingException;
 import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 
 @Component("oidcMapper")
-@ConditionalOnExpression("'${apiml.security.oidc.enabled:false}' == 'true' && '${isRunningOnZ:false}' == 'false'")
+@ConditionalOnExpression("'${apiml.security.oidc.enabled:false}' == 'true' && '${apiml.security.useInternalMapper:false}' == 'false'")
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
     @Value("${apiml.security.oidc.registry:}")

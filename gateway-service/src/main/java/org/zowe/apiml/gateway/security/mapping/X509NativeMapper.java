@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -17,26 +18,27 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
 import org.zowe.commons.usermap.CertificateResponse;
-import org.zowe.commons.usermap.UserMapper;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component("x509Mapper")
-@ConditionalOnExpression("'${apiml.security.x509.externalMapperUrl:}'.isEmpty() && '${isRunningOnZ:false}' == 'true'")
+@ConditionalOnExpression("'${apiml.security.x509.enabled:false}' == 'true' && '${apiml.security.useInternalMapper:false}' == 'true'")
 public class X509NativeMapper implements AuthenticationMapper {
+
+    private final NativeMapperWrapper nativeMapper;
 
     @Override
     public String mapToMainframeUserId(AuthSource authSource) {
-        if(authSource instanceof X509AuthSource) {
+        if (authSource instanceof X509AuthSource) {
             X509AuthSource x509AuthSource = (X509AuthSource)authSource;
             X509Certificate certificate = x509AuthSource.getRawSource();
-            if(certificate != null) {
-                UserMapper userMapper = new UserMapper();
+            if (certificate != null) {
                 try {
-                   CertificateResponse response = userMapper.getUserIDForCertificate(certificate.getEncoded());
-                   if(response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())){
+                   CertificateResponse response = nativeMapper.getUserIDForCertificate(certificate.getEncoded());
+                   if (response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())) {
                        return response.getUserId();
                    }
                    log.debug(response.toString());
