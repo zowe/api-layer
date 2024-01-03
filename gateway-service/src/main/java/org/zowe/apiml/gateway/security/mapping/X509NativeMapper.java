@@ -41,7 +41,6 @@ public class X509NativeMapper implements AuthenticationMapper {
                    if (response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())) {
                        return response.getUserId();
                    }
-                   log.debug(response.toString());
                 } catch (CertificateEncodingException e) {
                     log.error("Can`t get encoded data from certificate", e);
                 }

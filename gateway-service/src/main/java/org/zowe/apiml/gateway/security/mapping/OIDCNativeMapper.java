@@ -25,7 +25,6 @@ import org.zowe.commons.usermap.MapperResponse;
 
 import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component("oidcMapper")
 @ConditionalOnExpression("'${apiml.security.oidc.enabled:false}' == 'true' && '${apiml.security.useInternalMapper:false}' == 'true'")
@@ -64,8 +63,7 @@ public class OIDCNativeMapper implements AuthenticationMapper {
         if (response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())) {
             return response.getUserId();
         }
-        log.debug(response.toString());
 
         return null;
-}
+    }
 }

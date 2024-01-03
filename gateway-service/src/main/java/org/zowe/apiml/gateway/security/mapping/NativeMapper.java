@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import org.zowe.commons.usermap.CertificateResponse;
@@ -20,6 +21,7 @@ import org.zowe.commons.usermap.UserMapper;
  * Native on platform mapper. Depends on <a href="https://github.com/zowe/common-java/tree/v2.x.x/zos-utils">zos-utils</a> library
  * which provides native calls to z/OS.
  */
+@Slf4j
 @Component
 @ConditionalOnExpression("'${apiml.security.useInternalMapper:false}' == 'true'")
 public class NativeMapper implements NativeMapperWrapper {
@@ -30,11 +32,15 @@ public class NativeMapper implements NativeMapperWrapper {
     }
     @Override
     public CertificateResponse getUserIDForCertificate(byte[] cert) {
-        return userMapper.getUserIDForCertificate(cert);
+        CertificateResponse response =  userMapper.getUserIDForCertificate(cert);
+        log.debug(response.toString());
+        return response;
     }
 
     @Override
     public MapperResponse getUserIDForDN(String dn, String registry) {
-        return userMapper.getUserIDForDN(dn, registry);
+        MapperResponse response = userMapper.getUserIDForDN(dn, registry);
+        log.debug(response.toString());
+        return response;
     }
 }
