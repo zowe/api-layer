@@ -10,6 +10,7 @@
 import { Typography, IconButton, Snackbar } from '@material-ui/core';
 import { Alert } from '@mui/material';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -22,6 +23,7 @@ import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import { sortServices } from '../../selectors/selectors';
 
 const loadFeedbackButton = () => {
     if (isAPIPortal()) {
@@ -71,6 +73,34 @@ export default class Dashboard extends Component {
         closeAlert();
     };
 
+    /**
+     * This method is used only in the portal in combination with CSS, to scroll the tiles.
+     * @param event
+     */
+    dashboardTileScroll = (event) => {
+        if (isAPIPortal()) {
+            const gridHeader = document.querySelectorAll('.dashboard-grid-header')[0];
+            const getHeaderHeight = gridHeader?.offsetHeight;
+            const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
+
+            if (
+                gridHeader &&
+                getHeaderHeight &&
+                event.target &&
+                event.target.classList &&
+                event.target.scrollTop > getFilterHeight
+            ) {
+                event.target.classList.add('fixed-header');
+                event.target.style.paddingTop = `${
+                    getHeaderHeight + parseFloat(gridHeader.style.marginBottom) + parseFloat(gridHeader.style.marginTop)
+                }px`;
+            } else if (event.target?.classList) {
+                event.target.classList.remove('fixed-header');
+                event.target.style.paddingTop = 0;
+            }
+        }
+    };
+
     render() {
         const {
             tiles,
@@ -83,6 +113,7 @@ export default class Dashboard extends Component {
             clearError,
             authentication,
             storeCurrentTileId,
+            storeContentAnchor,
         } = this.props;
         const hasSearchCriteria =
             typeof searchCriteria !== 'undefined' &&
@@ -100,6 +131,11 @@ export default class Dashboard extends Component {
         if (hasTiles && 'customStyleConfig' in tiles[0] && tiles[0].customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
         }
+        let allServices;
+        if (hasTiles) {
+            allServices = sortServices(tiles);
+        }
+
         return (
             <div className="main-content dashboard-content">
                 {isAPIPortal() && <FeedbackButton />}
@@ -147,7 +183,12 @@ export default class Dashboard extends Component {
                 <ErrorDialog refreshedStaticApisError={refreshedStaticApisError} clearError={clearError} />
                 {!fetchTilesError && (
                     <div className="apis">
-                        <div id="grid-container">
+                        <div
+                            id="grid-container"
+                            onScroll={(e) => {
+                                this.dashboardTileScroll(e);
+                            }}
+                        >
                             <div className="filtering-container">
                                 {apiPortalEnabled && (
                                     <div>
@@ -169,25 +210,28 @@ export default class Dashboard extends Component {
                                     <div className="empty" />
                                     <h4 className="description-header">Swagger</h4>
                                     <h4 className="description-header">Use Cases</h4>
-                                    <h4 className="description-header">Tutorials</h4>
                                     <h4 className="description-header">Videos</h4>
+                                    <h4 className="description-header">Getting Started</h4>
                                 </div>
                             )}
-                            <hr id="separator2" />
+
                             <div className="tile-container">
                                 {isLoading && <div className="loadingDiv" />}
 
                                 {hasTiles &&
-                                    tiles.map((tile) =>
-                                        tile.services.map((service) => (
-                                            <Tile
-                                                storeCurrentTileId={storeCurrentTileId}
-                                                service={service}
-                                                key={service}
-                                                tile={tile}
-                                                history={history}
-                                            />
-                                        ))
+                                    allServices.map((service) =>
+                                        tiles
+                                            .filter((tile) => tile.services.includes(service))
+                                            .map((tile) => (
+                                                <Tile
+                                                    storeCurrentTileId={storeCurrentTileId}
+                                                    storeContentAnchor={storeContentAnchor}
+                                                    service={service}
+                                                    key={service}
+                                                    tile={tile}
+                                                    history={history}
+                                                />
+                                            ))
                                     )}
                                 {!hasTiles && hasSearchCriteria && (
                                     <Typography id="search_no_results" variant="subtitle2" className="no-content">
@@ -203,3 +247,10 @@ export default class Dashboard extends Component {
         );
     }
 }
+
+Dashboard.propTypes = {
+    tiles: PropTypes.shape({
+        filter: PropTypes.func.isRequired,
+    }).isRequired,
+    storeContentAnchor: PropTypes.func.isRequired,
+};
