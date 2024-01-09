@@ -33,7 +33,8 @@ import java.security.cert.X509Certificate;
 
 @Slf4j
 @Component("x509Mapper")
-@ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
+@ConditionalOnExpression(
+    "T(org.apache.commons.lang3.StringUtils).isNotEmpty('${apiml.security.x509.externalMapperUrl:}') && '${apiml.security.useInternalMapper:false}' == 'false'"
 )
 public class X509ExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
@@ -55,15 +56,21 @@ public class X509ExternalMapper extends ExternalMapper implements Authentication
     public String mapToMainframeUserId(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate certificate = (X509Certificate) authSource.getRawSource();
-            try {
-                HttpEntity payload = new ByteArrayEntity(certificate.getEncoded());
-                MapperResponse mapperResponse = callExternalMapper(payload);
-                if (mapperResponse != null) {
-                    return mapperResponse.getUserId().trim();
+            if (certificate != null) {
+                try {
+                    HttpEntity payload = new ByteArrayEntity(certificate.getEncoded());
+                    MapperResponse mapperResponse = callExternalMapper(payload);
+                    if (mapperResponse != null) {
+                        return mapperResponse.getUserId().trim();
+                    }
+                } catch (CertificateEncodingException e) {
+                    log.error("Can`t get encoded data from certificate", e);
                 }
-            } catch (CertificateEncodingException e) {
-                log.error("Can`t get encoded data from certificate", e);
+            } else {
+                log.warn("No certificate found in the authentication source.");
             }
+        } else {
+            log.debug("The used authentication source type is {} and not X509", authSource.getType());
         }
         return null;
     }
