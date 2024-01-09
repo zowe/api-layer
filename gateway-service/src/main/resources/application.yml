@@ -70,6 +70,7 @@ apiml:
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false
+        useInternalMapper: true
         oidc:
             enabled: false
             clientId:

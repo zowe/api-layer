@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 @Slf4j
 @RequiredArgsConstructor
 @Component("x509Mapper")
-@ConditionalOnExpression("'${apiml.security.x509.enabled:false}' == 'true' && '${apiml.security.useInternalMapper:false}' == 'true'")
+@ConditionalOnExpression("'${apiml.security.useInternalMapper:false}' == 'true'")
 public class X509NativeMapper implements AuthenticationMapper {
 
     private final NativeMapperWrapper nativeMapper;
