@@ -40,6 +40,7 @@
 # - ZWE_configs_apiml_security_authorization_resourceClass
 # - ZWE_configs_apiml_security_authorization_resourceNamePrefix
 # - ZWE_configs_apiml_security_jwtInitializerTimeout
+# - ZWE_configs_apiml_security_useInternalMapper
 # - ZWE_configs_apiml_security_x509_enabled
 # - ZWE_configs_apiml_security_x509_externalMapperUrl
 # - ZWE_configs_apiml_security_x509_externalMapperUser
@@ -269,6 +270,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dserver.internal.ssl.keyStore=${ZWE_configs_server_internal_ssl_certificate_keystore_file:-keystore/localhost/localhost-multi.keystore.p12} \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
+    -Dapiml.security.useInternalMapper=${ZWE_configs_apiml_security_useInternalMapper:-false} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/x509/map"} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
