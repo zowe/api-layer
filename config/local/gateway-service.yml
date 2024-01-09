@@ -1,6 +1,4 @@
 spring.profiles.include: diag
-
-isRunningOnZ: true
 apiml:
     service:
         apimlId: apiml1
