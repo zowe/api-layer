@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -22,25 +23,24 @@ import org.zowe.commons.usermap.UserMapper;
  * which provides native calls to z/OS.
  */
 @Slf4j
+@NoArgsConstructor
 @Component
 @ConditionalOnProperty(value = "apiml.security.useInternalMapper", havingValue = "true")
 public class NativeMapper implements NativeMapperWrapper {
-    UserMapper userMapper;
 
-    public NativeMapper() {
-        this.userMapper = new UserMapper();
-    }
+    final UserMapper userMapper = new UserMapper();
+
     @Override
     public CertificateResponse getUserIDForCertificate(byte[] cert) {
         CertificateResponse response =  userMapper.getUserIDForCertificate(cert);
-        log.debug(response.toString());
+        log.debug("{}", response);
         return response;
     }
 
     @Override
     public MapperResponse getUserIDForDN(String dn, String registry) {
         MapperResponse response = userMapper.getUserIDForDN(dn, registry);
-        log.debug(response.toString());
+        log.debug("{}", response);
         return response;
     }
 }
