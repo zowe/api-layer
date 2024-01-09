@@ -25,7 +25,7 @@ dependencyResolutionManagement {
             version('springWebTestClient', '5.4.0')
 
             version('aopalliance', '3.0.5')
-            version('attls', '2.0.3')
+            version('zosUtils', '2.0.3')
             version('archaius', '0.7.9')
             version('awaitility', '4.2.0')
             version('awsJavaSdk', '1.12.632')
@@ -171,7 +171,7 @@ dependencyResolutionManagement {
             version('gradle', '8.4')
             version('assertjCore', '3.24.2')
 
-            library('zowe_attls', 'org.zowe.apiml.sdk', 'attls').versionRef('attls')
+            library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
             library('spring_boot_dependencies', 'org.springframework.boot', 'spring-boot-dependencies').versionRef('springBoot')
             library('spring_boot_starter', 'org.springframework.boot', 'spring-boot-starter').versionRef('springBoot')
