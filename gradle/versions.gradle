@@ -25,7 +25,7 @@ dependencyResolutionManagement {
             version('springWebTestClient', '5.4.0')
 
             version('aopalliance', '3.0.5')
-            version('zosUtils', '2.0.3')
+            version('zosUtils', '2.0.4')
             version('archaius', '0.7.9')
             version('awaitility', '4.2.0')
             version('awsJavaSdk', '1.12.632')
