@@ -13,7 +13,7 @@ package org.zowe.apiml.gateway.security.mapping;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.X509AuthSource;
@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 @Slf4j
 @RequiredArgsConstructor
 @Component("x509Mapper")
-@ConditionalOnExpression("'${apiml.security.useInternalMapper:false}' == 'true'")
+@ConditionalOnProperty(value = "apiml.security.useInternalMapper", havingValue = "true")
 public class X509NativeMapper implements AuthenticationMapper {
 
     private final NativeMapperWrapper nativeMapper;
