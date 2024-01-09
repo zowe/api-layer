@@ -27,6 +27,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
+import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 
 import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
@@ -41,6 +42,16 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
+    protected boolean isConfigError = false;
+
+    @PostConstruct
+    private void postConstruct() {
+        if (StringUtils.isEmpty(registry)) {
+            isConfigError = true;
+            apimlLog.log("org.zowe.apiml.security.common.OIDCConfigError");
+        }
+    }
+
     public OIDCExternalMapper(@Value("${apiml.security.oidc.identityMapperUrl:}") String mapperUrl,
                               @Value("${apiml.security.oidc.identityMapperUser:}") String mapperUser,
                               CloseableHttpClient httpClientProxy,
@@ -50,17 +61,16 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
     }
 
     public String mapToMainframeUserId(AuthSource authSource) {
+        if (isConfigError) {
+            apimlLog.log("org.zowe.apiml.security.common.OIDCConfigError");
+            return null;
+        }
+
         if (!(authSource instanceof OIDCAuthSource)) {
             apimlLog.log(MessageType.DEBUG,"The used authentication source type is {} and not OIDC", authSource.getType());
             return null;
         }
 
-        if (StringUtils.isEmpty(registry)) {
-            apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
-                "Missing registry name configuration. Make sure that " +
-                    "'components.gateway.apiml.security.oidc.registry' is correctly set in 'zowe.yaml'.");
-            return null;
-        }
         final String distributedId = ((OIDCAuthSource) authSource).getDistributedId();
         if (StringUtils.isEmpty(distributedId)) {
             apimlLog.log(OIDC_FAILED_MESSAGE_KEY,

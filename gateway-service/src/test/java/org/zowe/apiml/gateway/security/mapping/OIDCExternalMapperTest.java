@@ -141,7 +141,7 @@ class OIDCExternalMapperTest {
 
         @Test
         void whenRegistryIsNotProvided_thenNullIsReturned() throws IOException {
-            oidcExternalMapper.registry = "";
+            oidcExternalMapper.isConfigError = true;
             String userId = oidcExternalMapper.mapToMainframeUserId(authSource);
             assertNull(userId);
             verify(httpClient, times(0)).execute(any());

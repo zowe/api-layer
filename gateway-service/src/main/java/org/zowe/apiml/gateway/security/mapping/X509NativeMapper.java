@@ -44,7 +44,11 @@ public class X509NativeMapper implements AuthenticationMapper {
                 } catch (CertificateEncodingException e) {
                     log.error("Can`t get encoded data from certificate", e);
                 }
+            } else {
+                log.warn("No certificate found in the authentication source.");
             }
+        } else {
+            log.debug("The used authentication source type is {} and not X509", authSource.getType());
         }
         return null;
     }

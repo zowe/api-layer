@@ -99,7 +99,7 @@ class OIDCNativeMapperTest {
 
         @Test
         void whenRegistryIsNotProvided_thenNullIsReturned() {
-            oidcNativeMapper.registry = "";
+            oidcNativeMapper.isConfigError = true;
             String userId = oidcNativeMapper.mapToMainframeUserId(authSource);
             assertNull(userId);
             verifyNoInteractions(mockMapper);
