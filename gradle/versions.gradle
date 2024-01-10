@@ -44,7 +44,7 @@ dependencyResolutionManagement {
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
             version('githubClassgraph', '4.8.165')
-            version('gradleGitProperties', '2.2.4') // Used in classpath dependencies
+            version('gradleGitProperties', '2.4.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.10.1')
             version('guava', '32.1.3-jre')
@@ -385,7 +385,7 @@ dependencyResolutionManagement {
             library('swagger_jaxrs2', 'io.swagger.core.v3', 'swagger-jaxrs2').versionRef('swaggerJaxrs2')
 
             library('spring_boot_gradle_plugin', 'org.springframework.boot', 'spring-boot-gradle-plugin').versionRef('springBoot')
-            library('gradle_git_properties', 'gradle.plugin.com.gorylenko.gradle-git-properties', 'gradle-git-properties').versionRef('gradleGitProperties')
+            library('gradle_git_properties', 'com.gorylenko.gradle-git-properties', 'gradle-git-properties').versionRef('gradleGitProperties')
             library('jgit', 'org.eclipse.jgit', 'org.eclipse.jgit').versionRef('jgit')
             library('github_classpath', 'io.github.classgraph', 'classgraph').versionRef('githubClassgraph')
             library('gradle_node_plugin', 'com.github.node-gradle', 'gradle-node-plugin').versionRef('gradleNode')
