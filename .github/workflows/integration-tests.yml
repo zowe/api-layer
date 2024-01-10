@@ -23,6 +23,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
@@ -75,6 +77,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -122,6 +126,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -168,6 +174,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -212,6 +220,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -292,6 +302,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -343,6 +355,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -407,6 +421,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -467,6 +483,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -523,6 +541,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -575,6 +595,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -628,6 +650,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -680,6 +704,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -711,6 +737,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -774,6 +802,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -888,6 +918,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run HA Tests
                 run: >
@@ -968,6 +1000,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1052,6 +1086,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
@@ -1122,6 +1158,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run Gateway Service Chaotic HA Tests
                 run: >
@@ -1196,6 +1234,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run Discoverable Client Chaotic HA Tests
                 run: >
@@ -1270,6 +1310,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run WebSocket Chaotic HA Tests
                 run: >
@@ -1356,6 +1398,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -1405,6 +1449,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
@@ -1471,6 +1517,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
 
             -   name: Run Service ID Prefix Replacer Tests
                 run: >
@@ -1501,7 +1549,7 @@ jobs:
 
             -   uses: ./.github/actions/setup
                 with:
-                    jdkVersion: 11
+                    jdkVersion: 17
 
             -   uses: actions/download-artifact@v3
                 with:
