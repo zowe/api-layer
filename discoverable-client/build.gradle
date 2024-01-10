@@ -64,7 +64,7 @@ dependencies {
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.aop
-    implementation libs.zowe.attls
+    implementation libs.zowe.zos.utils
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.hystrix

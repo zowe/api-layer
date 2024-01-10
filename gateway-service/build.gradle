@@ -57,6 +57,7 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':apiml-extension-loader')
 
+    implementation libs.zowe.zos.utils
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.web

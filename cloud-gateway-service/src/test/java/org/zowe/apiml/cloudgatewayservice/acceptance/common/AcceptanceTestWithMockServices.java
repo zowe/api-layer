@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +19,6 @@ import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
 
-@Slf4j
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
