@@ -37,6 +37,7 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default class Dashboard extends Component {
     componentDidMount() {
         if (isAPIPortal()) {
+            document.title = process.env.REACT_APP_API_PORTAL_DASHBOARD_TITLE;
             const goBackButton = document.getElementById('go-back-button-portal');
             if (goBackButton) {
                 goBackButton.style.display = 'none';
