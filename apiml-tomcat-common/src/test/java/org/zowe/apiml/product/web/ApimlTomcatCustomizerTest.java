@@ -53,7 +53,7 @@ class ApimlTomcatCustomizerTest {
     }
 
     @Test
-    @Disabled //TODO: finish the adaptation of the test to the new SocketChannelImpl class
+    @Disabled("Java 17: finish the adaptation of the test to the new SocketChannelImpl class")
     @SuppressWarnings({"rawtypes", "unchecked"})
     void whenSocketArrives_fileDescriptorIsObtained() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, ContextIsNotInitializedException {
         AbstractEndpoint.Handler handler = mock(AbstractEndpoint.Handler.class);
