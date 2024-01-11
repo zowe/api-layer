@@ -21,19 +21,19 @@ jobs:
           exempt-all-milestones: true
 
           # Rules applied to Issues
-          exempt-issue-labels: "Epic, bug, priority-critical, priority-high, community-upvoted, for-review, security, keep"
+          exempt-issue-labels: "Feature, bug, Priority: Critical, Priority: High, clarification, community-upvoted, security, keep"
           stale-issue-message: >
             This issue has been automatically marked as stale because it has not had
             recent activity. It will be closed if no further activity occurs.
           close-issue-message: >
-            This issue has been automatically closed due to lack of activity. In an
-            effort to reduce noise, please do not comment any further.
+            This issue has been automatically closed due to lack of activity. If you disagree, please comment on reason 
+            why and reopen the issue
 
           # Rules applied to PRs
-          exempt-pr-labels: "community-upvoted, for-review, security, keep"
+          exempt-pr-labels: "community-upvoted, clarification, security, keep"
           stale-pr-message: >
             This pull request has been automatically marked as stale because it has not had
             recent activity. It will be closed if no further activity occurs.
           close-pr-message: >
-            This pull request has been automatically closed due to lack of activity. In an
-            effort to reduce noise, please do not comment any further.
+            This pull request has been automatically closed due to lack of activity. If you disagree, please comment on 
+            reason why and reopen pull request
