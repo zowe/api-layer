@@ -13,7 +13,6 @@ package org.zowe.apiml.product.web;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.*;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
@@ -22,10 +21,9 @@ import org.zowe.commons.attls.InboundAttls;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.ProtocolFamily;
-import java.net.SocketAddress;
-import java.net.StandardProtocolFamily;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.SocketChannel;
@@ -53,29 +51,37 @@ class ApimlTomcatCustomizerTest {
     }
 
     @Test
-    @Disabled("Java 17: finish the adaptation of the test to the new SocketChannelImpl class")
     @SuppressWarnings({"rawtypes", "unchecked"})
     void whenSocketArrives_fileDescriptorIsObtained() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, ContextIsNotInitializedException {
         AbstractEndpoint.Handler handler = mock(AbstractEndpoint.Handler.class);
         NioChannel socket = mock(NioChannel.class);
 
-        Constructor<SocketChannel> channelConstructor = (Constructor<SocketChannel>) Class.forName("sun.nio.ch.SocketChannelImpl").getDeclaredConstructor(SelectorProvider.class, ProtocolFamily.class, FileDescriptor.class, SocketAddress.class);
+        Constructor<SocketChannel> channelConstructor = (Constructor<SocketChannel>) Class.forName("sun.nio.ch.SocketChannelImpl").getDeclaredConstructor(SelectorProvider.class);
         channelConstructor.setAccessible(true);
-        FileDescriptor fd = new FileDescriptor();
-        ReflectionTestUtils.setField(fd, "fd", 608);
-        SocketChannel socketChannel = channelConstructor.newInstance(null, StandardProtocolFamily.INET, fd, null);
+        SelectorProvider selectorProvider = mock(SelectorProvider.class);
+        SocketChannel socketChannel = channelConstructor.newInstance(selectorProvider);
+        socketChannel.socket().getLocalPort();
         ApimlTomcatCustomizer.ApimlAttlsHandler apimlAttlsHandler = new ApimlTomcatCustomizer.ApimlAttlsHandler(handler);
 
         when(socket.getIOChannel()).thenReturn(socketChannel);
         SocketWrapperBase socketWrapper = getSocketWarapper(socket);
         doAnswer(answer -> {
             int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
-            assertEquals(608, fdNumber);
+            int port = getPort(socketChannel);
+            assertEquals(port, fdNumber);
             return AbstractEndpoint.Handler.SocketState.OPEN;
         }).when(handler).process(socketWrapper, SocketEvent.OPEN_READ);
         assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, apimlAttlsHandler.process(socketWrapper, SocketEvent.OPEN_READ));
+    }
 
-
+    private int getPort(SocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+        Method getFDMethod = socketChannel.getClass().getDeclaredMethod("getFD");
+        getFDMethod.setAccessible(true);
+        FileDescriptor fd = (FileDescriptor) getFDMethod.invoke(socketChannel);
+        Field fdField = FileDescriptor.class.getDeclaredField("fd");
+        fdField.setAccessible(true);
+        int port = (int) fdField.get(fd);
+        return port;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
