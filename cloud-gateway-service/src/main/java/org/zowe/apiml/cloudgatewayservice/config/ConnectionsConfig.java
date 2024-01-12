@@ -45,10 +45,7 @@ import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -252,6 +249,8 @@ public class ConnectionsConfig {
     }
 
     @Bean
+    // There is an issue - clashing of XML configuration
+    @DependsOn({"cacheConfig", "cacheManagerFactoryBean"})
     public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
