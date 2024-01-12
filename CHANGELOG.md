@@ -2,16 +2,11 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.14.0 (2023-01-10)`
+## `2.14.0 / Zowe 2.14.0 (2023-01-10)`
 
 * Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
-* Feature:  Cloud Gateway SAF IDT auth scheme (#3234) ([8d397b3](https://github.com/zowe/api-layer/commit/8d397b3)), closes [#3234](https://github.com/zowe/api-layer/issues/3234)
-* Feature:  ZAAS /safIdt endpoint to generate SAF ID token for authenticated user (#3220) ([c72adbc](https://github.com/zowe/api-layer/commit/c72adbc)), closes [#3220](https://github.com/zowe/api-layer/issues/3220)
-* Feature:  Add Zowe authentication scheme to Cloud Gateway (#3214) ([b71fbc1](https://github.com/zowe/api-layer/commit/b71fbc1)), closes [#3214](https://github.com/zowe/api-layer/issues/3214)
-
 
 * Bugfix:  Fix truststore for websockets in Spring Cloud Gateway (v2) (#3249) ([b4d6730](https://github.com/zowe/api-layer/commit/b4d6730)), closes [#3249](https://github.com/zowe/api-layer/issues/3249)
-* Bugfix:  Fix of resource leak in loading of images in API Catalog (#3233) ([29424cd](https://github.com/zowe/api-layer/commit/29424cd)), closes [#3233](https://github.com/zowe/api-layer/issues/3233)
 
 ## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
 
