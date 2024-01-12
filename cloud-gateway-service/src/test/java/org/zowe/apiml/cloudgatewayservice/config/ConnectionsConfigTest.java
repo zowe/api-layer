@@ -21,8 +21,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -33,10 +31,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-@MockBeans({
-    @MockBean(name = "cacheConfig", classes = Object.class),
-    @MockBean(name = "cacheManagerFactoryBean", classes = Object.class),
-})
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
 class ConnectionsConfigTest {
 
