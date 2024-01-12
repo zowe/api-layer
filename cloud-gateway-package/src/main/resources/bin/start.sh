@@ -30,6 +30,7 @@
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
 # - ZWE_configs_apiml_service_forwardClientCertEnabled
+# - ZWE_configs_cloudGateway_registry_enabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
 # - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
@@ -111,6 +112,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_service_forwardClientCertEnabled:-false} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
+    -Dapiml.cloudGateway.registry.enabled=${ZWE_configs_cloudGateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
