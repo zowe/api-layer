@@ -19,12 +19,18 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@MockBeans({
+    @MockBean(name = "cacheConfig", classes = Object.class),
+    @MockBean(name = "cacheManagerFactoryBean", classes = Object.class),
+})
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
 class ConnectionsConfigTest {
 
