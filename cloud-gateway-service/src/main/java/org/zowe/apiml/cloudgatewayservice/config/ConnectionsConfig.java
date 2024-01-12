@@ -253,6 +253,7 @@ public class ConnectionsConfig {
         return cloudEurekaClient;
     }
 
+    @Bean
     public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
