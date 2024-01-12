@@ -1500,8 +1500,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 11
 
             -   uses: actions/download-artifact@v3
                 with:

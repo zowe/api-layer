@@ -5,7 +5,7 @@ inputs:
     jdkVersion:
         description: "JDK version"
         required: false
-        default: "8"
+        default: "17"
 
 runs:
     using: "composite"
