@@ -12,6 +12,9 @@ package org.zowe.apiml.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,16 +23,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ClassOrDefaultProxyUtilsTest {
 
@@ -183,12 +177,12 @@ class ClassOrDefaultProxyUtilsTest {
         new InnerClass().name = "toCompilarMakeASyntheticMethod";
 
         TestInterface1Super ti = ClassOrDefaultProxyUtils.createProxy(TestInterface1Super.class, "unknownClassName", InnerClass::new);
-        Optional<Method> jacocoMethod = Arrays.stream(InnerClass.class.getDeclaredMethods()).filter(x -> x.isSynthetic()).filter(x -> x.getParameterTypes().length == 0).findFirst();
+        Optional<Method> jacocoMethod = Arrays.stream(InnerClass.class.getDeclaredMethods()).filter(x -> x.isSynthetic()).filter(x -> x.getParameterTypes().length == 3).findFirst();
         assertTrue(jacocoMethod.isPresent());
 
         Method method = jacocoMethod.get();
         method.setAccessible(true);
-        method.invoke(ti);
+        method.invoke(ti, null, null, null);
     }
 
     @Test
@@ -230,13 +224,13 @@ class ClassOrDefaultProxyUtilsTest {
         assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.String]", e.getMessage());
 
         Exception nullPtrExceptionPrivate = new NullPointerExceptionPrivate("x");
-        final ClassOrDefaultProxyUtils.ByMethodName<?> proxyUtilsNullPrivate = 
+        final ClassOrDefaultProxyUtils.ByMethodName<?> proxyUtilsNullPrivate =
             new ClassOrDefaultProxyUtils.ByMethodName<>("org.zowe.apiml.util.ClassOrDefaultProxyUtilsTest$NullPointerExceptionPrivate", NullPointerException.class, "getMsg");
         e = assertThrows(ExceptionMappingError.class, () -> proxyUtilsNullPrivate.apply(nullPtrExceptionPrivate));
         assertTrue(e.getMessage().contains("Cannot invoke method private"));
 
         Exception nullPtrException = new NullPointerException("x");
-        final ClassOrDefaultProxyUtils.ByMethodName<?> proxyUtilsNull = 
+        final ClassOrDefaultProxyUtils.ByMethodName<?> proxyUtilsNull =
             new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionException.class, "getMessage");
         e = assertThrows(ExceptionMappingError.class, () -> proxyUtilsNull.apply(nullPtrException));
         assertTrue(e.getMessage().startsWith("Cannot construct exception"));
