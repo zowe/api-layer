@@ -18,7 +18,10 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +31,8 @@ import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +44,15 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCExternalMapperTest {
+    private static final VarHandle MODIFIERS;
+    static {
+        try {
+            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     @Mock
     private CloseableHttpClient httpClient;
@@ -170,7 +184,6 @@ class OIDCExternalMapperTest {
         }
 
         @Test
-        @Disabled("Java 17: can't figure out how to change static final field in the ExternalMapper class.")
         void whenJsonProcessingException_thenNullIsReturned() throws IOException {
             doThrow(JsonProcessingException.class).when(mockedMapper).writeValueAsString(any());
             String userId = oidcExternalMapper.mapToMainframeUserId(authSource);
@@ -182,12 +195,8 @@ class OIDCExternalMapperTest {
         throws ReflectiveOperationException {
 
         Field field = clazz.getDeclaredField(fieldName);
+        MODIFIERS.set(field, field.getModifiers() & ~Modifier.FINAL);
         field.setAccessible(true);
-
-        Field modifiers = Field.class.getDeclaredField("modifiers");
-        modifiers.setAccessible(true);
-        modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
         field.set(null, value);
     }
 

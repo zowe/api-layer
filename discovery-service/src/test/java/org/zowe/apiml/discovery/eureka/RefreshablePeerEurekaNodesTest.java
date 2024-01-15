@@ -17,7 +17,10 @@ import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.servo.monitor.StatsMonitor;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -44,6 +49,15 @@ import static org.mockito.Mockito.when;
 class RefreshablePeerEurekaNodesTest {
 
     private static final int DEFAULT_MAX_RETRIES = 10;
+    private static final VarHandle MODIFIERS;
+    static {
+        try {
+            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     PeerAwareInstanceRegistry registry;
     @Mock
@@ -71,16 +85,13 @@ class RefreshablePeerEurekaNodesTest {
     }
 
     @Test
-    @Disabled("Java 17: can't figure out how to modify static final field 'DEFAULT_EXECUTOR' in the StatsMonitor class")
     void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
 
         Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
+        MODIFIERS.set(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
         defaultExecutor.setAccessible(true);
         defaultExecutor.set(null, Executors.newSingleThreadScheduledExecutor());
 
