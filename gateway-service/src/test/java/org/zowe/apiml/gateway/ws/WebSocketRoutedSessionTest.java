@@ -47,7 +47,6 @@ class WebSocketRoutedSessionTest {
     }
 
     @Test
-    @Disabled("Java 17: Adapt the implementation/test to new InetSocketAddress class")
     void givenValidServerAndClientSession_whenTheDetailsAreRequested_thenTheDetailsAreReturnedAsStrings() throws Exception {
         String sessionId = "123";
         String clientUriPath = "ws://localhost:8080/petstore";
@@ -55,7 +54,10 @@ class WebSocketRoutedSessionTest {
 
         when(clientSession.getId()).thenReturn(sessionId);
         when(clientSession.getUri()).thenReturn(new URI(clientUriPath));
-        when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
+        InetSocketAddress unresolvedAddress = mock(InetSocketAddress.class);
+        when(unresolvedAddress.toString()).thenReturn("gateway:8080");
+
+        when(serverSession.getRemoteAddress()).thenReturn(unresolvedAddress);
         when(serverSession.getUri()).thenReturn(new URI(serverUriPath));
 
         assertThat(underTest.getClientId(), is(sessionId));
