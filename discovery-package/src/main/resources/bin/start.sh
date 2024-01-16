@@ -150,6 +150,11 @@ DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
+    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+    --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
+    --add-opens=java.base/java.util=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+    --add-opens=java.base/javax.net.ssl=ALL-UNNAMED \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
