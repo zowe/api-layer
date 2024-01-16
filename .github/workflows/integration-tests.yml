@@ -41,58 +41,33 @@ jobs:
         services:
             api-catalog-services-2:
                 image: ghcr.io/balhar-jakub/api-catalog-services-standalone:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
                 volumes:
                     - /api-defs:/api-defs
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
                 env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
                     APIML_SERVICE_HOSTNAME: discovery-service-2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
                 env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
             metrics-service:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
-                options: --entrypoint java
-                env:
-                    JAVA_OPTS: "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
 
         steps:
             -   uses: actions/checkout@v3
