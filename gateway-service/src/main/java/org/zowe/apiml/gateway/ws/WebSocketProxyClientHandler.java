@@ -11,7 +11,9 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.CloseException;
+import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -42,22 +44,46 @@ public class WebSocketProxyClientHandler extends AbstractWebSocketHandler {
         webSocketServerSession.close(status);
     }
 
+    static CloseStatus getCloseStatusByResponseStatus(int responseStatus, String defaultMessage) {
+        if (responseStatus >= 1000) {
+            return new CloseStatus(responseStatus, defaultMessage);
+        }
+
+        if (responseStatus >= 500) {
+            return CloseStatus.SERVER_ERROR.withReason(defaultMessage);
+        }
+
+        switch (responseStatus) {
+            case HttpStatus.SC_UNAUTHORIZED:
+                return CloseStatus.NOT_ACCEPTABLE.withReason("Invalid login credentials");
+            default:
+                return CloseStatus.NOT_ACCEPTABLE.withReason(defaultMessage);
+        }
+    }
+
+    static CloseStatus getCloseStatusByError(Throwable exception) {
+        if (exception instanceof CloseException) {
+            CloseException closeException = (CloseException) exception;
+            if (closeException.getCause() instanceof TimeoutException) {
+                return CloseStatus.NORMAL;
+            }
+            return getCloseStatusByResponseStatus(closeException.getStatusCode(), String.valueOf(exception.getCause()));
+        }
+
+        if (exception instanceof UpgradeException) {
+            UpgradeException upgradeException = (UpgradeException) exception;
+            return getCloseStatusByResponseStatus(upgradeException.getResponseStatusCode(), String.valueOf(exception));
+        }
+
+        return CloseStatus.SERVER_ERROR.withReason(String.valueOf(exception));
+    }
+
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.warn("WebSocket transport error in session {}: {}", session.getId(), exception.getMessage());
 
         if (webSocketServerSession.isOpen()) {
-            CloseStatus closeStatus = CloseStatus.NORMAL;
-            if (exception instanceof CloseException) {
-                CloseException closeException = (CloseException) exception;
-                if (!(closeException.getCause() instanceof TimeoutException)) {
-                    // Idle timeout
-                    closeStatus = new CloseStatus(closeException.getStatusCode(), exception.getMessage());
-                }
-            } else {
-                closeStatus = CloseStatus.SERVER_ERROR;
-            }
-            webSocketServerSession.close(closeStatus);
+            webSocketServerSession.close(getCloseStatusByError(exception));
         }
 
         super.handleTransportError(session, exception);
