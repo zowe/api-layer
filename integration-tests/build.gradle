@@ -71,9 +71,7 @@ test.enabled = false
 
 apply plugin: 'java'
 
-test {
-    testLogging.showStandardStreams = true
-    systemProperty "externalJenkinsToggle", System.getProperty("externalJenkinsToggle")
+tasks.withType(Test) {
     jvmArgs '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
@@ -83,6 +81,11 @@ test {
     jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED'
+}
+
+test {
+    testLogging.showStandardStreams = true
+    systemProperty "externalJenkinsToggle", System.getProperty("externalJenkinsToggle")
 }
 
 task startUpCheck(type: Test) {
