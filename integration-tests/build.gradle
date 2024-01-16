@@ -81,6 +81,8 @@ tasks.withType(Test) {
     jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED'
+    jvmArgs '--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED'
+    jvmArgs '--add-exports=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED'
 }
 
 test {
