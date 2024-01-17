@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.config;
 
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.NettyRoutingFilter;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
+@Slf4j
 public class NettyRoutingFilterApiml extends NettyRoutingFilter {
 
     private final HttpClient httpClientNoCert;
@@ -49,8 +51,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         Integer connectTimeout;
         if (connectTimeoutAttr instanceof Integer) {
             connectTimeout = (Integer) connectTimeoutAttr;
-        }
-        else {
+        } else {
             connectTimeout = Integer.parseInt(connectTimeoutAttr.toString());
         }
         return connectTimeout;
@@ -62,6 +63,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         boolean useClientCert = Optional.ofNullable((Boolean) exchange.getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE)).orElse(Boolean.FALSE);
         HttpClient httpClient = useClientCert ? httpClientClientCert : httpClientNoCert;
 
+        log.debug("Using client with keystore {}", useClientCert);
         Object connectTimeoutAttr = route.getMetadata().get(CONNECT_TIMEOUT_ATTR);
         if (connectTimeoutAttr != null) {
             // if there is configured timeout, respect it
