@@ -140,12 +140,13 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 CACHING_CODE=CS
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
-   ${QUICK_START} \
-   --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
-   --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
-   --add-opens=java.base/java.util=ALL-UNNAMED \
-   --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
-   --add-opens=java.base/javax.net.ssl=ALL-UNNAMED \
+  ${QUICK_START} \
+  --add-opens=java.base/java.lang=ALL-UNNAMED \
+  --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+  --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
+  --add-opens=java.base/java.util=ALL-UNNAMED \
+  --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+  --add-opens=java.base/javax.net.ssl=ALL-UNNAMED \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \

@@ -40,6 +40,7 @@ GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Xms32m -Xmx256m \
     ${QUICK_START} \
+    --add-opens=java.base/java.lang=ALL-UNNAMED \
     --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
     --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
     --add-opens=java.base/java.util=ALL-UNNAMED \

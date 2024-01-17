@@ -159,6 +159,7 @@ CATALOG_CODE=AC
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
+    --add-opens=java.base/java.lang=ALL-UNNAMED \
     --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
     --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
     --add-opens=java.base/java.util=ALL-UNNAMED \
