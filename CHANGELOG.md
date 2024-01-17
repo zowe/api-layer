@@ -2,6 +2,12 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.14.0 / Zowe 2.14.0 (2023-01-10)`
+
+* Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
+
+* Bugfix:  Fix truststore for websockets in Spring Cloud Gateway (v2) (#3249) ([b4d6730](https://github.com/zowe/api-layer/commit/b4d6730)), closes [#3249](https://github.com/zowe/api-layer/issues/3249)
+
 ## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
 
 * Feature:  CORS enabled in default mode with AT-TLS profile (#3221) ([047ec144](https://github.com/zowe/api-layer/commit/047ec144)), closes [#3221](https://github.com/zowe/api-layer/issues/3221)
