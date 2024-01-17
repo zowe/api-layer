@@ -7,7 +7,8 @@ def setJib(componentName, javaAgentPort, debugPort) {
     jib.to.auth.password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
     jib.container.args = ['--spring.config.additional-location=file:/docker/' + componentName + '.yml', '--spring.profiles.include=dev,debug']
 
-    jib.container.jvmFlags = addOpensOptions + project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort]
+//    jib.container.jvmFlags = addOpensOptions + project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort]
+    jib.container.jvmFlags = ['--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED', '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED', '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED', '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED']
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
 }
 
