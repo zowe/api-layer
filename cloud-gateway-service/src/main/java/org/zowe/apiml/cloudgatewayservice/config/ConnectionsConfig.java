@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -70,7 +71,6 @@ import reactor.netty.http.client.HttpClient;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -142,15 +142,17 @@ public class ConnectionsConfig {
 
     @PostConstruct
     public void updateConfigParameters() {
+        ServerProperties serverProperties = context.getBean(ServerProperties.class);
         if (SecurityUtils.isKeyring(keyStorePath)) {
             keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
+            serverProperties.getSsl().setKeyStore(keyStorePath);
             if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
         }
         if (SecurityUtils.isKeyring(trustStorePath)) {
             trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
+            serverProperties.getSsl().setTrustStore(trustStorePath);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
-
         factory().setSystemSslProperties();
     }
 
@@ -171,12 +173,12 @@ public class ConnectionsConfig {
     /**
      * This bean processor is used to override bean routingFilter defined at
      * org.springframework.cloud.gateway.config.GatewayAutoConfiguration.NettyConfiguration#routingFilter(HttpClient, ObjectProvider, HttpClientProperties)
-     *
+     * <p>
      * There is no simple way how to override this specific bean, but bean processing could handle that.
      *
-     * @param httpClient default http client
+     * @param httpClient             default http client
      * @param headersFiltersProvider header filter for spring cloud gateway router
-     * @param properties client HTTP properties
+     * @param properties             client HTTP properties
      * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
      */
     @Bean
@@ -189,6 +191,7 @@ public class ConnectionsConfig {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
                 if ("routingFilter".equals(beanName)) {
+                    log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
                     // once is creating original bean by autoconfiguration replace it with custom implementation
                     return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
                 }
@@ -210,10 +213,15 @@ public class ConnectionsConfig {
             trustManagerFactory.init(trustStore);
             builder.trustManager(trustManagerFactory);
 
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             if (setKeystore) {
                 KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 keyManagerFactory.init(keyStore, keyStorePassword);
+                builder.keyManager(keyManagerFactory);
+            } else {
+                KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                emptyKeystore.load(null, null);
+                keyManagerFactory.init(emptyKeystore, null);
                 builder.keyManager(keyManagerFactory);
             }
 

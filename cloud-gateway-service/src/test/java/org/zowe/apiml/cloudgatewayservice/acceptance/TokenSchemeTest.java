@@ -12,6 +12,8 @@ package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Arrays;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class TokenSchemeTest {
 
@@ -43,11 +48,12 @@ public abstract class TokenSchemeTest {
     public abstract String getTokenEndpoint();
     public abstract AuthenticationScheme getAuthenticationScheme();
 
-
     private String getCookie(HttpExchange httpExchange, String cookieName) {
         List<HttpCookie> cookies = Optional.ofNullable(httpExchange.getRequestHeaders().get("Cookie"))
             .orElse(Collections.emptyList())
             .stream()
+            .flatMap(cookieStr -> Arrays.asList(cookieStr.split(";")).stream())
+            .map(String.class::cast)
             .map(HttpCookie::parse)
             .flatMap(Collection::stream)
             .filter(c -> StringUtils.equalsIgnoreCase(cookieName, c.getName()))
@@ -178,7 +184,7 @@ public abstract class TokenSchemeTest {
         }
 
         @BeforeAll
-        void createServices() throws IOException {
+        void init() throws IOException {
             zaas = mockService("gateway").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                     .responseCode(401)
@@ -189,6 +195,12 @@ public abstract class TokenSchemeTest {
                 .addEndpoint("/service/test")
                     .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
                 .and().start();
+        }
+
+        @AfterAll
+        void shutdown() {
+            zaas.close();
+            service.close();
         }
 
         @Test
@@ -213,7 +225,7 @@ public abstract class TokenSchemeTest {
         }
 
         @BeforeAll
-        void createZaas() throws IOException {
+        void init() throws IOException {
             zaas = mockService("gateway").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                     .responseCode(200)
@@ -226,6 +238,12 @@ public abstract class TokenSchemeTest {
                     .addEndpoint("/service/test")
                     .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
                 .and().start();
+        }
+
+        @AfterAll
+        void shutdown() {
+            zaas.close();
+            service.close();
         }
 
         @Test
@@ -254,9 +272,17 @@ public abstract class TokenSchemeTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class ZaasCommunication extends AcceptanceTestWithMockServices {
 
+        private MockService zaas;
+        private MockService service;
+
         @BeforeAll
-        void createZaas() throws IOException {
-            mockService("gateway").scope(MockService.Scope.CLASS)
+        void init() throws IOException {
+            zaas = createZaas();
+            service = createService();
+        }
+
+        MockService createZaas() throws IOException {
+            return mockService("gateway").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                     .bodyJson(OK_RESPONSE)
                     .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
@@ -279,9 +305,8 @@ public abstract class TokenSchemeTest {
                 .and().start();
         }
 
-        @BeforeAll
-        void createService() throws IOException {
-            mockService("service").scope(MockService.Scope.CLASS)
+        MockService createService() throws IOException {
+            return mockService("service").scope(MockService.Scope.CLASS)
                 .authenticationScheme(getAuthenticationScheme())
                 .addEndpoint("/service/test")
                     .assertion(he -> assertEquals(JWT, getCookie(he, COOKIE_NAME)))
@@ -309,6 +334,7 @@ public abstract class TokenSchemeTest {
 
         @Test
         void givenMultipleHeaders_whenCallingAService_thenTheyAreResend() {
+            //RestAssured.config().
             given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer userJwt")
 
@@ -329,6 +355,9 @@ public abstract class TokenSchemeTest {
                 .get(getServiceUrl())
             .then()
                 .statusCode(200);
+
+            assertEquals(1, zaas.getCounter());
+            assertEquals(1, service.getCounter());
         }
 
     }

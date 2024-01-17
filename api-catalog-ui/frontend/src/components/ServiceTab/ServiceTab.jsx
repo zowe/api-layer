@@ -291,23 +291,25 @@ export default class ServiceTab extends Component {
                             <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
                                 Swagger
                             </Typography>
-                            {containsVersion && currentService && (
-                                <Typography id="version-label" variant="subtitle2">
-                                    Service ID and Version:
-                                </Typography>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                {containsVersion && currentService && (
+                                    <Typography id="version-label" variant="subtitle2">
+                                        Service ID and Version:
+                                    </Typography>
+                                )}
+                                {currentService && apiVersions?.length === 1 && apiVersions[0]?.key && (
+                                    <Typography id="single-api-version-label" variant="subtitle2">
+                                        {apiVersions[0].key}
+                                    </Typography>
+                                )}
+                            </div>
                         </div>
-                        {currentService && apiVersions?.length > 0 && (
+                        {currentService && apiVersions?.length > 1 && (
                             <div id="version-div">
                                 <Select
-                                    disabled={apiVersions.length < 2}
                                     displayEmpty
                                     id="version-menu"
-                                    style={
-                                        apiVersions.length < 2
-                                            ? { color: '#6b6868', opacity: '0.5' }
-                                            : { backgroundColor: '#fff', color: '#0056B3' }
-                                    }
+                                    style={{ backgroundColor: '#fff', color: '#0056B3' }}
                                     value={
                                         this.state.selectedVersion
                                             ? this.state.selectedVersion
@@ -320,12 +322,7 @@ export default class ServiceTab extends Component {
                                 </Select>
                                 <Button
                                     id="compare-button"
-                                    disabled={apiVersions.length < 2}
-                                    style={
-                                        apiVersions.length < 2
-                                            ? { backgroundColor: '#e4e4e4', color: '#6b6868', opacity: '0.5' }
-                                            : { backgroundColor: '#fff', color: '#0056B3' }
-                                    }
+                                    style={{ backgroundColor: '#fff', color: '#0056B3' }}
                                     onClick={() => this.handleDialogOpen(currentService)}
                                     key="diff"
                                 >

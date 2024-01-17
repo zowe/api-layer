@@ -14,15 +14,21 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.Ssl;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
@@ -65,12 +71,22 @@ class ConnectionsConfigTest {
     @Nested
     class KeyringFormatAndPasswordUpdate {
 
+        ApplicationContext context;
+
+        @BeforeEach
+        void setup() {
+            context = mock(ApplicationContext.class);
+            ServerProperties properties = new ServerProperties();
+            properties.setSsl(new Ssl());
+            when(context.getBean(ServerProperties.class)).thenReturn(properties);
+        }
+
         @Test
         void whenKeyringHasWrongFormatAndMissingPasswords_thenFixIt() {
             ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
             ReflectionTestUtils.setField(connectionsConfig, "keyStorePath", "safkeyring:///userId/ringId1");
             ReflectionTestUtils.setField(connectionsConfig, "trustStorePath", "safkeyring:////userId/ringId2");
-
+            ReflectionTestUtils.setField(connectionsConfig, "context", context);
             connectionsConfig.updateConfigParameters();
 
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePath")).isEqualTo("safkeyring://userId/ringId1");
@@ -84,7 +100,7 @@ class ConnectionsConfigTest {
             ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
             ReflectionTestUtils.setField(connectionsConfig, "keyStorePath", "/path1");
             ReflectionTestUtils.setField(connectionsConfig, "trustStorePath", "/path2");
-
+            ReflectionTestUtils.setField(connectionsConfig, "context", context);
             connectionsConfig.updateConfigParameters();
 
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePath")).isEqualTo("/path1");
