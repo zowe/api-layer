@@ -131,3 +131,8 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
 #no-tiles-error > p {
     margin-left: 88px;
 }
+
+#single-api-version-label {
+    margin-left: 5px;
+    margin-top: 16px;
+}
