@@ -10,26 +10,54 @@
 
 package org.zowe.apiml.gateway.config;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.jcache.JCacheCacheManager;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class)
-@ActiveProfiles("test")
+
 class CacheConfigTest {
 
-    @Autowired
-    private CacheManager cacheManager;
+    @Nested
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class)
+    @ActiveProfiles("test")
+    class EnabledCache {
 
-    @Test
-    void testCacheManagerIsRealImplementation() {
-        assertNotNull(cacheManager);
-        assertTrue(cacheManager instanceof JCacheCacheManager);
+        @Autowired
+        private CacheManager cacheManager;
+
+        @Test
+        void testCacheManagerIsRealImplementation() {
+            assertNotNull(cacheManager);
+            assertTrue(cacheManager instanceof JCacheCacheManager);
+        }
+
     }
+
+    @Nested
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class, properties = {
+        "apiml.caching.enabled=false"
+    })
+    @ActiveProfiles("test")
+    class DisabledCache {
+
+
+        @Autowired
+        private CacheManager cacheManager;
+
+        @Test
+        void testDisabledCacheManager() {
+            assertNotNull(cacheManager);
+            assertTrue(cacheManager instanceof NoOpCacheManager);
+        }
+
+    }
+
 }
