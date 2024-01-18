@@ -128,7 +128,7 @@ Start the suite of slow tests by executing the following shell script:
 ## Running a Specific Test
 
 ```sh
-./gradlew :integration-tests:runIntegrationTests --tests org.zowe.apiml.gatewayservice.PassTicketTest
+./gradlew :integration-tests:runAllIntegrationTests --tests org.zowe.apiml.gatewayservice.PassTicketTest
 ```
 
 ## Running specific tests to test Zowe RC
