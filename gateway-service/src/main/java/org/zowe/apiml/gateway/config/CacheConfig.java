@@ -56,7 +56,9 @@ public class CacheConfig {
                 System.setProperty(EHCACHE_STORAGE_ENV_PARAM_NAME, location);
             }
         } else {
-            log.warn("Gateway Service is runnning in NoOp Cache mode. Do not use in production.");
+            log.warn("Gateway Service is running in NoOp Cache mode. Do not use in production. " +
+               "To enable caching set configuration property apiml.caching.enabled to true."
+            );
         }
     }
 
