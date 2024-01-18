@@ -15,6 +15,7 @@ import org.junit.platform.commons.util.StringUtils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -30,12 +31,14 @@ public class RunningService {
 
     private final Map<String, String> parametersBefore;
     private final Map<String, String> parametersAfter;
+    private final List<String> commandLineOption;
 
-    public RunningService(String id, String jarFile, Map<String, String> parametersBefore, Map<String, String> parametersAfter) {
+    public RunningService(String id, String jarFile, Map<String, String> parametersBefore, Map<String, String> parametersAfter, List<String> commandLineOption) {
         this.id = id;
         this.jarFile = jarFile;
         this.parametersBefore = parametersBefore;
         this.parametersAfter = parametersAfter;
+        this.commandLineOption = commandLineOption;
     }
 
     public void start() throws IOException {
@@ -58,7 +61,7 @@ public class RunningService {
 
         parametersAfter
             .forEach((key, value) -> shellCommand.add(key + '=' + value));
-
+        shellCommand.addAll(commandLineOption);
         ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
         builder1.directory(new File("../"));
         process = builder1.inheritIO().start();

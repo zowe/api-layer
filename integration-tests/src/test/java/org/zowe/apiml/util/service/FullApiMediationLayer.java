@@ -43,10 +43,16 @@ public class FullApiMediationLayer {
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
 
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
-
+    private final List<String> commandOptions = new ArrayList<>();
 
     private FullApiMediationLayer() {
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
+        commandOptions.add("--add-opens=java.base/java.lang=ALL-UNNAMED");
+        commandOptions.add("--add-opens=java.base/java.lang.invoke=ALL-UNNAMED");
+        commandOptions.add("--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED");
+        commandOptions.add("---add-opens=java.base/java.util=ALL-UNNAMED");
+        commandOptions.add("--add-opens=java.base/java.util.concurrent=ALL-UNNAMED");
+        commandOptions.add("--add-opens=java.base/javax.net.ssl=ALL-UNNAMED");
 
         prepareCaching();
         prepareCatalog();
@@ -76,23 +82,23 @@ public class FullApiMediationLayer {
     }
 
     private void prepareDiscovery() {
-        discoveryService = new RunningService("discovery", "discovery-service/build/libs", null, null);
+        discoveryService = new RunningService("discovery", "discovery-service/build/libs", null, null, null);
     }
 
     private void prepareGateway() {
-        gatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null);
+        gatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null, null);
     }
 
     private void prepareCatalog() {
-        apiCatalogService = new RunningService("apicatalog", "api-catalog-services/build/libs", null, null);
+        apiCatalogService = new RunningService("apicatalog", "api-catalog-services/build/libs", null, null, null);
     }
 
     public void prepareCaching() {
-        cachingService = new RunningService("cachingservice", "caching-service/build/libs", null, null);
+        cachingService = new RunningService("cachingservice", "caching-service/build/libs", null, null, null);
     }
 
     public void prepareCloudGateway() {
-        cloudGatewayService = new RunningService("cloud-gateway", "cloud-gateway-service/build/libs", null, null);
+        cloudGatewayService = new RunningService("cloud-gateway", "cloud-gateway-service/build/libs", null, null, null);
     }
 
     private void prepareMockServices() {
@@ -101,7 +107,7 @@ public class FullApiMediationLayer {
         if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
-        mockZosmfService = new RunningService("zosmf", "mock-services/build/libs/mock-services.jar", before, after);
+        mockZosmfService = new RunningService("zosmf", "mock-services/build/libs/mock-services.jar", before, after, commandOptions);
     }
 
     private void prepareDiscoverableClient() {
@@ -113,7 +119,7 @@ public class FullApiMediationLayer {
 
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
 
-        discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
+        discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after, commandOptions);
     }
 
     public static FullApiMediationLayer getInstance() {

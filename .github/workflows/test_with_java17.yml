@@ -1,0 +1,51 @@
+name: Run and test using Java 17
+
+on:
+    push:
+        branches: [ master, v2.x.x ]
+        paths-ignore:
+            - '**.md'
+    pull_request:
+        branches: [ master, v2.x.x ]
+        paths-ignore:
+            - '**.md'
+    workflow_dispatch:
+
+env:
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
+
+jobs:
+    BuildAndTest:
+        runs-on: ubuntu-latest
+        timeout-minutes: 35
+
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew clean build --info --scan
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --info --scan
+            -   name: Store results
+                uses: actions/upload-artifact@v2
+                if: always()
+                with:
+                    name: CITests-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        gateway-service/build/reports/**
+                        api-catalog-services/build/reports/**
+                        caching-service/build/reports/**
+                        cloud-gateway-service/build/reports/**
+                        discovery-service/build/reports/**
+                        metrics-service/build/reports/**
+
+            -   uses: ./.github/actions/teardown

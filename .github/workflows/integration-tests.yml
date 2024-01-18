@@ -75,8 +75,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -124,8 +122,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -172,8 +168,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -218,8 +212,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -300,8 +292,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -353,8 +343,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run CI Tests
                 run: >
@@ -419,8 +407,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -481,8 +467,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -539,8 +523,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -593,8 +575,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -648,8 +628,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -702,8 +680,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -735,8 +711,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -800,8 +774,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -916,8 +888,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run HA Tests
                 run: >
@@ -998,8 +968,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1084,8 +1052,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
@@ -1156,8 +1122,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run Gateway Service Chaotic HA Tests
                 run: >
@@ -1232,8 +1196,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run Discoverable Client Chaotic HA Tests
                 run: >
@@ -1308,8 +1270,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run WebSocket Chaotic HA Tests
                 run: >
@@ -1396,8 +1356,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Build with Gradle
                 run: >
@@ -1447,8 +1405,6 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
@@ -1515,8 +1471,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
 
             -   name: Run Service ID Prefix Replacer Tests
                 run: >
@@ -1531,5 +1485,70 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/teardown
+
+    PublishResults:
+        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting]
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 11
+
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITests-${{ env.JOB_ID }}
+                    path: containercitests
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
+                    path: citestswithinfinispan
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
+                    path: containercitestszosmfrsu2012
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
+                    path: ContainerCITestsWithRedisReplica
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
+                    path: ContainerCITestsWithRedisSentinel
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
+                    path: containercitestsinternalport
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CloudGatewayProxy-${{ env.JOB_ID }}
+                    path: cloudgatewayproxy
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
+                    path: citestswebsocketchaoticha
+            -   uses: actions/download-artifact@v3
+                with:
+                    name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
+                    path: cloudgatewayservicerouting
+
+            -   name: Code coverage and publish results
+                run: >
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             -   uses: ./.github/actions/teardown
