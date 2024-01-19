@@ -11,8 +11,6 @@
 package org.zowe.apiml.product.web;
 
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +35,8 @@ import org.zowe.apiml.security.*;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import java.time.Duration;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -115,9 +110,9 @@ public class HttpConfig {
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
-    private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-    private final Timer connectionManagerTimer = new Timer(
-        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
+//    private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+////    private final Timer connectionManagerTimer = new Timer(
+//        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private Set<String> publicKeyCertificatesBase64;
 
@@ -165,8 +160,8 @@ public class HttpConfig {
             secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
-            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
+//            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
+//            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
@@ -248,12 +243,6 @@ public class HttpConfig {
     @Primary
     @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore(RestTemplateBuilder builder) {
-//        return builder.requestFactory(HttpComponentsClientHttpRequestFactory.class)
-//            .setConnectTimeout(Duration.ofMillis(requestConnectionTimeout))
-//            .setReadTimeout(Duration.ofMillis(readTimeout))
-//            .build();
-
-
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
   //      factory.setReadTimeout(readTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
@@ -305,14 +294,14 @@ public class HttpConfig {
         return secureHostnameVerifier;
     }
 
-    @Bean
-    public EurekaJerseyClient eurekaJerseyClient() {
-        return eurekaJerseyClientBuilder.build();
-    }
-
-    @Bean
-    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
-        return eurekaJerseyClientBuilder;
-    }
+//    @Bean
+//    public EurekaJerseyClient eurekaJerseyClient() {
+//        return eurekaJerseyClientBuilder.build();
+//    }
+//
+//    @Bean
+//    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
+//        return eurekaJerseyClientBuilder;
+//    }
 
 }

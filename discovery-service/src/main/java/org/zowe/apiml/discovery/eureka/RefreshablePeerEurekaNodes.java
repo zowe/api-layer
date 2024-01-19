@@ -13,11 +13,12 @@ package org.zowe.apiml.discovery.eureka;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.cluster.HttpReplicationClient;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
-import com.netflix.eureka.transport.JerseyReplicationClient;
+import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.springframework.context.ApplicationListener;
@@ -45,19 +46,12 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
 
     @Override
     public PeerEurekaNode createPeerEurekaNode(String peerEurekaNodeUrl) {
-        JerseyReplicationClient replicationClient = JerseyReplicationClient
-            .createReplicationClient(serverConfig, serverCodecs,
-                peerEurekaNodeUrl);
-
-        this.replicationClientAdditionalFilters.getFilters()
-            .forEach(replicationClient::addReplicationClientFilter);
-
+        HttpReplicationClient replicationClient = Jersey3ReplicationClient.createReplicationClient(serverConfig, serverCodecs, peerEurekaNodeUrl);
         String targetHost = hostFromUrl(peerEurekaNodeUrl);
         if (targetHost == null) {
             targetHost = "host";
         }
-        return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl,
-            replicationClient, serverConfig, maxPeerRetries);
+        return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl, replicationClient, serverConfig, maxPeerRetries);
     }
 
     @Override
