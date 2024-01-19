@@ -25,9 +25,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 17
-
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
@@ -46,7 +43,7 @@ jobs:
                     jdkVersion: 17
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --info --scan
+                    ./gradlew runTestWithJava17 --info --scan
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
