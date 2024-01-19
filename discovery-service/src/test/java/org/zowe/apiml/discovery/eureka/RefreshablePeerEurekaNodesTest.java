@@ -30,6 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -47,6 +49,15 @@ import static org.mockito.Mockito.when;
 class RefreshablePeerEurekaNodesTest {
 
     private static final int DEFAULT_MAX_RETRIES = 10;
+    private static final VarHandle MODIFIERS;
+    static {
+        try {
+            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     PeerAwareInstanceRegistry registry;
     @Mock
@@ -80,9 +91,7 @@ class RefreshablePeerEurekaNodesTest {
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
 
         Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
+        MODIFIERS.set(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
         defaultExecutor.setAccessible(true);
         defaultExecutor.set(null, Executors.newSingleThreadScheduledExecutor());
 

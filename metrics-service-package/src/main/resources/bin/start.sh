@@ -85,6 +85,13 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+        --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+        --add-opens=java.base/java.util=ALL-UNNAMED
+        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+
 ATTLS_ENABLED="false"
 if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
     ATTLS_ENABLED="true"
@@ -112,7 +119,8 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 METRICS_CODE=MS
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
-   ${QUICK_START} \
+  ${QUICK_START} \
+  ${ADD_OPENS} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \

@@ -558,7 +558,7 @@ class ZosmfServiceTest {
             ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Collections.singletonList(tokenValidationStrategy1));
             TokenValidationRequest request = mock(TokenValidationRequest.class);
 
-            doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(request);
+            lenient().doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(request);
             assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
         }
 

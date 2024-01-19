@@ -31,6 +31,8 @@ import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +44,15 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCExternalMapperTest {
+    private static final VarHandle MODIFIERS;
+    static {
+        try {
+            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     @Mock
     private CloseableHttpClient httpClient;
@@ -184,12 +195,8 @@ class OIDCExternalMapperTest {
         throws ReflectiveOperationException {
 
         Field field = clazz.getDeclaredField(fieldName);
+        MODIFIERS.set(field, field.getModifiers() & ~Modifier.FINAL);
         field.setAccessible(true);
-
-        Field modifiers = Field.class.getDeclaredField("modifiers");
-        modifiers.setAccessible(true);
-        modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
         field.set(null, value);
     }
 

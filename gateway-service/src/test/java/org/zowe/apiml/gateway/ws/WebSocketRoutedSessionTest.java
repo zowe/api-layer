@@ -53,7 +53,10 @@ class WebSocketRoutedSessionTest {
 
         when(clientSession.getId()).thenReturn(sessionId);
         when(clientSession.getUri()).thenReturn(new URI(clientUriPath));
-        when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
+        InetSocketAddress unresolvedAddress = mock(InetSocketAddress.class);
+        when(unresolvedAddress.toString()).thenReturn("gateway:8080");
+
+        when(serverSession.getRemoteAddress()).thenReturn(unresolvedAddress);
         when(serverSession.getUri()).thenReturn(new URI(serverUriPath));
 
         assertThat(underTest.getClientId(), is(sessionId));
@@ -110,7 +113,9 @@ class WebSocketRoutedSessionTest {
     class GivenServerRemoteAddress {
         @Test
         void whenAddressNotNull_thenReturnIt() {
-            when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
+            InetSocketAddress unresolvedAddress = mock(InetSocketAddress.class);
+            when(unresolvedAddress.toString()).thenReturn("gateway:8080");
+            when(serverSession.getRemoteAddress()).thenReturn(unresolvedAddress);
             String serverRemoteAddress = underTest.getServerRemoteAddress();
             assertThat(serverRemoteAddress, is("gateway:8080"));
         }
