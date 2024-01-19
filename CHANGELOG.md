@@ -11,9 +11,9 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Fix keyring path update to properly support keyring paths by Spring Cloud Gateway (#3265) ([5593723d](https://github.com/zowe/api-layer/commit/5593723d)), closes [#3265](https://github.com/zowe/api-layer/issues/3265)
 * Bugfix:  Fix conflict of XML processing between EhCache and onboarding process (#3266) ([8d30acb6](https://github.com/zowe/api-layer/commit/8d30acb6)), closes [#3266](https://github.com/zowe/api-layer/issues/3266)
 * Bugfix:  Fix using keystore during creation of request without client certificate in Spring Cloud Gateway (#3273) ([57a201d1](https://github.com/zowe/api-layer/commit/57a201d1)), closes [#3273](https://github.com/zowe/api-layer/issues/3273)
-* Bugfix:  Fix closing WebSocket in case of 401 and other exception to properly release resources (#3271) ([aa8b316f](https://github.com/zowe/api-layer/commit/aa8b316f)), closes [#3271](https://github.com/zowe/api-layer/issues/3271)
+* Bugfix:  Fix closing WebSocket to prevent a memory leak. (#3271) ([aa8b316f](https://github.com/zowe/api-layer/commit/aa8b316f)), closes [#3271](https://github.com/zowe/api-layer/issues/3271)
 * Bugfix:  Fix disabling EhCache (#3276) ([3c189204](https://github.com/zowe/api-layer/commit/3c189204)), closes [#3276](https://github.com/zowe/api-layer/issues/3276)
-* Bugfix:  Fix enabling CORS by default in AT-TLS mode is used in the API Gateway (#3270) ([9d5e3a31](https://github.com/zowe/api-layer/commit/9d5e3a31)), closes [#3270](https://github.com/zowe/api-layer/issues/3270)
+* Bugfix:  Fix enabling CORS by default in AT-TLS mode used in the API Gateway (#3270) ([9d5e3a31](https://github.com/zowe/api-layer/commit/9d5e3a31)), closes [#3270](https://github.com/zowe/api-layer/issues/3270)
 
 ## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
 
