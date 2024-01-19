@@ -38,12 +38,12 @@ class NettyRoutingFilterApimlTest {
 
         @Test
         void givenInteger_whenGetInteger_thenConvert() {
-            assertEquals(new Integer(157), NettyRoutingFilterApiml.getInteger(157));
+            assertEquals(Integer.valueOf(157), NettyRoutingFilterApiml.getInteger(157));
         }
 
         @Test
         void givenNumberString_whenGetInteger_thenParse() {
-            assertEquals(new Integer(759), NettyRoutingFilterApiml.getInteger("759"));
+            assertEquals(Integer.valueOf(759), NettyRoutingFilterApiml.getInteger("759"));
         }
 
         @Test
