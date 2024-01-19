@@ -31,6 +31,19 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
+    CITests:
+        needs: BuildAndTest
+        runs-on: ubuntu-latest
+        timeout-minutes: 35
+
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: 17
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan

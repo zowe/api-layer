@@ -45,14 +45,28 @@ public class FullApiMediationLayer {
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
     private final List<String> commandOptions = new ArrayList<>();
 
+    private static int parseMajorVersion(String version) {
+        try {
+            String[] versionComponents = version.split("\\.");
+            return Integer.parseInt(versionComponents[0]);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            System.err.println("Error parsing Java version: " + e.getMessage());
+            return -1; // or throw an exception, depending on your needs
+        }
+    }
+
     private FullApiMediationLayer() {
+        String javaVersion = System.getProperty("java.version");
+        int majorVersion = parseMajorVersion(javaVersion);
+        if (majorVersion >= 17) {
+            commandOptions.add("--add-opens=java.base/java.lang=ALL-UNNAMED");
+            commandOptions.add("--add-opens=java.base/java.lang.invoke=ALL-UNNAMED");
+            commandOptions.add("--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED");
+            commandOptions.add("---add-opens=java.base/java.util=ALL-UNNAMED");
+            commandOptions.add("--add-opens=java.base/java.util.concurrent=ALL-UNNAMED");
+            commandOptions.add("--add-opens=java.base/javax.net.ssl=ALL-UNNAMED");
+        }
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
-        commandOptions.add("--add-opens=java.base/java.lang=ALL-UNNAMED");
-        commandOptions.add("--add-opens=java.base/java.lang.invoke=ALL-UNNAMED");
-        commandOptions.add("--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED");
-        commandOptions.add("---add-opens=java.base/java.util=ALL-UNNAMED");
-        commandOptions.add("--add-opens=java.base/java.util.concurrent=ALL-UNNAMED");
-        commandOptions.add("--add-opens=java.base/javax.net.ssl=ALL-UNNAMED");
 
         prepareCaching();
         prepareCatalog();
