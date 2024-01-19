@@ -6,7 +6,7 @@
         "doc": "docs"
     },
     "config": {
-        "jvmArgs": "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+        "jvmArgs": "--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
     },
     "scripts": {
         "api-layer": "concurrently --names \"GS,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-services npm:caching-service",

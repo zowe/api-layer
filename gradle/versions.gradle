@@ -7,7 +7,7 @@ dependencyResolutionManagement {
 
             version('springBoot', '3.2.1')
             version('springCloud', '2023.0.0')
-            version('springCloudNetflix', '3.1.8')
+            version('springCloudNetflix', '4.1.0')
             version('springCloudZuulNetflix', '2.2.10.RELEASE')
             version('springCloudCommons', '4.1.0')
 //            version('springCloudVersion3', '3.1.7')

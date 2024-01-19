@@ -132,6 +132,13 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/default"
 LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/j9vm"
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+        --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+        --add-opens=java.base/java.util=ALL-UNNAMED
+        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+        
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
 key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
@@ -150,11 +157,7 @@ DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
-    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
-    --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
-    --add-opens=java.base/java.util=ALL-UNNAMED \
-    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
-    --add-opens=java.base/javax.net.ssl=ALL-UNNAMED \
+    ${ADD_OPENS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
