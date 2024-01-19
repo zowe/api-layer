@@ -2,11 +2,18 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.14.0 / Zowe 2.14.0 (2023-01-10)`
+## `2.14.4 / Zowe 2.14.0 (2023-01-19)`
 
 * Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
 
+
 * Bugfix:  Fix truststore for websockets in Spring Cloud Gateway (v2) (#3249) ([b4d6730](https://github.com/zowe/api-layer/commit/b4d6730)), closes [#3249](https://github.com/zowe/api-layer/issues/3249)
+* Bugfix:  Fix keyring path update to properly support keyring paths by Spring Cloud Gateway (#3265) ([5593723d](https://github.com/zowe/api-layer/commit/5593723d)), closes [#3265](https://github.com/zowe/api-layer/issues/3265)
+* Bugfix:  Fix conflict of XML processing between EhCache and onboarding process (#3266) ([8d30acb6](https://github.com/zowe/api-layer/commit/8d30acb6)), closes [#3266](https://github.com/zowe/api-layer/issues/3266)
+* Bugfix:  Fix using keystore during creation of request without client certificate in Spring Cloud Gateway (#3273) ([57a201d1](https://github.com/zowe/api-layer/commit/57a201d1)), closes [#3273](https://github.com/zowe/api-layer/issues/3273)
+* Bugfix:  Fix closing WebSocket in case of 401 and other exception to properly release resources (#3271) ([aa8b316f](https://github.com/zowe/api-layer/commit/aa8b316f)), closes [#3271](https://github.com/zowe/api-layer/issues/3271)
+* Bugfix:  Fix disabling EhCache (#3276) ([3c189204](https://github.com/zowe/api-layer/commit/3c189204)), closes [#3276](https://github.com/zowe/api-layer/issues/3276)
+* Bugfix:  Fix enabling CORS by default in AT-TLS mode is used in the API Gateway (#3270) ([9d5e3a31](https://github.com/zowe/api-layer/commit/9d5e3a31)), closes [#3270](https://github.com/zowe/api-layer/issues/3270)
 
 ## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
 
@@ -20,6 +27,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  Supporting additional Discovery Service registration by Spring Cloud Gateway (#3181) ([c6cc561](https://github.com/zowe/api-layer/commit/c6cc561)), closes [#3181](https://github.com/zowe/api-layer/issues/3181)
 * Feature:  Gateway additional registrations HA (#3127) ([a367380](https://github.com/zowe/api-layer/commit/a367380)), closes [#3127](https://github.com/zowe/api-layer/issues/3127)
 * Feature:  Fetch JWK from OIDC providers (#3137) ([b23bb8f](https://github.com/zowe/api-layer/commit/b23bb8f)), closes [#3137](https://github.com/zowe/api-layer/issues/3137)
+
 
 * Bugfix:  Fix signing outgoing call from Cloud Gateway just if necessary (#3203) ([12ca262](https://github.com/zowe/api-layer/commit/12ca262)), closes [#3203](https://github.com/zowe/api-layer/issues/3203)
 * Bugfix:  AT-TLS support (#3186) ([8a26c44](https://github.com/zowe/api-layer/commit/8a26c44)), closes [#3186](https://github.com/zowe/api-layer/issues/3186)
