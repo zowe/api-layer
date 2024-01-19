@@ -51,7 +51,7 @@ export default function countAdditionalContents(service) {
         (product) => service?.serviceId === product.name
     ) || { useCases: [], tutorials: [], videos: [], documentation: null };
 
-    const filteredUseCases = useCases?.filter(({ url, user }) => isValidUrl(url) && user);
+    const filteredUseCases = useCases?.filter(({ url }) => isValidUrl(url));
     const filteredTutorials = tutorials?.filter(({ url }) => isValidUrl(url));
     const useCasesCounter = countValidItems(filteredUseCases, (item) => isValidUrl(item.url));
     const tutorialsCounter = countValidItems(filteredTutorials, (item) => isValidUrl(item.url));
