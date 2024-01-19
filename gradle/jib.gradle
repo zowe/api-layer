@@ -1,13 +1,14 @@
 def setJib(componentName, javaAgentPort, debugPort) {
     def imageTag = project.hasProperty("zowe.docker.tag") ? project.getProperty("zowe.docker.tag"): "latest"
     def imageName =  project.hasProperty("zowe.docker.container") ? "${project.getProperty("zowe.docker.container")}${componentName}:${imageTag}" : "ghcr.io/zowe/${componentName}:${imageTag}"
-    def addOpensOptions = "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+    def javaAgentOptions = project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort]
+    def addOpensOptions = ['--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED', '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED', '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED']
+
     jib.to.image = imageName
     jib.to.auth.username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
     jib.to.auth.password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
     jib.container.args = ['--spring.config.additional-location=file:/docker/' + componentName + '.yml', '--spring.profiles.include=dev,debug']
-
-    jib.container.jvmFlags = project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort, addOpensOptions]: ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, addOpensOptions]
+    jib.container.jvmFlags = javaAgentOptions + addOpensOptions
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
 }
 
