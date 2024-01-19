@@ -13,7 +13,6 @@ package org.zowe.apiml.discovery;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,7 +25,7 @@ import javax.annotation.Nonnull;
 
 @EnableEurekaServer
 @SpringBootApplication
-@EnableCircuitBreaker
+// @EnableCircuitBreaker
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.security",

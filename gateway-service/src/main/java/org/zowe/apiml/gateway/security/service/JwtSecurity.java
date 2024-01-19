@@ -33,7 +33,7 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;

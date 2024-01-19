@@ -27,7 +27,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Checks whether the error was caused by an invalid token or credentials.

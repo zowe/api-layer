@@ -13,15 +13,16 @@ package org.zowe.apiml.security.client.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -72,7 +73,7 @@ public class GatewaySecurityService {
             String json = objectMapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             CloseableHttpResponse response = closeableHttpClient.execute(post);
-            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+            final int statusCode = response.getCode();
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 final HttpEntity responseEntity = response.getEntity();
                 String responseBody = null;
@@ -85,7 +86,7 @@ public class GatewaySecurityService {
                 return Optional.empty();
             }
             return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) { //TODO: Consider different error
             responseHandler.handleException(e);
         } finally {
             // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
@@ -116,7 +117,7 @@ public class GatewaySecurityService {
             if (responseEntity != null) {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
-            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+            final int statusCode = response.getCode();
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 ErrorType errorType = getErrorType(responseBody);
                 responseHandler.handleErrorType(response, errorType,
@@ -124,7 +125,7 @@ public class GatewaySecurityService {
                 return null;
             }
             return objectMapper.readValue(responseBody, QueryResponse.class);
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             responseHandler.handleException(e);
         }
         return null;

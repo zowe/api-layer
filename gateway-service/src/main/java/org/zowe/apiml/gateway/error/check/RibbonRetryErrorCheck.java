@@ -21,7 +21,7 @@ import org.zowe.apiml.gateway.ribbon.http.RequestContextNotPreparedException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.ConnectException;
 import java.util.stream.Collectors;
 

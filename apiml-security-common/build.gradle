@@ -2,23 +2,25 @@ dependencies {
     api project(':apiml-common')
     api project(':apiml-utility')
     implementation libs.spring.boot.starter.web
-    implementation libs.tomcat.embed.el
+//    implementation libs.tomcat.embed.el
     implementation libs.jackson.core
     implementation libs.jackson.databind
-    implementation libs.spring.security.web
-    implementation libs.spring.security.config
+    implementation libs.spring.boot.starter.security
+//    implementation libs.spring.security.web
+//    implementation libs.spring.security.config
     implementation libs.apache.commons.lang3
     implementation libs.bcprov;
     implementation libs.bcpkix;
-    implementation libs.http.client;
+//    implementation libs.http.client;
+    implementation libs.http.client5
 
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
+//    implementation libs.spring.aop
+//    implementation libs.spring.beans
+//    implementation libs.spring.context
+//    implementation libs.spring.core
+//    implementation libs.spring.expression
+//    implementation libs.spring.web
+//    implementation libs.spring.webmvc
 
     compileOnly libs.javax.servlet.api
     compileOnly libs.lombok

@@ -67,7 +67,7 @@ import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 

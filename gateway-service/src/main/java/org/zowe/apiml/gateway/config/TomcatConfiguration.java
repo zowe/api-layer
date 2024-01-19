@@ -92,20 +92,21 @@ public class TomcatConfiguration {
             connector.setScheme("https");
             connector.setSecure(true);
             protocol.setSSLEnabled(true);
-            protocol.setSslEnabledProtocols("TLSv1.2");
-            protocol.setSSLHonorCipherOrder(true);
-            protocol.setCiphers(ciphers);
-            protocol.setClientAuth(clientAuth);
-            protocol.setAddress(InetAddress.getByName(address));
-
-            protocol.setKeystoreFile(getStorePath(keyStorePath));
-            protocol.setKeystorePass(keyStorePassword);
-            protocol.setKeystoreType(keyStoreType);
-            protocol.setTruststoreFile(getStorePath(trustStorePath));
-            protocol.setTruststorePass(trustStorePassword);
-            protocol.setTruststoreType(trustStoreType);
-            protocol.setKeyAlias(keyAlias);
-            protocol.setKeyPass(keyPassword);
+            //TODO: Fix me
+//            protocol.setSslEnabledProtocols("TLSv1.2");
+//            protocol.setSSLHonorCipherOrder(true);
+//            protocol.setCiphers(ciphers);
+//            protocol.setClientAuth(clientAuth);
+//            protocol.setAddress(InetAddress.getByName(address));
+//
+//            protocol.setKeystoreFile(getStorePath(keyStorePath));
+//            protocol.setKeystorePass(keyStorePassword);
+//            protocol.setKeystoreType(keyStoreType);
+//            protocol.setTruststoreFile(getStorePath(trustStorePath));
+//            protocol.setTruststorePass(trustStorePassword);
+//            protocol.setTruststoreType(trustStoreType);
+//            protocol.setKeyAlias(keyAlias);
+//            protocol.setKeyPass(keyPassword);
         } else {
             connector.setScheme("http");
             connector.setSecure(false);

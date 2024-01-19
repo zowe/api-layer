@@ -1,4 +1,4 @@
-spring.profiles.include: diag
+spring.profiles.active: diag
 
 apiml:
     service:
@@ -8,19 +8,14 @@ apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
-        ssl:
-            verifySslCertificatesOfServices: true
+        ssl.verifySslCertificatesOfServices: true
     banner: console
 
-spring:
-    config:
-        useLegacyProcessing: true
-    output:
-        ansi:
-            enabled: always
+spring.output.ansi.enabled: always
 
 ---
-spring.profiles: https
+spring.config.activate.on-profile: https
+
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -36,4 +31,3 @@ server:
         trustStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
-

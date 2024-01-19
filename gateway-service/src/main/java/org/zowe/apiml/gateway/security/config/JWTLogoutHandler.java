@@ -21,9 +21,9 @@ import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @Slf4j

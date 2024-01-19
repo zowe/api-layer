@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
@@ -32,7 +31,7 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 @EnableZuulProxy
 @EnableWebSecurity
 @SpringBootApplication
-@EnableCircuitBreaker
+// @EnableCircuitBreaker
 @ComponentScan(
     value = {
         "org.zowe.apiml.gateway",

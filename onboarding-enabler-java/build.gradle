@@ -18,7 +18,7 @@ dependencies {
     testImplementation libs.spring4Mvc
     testImplementation libs.spring4Test
 
-    testImplementation libs.logback.classic
+//    testImplementation libs.logback.classic
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 

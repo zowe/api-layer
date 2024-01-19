@@ -62,21 +62,21 @@ dependencies {
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.spring.boot.starter.websocket
-    implementation libs.tomcat.annotations.api
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.websocket
-    implementation libs.logback.classic
+//    implementation libs.tomcat.annotations.api
+//    implementation libs.tomcat.embed.el
+//    implementation libs.tomcat.embed.core
+//    implementation libs.tomcat.embed.websocket
+//    implementation libs.logback.classic
 
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.web
-    implementation libs.spring.websocket
-    implementation libs.spring.messaging
-    implementation libs.spring.webmvc
+//    implementation libs.spring.aop
+//    implementation libs.spring.beans
+//    implementation libs.spring.context
+//    implementation libs.spring.core
+//    implementation libs.spring.expression
+//    implementation libs.spring.web
+//    implementation libs.spring.websocket
+//    implementation libs.spring.messaging
+//    implementation libs.spring.webmvc
 
     implementation libs.bootstrap
     implementation libs.jquery

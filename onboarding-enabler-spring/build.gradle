@@ -20,13 +20,13 @@ dependencies {
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.jettison
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
+//    implementation libs.spring.aop
+//    implementation libs.spring.beans
+//    implementation libs.spring.context
+//    implementation libs.spring.core
+//    implementation libs.spring.expression
+//    implementation libs.spring.web
+//    implementation libs.spring.webmvc
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

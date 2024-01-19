@@ -64,12 +64,14 @@ dependencies {
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
-    implementation libs.spring.cloud.starter.hystrix
-    implementation libs.spring.cloud.starter.eureka.server
-    implementation libs.spring.security.web
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.crypto
+    implementation libs.spring.boot.starter.security
+//    implementation libs.spring.boot.starter.websocket
+//    implementation libs.spring.cloud.starter.hystrix
+//    implementation libs.spring.cloud.starter.eureka.server
+//    implementation libs.spring.security.web
+//    implementation libs.spring.security.config
+//    implementation libs.spring.security.core
+//    implementation libs.spring.security.crypto
     implementation libs.xstream
     implementation libs.json.smart
 
@@ -80,16 +82,16 @@ dependencies {
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
-    implementation libs.tomcat.coyote
-    implementation libs.tomcat.annotations.api
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.websocket
-    implementation libs.spring.cloud.starter.eureka
-    implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
+//    implementation libs.tomcat.coyote
+//    implementation libs.tomcat.annotations.api
+//    implementation libs.tomcat.embed.core
+//    implementation libs.tomcat.embed.el
+//    implementation libs.tomcat.embed.websocket
+    implementation libs.spring.cloud.starter.eureka.client
+//    implementation libs.spring.cloud.commons
+//    implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.zuul
-    implementation libs.spring.cloud.starter.ribbon
+//    implementation libs.spring.cloud.starter.ribbon
     implementation libs.jetty.websocket.common
     implementation libs.jetty.websocket.client
     implementation libs.jetty.client
@@ -102,22 +104,23 @@ dependencies {
 
     implementation libs.thymeleaf
     implementation libs.thymeleafSpring
-    implementation libs.logback.core
-    implementation libs.logback.classic
+//    implementation libs.logback.core
+//    implementation libs.logback.classic
 
     implementation libs.commons.io
     implementation libs.guava
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.context.support
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.messaging
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
-    implementation libs.spring.websocket
-    implementation libs.spring.webflux
+    implementation libs.javax.servlet.api
+//    implementation libs.spring.aop
+//    implementation libs.spring.beans
+//    implementation libs.spring.context
+//    implementation libs.spring.context.support
+//    implementation libs.spring.core
+//    implementation libs.spring.expression
+//    implementation libs.spring.messaging
+//    implementation libs.spring.web
+//    implementation libs.spring.webmvc
+//    implementation libs.spring.websocket
+//    implementation libs.spring.webflux
 
     implementation libs.eh.cache
     implementation libs.spring.retry
@@ -133,7 +136,7 @@ dependencies {
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
-    testRuntimeOnly libs.http.client
+//    testRuntimeOnly libs.http.client
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path

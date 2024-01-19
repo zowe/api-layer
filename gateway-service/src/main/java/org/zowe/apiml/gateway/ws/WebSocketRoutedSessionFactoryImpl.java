@@ -16,8 +16,8 @@ import org.springframework.web.socket.WebSocketSession;
  * Default implementation. Provides the WebSocketRoutedSession the same way as before.
  */
 public class WebSocketRoutedSessionFactoryImpl implements WebSocketRoutedSessionFactory {
-    @Override
-    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
-        return new WebSocketRoutedSession(webSocketSession, targetUrl, webSocketClientFactory);
-    }
+//    @Override
+//    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
+//        return new WebSocketRoutedSession(webSocketSession, targetUrl, webSocketClientFactory);
+//    }
 }

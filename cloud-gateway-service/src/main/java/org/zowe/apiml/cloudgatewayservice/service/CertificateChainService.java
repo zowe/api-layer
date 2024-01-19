@@ -21,7 +21,7 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.cert.Certificate;

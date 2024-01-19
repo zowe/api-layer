@@ -22,7 +22,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.auth.saf.AccessLevel;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/gateway")

@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
 import org.zowe.commons.attls.InboundAttls;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -96,11 +96,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         public Object getGlobal() {
 
             return handler.getGlobal();
-        }
-
-        @Override
-        public Set<S> getOpenSockets() {
-            return handler.getOpenSockets();
         }
 
         @Override

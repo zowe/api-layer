@@ -1,21 +1,21 @@
 dependencies {
     annotationProcessor libs.lombok
 
-    implementation libs.http.client
+//    implementation libs.http.client
     implementation libs.jackson.annotations
     implementation libs.jackson.databind
-    implementation libs.slf4j.api
+//    implementation libs.slf4j.api
     implementation libs.jaxb.api
     implementation libs.javax.servlet.api
-    implementation libs.spring.context
+//    implementation libs.spring.context
     implementation libs.apache.commons.codec
 
     compileOnly libs.lombok
 
-    testImplementation libs.http.client
+//    testImplementation libs.http.client
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
     testImplementation libs.junitJupiter
     testImplementation libs.jjwt.full
-    testImplementation libs.logback.classic
+//    testImplementation libs.logback.classic
 }

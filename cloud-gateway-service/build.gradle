@@ -68,18 +68,18 @@ dependencies {
     implementation libs.netty.reactor.core
     implementation libs.netty.reactor.http
 
-    implementation libs.spring.eureka.client.v3
+    implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.boot.starter.security
 
     implementation libs.jackson.databind
     implementation libs.spring.boot.starter.actuator
 
     implementation libs.spring.cloud.circuit.breaker
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.web
-    implementation libs.spring.aop
-    implementation libs.spring.expression
+//    implementation libs.spring.security.config
+//    implementation libs.spring.security.core
+//    implementation libs.spring.security.web
+//    implementation libs.spring.aop
+//    implementation libs.spring.expression
     implementation libs.bcpkix
     implementation libs.nimbusJoseJwt
     implementation libs.janino

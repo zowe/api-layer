@@ -11,7 +11,7 @@
 package org.zowe.apiml.security.client.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,7 +36,7 @@ import java.io.IOException;
 public class RestResponseHandler {
 
     public void handleErrorType(CloseableHttpResponse response, ErrorType errorType, Object... logParameters) {
-        switch (response.getStatusLine().getStatusCode()) {
+        switch (response.getCode()) {
             case 401:
                 if (errorType != null) {
                     if (errorType.equals(ErrorType.BAD_CREDENTIALS)) {
@@ -68,7 +68,7 @@ public class RestResponseHandler {
         }
     }
 
-    public void handleException(IOException exception) {
+    public void handleException(Exception exception) { //TODO: maybe revert
         throw new GatewayNotAvailableException(ErrorType.GATEWAY_NOT_AVAILABLE.getDefaultMessage(), exception);
     }
 

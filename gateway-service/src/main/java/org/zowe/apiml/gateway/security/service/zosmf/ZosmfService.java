@@ -49,7 +49,8 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
+
 import javax.management.ServiceNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;

@@ -19,8 +19,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Set;
 

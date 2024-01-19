@@ -40,9 +40,9 @@ dependencies {
     testImplementation libs.mockito.core
     testImplementation libs.json.path
 
-    tomcat libs.tomcat.embed.core.get(),
-            libs.tomcat.embed.logging.juli.get(),
-            libs.tomcat.embed.jasper.get()
+//    tomcat libs.tomcat.embed.core.get(),
+//            libs.tomcat.embed.logging.juli.get(),
+//            libs.tomcat.embed.jasper.get()
 }
 
 tomcat {

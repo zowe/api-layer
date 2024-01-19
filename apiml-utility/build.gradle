@@ -3,8 +3,8 @@ dependencies {
 
     implementation libs.jackson.databind
     implementation libs.apache.commons.lang3
-    implementation libs.http.client
-    implementation libs.http.core
+//    implementation libs.http.client
+//    implementation libs.http.core
     implementation libs.jetty.websocket.client
 
     compileOnly libs.spring.boot.starter.web

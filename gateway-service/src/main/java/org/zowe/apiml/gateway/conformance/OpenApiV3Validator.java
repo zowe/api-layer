@@ -18,6 +18,8 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.*;
 
+import static org.springframework.http.HttpMethod.*;
+
 
 public class OpenApiV3Validator extends AbstractSwaggerValidator {
     private final SwaggerParseResult swagger;
@@ -79,16 +81,16 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
             result.add(HttpMethod.POST);
         }
         if (value.getGet() != null) {
-            result.add(HttpMethod.GET);
+            result.add(GET);
         }
         if (value.getPatch() != null) {
             result.add(HttpMethod.PATCH);
         }
         if (value.getHead() != null) {
-            result.add(HttpMethod.HEAD);
+            result.add(HEAD);
         }
         if (value.getOptions() != null) {
-            result.add(HttpMethod.OPTIONS);
+            result.add(OPTIONS);
         }
         if (value.getDelete() != null) {
             result.add(HttpMethod.DELETE);
@@ -100,23 +102,31 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
     }
 
     private PathItem.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
-        switch (input) {
-            case GET:
+        switch (input.name()) {
+            case "GET" -> {
                 return PathItem.HttpMethod.GET;
-            case HEAD:
+            }
+            case "HEAD" -> {
                 return PathItem.HttpMethod.HEAD;
-            case OPTIONS:
+            }
+            case "OPTIONS" -> {
                 return PathItem.HttpMethod.OPTIONS;
-            case PATCH:
+            }
+            case "PATCH" -> {
                 return PathItem.HttpMethod.PATCH;
-            case POST:
+            }
+            case "POST" -> {
                 return PathItem.HttpMethod.POST;
-            case DELETE:
+            }
+            case "DELETE" -> {
                 return PathItem.HttpMethod.DELETE;
-            case PUT:
+            }
+            case "PUT" -> {
                 return PathItem.HttpMethod.PUT;
-            default:
+            }
+            default -> {
                 return null;
+            }
         }
     }
 }

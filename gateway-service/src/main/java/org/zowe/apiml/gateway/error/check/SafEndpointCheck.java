@@ -19,7 +19,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.auth.saf.EndpointImproprietyConfigureException;
 import org.zowe.apiml.security.common.auth.saf.UnsupportedResourceClassException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RequiredArgsConstructor
 public class SafEndpointCheck implements ErrorCheck {

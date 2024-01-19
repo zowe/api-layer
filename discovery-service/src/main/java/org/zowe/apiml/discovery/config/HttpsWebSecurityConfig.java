@@ -80,11 +80,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/favicon.ico"
         };
         return web -> {
-            web.ignoring().antMatchers(noSecurityAntMatchers);
-
-            if (isMetricsEnabled) {
-                web.ignoring().antMatchers("/application/hystrixstream");
-            }
+            web.ignoring().requestMatchers(noSecurityAntMatchers);
         };
     }
 
@@ -94,14 +90,14 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.requestMatchers(matchers -> matchers.antMatchers(
+        baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                 "/application/**",
                 "/*"
         )))
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider)
                 .authorizeRequests(requests -> requests
-                        .antMatchers("/**").authenticated())
+                        .requestMatchers("/**").authenticated())
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (isAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -116,7 +112,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(2)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.antMatcher("/eureka/**"));
+        baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeRequests(requests -> requests
                     .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
@@ -136,7 +132,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.antMatcher("/discovery/**"))
+        baseConfigure(http.securityMatcher("/discovery/**"))
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider)
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));

@@ -16,7 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.*;
-import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -37,10 +37,10 @@ public class WebSocketRoutedSession {
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
 
-    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
-        this.webSocketServerSession = webSocketServerSession;
-        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, webSocketClientFactory);
-    }
+//    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
+//        this.webSocketServerSession = webSocketServerSession;
+//        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, webSocketClientFactory);
+//    }
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, WebSocketSession webSocketClientSession) {
         this.webSocketClientSession = webSocketClientSession;
@@ -66,25 +66,25 @@ public class WebSocketRoutedSession {
         return webSocketServerSession;
     }
 
-    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
-        try {
-            JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
-            URI targetURI = new URI(targetUrl);
-            WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
-            ListenableFuture<WebSocketSession> futureSession = client
-                .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
-            return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-        } catch (IllegalStateException e) {
-            throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
-        } catch (ExecutionException e) {
-            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
-        } catch (Exception e) {
-            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
-        }
-    }
+//    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
+//        try {
+//            JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
+//            URI targetURI = new URI(targetUrl);
+//            WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
+//            ListenableFuture<WebSocketSession> futureSession = client
+//                .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
+//            return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+//        } catch (IllegalStateException e) {
+//            throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+//        } catch (ExecutionException e) {
+//            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
+//        } catch (Exception e) {
+//            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+//        }
+//    }
 
     private WebSocketProxyError handleExecutionException(String targetUrl, ExecutionException cause, WebSocketSession webSocketServerSession, boolean logError) {
         if (cause.getCause() != null && cause.getCause().getCause() instanceof UpgradeException) {

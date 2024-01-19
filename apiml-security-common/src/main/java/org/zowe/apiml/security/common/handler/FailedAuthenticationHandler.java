@@ -18,9 +18,10 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Authentication error handler
@@ -45,4 +46,5 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
         handler.handleException(request, response, exception);
     }
+
 }

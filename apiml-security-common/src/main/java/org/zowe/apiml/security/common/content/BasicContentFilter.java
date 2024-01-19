@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;

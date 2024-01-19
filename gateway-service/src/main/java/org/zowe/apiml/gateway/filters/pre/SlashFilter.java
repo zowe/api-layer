@@ -13,7 +13,7 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.context.RequestContext;
 import org.zowe.apiml.util.UrlUtils;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.regex.Pattern;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;

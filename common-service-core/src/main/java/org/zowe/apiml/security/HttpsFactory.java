@@ -14,17 +14,20 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.Eure
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.UserTokenHandler;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.ssl.PrivateKeyStrategy;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
+
+import org.apache.hc.client5.http.UserTokenHandler;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.HttpsSupport;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.core5.ssl.PrivateKeyStrategy;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.util.Timeout;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
@@ -55,17 +58,18 @@ public class HttpsFactory {
 
 
     public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
-
         RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectTimeout(config.getRequestConnectionTimeout())
-            .setSocketTimeout(config.getRequestConnectionTimeout())
-            .setConnectionRequestTimeout(config.getRequestConnectionTimeout()).build();
-        UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
+            .setConnectionRequestTimeout(Timeout.ofMilliseconds(config.getRequestConnectionTimeout()))
+        .build();
+       // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
-        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setSSLHostnameVerifier(getHostnameVerifier())
-            .setConnectionTimeToLive(config.getTimeToLive(), TimeUnit.MILLISECONDS)
-            .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
+        //   .setSSLHostnameVerifier(getHostnameVerifier())
+            .setConnectionManager(connectionManager).disableCookieManagement()
+            //.setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
+            .evictExpiredConnections()
+            .evictIdleConnections(Timeout.ofSeconds(config.getIdleConnTimeoutSeconds()))
             .disableAuthCaching().build();
 
     }
@@ -251,7 +255,7 @@ public class HttpsFactory {
 
     public HostnameVerifier getHostnameVerifier() {
         if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
-            return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
+            return HttpsSupport.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();
         }

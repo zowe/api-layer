@@ -65,15 +65,15 @@ dependencies {
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.aop
     implementation libs.zowe.attls
-    implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.cloud.starter.hystrix
-    implementation libs.spring.cloud.hystrix.dashboard
-    implementation libs.spring.security.web
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.crypto
-    implementation libs.tomcat.embed.core
+//    implementation libs.spring.cloud.commons
+//    implementation libs.spring.cloud.starter.bootstrap
+//    implementation libs.spring.cloud.starter.hystrix
+//    implementation libs.spring.cloud.hystrix.dashboard
+//    implementation libs.spring.security.web
+//    implementation libs.spring.security.config
+//    implementation libs.spring.security.core
+//    implementation libs.spring.security.crypto
+//    implementation libs.tomcat.embed.core
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.bootstrap

@@ -16,6 +16,8 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+
 /**
  * Configuration of web server security
  */
@@ -26,7 +28,7 @@ public class WebServerSecurityConfig {
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
         return factory -> factory.addConnectorCustomizers(connector -> {
             AbstractHttp11Protocol<?> abstractProtocol = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
-            abstractProtocol.setUseServerCipherSuitesOrder(true);
+            Arrays.stream(abstractProtocol.findSslHostConfigs()).forEach(sslHost -> sslHost.setHonorCipherOrder(true));
         });
     }
 

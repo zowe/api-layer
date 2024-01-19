@@ -31,7 +31,7 @@ import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationServi
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 

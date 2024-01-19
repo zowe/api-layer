@@ -22,7 +22,7 @@ import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.util.CacheUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Spring configuration to disable EhCache usage.

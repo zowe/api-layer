@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation libs.http.client
+//    testImplementation libs.http.client
     testImplementation libs.eureka.client
     testImplementation libs.jackson.dataformat.yaml
     testImplementation libs.json.path
@@ -38,7 +38,7 @@ dependencies {
 
     testImplementation libs.hamcrest
     testImplementation libs.awaitility
-    testImplementation libs.logback.classic
+//    testImplementation libs.logback.classic
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
     testImplementation libs.jsoup
@@ -54,11 +54,11 @@ dependencies {
     runtimeOnly libs.jjwt.jackson
 
     testFixturesImplementation(project(':apiml-security-common'))
-    testFixturesImplementation libs.spring.core
-    testFixturesImplementation libs.slf4j.api
+//    testFixturesImplementation libs.spring.core
+//    testFixturesImplementation libs.slf4j.api
     testFixturesImplementation libs.rest.assured
     testFixturesImplementation libs.lombok
-    testFixturesImplementation libs.http.client
+//    testFixturesImplementation libs.http.client
 
     testFixturesAnnotationProcessor libs.lombok
 }

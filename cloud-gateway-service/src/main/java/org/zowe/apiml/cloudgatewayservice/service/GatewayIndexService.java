@@ -28,7 +28,7 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 

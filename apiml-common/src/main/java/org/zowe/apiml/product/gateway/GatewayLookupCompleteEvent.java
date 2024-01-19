@@ -12,7 +12,7 @@ package org.zowe.apiml.product.gateway;
 
 import org.springframework.context.ApplicationEvent;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class GatewayLookupCompleteEvent extends ApplicationEvent {
 

@@ -12,11 +12,13 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -74,8 +76,8 @@ public class TrustedCertificatesProvider {
     private String callCertificatesEndpoint(String url) {
         try {
             HttpGet httpGet = new HttpGet(new URI(url));
-            HttpResponse httpResponse = httpClient.execute(httpGet);
-            final int statusCode = httpResponse.getStatusLine() != null ? httpResponse.getStatusLine().getStatusCode() : 0;
+            ClassicHttpResponse httpResponse = httpClient.execute(httpGet); //TODO: Use the new API
+            final int statusCode = httpResponse.getCode();
             String body = "";
             if (httpResponse.getEntity() != null) {
                 body = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
@@ -89,7 +91,7 @@ public class TrustedCertificatesProvider {
 
         } catch (URISyntaxException e) {
             apimlLog.log("org.zowe.apiml.security.common.verify.invalidURL", e.getMessage());
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) { //TODO: Consider a better message
             apimlLog.log("org.zowe.apiml.security.common.verify.httpError", e.getMessage());
         }
         return null;

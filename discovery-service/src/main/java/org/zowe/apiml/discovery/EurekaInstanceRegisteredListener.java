@@ -11,7 +11,6 @@
 package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
@@ -38,7 +37,6 @@ public class EurekaInstanceRegisteredListener {
      * Translates service instance Eureka metadata from older versions to the current version
      */
     @EventListener
-    @HystrixCommand
     public void listen(EurekaInstanceRegisteredEvent event) {
         final InstanceInfo instanceInfo = event.getInstanceInfo();
         final Map<String, String> metadata = instanceInfo.getMetadata();
@@ -59,7 +57,6 @@ public class EurekaInstanceRegisteredListener {
     }
 
     @EventListener
-    @HystrixCommand
     public void listen(EurekaStatusUpdateEvent event) {
         final String serviceId = EurekaUtils.getServiceIdFromInstanceId(event.getInstanceId());
         gatewayNotifier.serviceUpdated(serviceId, event.getInstanceId());

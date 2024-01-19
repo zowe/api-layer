@@ -117,7 +117,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/fonts/**",
             "/eureka/images/**"
         };
-        return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+        return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
     }
 
     @Bean
@@ -126,11 +126,11 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .httpBasic().realmName(DISCOVERY_REALM)
             .and()
             .authorizeRequests()
-            .antMatchers("/application/info", "/application/health").permitAll()
-            .antMatchers("/**").authenticated();
+            .requestMatchers("/application/info", "/application/health").permitAll()
+            .requestMatchers("/**").authenticated();
 
         if (isMetricsEnabled) {
-            http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
+            http.authorizeRequests().requestMatchers("/application/hystrixstream").permitAll();
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

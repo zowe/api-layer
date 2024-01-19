@@ -21,7 +21,7 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RequiredArgsConstructor
 public class ServiceErrorCheck implements ErrorCheck {

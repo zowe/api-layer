@@ -27,7 +27,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

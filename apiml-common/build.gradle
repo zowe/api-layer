@@ -4,26 +4,27 @@ dependencies {
     api project(':common-service-core')
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.eureka.client.v3
+//    implementation libs.spring.cloud.starter.bootstrap
+    implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.boot.starter.web
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.websocket
+//    implementation libs.spring.web
+//    implementation libs.spring.webmvc
+//    implementation libs.tomcat.embed.core
+//    implementation libs.tomcat.embed.el
+//    implementation libs.tomcat.embed.websocket
     implementation libs.snakeyaml
     implementation libs.spring.boot.starter.validation
     implementation libs.jackson.databind
     implementation libs.jackson.core
     implementation libs.apache.commons.lang3
-    implementation libs.http.client
+//    implementation libs.http.client
+    implementation libs.http.client5
     implementation libs.http.core
     implementation libs.janino
     implementation libs.xstream
     implementation libs.jetty.util
 
-    implementation libs.spring.security.crypto
+//    implementation libs.spring.security.crypto
 
     compileOnly libs.spring.boot.configuration.processor
     compileOnly libs.lombok

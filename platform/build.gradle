@@ -17,7 +17,7 @@ javaPlatform {
  */
 dependencies {
     api(platform(libs.spring.boot.dependencies))
-    api(platform(libs.spring.bom))
+//    api(platform(libs.spring.bom))
     api(platform(libs.netty.bom))
 
     // enforce version throughout all modules

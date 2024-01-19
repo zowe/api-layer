@@ -13,32 +13,31 @@ package org.zowe.apiml.product.web;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
+import java.time.Duration;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -191,13 +190,19 @@ public class HttpConfig {
         socketFactoryRegistryBuilder.register("https", factory.createSslSocketFactory());
         Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
         ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, timeToLive);
-        this.connectionManagerTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                connectionManager.closeExpiredConnections();
-                connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
-            }
-        }, 30000, 30000);
+//        this.connectionManagerTimer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                connectionManager.closeExpiredConnections();
+//                connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
+//            }
+//        }, 30000, 30000);
+        ConnectionConfig connConfig = ConnectionConfig.custom()
+            .setConnectTimeout(Timeout.ofMilliseconds(requestConnectionTimeout))
+            .setSocketTimeout(Timeout.ofMilliseconds(requestConnectionTimeout))
+            .setTimeToLive(Timeout.ofMilliseconds(timeToLive))
+            .build();
+        connectionManager.setDefaultConnectionConfig(connConfig);
         connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
         connectionManager.setMaxTotal(maxTotalConnections);
         return connectionManager;
@@ -242,9 +247,15 @@ public class HttpConfig {
     @Bean
     @Primary
     @Qualifier("restTemplateWithKeystore")
-    public RestTemplate restTemplateWithKeystore() {
+    public RestTemplate restTemplateWithKeystore(RestTemplateBuilder builder) {
+//        return builder.requestFactory(HttpComponentsClientHttpRequestFactory.class)
+//            .setConnectTimeout(Duration.ofMillis(requestConnectionTimeout))
+//            .setReadTimeout(Duration.ofMillis(readTimeout))
+//            .build();
+
+
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
-        factory.setReadTimeout(readTimeout);
+  //      factory.setReadTimeout(readTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
@@ -260,7 +271,7 @@ public class HttpConfig {
     @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
-        factory.setReadTimeout(readTimeout);
+    //    factory.setReadTimeout(readTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
