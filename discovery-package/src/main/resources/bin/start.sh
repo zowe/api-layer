@@ -158,15 +158,15 @@ DISCOVERY_CODE=AD
 java_command=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START}
-if [ ${java_major_version} -ge 17 ]; then
-    java_command="${java_command} \
-            --add-opens=java.base/java.lang=ALL-UNNAMED \
-            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
-            --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
-            --add-opens=java.base/java.util=ALL-UNNAMED \
-            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
-            --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
-fi
+#if [ ${java_major_version} -ge 17 ]; then
+#    java_command="${java_command} \
+#            --add-opens=java.base/java.lang=ALL-UNNAMED \
+#            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+#            --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
+#            --add-opens=java.base/java.util=ALL-UNNAMED \
+#            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+#            --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+#fi
 _BPX_JOBNAME="${java_command} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
