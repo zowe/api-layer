@@ -192,18 +192,17 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
-# Check whether Java 17 is used
-java_version=$("${JAVA_HOME}/bin/java" -version 2>&1)
-java_version_short=$(echo "${java_version}" | grep ^"java version" | sed -e "s/java version //g"| sed -e "s/\"//g")
-if [[ $java_version_short == "" ]]; then
-    java_version_short=$(echo "${java_version}" | grep ^"openjdk version" | sed -e "s/openjdk version //g"| sed -e "s/\"//g")
-fi
-java_major_version=$(echo "${java_version_short}" | cut -d '.' -f 1)
-
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
 then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
+
+ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+        --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+        --add-opens=java.base/java.util=ALL-UNNAMED
+        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
@@ -220,19 +219,10 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 #    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
 
 GATEWAY_CODE=AG
-java_command=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
-    ${QUICK_START}
-#if [ ${java_major_version} -ge 17 ]; then
-#    java_command="${java_command} \
-#            --add-opens=java.base/java.lang=ALL-UNNAMED \
-#            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
-#            --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED \
-#            --add-opens=java.base/java.util=ALL-UNNAMED \
-#            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
-#            --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
-#fi
-_BPX_JOBNAME="${java_command} \
+    ${QUICK_START} \
+    ${ADD_OPENS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
@@ -308,7 +298,7 @@ _BPX_JOBNAME="${java_command} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
-    -jar ${JAR_FILE} &"
+    -jar ${JAR_FILE} &
 
 pid=$!
 echo "pid=${pid}"
