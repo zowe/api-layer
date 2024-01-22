@@ -11,7 +11,9 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -23,6 +25,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,7 @@ import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
+import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
@@ -45,6 +49,7 @@ import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClient
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -53,6 +58,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
+import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -68,7 +74,12 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
 
 @Configuration
@@ -225,9 +236,6 @@ public class ConnectionsConfig {
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
     public CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
-                                                 TransportClientFactories<?> transportClientFactories,
-                                                 AbstractDiscoveryClientOptionalArgs<?> args,
-//                                                 @Qualifier("primaryApimlEurekaJerseyClient") EurekaJerseyClient eurekaJerseyClient,
                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -235,9 +243,6 @@ public class ConnectionsConfig {
         } else {
             appManager = manager;
         }
-//        AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
-//        args.setEurekaJerseyClient(eurekaJerseyClient);
-//        DefaultEurekaClientHttpRequestFactorySupplier factorySupplier = getDefaultEurekaClientHttpRequestFactorySupplier();
         RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
         RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
         final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, factories, args1, this.context);
@@ -261,10 +266,6 @@ public class ConnectionsConfig {
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
 
-//            if (config.isVerifySslCertificatesOfServices()) {
-//                setSystemSslProperties();
-//            }
-//            factory().setSystemSslProperties();
             clientArgs.setSSLContext(factory().getSslContext());
             clientArgs.setHostnameVerifier(factory().getHostnameVerifier());
         }
@@ -279,43 +280,40 @@ public class ConnectionsConfig {
         return additionalRegistrations;
     }
 
-//    @Bean(destroyMethod = "shutdown")
-//    @Conditional(AdditionalRegistrationCondition.class)
-//    @RefreshScope
-//    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
-//                                                                       EurekaClientConfig config,
-//                                                                       List<AdditionalRegistration> additionalRegistrations,
-//                                                                       EurekaFactory eurekaFactory,
-//                                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
-//    ) {
-//        List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
-//        for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
-//            CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
-//            additionalClients.add(cloudEurekaClient);
-//            cloudEurekaClient.registerHealthCheck(healthCheckHandler);
-//        }
-//        return new AdditionalEurekaClientsHolder(additionalClients);
-//    }
-//
-//    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
-//
-//        log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
-//        Map<String, String> urls = new HashMap<>();
-//        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
-//
-//        EurekaClientConfigBean configBean = new EurekaClientConfigBean();
-//        BeanUtils.copyProperties(config, configBean);
-//        configBean.setServiceUrl(urls);
-//
-////        EurekaJerseyClient jerseyClient = factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
-////        MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
-////        args.setEurekaJerseyClient(jerseyClient);
-//
-//        EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
-//        InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
-//
-//        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context);
-//    }
+    @Bean(destroyMethod = "shutdown")
+    @Conditional(AdditionalRegistrationCondition.class)
+    @RefreshScope
+    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
+                                                                       EurekaClientConfig config,
+                                                                       List<AdditionalRegistration> additionalRegistrations,
+                                                                       EurekaFactory eurekaFactory,
+                                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    ) {
+        List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
+        for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
+            CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
+            additionalClients.add(cloudEurekaClient);
+            cloudEurekaClient.registerHealthCheck(healthCheckHandler);
+        }
+        return new AdditionalEurekaClientsHolder(additionalClients);
+    }
+
+    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
+
+        log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
+        Map<String, String> urls = new HashMap<>();
+        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
+
+        EurekaClientConfigBean configBean = new EurekaClientConfigBean();
+        BeanUtils.copyProperties(config, configBean);
+        configBean.setServiceUrl(urls);
+
+        EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
+        InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
+        RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
+        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context,factories, args1);
+    }
 
     @Bean
     public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {

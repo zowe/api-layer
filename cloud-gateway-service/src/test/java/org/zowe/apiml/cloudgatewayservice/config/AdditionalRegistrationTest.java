@@ -15,7 +15,6 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -83,9 +82,9 @@ public class AdditionalRegistrationTest {
         public void setUp() {
             configSpy = Mockito.spy(connectionsConfig);
             lenient().doReturn(httpsFactory).when(configSpy).factory();
-            lenient().when(httpsFactory.createEurekaJerseyClientBuilder(any(), any())).thenReturn(mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class));
+//            lenient().when(httpsFactory.createEurekaJerseyClientBuilder(any(), any())).thenReturn(mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class));
 
-            lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
+            lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
         }
 
         @Test
