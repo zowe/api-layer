@@ -10,7 +10,16 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.client.serviceregistry.AutoServiceRegistrationProperties;
+import org.springframework.cloud.netflix.eureka.CloudEurekaInstanceConfig;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.services.BasicInfoService;
@@ -28,4 +37,12 @@ public class RegistryConfig {
     public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }
+
+//    @Bean
+//    public EurekaRegistration eurekaRegistration(EurekaClient eurekaClient,
+//                                                 CloudEurekaInstanceConfig instanceConfig, ApplicationInfoManager applicationInfoManager,
+//                                                 @Autowired(required = false) ObjectProvider<HealthCheckHandler> healthCheckHandler) {
+//        return EurekaRegistration.builder(instanceConfig).with(applicationInfoManager).with(eurekaClient)
+//            .with(healthCheckHandler).build();
+//    }
 }

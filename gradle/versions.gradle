@@ -117,8 +117,10 @@ dependencyResolutionManagement {
             version('ribbon', '2.3.0')
             version('reactor') {
                 // 3.5.x+: removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
-                strictly '[3.4.34, 3.5.0['
-                prefer '3.4.34'
+                // which means that the engine must select a version between 3.4.34 (included) and 3.6.2(excluded),
+                // and that if no other component in the graph needs a different version, it should prefer 3.6.1
+                strictly '[3.4.34, 3.6.2['
+                prefer '3.6.1'
             }
             version('restAssured', '5.3.2')
             version('rhino', '1.7.14')
