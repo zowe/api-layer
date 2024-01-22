@@ -14,7 +14,7 @@ dependencies {
     compileOnly libs.javax.servlet.api
     compileOnly libs.jakarta.inject
 
-    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.core
     testImplementation libs.spring4Mvc
     testImplementation libs.spring4Test
 

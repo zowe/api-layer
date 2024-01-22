@@ -36,7 +36,7 @@ dependencies {
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
-    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.core
 
     annotationProcessor libs.spring.boot.configuration.processor
     testImplementation libs.gson

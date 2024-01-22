@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -51,7 +50,6 @@ public class ImageController {
     }
 
     @GetMapping(value = "/custom-logo")
-    @HystrixCommand()
     @ResponseBody
     public ResponseEntity<FileSystemResource> downloadImage() {
         File imageFile = new File(image);

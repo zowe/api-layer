@@ -16,6 +16,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.*;
 import com.netflix.eureka.resources.ServerCodecs;
+import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
@@ -43,10 +44,10 @@ class ApimlInstanceRegistryTest {
     private EurekaClientConfig clientConfig;
     private ServerCodecs serverCodecs;
     private EurekaClient eurekaClient;
+    private EurekaServerHttpClientFactory eurekaServerHttpClientFactory;
     private InstanceRegistryProperties instanceRegistryProperties;
     private ApplicationContext appCntx;
     private InstanceInfo standardInstance;
-    private EurekaConfig.Tuple tuple;
 
     @BeforeEach
     void setUp() {
@@ -55,23 +56,25 @@ class ApimlInstanceRegistryTest {
         clientConfig = mock(EurekaClientConfig.class);
         serverCodecs = mock(ServerCodecs.class);
         eurekaClient = mock(DiscoveryClient.class);
+        eurekaServerHttpClientFactory = mock(EurekaServerHttpClientFactory.class);
         instanceRegistryProperties = mock(InstanceRegistryProperties.class);
         appCntx = mock(ApplicationContext.class);
-        tuple = new EurekaConfig.Tuple("service*,hello");
         apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
             eurekaClient,
+            eurekaServerHttpClientFactory,
             instanceRegistryProperties,
-            appCntx,tuple));
+            appCntx,
+            new EurekaConfig.Tuple("service*,hello")));
 
         MethodHandle methodHandle = mock(MethodHandle.class);
 
         ReflectionTestUtils.setField(apimlInstanceRegistry, "handleRegistrationMethod", methodHandle);
         ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
         ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
-        ReflectionTestUtils.setField(apimlInstanceRegistry, "handleCancelationMethod", methodHandle);
+        ReflectionTestUtils.setField(apimlInstanceRegistry, "handleCancellationMethod", methodHandle);
     }
 
     @Nested
@@ -114,8 +117,10 @@ class ApimlInstanceRegistryTest {
             clientConfig,
             serverCodecs,
             eurekaClient,
+            eurekaServerHttpClientFactory,
             instanceRegistryProperties,
-            appCntx,new EurekaConfig.Tuple(tuple)));
+            appCntx,
+            new EurekaConfig.Tuple(tuple)));
         MethodHandle methodHandle = mock(MethodHandle.class);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle",methodHandle);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
@@ -131,8 +136,10 @@ class ApimlInstanceRegistryTest {
             clientConfig,
             serverCodecs,
             eurekaClient,
+            eurekaServerHttpClientFactory,
             instanceRegistryProperties,
-            appCntx,new EurekaConfig.Tuple(tuple)));
+            appCntx,
+            new EurekaConfig.Tuple(tuple)));
         MethodHandle methodHandle = mock(MethodHandle.class);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
@@ -152,8 +159,10 @@ class ApimlInstanceRegistryTest {
                     clientConfig,
                     serverCodecs,
                     eurekaClient,
+                    eurekaServerHttpClientFactory,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple(tuple)));
+                    appCntx,
+                    new EurekaConfig.Tuple(tuple)));
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(exception);
@@ -169,8 +178,10 @@ class ApimlInstanceRegistryTest {
                     clientConfig,
                     serverCodecs,
                     eurekaClient,
+                    eurekaServerHttpClientFactory,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple("service*,hello")));
+                    appCntx,
+                    new EurekaConfig.Tuple("service*,hello")));
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
@@ -187,8 +198,10 @@ class ApimlInstanceRegistryTest {
                     clientConfig,
                     serverCodecs,
                     eurekaClient,
+                    eurekaServerHttpClientFactory,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple(tuple)));
+                    appCntx,
+                    new EurekaConfig.Tuple(tuple)));
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(exception);
@@ -204,8 +217,10 @@ class ApimlInstanceRegistryTest {
                     clientConfig,
                     serverCodecs,
                     eurekaClient,
+                    eurekaServerHttpClientFactory,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple("service*,hello")));
+                    appCntx,
+                    new EurekaConfig.Tuple("service*,hello")));
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
