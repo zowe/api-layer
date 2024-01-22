@@ -133,7 +133,7 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         api(platform(project(":platform")))
 
         testImplementation libs.junitJupiter
-        testImplementation libs.mockito.jupiter
+//        testImplementation libs.mockito.jupiter
 
         testImplementation libs.junit.platform.launcher
 

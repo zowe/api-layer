@@ -31,18 +31,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * This class is responsible for generating the examples for API Doc and can simulate the response for any endpoint. It 
+ * This class is responsible for generating the examples for API Doc and can simulate the response for any endpoint. It
  * is helpful for the standalone mode that mocks the loaded schemas.
  *
- * This class tries to generate a response for each endpoint in the API documentation. It focuses on the successful 
- * response with media-type JSON. If it is not possible to generate such content, it uses the default one (an empty 
- * JSON object). Examples are mapping by ANT matcher and it is possible to respond by this class (see method 
+ * This class tries to generate a response for each endpoint in the API documentation. It focuses on the successful
+ * response with media-type JSON. If it is not possible to generate such content, it uses the default one (an empty
+ * JSON object). Examples are mapping by ANT matcher and it is possible to respond by this class (see method
  * {@link ExampleService#replyExample(HttpServletResponse, String, String)}).
  */
 @Slf4j

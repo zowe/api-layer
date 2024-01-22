@@ -37,7 +37,7 @@ dependencies {
 
     testImplementation libs.jersey.test.provider.jdk.http
     testImplementation libs.spring4Test
-    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.core
     testImplementation libs.json.path
 
 //    tomcat libs.tomcat.embed.core.get(),

@@ -54,6 +54,7 @@ dependencies {
     runtimeOnly libs.jjwt.jackson
 
     testFixturesImplementation(project(':apiml-security-common'))
+    testFixturesImplementation libs.spring.boot.starter
 //    testFixturesImplementation libs.spring.core
 //    testFixturesImplementation libs.slf4j.api
     testFixturesImplementation libs.rest.assured

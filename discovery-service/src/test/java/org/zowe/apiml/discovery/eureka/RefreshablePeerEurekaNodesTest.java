@@ -88,7 +88,6 @@ class RefreshablePeerEurekaNodesTest {
     void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
-        when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
 
         Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
         MODIFIERS.set(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);

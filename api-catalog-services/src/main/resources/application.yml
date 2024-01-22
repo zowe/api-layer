@@ -183,12 +183,9 @@ management:
         health:
             showDetails: always
 
-hystrix.command.default.execution.timeout.enabled: false
-
 logbackServiceName: ZWEAAC1
 ---
-spring:
-    profiles: debug
+spring.config.activate.on-profile: debug
 
 management:
     endpoints:
@@ -210,8 +207,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -222,15 +218,13 @@ management:
                 include: "*"
 
 ---
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+spring.config.activate.on-profile: dev
+#    profiles.include:
+#        - debug
+#        - diag
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     attls:

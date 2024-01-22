@@ -94,16 +94,16 @@ dependencyResolutionManagement {
 //                prefer '1.2.13'
 //            }
             version('lombok', '1.18.30')
-            version('mockitoCore') {
-                // version 5.x requires Java 11
-                strictly '[4.11.0, 5.0.0['
-                prefer '4.11.0'
-            }
-            version('mockitoInline') {
-                // version 5.x requires Java 11
-                strictly '[4.11.0, 5.0.0['
-                prefer '4.11.0'
-            }
+//            version('mockitoCore') {
+//                // version 5.x requires Java 11
+//                strictly '[4.11.0, 5.0.0['
+//                prefer '4.11.0'
+//            }
+//            version('mockitoInline') {
+//                // version 5.x requires Java 11
+//                strictly '[4.11.0, 5.0.0['
+//                prefer '4.11.0'
+//            }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
             version('netty', '4.1.101.Final')
@@ -303,9 +303,9 @@ dependencyResolutionManagement {
 //            library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
 //            library('logback_core', 'ch.qos.logback', 'logback-core').versionRef('logback')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
-            library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
-            library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
-            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
+//            library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
+//            library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
+//            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
             library('netflix_commons_util', 'com.netflix.netflix-commons', 'netflix-commons-util').versionRef('netflixCommonsUtil')
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('netty', 'io.netty', 'netty-all').versionRef('netty')

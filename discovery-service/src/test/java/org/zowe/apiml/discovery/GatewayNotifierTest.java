@@ -17,12 +17,12 @@ import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.AwsInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import lombok.Getter;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.message.StatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +33,7 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +64,6 @@ class GatewayNotifierTest {
         CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
         httpStatusLine = mock(StatusLine.class);
         when(httpStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
         when(httpClient.execute(any())).thenReturn(httpResponse);
 
         messageService = mock(MessageService.class);
@@ -91,6 +91,7 @@ class GatewayNotifierTest {
         mt.setType(MessageType.INFO);
         return Message.of(messageKey, mt, params);
     }
+
     @Nested
     class GivenNoGateway {
         private final String messageKey = "org.zowe.apiml.discovery.errorNotifyingGateway";
@@ -121,80 +122,77 @@ class GatewayNotifierTest {
             Application application = mock(Application.class);
             when(application.getInstances()).thenReturn(instances);
             when(registry.getApplication("GATEWAY")).thenReturn(application);
+
+            MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+            Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+            when(messageService.createMessage(anyString(), any(Object[].class))).thenReturn(message);
         }
 
         @Nested
         class WhenCancelRegistration {
             @Test
-            void thenAPIisCalledWithGivenServiceId() throws IOException {
+            void thenAPIisCalledWithGivenServiceId() throws IOException, URISyntaxException {
                 verify(httpClient, never()).execute(any(HttpDelete.class));
 
                 gatewayNotifierSync.serviceCancelledRegistration("testService");
                 ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
                 verify(httpClient, times(2)).execute(argument.capture());
-                assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getURI().toString());
-                assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getURI().toString());
+                assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getUri().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getUri().toString());
             }
 
             @Test
-            void thenAPIisCalledWithoutServiceId() throws IOException {
+            void thenAPIisCalledWithoutServiceId() throws IOException, URISyntaxException {
                 verify(httpClient, never()).execute(any(HttpDelete.class));
 
                 gatewayNotifierSync.serviceCancelledRegistration(null);
                 ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
                 verify(httpClient, times(2)).execute(argument.capture());
-                assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getURI().toString());
-                assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getURI().toString());
+                assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getUri().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getUri().toString());
             }
         }
         @Nested
         class WhenServiceUpdated {
             @Test
-            void thenAPIisCalledWithGivenServiceId() throws IOException {
+            void thenAPIisCalledWithGivenServiceId() throws IOException, URISyntaxException {
                 verify(httpClient, never()).execute(any(HttpDelete.class));
 
                 gatewayNotifierSync.serviceUpdated("testService", null);
                 ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
                 verify(httpClient, times(2)).execute(argument.capture());
-                assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getURI().toString());
-                assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getURI().toString());
+                assertEquals("https://hostname1:1433/gateway/cache/services/testService", argument.getAllValues().get(0).getUri().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services/testService", argument.getAllValues().get(1).getUri().toString());
             }
 
             @Test
-            void thenAPIisCalledWithoutServiceId() throws IOException {
+            void thenAPIisCalledWithoutServiceId() throws IOException, URISyntaxException {
                 verify(httpClient, never()).execute(any(HttpDelete.class));
 
                 gatewayNotifierSync.serviceUpdated(null, null);
                 ArgumentCaptor<HttpDelete> argument = ArgumentCaptor.forClass(HttpDelete.class);
                 verify(httpClient, times(2)).execute(argument.capture());
-                assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getURI().toString());
-                assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getURI().toString());
+                assertEquals("https://hostname1:1433/gateway/cache/services", argument.getAllValues().get(0).getUri().toString());
+                assertEquals("http://hostname2:1000/gateway/cache/services", argument.getAllValues().get(1).getUri().toString());
             }
         }
 
         @Nested
         class WhenDistributeInvalidatedCredentials {
             @Test
-            void testDistributeInvalidatedCredentials() throws IOException {
+            void testDistributeInvalidatedCredentials() throws IOException, URISyntaxException {
                 verify(httpClient, never()).execute(any(HttpGet.class));
 
                 gatewayNotifierSync.distributeInvalidatedCredentials("instance");
                 ArgumentCaptor<HttpGet> argument = ArgumentCaptor.forClass(HttpGet.class);
                 verify(httpClient, times(2)).execute(argument.capture());
-                assertEquals("https://hostname1:1433/gateway/auth/distribute/instance", argument.getAllValues().get(0).getURI().toString());
-                assertEquals("http://hostname2:1000/gateway/auth/distribute/instance", argument.getAllValues().get(1).getURI().toString());
+                assertEquals("https://hostname1:1433/gateway/auth/distribute/instance", argument.getAllValues().get(0).getUri().toString());
+                assertEquals("http://hostname2:1000/gateway/auth/distribute/instance", argument.getAllValues().get(1).getUri().toString());
             }
         }
 
         @Nested
         class GivenHttpErrorDuringCancelRegistration {
-
-            @BeforeEach
-            void setup() {
-                MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
-                Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
-                when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-            }
 
             @Test
             void whenHttpExceptionThenErrorLogged() throws IOException {
@@ -238,13 +236,6 @@ class GatewayNotifierTest {
 
         @Nested
         class GivenHttpErrorDuringServiceUpdate {
-
-            @BeforeEach
-            void setup() {
-                MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
-                Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
-                when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-            }
 
             @Test
             void whenHttpExceptionThenErrorLogged() throws IOException {
@@ -293,7 +284,7 @@ class GatewayNotifierTest {
             void setup() {
                 MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
                 Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
-                when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
+                when(messageService.createMessage(anyString(), any(Object[].class))).thenReturn(message);
             }
 
             @Test

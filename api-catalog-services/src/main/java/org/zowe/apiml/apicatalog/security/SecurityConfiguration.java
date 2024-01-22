@@ -95,10 +95,10 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                    baseConfiguration(http.requestMatchers(matchers -> matchers.antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
+                    baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
                     .authorizeRequests(requests -> requests
-                            .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
+                            .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider)
                     .authenticationProvider(new CertificateAuthenticationProvider());
@@ -146,25 +146,25 @@ public class SecurityConfiguration {
                 "/favicon.ico",
                 "/api-doc"
             };
-            return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+            return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
         }
 
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(baseConfiguration(http))
                     .authorizeRequests(requests -> requests
-                            .antMatchers("/static-api/**").authenticated()
-                            .antMatchers("/containers/**").authenticated()
-                            .antMatchers(APIDOC_ROUTES).authenticated()
-                            .antMatchers("/application/health", "/application/info").permitAll())
+                            .requestMatchers("/static-api/**").authenticated()
+                            .requestMatchers("/containers/**").authenticated()
+                            .requestMatchers(APIDOC_ROUTES).authenticated()
+                            .requestMatchers("/application/health", "/application/info").permitAll())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider);
 
             if (isMetricsEnabled) {
-                http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
+                http.authorizeRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
             }
 
-            http.authorizeRequests(requests -> requests.antMatchers("/application/**").authenticated());
+            http.authorizeRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -203,7 +203,7 @@ public class SecurityConfiguration {
         http
                 // login endpoint
                 .authorizeRequests(requests -> requests
-                        .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
+                        .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
                 .logout(logout -> logout
                         .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
                         .logoutSuccessHandler(logoutSuccessHandler())).apply(new CustomSecurityFilters());

@@ -131,8 +131,8 @@ dependencies {
     annotationProcessor libs.lombok
     annotationProcessor libs.spring.boot.configuration.processor
 
-    testImplementation libs.mockito.core
-    testImplementation libs.mockito.inline
+//    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.inline
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart

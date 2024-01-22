@@ -39,7 +39,7 @@ dependencies {
     testImplementation libs.hamcrest
 //    testImplementation libs.logback.classic
 //    testImplementation libs.tomcat.embed.core
-    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.core
     implementation libs.spring.boot.starter.web
 //    implementation libs.spring.context
 //    implementation libs.spring.context.support

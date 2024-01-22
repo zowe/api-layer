@@ -19,8 +19,8 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    testImplementation libs.mockito.core
-    testImplementation libs.mockito.jupiter
+//    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.jupiter
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
 }

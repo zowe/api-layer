@@ -19,7 +19,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     testImplementation project(':apiml-security-common')
-    testImplementation libs.mockito.core
+//    testImplementation libs.mockito.core
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
 //    testImplementation libs.spring.security.config
