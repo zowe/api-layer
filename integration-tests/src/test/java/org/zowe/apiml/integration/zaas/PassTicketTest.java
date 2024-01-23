@@ -33,14 +33,24 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.ContentType.XML;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
+import static org.zowe.apiml.util.SecurityUtils.USERNAME;
+import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtToken;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfToken;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
 
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
@@ -161,7 +171,7 @@ class PassTicketTest implements TestWithStartedInstances {
     @Nested
     class WhenGeneratingPassTicket_returnBadRequest {
 
-        private final String jwt = getZosmfJwtToken();
+        private String jwt = getZosmfJwtToken();
 
         @Test
         void givenNoApplicationName() {

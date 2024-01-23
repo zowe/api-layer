@@ -24,8 +24,17 @@ import io.restassured.http.Cookie;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -47,17 +56,34 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -69,7 +95,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.GENERATE_ACCESS_TOKEN;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
+import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
 
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
@@ -101,7 +130,6 @@ public class SecurityUtils {
     protected static String getUsername() {
         return USERNAME;
     }
-
 
     //@formatter:off
 
@@ -150,7 +178,34 @@ public class SecurityUtils {
     }
 
     public static String getZosmfJwtToken() {
-        return getZosmfToken("jwtToken");
+        return getZosmfTokenWebClient("jwtToken");
+    }
+
+    public static String getZosmfTokenWebClient(String cookie) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            HttpClientContext context = HttpClientContext.create();
+            CookieStore cookieStore = new BasicCookieStore();
+            context.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
+
+            HttpUriRequest request = new HttpPost(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT));
+            request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+            request.addHeader(HttpHeaders.AUTHORIZATION, String.format("Basic %s", java.util.Base64.getEncoder().encodeToString(String.format("%s:%s", USERNAME, PASSWORD).getBytes())));
+            request.addHeader("X-CSRF-ZOSMF-HEADER", "csrf");
+
+            CloseableHttpResponse response = httpClient.execute(request, context);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return cookieStore.getCookies()
+                    .stream()
+                    .filter(c -> cookie.equals(c.getName()))
+                    .findFirst()
+                    .map(c -> c.getValue())
+                    .orElseThrow(RuntimeException::new);
+            } else {
+                throw new RuntimeException("");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String getZosmfToken(String cookie) {
