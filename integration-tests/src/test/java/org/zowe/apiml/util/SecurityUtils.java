@@ -181,6 +181,10 @@ public class SecurityUtils {
         return getZosmfTokenWebClient("jwtToken");
     }
 
+    public static String getZosmfLtpaToken() {
+        return getZosmfTokenWebClient("LtpaToken2");
+    }
+
     public static String getZosmfTokenWebClient(String cookie) {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             HttpClientContext context = HttpClientContext.create();

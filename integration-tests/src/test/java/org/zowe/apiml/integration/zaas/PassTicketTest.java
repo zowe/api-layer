@@ -42,13 +42,12 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
 import static org.zowe.apiml.util.SecurityUtils.USERNAME;
 import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtToken;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfToken;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
 
@@ -91,7 +90,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            String ltpaToken = getZosmfToken(LTPA_COOKIE);
+            String ltpaToken = getZosmfLtpaToken();
             String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off
