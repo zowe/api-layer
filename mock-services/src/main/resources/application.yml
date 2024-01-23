@@ -42,8 +42,7 @@ zss:
             "[zoweson@zowe.com]": USER
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     attls:

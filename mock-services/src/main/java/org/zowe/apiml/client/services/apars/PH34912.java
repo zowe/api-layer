@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
