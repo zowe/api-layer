@@ -46,6 +46,11 @@
                                                     "type": "object",
                                                     "description": "Authentication and authorization options",
                                                     "properties": {
+                                                        "useInternalMapper": {
+                                                            "type": "boolean",
+                                                            "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
+                                                            "default": false
+                                                        },
                                                         "auth": {
                                                             "type": "object",
                                                             "description": "Authentication against API ML.",

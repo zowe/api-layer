@@ -17,6 +17,7 @@ import SearchCriteria from '../Search/SearchCriteria';
 import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
+import { sortServices } from '../../selectors/selectors';
 
 export default class ServicesNavigationBar extends Component {
     componentDidMount() {
@@ -80,7 +81,7 @@ export default class ServicesNavigationBar extends Component {
         let selectedTab = Number(0);
         let allServices;
         if (hasTiles) {
-            allServices = services.flatMap((tile) => tile.services);
+            allServices = sortServices(services);
             const index = allServices.findIndex((item) => item.serviceId === serviceId);
             selectedTab = Number(index);
         }

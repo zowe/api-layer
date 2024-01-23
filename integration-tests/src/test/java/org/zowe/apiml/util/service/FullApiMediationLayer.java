@@ -142,6 +142,7 @@ public class FullApiMediationLayer {
             }
             discoverableClientService.start();
             mockZosmfService.start();
+            log.info("Services started");
         } catch (IOException ex) {
             log.error("error while starting services: " + ex.getMessage(), ex.getCause());
         }

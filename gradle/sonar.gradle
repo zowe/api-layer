@@ -14,6 +14,7 @@ sonar {
         property "sonar.language", "java"
         property "sonar.links.scm", "https://github.com/zowe/api-layer"
         property "sonar.links.ci", System.getenv()['BUILD_URL'] ?: null
+        property "sonar.scanner.force-deprecated-java-version", true
         if (pullRequest != null) {
             property "sonar.pullrequest.key", System.getenv()['CHANGE_ID'] ?: null
             property "sonar.pullrequest.branch", System.getenv()['CHANGE_BRANCH'] ?: null

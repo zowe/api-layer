@@ -12,7 +12,8 @@ import PropTypes from 'prop-types';
 import BlogTile from './BlogTile';
 
 export default function BlogContainer({ user, url, title }) {
-    const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fmedium.com%2Ffeed%2F%40${user}`;
+    const RSSUrl = `https://medium.com/feed/@${user}`;
+    const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=${RSSUrl}`;
     const [myBlog, setMyBlog] = useState([]);
 
     const fetchData = async () => {
@@ -78,7 +79,7 @@ export default function BlogContainer({ user, url, title }) {
         fetchDataEffect();
     }, [rss2json]);
 
-    function displayBlogs() {
+    function displayBlog() {
         if (myBlog?.items) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(url));
             return correctBlog && <BlogTile blogData={correctBlog} />;
@@ -87,7 +88,7 @@ export default function BlogContainer({ user, url, title }) {
     if (url?.includes('medium.com')) {
         return (
             <div data-testid="medium-blog-container" className="BlogsContainer">
-                {displayBlogs()}
+                {displayBlog()}
             </div>
         );
     }

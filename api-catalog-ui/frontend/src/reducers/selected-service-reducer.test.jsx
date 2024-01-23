@@ -9,6 +9,7 @@
  */
 
 import selectedServiceReducer from './selected-service-reducer';
+import { STORE_CONTENT_ANCHOR } from '../constants/selected-service-constants';
 
 describe('>>> Selected Service reducer tests', () => {
     it('should return selected service', () => {
@@ -20,7 +21,7 @@ describe('>>> Selected Service reducer tests', () => {
 
     it('should return clear service', () => {
         const state = { selectedService: { id: 'one' }, selectedTile: 'aaaa' };
-        const expectedState = { selectedService: {}, selectedTile: null };
+        const expectedState = { selectedContentAnchor: null, selectedService: {}, selectedTile: null };
         const action = { type: 'CLEAR_SERVICE' };
         expect(selectedServiceReducer(state, action)).toEqual(expectedState);
     });
@@ -28,6 +29,12 @@ describe('>>> Selected Service reducer tests', () => {
     it('should return default state', () => {
         const state = { selectedService: { id: 'one' }, selectedTile: 'aaaa' };
         const action = { type: 'OOPS' };
+        expect(selectedServiceReducer(state, action)).toEqual(state);
+    });
+
+    it('should return store content anchor', () => {
+        const state = { selectedContentAnchor: '#id' };
+        const action = { type: STORE_CONTENT_ANCHOR, payload: '#id' };
         expect(selectedServiceReducer(state, action)).toEqual(state);
     });
 });
