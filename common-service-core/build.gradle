@@ -1,6 +1,8 @@
 dependencies {
-    implementation libs.eureka.client
-    implementation libs.netflix.servo
+//    implementation libs.eureka.client
+//    implementation libs.netflix.servo
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.eureka.jersey.client
     implementation libs.jettison
     implementation libs.http.client5
 //    implementation libs.http.core

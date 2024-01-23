@@ -12,7 +12,7 @@ package org.zowe.apiml.passticket;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 
 /**
  * Abstract exception from IRR passticket service. It collect common values about exception

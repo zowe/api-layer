@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.AparBasedService;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 @RestController

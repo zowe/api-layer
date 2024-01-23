@@ -14,12 +14,13 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -192,7 +193,7 @@ public class APIDocRetrievalService {
         String apiDocContent = "";
         try {
             apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) { //TODO: Is it handled correctly?
             log.error("Error retrieving api doc for '{}'", serviceId, e);
         }
         return new ApiDocInfo(apiInfo, apiDocContent, routes);
@@ -318,7 +319,7 @@ public class APIDocRetrievalService {
      * @return the information about ApiDoc content as application/json
      * @throws ApiDocNotFoundException if the response is error
      */
-    private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) throws IOException {
+    private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) throws IOException, ParseException {
         HttpGet httpGet = new HttpGet(apiDocUrl);
         httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
@@ -329,7 +330,7 @@ public class APIDocRetrievalService {
             if (responseEntity != null) {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+            if (response.getCode() != HttpStatus.SC_OK) {
                 throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
                     " server error: '" + responseBody + "'.");
             }

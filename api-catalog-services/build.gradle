@@ -73,6 +73,7 @@ dependencies {
     implementation libs.spring.boot.starter.websocket
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.configuration.processor
+    implementation libs.spring.boot.starter.aop
 //    implementation libs.spring.cloud.commons
 //    implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.eureka.client
@@ -83,6 +84,7 @@ dependencies {
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.apache.commons.lang3
+    implementation libs.http.client5
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.apache.velocity
     implementation libs.openapidiff
