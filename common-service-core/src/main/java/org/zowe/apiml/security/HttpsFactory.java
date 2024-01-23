@@ -10,12 +10,9 @@
 
 package org.zowe.apiml.security;
 
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import org.apache.hc.client5.http.UserTokenHandler;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -23,10 +20,10 @@ import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.HttpsSupport;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.ssl.PrivateKeyStrategy;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.util.Timeout;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -37,9 +34,12 @@ import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -60,11 +60,11 @@ public class HttpsFactory {
     public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectionRequestTimeout(Timeout.ofMilliseconds(config.getRequestConnectionTimeout()))
-        .build();
-       // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
+            .build();
+        // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
         return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
-        //   .setSSLHostnameVerifier(getHostnameVerifier())
+            //   .setSSLHostnameVerifier(getHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement()
             //.setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
@@ -261,54 +261,4 @@ public class HttpsFactory {
         }
     }
 
-    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId) {
-        EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
-        builder.withClientName(serviceId);
-        builder.withMaxTotalConnections(10);
-        builder.withMaxConnectionsPerHost(10);
-        builder.withConnectionIdleTimeout(10);
-        builder.withConnectionTimeout(5000);
-        builder.withReadTimeout(5000);
-        // See:
-        // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
-        if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
-        } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
-            if (config.isVerifySslCertificatesOfServices()) {
-                setSystemSslProperties();
-            }
-            builder.withCustomSSL(getSslContext());
-
-            builder.withHostnameVerifier(getHostnameVerifier());
-        }
-        return builder;
-    }
-
-    public EurekaJerseyClientBuilder getSSLConfiguration(String eurekaServerUrl, String serviceId) {
-
-        EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
-        builder.withClientName(serviceId);
-        builder.withMaxTotalConnections(10);
-        builder.withMaxConnectionsPerHost(10);
-        builder.withConnectionIdleTimeout(10);
-        builder.withConnectionTimeout(5000);
-        builder.withReadTimeout(5000);
-        // See:
-        // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
-        if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
-        } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
-            if (config.isVerifySslCertificatesOfServices()) {
-                setSystemSslProperties();
-            }
-            builder.withCustomSSL(getSslContext());
-
-            builder.withHostnameVerifier(getHostnameVerifier());
-        }
-        return builder;
-    }
 }

@@ -17,6 +17,8 @@ import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
@@ -25,8 +27,9 @@ import java.util.stream.Collectors;
 public class ApimlDiscoveryClientStub extends CloudEurekaClient {
     private ApplicationRegistry applicationRegistry;
 
-    public ApimlDiscoveryClientStub(ApplicationInfoManager applicationInfoManager, EurekaClientConfig config, AbstractDiscoveryClientOptionalArgs<?> args, ApplicationEventPublisher publisher, ApplicationRegistry applicationRegistry) {
-        super(applicationInfoManager, config, args, publisher);
+    public ApimlDiscoveryClientStub(ApplicationInfoManager applicationInfoManager, EurekaClientConfig config, ApplicationEventPublisher publisher, ApplicationRegistry applicationRegistry, RestTemplateTransportClientFactories factories, RestTemplateDiscoveryClientOptionalArgs args1) {
+
+        super(applicationInfoManager, config, factories, args1,publisher);
 
         this.applicationRegistry = applicationRegistry;
     }

@@ -77,7 +77,7 @@ public class WebSecurity {
                     .authenticationManager(authenticationManager))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec.pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
-            )
+            ).authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().permitAll())
             .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         return http.build();
