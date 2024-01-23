@@ -7,6 +7,7 @@ dependencies {
 //    implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.boot.starter.web
+    implementation libs.eureka.jersey.client
 //    implementation libs.spring.web
 //    implementation libs.spring.webmvc
 //    implementation libs.tomcat.embed.core

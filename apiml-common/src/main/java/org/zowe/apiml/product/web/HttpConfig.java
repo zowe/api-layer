@@ -11,6 +11,7 @@
 package org.zowe.apiml.product.web;
 
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
+import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,9 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cloud.netflix.eureka.http.EurekaClientHttpRequestFactorySupplier;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -36,7 +40,6 @@ import org.zowe.apiml.security.*;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.Set;
-import java.util.Timer;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -110,8 +113,8 @@ public class HttpConfig {
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
-//    private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-////    private final Timer connectionManagerTimer = new Timer(
+//    private EurekaJersey3ClientBuilder eurekaJerseyClientBuilder;
+//    private final Timer connectionManagerTimer = new Timer(
 //        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private Set<String> publicKeyCertificatesBase64;
@@ -294,13 +297,23 @@ public class HttpConfig {
         return secureHostnameVerifier;
     }
 
+    @Bean
+    public RestTemplateDiscoveryClientOptionalArgs restTemplateDiscoveryClientOptionalArgs(EurekaClientHttpRequestFactorySupplier eurekaClientHttpRequestFactorySupplier) {
+        return new RestTemplateDiscoveryClientOptionalArgs(eurekaClientHttpRequestFactorySupplier);
+    }
+
+    @Bean
+    public RestTemplateTransportClientFactories restTemplateTransportClientFactories(RestTemplateDiscoveryClientOptionalArgs args){
+        return new RestTemplateTransportClientFactories(args);
+    }
+
 //    @Bean
-//    public EurekaJerseyClient eurekaJerseyClient() {
+//    public EurekaJersey3Client eurekaJerseyClient() {
 //        return eurekaJerseyClientBuilder.build();
 //    }
 //
 //    @Bean
-//    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
+//    public EurekaJersey3ClientBuilder eurekaJerseyClientBuilder() {
 //        return eurekaJerseyClientBuilder;
 //    }
 

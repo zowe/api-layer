@@ -3,6 +3,7 @@ dependencies {
 
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security
+    implementation libs.spring.cloud.starter.eureka.client
 //    implementation libs.spring.web
 //    implementation libs.spring.webmvc
 //    implementation libs.tomcat.embed.el
@@ -10,7 +11,7 @@ dependencies {
 //    implementation libs.spring.security.config
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
-    implementation libs.eureka.client
+//    implementation libs.eureka.client
     implementation libs.jackson.core
 
     compileOnly libs.javax.servlet.api

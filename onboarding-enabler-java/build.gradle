@@ -5,7 +5,9 @@ dependencies {
     implementation libs.javax.annotation
     implementation libs.jackson.annotations
     implementation libs.jackson.dataformat.yaml
-    implementation libs.eureka.client
+//    implementation libs.eureka.client
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.eureka.jersey.client
     implementation libs.jettison
     implementation libs.snakeyaml
     compileOnly libs.lombok

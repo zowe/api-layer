@@ -17,15 +17,12 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -142,13 +139,13 @@ public class InstanceRetrievalService {
      * @param eurekaServiceInstanceRequest information used to query the discovery service
      * @return ResponseEntity<String> query response
      */
-    private String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException {
+    private String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException, ParseException {
         HttpGet httpGet = new HttpGet(eurekaServiceInstanceRequest.getEurekaRequestUrl());
         for (Header header : createRequestHeader(eurekaServiceInstanceRequest)) {
             httpGet.setHeader(header);
         }
         CloseableHttpResponse response = httpClient.execute(httpGet);
-        final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+        final int statusCode = response.getCode();
         final HttpEntity responseEntity = response.getEntity();
         String responseBody = "";
         if (responseEntity != null) {
@@ -162,7 +159,7 @@ public class InstanceRetrievalService {
             eurekaServiceInstanceRequest.getServiceId(),
             eurekaServiceInstanceRequest.getEurekaRequestUrl(),
             statusCode,
-            response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody
+            response.getReasonPhrase() != null ? response.getReasonPhrase() : responseBody
             );
 
         return null;
