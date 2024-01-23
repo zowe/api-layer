@@ -199,9 +199,9 @@ public class SecurityUtils {
                     .filter(c -> cookie.equals(c.getName()))
                     .findFirst()
                     .map(c -> c.getValue())
-                    .orElseThrow(RuntimeException::new);
+                    .orElseThrow(() -> new RuntimeException("Cookie " + cookie + " not found in z/OSMF response"));
             } else {
-                throw new RuntimeException("");
+                throw new RuntimeException("Request to z/OSMF failed with status code " + response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
