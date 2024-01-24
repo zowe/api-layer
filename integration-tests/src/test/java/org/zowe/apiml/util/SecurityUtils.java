@@ -36,6 +36,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.http.ssl.TrustStrategy;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -186,7 +187,7 @@ public class SecurityUtils {
     }
 
     public static String getZosmfTokenWebClient(String cookie) {
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getSslContext()).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) { // Can't think of a reason to test SSL connection between Integration test runner and z/OSMF
             HttpClientContext context = HttpClientContext.create();
             CookieStore cookieStore = new BasicCookieStore();
             context.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
@@ -429,10 +430,21 @@ public class SecurityUtils {
 
     public static SSLConfig getConfiguredSslConfig() {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
-            SSLContext sslContext = getSslContext();
-            HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
-            SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, hostnameVerifier));
-            return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
+        SSLContext sslContext = getSslContext();
+        HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
+        SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, hostnameVerifier));
+        return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
+    }
+
+    static SSLContext getRelaxedSslContext() {
+        final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+        try {
+            return SSLContexts.custom()
+                .loadTrustMaterial(null, acceptingTrustStrategy)
+                .build();
+        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static SSLContext getSslContext() {
