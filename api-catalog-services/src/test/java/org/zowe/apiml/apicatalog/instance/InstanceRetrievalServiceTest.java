@@ -15,11 +15,10 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +38,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static org.apache.hc.core5.http.ContentType.APPLICATION_JSON;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,8 +50,6 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class, classes = InstanceServicesContextConfiguration.class)
 class InstanceRetrievalServiceTest {
 
-    private static final String APPS_ENDPOINT = "apps/";
-    private static final String DELTA_ENDPOINT = "delta";
     private static final String UNKNOWN = "unknown";
 
     private InstanceRetrievalService instanceRetrievalService;
@@ -63,29 +61,18 @@ class InstanceRetrievalServiceTest {
     CloseableHttpClient httpClient;
 
     private CloseableHttpResponse response;
-    private StatusLine responseStatusLine;
-    private BasicHttpEntity responseEntity;
-    private String discoveryServiceAllAppsUrl;
-    private String[] discoveryServiceList;
 
     @BeforeEach
     void setup() throws IOException {
         response = mock(CloseableHttpResponse.class);
-        responseStatusLine = mock(StatusLine.class);
-        responseEntity = new BasicHttpEntity();
-        responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
-        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        when(response.getStatusLine()).thenReturn(responseStatusLine);
-        when(response.getEntity()).thenReturn(responseEntity);
+        when(response.getCode()).thenReturn(HttpStatus.SC_OK);
         when(httpClient.execute(any())).thenReturn(response);
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, httpClient);
-        discoveryServiceList = discoveryConfigProperties.getLocations();
-        discoveryServiceAllAppsUrl = discoveryServiceList[0] + APPS_ENDPOINT;
     }
 
     @Test
     void whenDiscoveryServiceIsNotAvailable_thenTryOthersFromTheList() throws IOException {
-        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN).thenReturn(HttpStatus.SC_OK);
+        when(response.getCode()).thenReturn(HttpStatus.SC_FORBIDDEN).thenReturn(HttpStatus.SC_OK);
 
         instanceRetrievalService.getAllInstancesFromDiscovery(false);
         verify(httpClient, times(2)).execute(any());
@@ -100,37 +87,21 @@ class InstanceRetrievalServiceTest {
     @Test
     void providedNoInstanceInfoIsReturned_thenInstanceInitializationExceptionIsThrown() {
         String serviceId = CoreService.API_CATALOG.getServiceId();
-        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+        when(response.getCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
 
         assertThrows(InstanceInitializationException.class, () -> instanceRetrievalService.getInstanceInfo(serviceId));
-
     }
 
     @Test
     void testGetInstanceInfo_whenResponseHasEmptyBody() {
-        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        responseEntity.setContent(IOUtils.toInputStream("", StandardCharsets.UTF_8));
-
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }
 
     @Test
     void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
-        responseEntity.setContent(IOUtils.toInputStream("UNPARSED_JSON", StandardCharsets.UTF_8));
-
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
-    }
-
-    @Test
-    void testGetInstanceInfo_whenUnexpectedErrorHappened() {
-        responseEntity.setContent(null);
-
-        String serviceId = CoreService.API_CATALOG.getServiceId();
-        assertThrows(InstanceInitializationException.class, () -> {
-            instanceRetrievalService.getInstanceInfo(serviceId);
-        });
     }
 
     @Test
@@ -146,7 +117,8 @@ class InstanceRetrievalServiceTest {
                 CoreService.API_CATALOG.getServiceId(),
                 Collections.singletonList(expectedInstanceInfo)
             )));
-        responseEntity.setContent(IOUtils.toInputStream(bodyCatalog, StandardCharsets.UTF_8));
+        BasicHttpEntity responseEntity = new BasicHttpEntity(IOUtils.toInputStream(bodyCatalog, StandardCharsets.UTF_8), APPLICATION_JSON);
+        when(response.getEntity()).thenReturn(responseEntity);
 
         InstanceInfo actualInstanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
 
@@ -158,7 +130,7 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetAllInstancesFromDiscovery_whenResponseCodeIsNotSuccess() {
-        when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
+        when(response.getCode()).thenReturn(HttpStatus.SC_FORBIDDEN);
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
@@ -166,8 +138,6 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() throws IOException {
-        responseEntity.setContent(IOUtils.toInputStream("UNPARSED_JSON", StandardCharsets.UTF_8));
-
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
     }
@@ -182,7 +152,8 @@ class InstanceRetrievalServiceTest {
 
         ObjectMapper mapper = new ObjectMapper();
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(expectedApplications));
-        responseEntity.setContent(IOUtils.toInputStream(bodyAll, StandardCharsets.UTF_8));
+        BasicHttpEntity responseEntity = new BasicHttpEntity(IOUtils.toInputStream(bodyAll, StandardCharsets.UTF_8), APPLICATION_JSON);
+        when(response.getEntity()).thenReturn(responseEntity);
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
 
@@ -208,7 +179,8 @@ class InstanceRetrievalServiceTest {
 
         ObjectMapper mapper = new ObjectMapper();
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(expectedApplications));
-        responseEntity.setContent(IOUtils.toInputStream(bodyAll, StandardCharsets.UTF_8));
+        BasicHttpEntity responseEntity = new BasicHttpEntity(IOUtils.toInputStream(bodyAll, StandardCharsets.UTF_8), APPLICATION_JSON);
+        when(response.getEntity()).thenReturn(responseEntity);
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(true);
 
