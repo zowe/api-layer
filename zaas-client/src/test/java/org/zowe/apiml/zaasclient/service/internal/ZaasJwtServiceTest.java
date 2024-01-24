@@ -11,8 +11,14 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +34,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -202,12 +208,12 @@ class ZaasJwtServiceTest {
     }
 
     private void mockHttpClient(int statusCode, String content) throws IOException {
-        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-        doReturn(new BasicStatusLine(mock(ProtocolVersion.class), statusCode, null))
-            .when(response).getStatusLine();
+        ClassicHttpResponse response = mock(ClassicHttpResponse.class);
+        doReturn( statusCode)
+            .when(response).getCode();
         HttpEntity entity = new StringEntity(content, ContentType.TEXT_PLAIN);
         doReturn(entity).when(response).getEntity();
-        doReturn(response).when(closeableHttpClient).execute(any());
+        doReturn(response).when(closeableHttpClient).execute(any(HttpGet.class),any(HttpClientResponseHandler.class));
     }
 
     private void zaasClientTestAssertThrows(ZaasClientErrorCodes code, String message, Executable executable) {

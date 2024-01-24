@@ -27,7 +27,9 @@ import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class ZaasHttpsClientProviderTests {
@@ -156,14 +158,14 @@ class ZaasHttpsClientProviderTests {
     class WhenKeyringUrl {
 
         @CsvSource({
-                ",false",
-                "safkeyring://userid/ringid,true",
-                "safkeyring:////userid/ring/id,false",
-                "safkeyring:////userid//ringid,false",
-                "safkeyring://///userid//ringid,false",
-                "safkeyring:////id,false",
-                "safkeyringjce:////userid/ringid,true",
-                "keystore.p12,false"
+            ",false",
+            "safkeyring://userid/ringid,true",
+            "safkeyring:////userid/ring/id,false",
+            "safkeyring:////userid//ringid,false",
+            "safkeyring://///userid//ringid,false",
+            "safkeyring:////id,false",
+            "safkeyringjce:////userid/ringid,true",
+            "keystore.p12,false"
         })
         @ParameterizedTest(name = "isKeyring({0}) should return {1}")
         void isKeyringReturnsTrueIfItIsValid(String url, boolean validity) {
@@ -171,13 +173,13 @@ class ZaasHttpsClientProviderTests {
         }
 
         @CsvSource({
-                ",",
-                "safkeyring://userid/ringid,safkeyring://userid/ringid",
-                "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
-                "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
-                "safkeyring:////id,safkeyring:////id",
-                "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
-                "keystore.p12,keystore.p12"
+            ",",
+            "safkeyring://userid/ringid,safkeyring://userid/ringid",
+            "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
+            "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
+            "safkeyring:////id,safkeyring:////id",
+            "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
+            "keystore.p12,keystore.p12"
         })
         @ParameterizedTest(name = "formatKeyringUrl({0}) should return {1}")
         void formatKeyringUrlFixTheFormatIfPossible(String input, String expectedOutput) {

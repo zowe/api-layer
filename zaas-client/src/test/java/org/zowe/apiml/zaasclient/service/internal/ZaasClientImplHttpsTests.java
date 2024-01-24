@@ -23,6 +23,7 @@ import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.message.StatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,10 +37,19 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Properties;
@@ -104,8 +114,8 @@ class ZaasClientImplHttpsTests {
         invalidToken = token + "DUMMY TEXT";
 
         when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
-        when(closeableHttpClient.execute(any(HttpGet.class),r->r)).thenReturn(closeableHttpResponse);
-        when(closeableHttpClient.execute(any(HttpPost.class),r->r)).thenReturn(closeableHttpResponse);
+        when(closeableHttpClient.execute(any(HttpGet.class), any(HttpClientResponseHandler.class))).thenReturn(closeableHttpResponse);
+        when(closeableHttpClient.execute(any(HttpPost.class), any(HttpClientResponseHandler.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
         when(closeableHttpResponse.getCode()).thenReturn(HttpStatus.SC_OK);
 
@@ -201,7 +211,9 @@ class ZaasClientImplHttpsTests {
     private void prepareResponseForUnexpectedException() {
         try {
             when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
-            when(closeableHttpClient.execute(any(HttpPost.class))).thenAnswer( invocation -> { throw new Exception(); });
+            when(closeableHttpClient.execute(any(HttpPost.class))).thenAnswer(invocation -> {
+                throw new Exception();
+            });
         } catch (IOException | ZaasConfigurationException e) {
             e.printStackTrace();
         }
@@ -234,8 +246,8 @@ class ZaasClientImplHttpsTests {
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
     void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(int statusCode,
-                                                                                        String username, char[] password,
-                                                                                        ZaasClientErrorCodes expectedCode) {
+                                                                                 String username, char[] password,
+                                                                                 ZaasClientErrorCodes expectedCode) {
         prepareResponse(statusCode);
 
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));

@@ -6,7 +6,7 @@ dependencies {
     implementation libs.jackson.databind
 //    implementation libs.slf4j.api
     implementation libs.jaxb.api
-    implementation libs.javax.servlet.api
+    implementation libs.jakarta.servlet.api
     implementation libs.spring.context
     implementation libs.apache.commons.codec
 

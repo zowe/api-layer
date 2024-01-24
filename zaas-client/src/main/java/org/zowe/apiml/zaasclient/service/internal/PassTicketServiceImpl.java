@@ -19,12 +19,12 @@ import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
-import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
 import java.io.IOException;
 
@@ -55,7 +55,7 @@ class PassTicketServiceImpl implements PassTicketService {
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             httpPost.setHeader(HttpHeaders.COOKIE, passConfigProperties.getTokenPrefix() + "=" + jwtToken);
 
-            var response = closeableHttpsClient.execute(httpPost,r->r);
+            var response = closeableHttpsClient.execute(httpPost, r -> r);
             return extractPassTicket(response);
         } catch (ZaasConfigurationException e) {
             throw e;

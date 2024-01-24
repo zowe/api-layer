@@ -11,27 +11,35 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import lombok.AllArgsConstructor;
+import org.apache.hc.client5.http.UserTokenHandler;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.util.Timeout;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +48,6 @@ import java.util.regex.Pattern;
 class ZaasHttpsClientProvider implements CloseableClientProvider {
     private static final int REQUEST_TIMEOUT = 30 * 1000;
 
-    private final RequestConfig requestConfig;
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
@@ -57,7 +64,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     private CloseableHttpClient httpsClient;
 
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
-        this.requestConfig = this.buildCustomRequestConfig();
+
 
         if (configProperties.getTrustStorePath() == null) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.TRUST_STORE_NOT_PROVIDED);
@@ -95,7 +102,9 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             if (kmf == null) {
                 initializeKeyStoreManagerFactory();
             }
-            httpsClient = createSecureHttpClient().build();
+            var manager = new PoolingHttpClientConnectionManager();
+
+            httpsClient = createSecureHttpClient(manager).build();
 //            httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
         }
         return httpsClient;
@@ -176,28 +185,18 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     /**
      * Create Http Configuration with defaults for maximum of connections and maximum of connections per route.
      */
-    public HttpClientBuilder createSecureHttpClient(HttpClientConnectionManager connectionManager) {
+    public HttpClientBuilder createSecureHttpClient(PoolingHttpClientConnectionManager connectionManager) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectionRequestTimeout(Timeout.ofMilliseconds(REQUEST_TIMEOUT))
             .build();
-        // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
+        UserTokenHandler userTokenHandler = (route, context) -> context.getAttribute("my-token");
 
-        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
-            //   .setSSLHostnameVerifier(getHostnameVerifier())
+        return HttpClientBuilder.create().setUserTokenHandler(userTokenHandler).setDefaultRequestConfig(requestConfig)
             .setConnectionManager(connectionManager).disableCookieManagement()
-            //.setUserTokenHandler(userTokenHandler)
-//            .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .evictExpiredConnections()
             .evictIdleConnections(Timeout.ofSeconds(REQUEST_TIMEOUT))
             .disableAuthCaching();
 
     }
 
-//    private RequestConfig buildCustomRequestConfig() {
-//        final RequestConfig.Builder builder = RequestConfig.custom();
-//        builder.setConnectionRequestTimeout(REQUEST_TIMEOUT);
-////        builder..setSocketTimeout(REQUEST_TIMEOUT);
-//        builder.setConnectTimeout(REQUEST_TIMEOUT);
-//        return builder.build();
-//    }
 }
