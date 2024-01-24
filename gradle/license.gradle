@@ -11,7 +11,6 @@ ext.projectsNeedLicense = [
     'discovery-service',
     'discovery-package',
     'gateway-common',
-    'gateway-service',
     'gateway-package',
     'cloud-gateway-service',
     'cloud-gateway-package',

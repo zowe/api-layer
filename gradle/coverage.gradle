@@ -8,7 +8,6 @@ ext.javaProjectsWithUnitTests = [
     'apiml-common',
     'apiml-utility',
     'caching-service',
-    'gateway-service',
     'cloud-gateway-service',
     'mock-services',
     'onboarding-enabler-java',
