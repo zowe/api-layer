@@ -60,7 +60,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_U
 @Configuration
 @RequiredArgsConstructor
 // There is an issue - clashing of XML configuration
-@DependsOn({"cacheConfig", "cacheManagerFactoryBean"})
+@DependsOn({"cacheConfig", "cacheManager"})
 public class DiscoveryClientConfig {
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;
