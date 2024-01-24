@@ -170,7 +170,7 @@ class PassTicketTest implements TestWithStartedInstances {
     @Nested
     class WhenGeneratingPassTicket_returnBadRequest {
 
-        private String jwt = getZosmfJwtToken();
+        private final String jwt = getZosmfJwtToken();
 
         @Test
         void givenNoApplicationName() {
