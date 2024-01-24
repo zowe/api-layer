@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -85,8 +84,8 @@ class ZaasHttpsClientProviderTests {
 
     @Test
     void whenGetHttpsClientWithKeyStoreAndTrustStore_thenIdenticalClientReturned() throws ZaasConfigurationException {
-        CloseableHttpClient client1 = zaasHttpsClientProvider.getHttpClient();
-        CloseableHttpClient client2 = zaasHttpsClientProvider.getHttpClient();
+        var client1 = zaasHttpsClientProvider.getHttpClient();
+        var client2 = zaasHttpsClientProvider.getHttpClient();
 
         assertEquals(client1, client2);
     }

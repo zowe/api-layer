@@ -11,14 +11,17 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import lombok.AllArgsConstructor;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.util.Timeout;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -61,7 +64,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         }
 
         initializeTrustManagerFactory(configProperties.getTrustStorePath(), configProperties.getTrustStoreType(), configProperties.getTrustStorePassword());
-        this.hostnameVerifier = configProperties.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
+        this.hostnameVerifier = configProperties.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : new DefaultHostnameVerifier();
         this.keyStorePath = configProperties.getKeyStorePath();
         this.keyStorePassword = configProperties.getKeyStorePassword();
         this.keyStoreType = configProperties.getKeyStoreType();
@@ -92,7 +95,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             if (kmf == null) {
                 initializeKeyStoreManagerFactory();
             }
-            httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
+            httpsClient = createSecureHttpClient().build();
+//            httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
         }
         return httpsClient;
     }
@@ -172,24 +176,28 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     /**
      * Create Http Configuration with defaults for maximum of connections and maximum of connections per route.
      */
-    private HttpClientBuilder sharedHttpClientConfiguration(SSLContext sslContext) {
+    public HttpClientBuilder createSecureHttpClient(HttpClientConnectionManager connectionManager) {
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectionRequestTimeout(Timeout.ofMilliseconds(REQUEST_TIMEOUT))
+            .build();
+        // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
-        final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
-            hostnameVerifier);
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
+            //   .setSSLHostnameVerifier(getHostnameVerifier())
+            .setConnectionManager(connectionManager).disableCookieManagement()
+            //.setUserTokenHandler(userTokenHandler)
+//            .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
+            .evictExpiredConnections()
+            .evictIdleConnections(Timeout.ofSeconds(REQUEST_TIMEOUT))
+            .disableAuthCaching();
 
-        return HttpClients.custom()
-            .setSSLSocketFactory(sslsf)
-            .setDefaultRequestConfig(this.requestConfig)
-            .setMaxConnTotal(3 * 3)
-            .setMaxConnPerRoute(3)
-            .setDefaultCookieStore(cookieStore);
     }
 
-    private RequestConfig buildCustomRequestConfig() {
-        final RequestConfig.Builder builder = RequestConfig.custom();
-        builder.setConnectionRequestTimeout(REQUEST_TIMEOUT);
-        builder.setSocketTimeout(REQUEST_TIMEOUT);
-        builder.setConnectTimeout(REQUEST_TIMEOUT);
-        return builder.build();
-    }
+//    private RequestConfig buildCustomRequestConfig() {
+//        final RequestConfig.Builder builder = RequestConfig.custom();
+//        builder.setConnectionRequestTimeout(REQUEST_TIMEOUT);
+////        builder..setSocketTimeout(REQUEST_TIMEOUT);
+//        builder.setConnectTimeout(REQUEST_TIMEOUT);
+//        return builder.build();
+//    }
 }

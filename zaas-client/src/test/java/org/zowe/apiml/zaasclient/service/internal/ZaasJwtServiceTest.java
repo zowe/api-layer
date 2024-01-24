@@ -11,15 +11,8 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.cookie.SM;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicStatusLine;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,9 +81,9 @@ class ZaasJwtServiceTest {
         zaasJwtService.logout(JWT_TOKEN);
         verify(closeableHttpClient, times(1)).execute(
             argThat(x ->
-                (x.getHeaders(SM.COOKIE) != null) &&
-                    (x.getHeaders(SM.COOKIE).length == 1) &&
-                    (COOKIE_NAME + "=" + JWT_TOKEN).equals(x.getHeaders(SM.COOKIE)[0].getValue())
+                (x.getHeaders(HttpHeaders.COOKIE) != null) &&
+                    (x.getHeaders(HttpHeaders.COOKIE).length == 1) &&
+                    (COOKIE_NAME + "=" + JWT_TOKEN).equals(x.getHeaders(HttpHeaders.COOKIE)[0].getValue())
             )
         );
     }

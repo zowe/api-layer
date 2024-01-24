@@ -13,12 +13,17 @@ package org.zowe.apiml.zaasclient.service.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.http.*;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.utils.Base64;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HeaderElement;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.message.StatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,7 +68,7 @@ class ZaasClientImplHttpsTests {
     StatusLine statusLine;
     HeaderElement headerElement;
     Header header;
-    private CloseableHttpResponse closeableHttpResponse;
+    private ClassicHttpResponse closeableHttpResponse;
     private CloseableHttpClient closeableHttpClient;
     private HttpEntity httpsEntity;
 
@@ -99,11 +104,10 @@ class ZaasClientImplHttpsTests {
         invalidToken = token + "DUMMY TEXT";
 
         when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
-        when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
-        when(closeableHttpClient.execute(any(HttpPost.class))).thenReturn(closeableHttpResponse);
+        when(closeableHttpClient.execute(any(HttpGet.class),r->r)).thenReturn(closeableHttpResponse);
+        when(closeableHttpClient.execute(any(HttpPost.class),r->r)).thenReturn(closeableHttpResponse);
         when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
-        when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
-        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        when(closeableHttpResponse.getCode()).thenReturn(HttpStatus.SC_OK);
 
         String baseUrl = "/gateway/api/v1/auth";
         tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl, configProperties);
@@ -177,7 +181,7 @@ class ZaasClientImplHttpsTests {
             when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
             when(statusLine.getStatusCode()).thenReturn(httpResponseCode);
             when(closeableHttpResponse.getHeaders("Set-Cookie")).thenReturn(headers);
-            when(header.getElements()).thenReturn(headerElements);
+//            when(header.getElements()).thenReturn(headerElements);
             when(headerElement.getName()).thenReturn("apimlAuthenticationToken");
             when(headerElement.getValue()).thenReturn("token");
         } catch (ZaasConfigurationException e) {
@@ -322,14 +326,14 @@ class ZaasClientImplHttpsTests {
 
     @Test
     void testQueryWithToken_WhenResponseCodeIs404_ZaasClientException() {
-        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(404);
+        when(closeableHttpResponse.getCode()).thenReturn(404);
 
         assertThrows(ZaasClientException.class, () -> tokenService.query(token));
     }
 
     @Test
     void testLoginWithToken_WhenResponseCodeIs400_ZaasClientException() {
-        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(400);
+        when(closeableHttpResponse.getCode()).thenReturn(400);
 
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(token));
         assertTrue(exception.getMessage().contains("'ZWEAS121E', message='Empty or null username or password values provided'"));
@@ -357,7 +361,7 @@ class ZaasClientImplHttpsTests {
     @Test
     void givenInvalidToken_whenLogout_thenThrowException() {
         prepareResponse(HttpStatus.SC_NO_CONTENT);
-        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(400);
+        when(closeableHttpResponse.getCode()).thenReturn(400);
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("invalid"));
 
         assertTrue(exception.getMessage().contains("'ZWEAS130E', message='Invalid token provided'"));
@@ -375,7 +379,7 @@ class ZaasClientImplHttpsTests {
     @Test
     void givenLogoutRequest_whenResponseCodeIs401_thenThrowException() {
         prepareResponse(HttpStatus.SC_NO_CONTENT);
-        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(401);
+        when(closeableHttpResponse.getCode()).thenReturn(401);
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("token"));
 
         assertTrue(exception.getMessage().contains("'ZWEAS100E', message='Token is expired for URL'"));

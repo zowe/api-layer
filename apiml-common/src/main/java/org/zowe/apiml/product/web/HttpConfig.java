@@ -329,6 +329,9 @@ public class HttpConfig {
         properties.setSocketTimeout(180000);
         return new DefaultEurekaClientHttpRequestFactorySupplier(properties);
     }
+//    @Bean
+//    public RestTemplateTransportClientFactories restTemplateTransportClientFactories(RestTemplateDiscoveryClientOptionalArgs args) {
+//        return new RestTemplateTransportClientFactories(args);
 
 //    @Bean
 //    public EurekaJersey3Client eurekaJerseyClient() {
