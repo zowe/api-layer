@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.ComponentScan;
@@ -43,7 +42,6 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
     }
 )
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
-@EnableEurekaClient
 @EnableWebSocket
 @EnableAspectJAutoProxy
 public class GatewayApplication {

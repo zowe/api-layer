@@ -16,7 +16,6 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.appinfo.MyDataCenterInfo;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,8 +45,7 @@ class DiscoveryClientBeanTest {
     @BeforeEach
     void setup() {
         ApplicationContext context = mock(ApplicationContext.class);
-        EurekaJerseyClientImpl.EurekaJerseyClientBuilder builder = mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class);
-        dcConfig = new DiscoveryClientConfig(null, apimlDiscoveryClientFactory, context, builder);
+        dcConfig = new DiscoveryClientConfig(apimlDiscoveryClientFactory, context);
     }
 
     @Test
