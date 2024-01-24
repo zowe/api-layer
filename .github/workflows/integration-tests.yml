@@ -1502,7 +1502,7 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     jdkVersion: |
-                        11
+                        8
                         17
 
             -   uses: actions/download-artifact@v3
@@ -1544,10 +1544,10 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: |
-                    export JAVA_HOME=$JAVA_HOME_11_X64
+                    export JAVA_HOME=$JAVA_HOME_8_${{ $RUNNER_ARCH }}
                     echo Set JAVA_HOME to $JAVA_HOME
                     ./gradlew --info coverage -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
-                    export JAVA_HOME=$JAVA_HOME_17_X64
+                    export JAVA_HOME=$JAVA_HOME_17_${{ $RUNNER_ARCH }}
                     echo Set JAVA_HOME to $JAVA_HOME
                     ./gradlew --info sonar -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
