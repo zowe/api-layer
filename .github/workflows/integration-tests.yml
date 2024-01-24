@@ -1491,7 +1491,7 @@ jobs:
     PublishResults:
         needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting]
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 20
 
         steps:
             -   uses: actions/checkout@v4
@@ -1501,7 +1501,9 @@ jobs:
 
             -   uses: ./.github/actions/setup
                 with:
-                    jdkVersion: 11
+                    jdkVersion: |
+                        17
+                        8
 
             -   uses: actions/download-artifact@v3
                 with:
@@ -1541,9 +1543,13 @@ jobs:
                     path: cloudgatewayservicerouting
 
             -   name: Code coverage and publish results
-                run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
-                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                run: |
+                    export JAVA_HOME=$JAVA_HOME_8_${{ runner.arch }}
+                    echo Execute Code coverage task using Java 8: JAVA_HOME = $JAVA_HOME
+                    ./gradlew --info coverage -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
+                    export JAVA_HOME=$JAVA_HOME_17_${{ runner.arch }}
+                    echo Execute Sonar scanner using Java 17: JAVA_HOME = $JAVA_HOME
+                    ./gradlew --info sonar -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
