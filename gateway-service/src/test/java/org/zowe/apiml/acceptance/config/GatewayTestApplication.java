@@ -11,7 +11,6 @@
 package org.zowe.apiml.acceptance.config;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
@@ -40,7 +39,6 @@ import org.zowe.apiml.gateway.routing.ApimlRoutingConfig;
     }
 )
 @RibbonClients(defaultConfiguration = RibbonTestConfiguration.class)
-@EnableEurekaClient
 @EnableWebSocket
 @EnableAspectJAutoProxy
 public class GatewayTestApplication {

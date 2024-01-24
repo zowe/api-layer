@@ -261,7 +261,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
                 List<Map.Entry<String, String>> newHeaders = Stream.concat(
                     nonCredentialHeaders,
                     nonCredentialCookies
-                ).collect(Collectors.toList());
+                ).toList();
 
                 headers.clear();
                 newHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));

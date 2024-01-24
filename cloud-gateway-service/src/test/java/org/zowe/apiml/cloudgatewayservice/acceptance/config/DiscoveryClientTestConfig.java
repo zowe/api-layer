@@ -13,12 +13,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.config;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +21,10 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
+import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -34,11 +32,6 @@ import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
 import reactor.core.publisher.Flux;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import static org.mockito.Mockito.*;
 
 /**
  * This configuration provides the bean for the ApplicationRegistry and overrides bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
@@ -97,11 +90,11 @@ public class DiscoveryClientTestConfig {
             appManager = manager;
         }
 
-        AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(eurekaJerseyClient());
 
-
-        final ApimlDiscoveryClientStub discoveryClient = new ApimlDiscoveryClientStub(appManager, config, args, this.context, applicationRegistry);
+        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new RestTemplateTimeoutProperties());
+        var args1 = new RestTemplateDiscoveryClientOptionalArgs(factorySupplier);
+        var factories = new RestTemplateTransportClientFactories(args1);
+        final var discoveryClient = new ApimlDiscoveryClientStub(appManager, config, this.context, applicationRegistry, factories, args1);
         discoveryClient.registerHealthCheck(healthCheckHandler);
 
         discoveryClient.registerEventListener(event -> {
@@ -109,21 +102,5 @@ public class DiscoveryClientTestConfig {
         return discoveryClient;
     }
 
-    private EurekaJerseyClient eurekaJerseyClient() {
-        EurekaJerseyClient jerseyClient = mock(EurekaJerseyClient.class);
-        ApacheHttpClient4 httpClient4 = mock(ApacheHttpClient4.class);
-        when(jerseyClient.getClient()).thenReturn(httpClient4);
-        WebResource webResource = mock(WebResource.class);
-        when(httpClient4.resource((String) any())).thenReturn(webResource);
-        when(webResource.path(any())).thenReturn(webResource);
-        WebResource.Builder builder = mock(WebResource.Builder.class);
-        when(webResource.getRequestBuilder()).thenReturn(builder);
-        when(builder.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
-        ClientResponse response = mock(ClientResponse.class);
-        when(builder.get(ClientResponse.class)).thenReturn(response);
-        when(response.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
-        when(response.hasEntity()).thenReturn(true);
-        return jerseyClient;
-    }
 
 }

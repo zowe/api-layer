@@ -15,6 +15,8 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
+import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.security.HttpsFactory;
 
@@ -79,11 +82,13 @@ public class AdditionalRegistrationTest {
         private final AdditionalRegistration registration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-1").build();
 
         @BeforeEach
-        public void setUp() {
+        public void setUp() throws Exception{
+            ReflectionTestUtils.setField(connectionsConfig,"eurekaServerUrl","https://host:2222");
+            ReflectionTestUtils.setField(connectionsConfig,"httpsFactory",httpsFactory);
             configSpy = Mockito.spy(connectionsConfig);
             lenient().doReturn(httpsFactory).when(configSpy).factory();
-//            lenient().when(httpsFactory.createEurekaJerseyClientBuilder(any(), any())).thenReturn(mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class));
-
+            lenient().when(httpsFactory.getSslContext()).thenReturn(SSLContexts.custom().build());
+            lenient().when(httpsFactory.getHostnameVerifier()).thenReturn(new NoopHostnameVerifier());
             lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
         }
 

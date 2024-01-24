@@ -136,6 +136,7 @@ public class ConnectionsConfig {
     private boolean corsEnabled;
     private final ApplicationContext context;
     private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
+    private HttpsFactory httpsFactory;
 
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
@@ -151,8 +152,8 @@ public class ConnectionsConfig {
             trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
-
-        factory().setSystemSslProperties();
+        httpsFactory = factory();
+        httpsFactory.setSystemSslProperties();
     }
 
     public HttpsFactory factory() {
@@ -226,12 +227,6 @@ public class ConnectionsConfig {
         }
     }
 
-//    @Bean
-//    @Qualifier("primaryApimlEurekaJerseyClient")
-//    EurekaJerseyClient getEurekaJerseyClient() {
-//        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
-//    }
-
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
@@ -266,8 +261,8 @@ public class ConnectionsConfig {
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
 
-            clientArgs.setSSLContext(factory().getSslContext());
-            clientArgs.setHostnameVerifier(factory().getHostnameVerifier());
+            clientArgs.setSSLContext(httpsFactory.getSslContext());
+            clientArgs.setHostnameVerifier(httpsFactory.getHostnameVerifier());
         }
 
         return clientArgs;

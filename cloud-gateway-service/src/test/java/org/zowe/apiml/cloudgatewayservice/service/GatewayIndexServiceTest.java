@@ -20,20 +20,30 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +62,8 @@ class GatewayIndexServiceTest {
     private ExchangeFunction exchangeFunction;
     @Mock
     private ServiceInstance eurekaInstance;
+    @Mock
+    private ExchangeFilterFunction exchangeFilterFunction;
 
     @BeforeEach
     void setUp() {
@@ -79,7 +91,7 @@ class GatewayIndexServiceTest {
         void setUp() {
             lenient().when(exchangeFunction.exchange(any(ClientRequest.class)))
                 .thenReturn(Mono.just(clientResponse));
-
+            lenient().when(clientResponse.statusCode()).thenReturn(HttpStatusCode.valueOf(200));
             lenient().when(clientResponse.bodyToMono(serviceInfoType)).thenReturn(Mono.just(Arrays.asList(serviceInfoA, serviceInfoB)));
         }
 

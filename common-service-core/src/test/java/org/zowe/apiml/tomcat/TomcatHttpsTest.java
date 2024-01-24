@@ -13,23 +13,28 @@ package org.zowe.apiml.tomcat;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityTestUtils;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
 class TomcatHttpsTest {
@@ -142,16 +147,18 @@ class TomcatHttpsTest {
             socketFactoryRegistryBuilder.register("https", clientHttpsFactory.createSslSocketFactory());
             Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
             ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, clientConfig.getTimeToLive());
-            HttpClient client = clientHttpsFactory.createSecureHttpClient(connectionManager);
+            var client = clientHttpsFactory.createSecureHttpClient(connectionManager);
             int port = TomcatServerFactory.getLocalPort(tomcat);
 
-            HttpGet get = new HttpGet(String.format("https://localhost:%d", port));
-            HttpResponse response = client.execute(get);
+            var get = new HttpGet(String.format("https://localhost:%d", port));
+            var response = client.execute(get, response1 -> response1);
 
             String responseBody = EntityUtils.toString(response.getEntity());
 
-            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(200, response.getCode());
             assertEquals("OK", responseBody);
+        } catch (ParseException e) {
+            log.error("Exception while parsing HTTP response with message: " + e.getMessage(), e);
         } finally {
             tomcat.stop();
         }
