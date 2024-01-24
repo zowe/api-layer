@@ -186,7 +186,7 @@ public class SecurityUtils {
     }
 
     public static String getZosmfTokenWebClient(String cookie) {
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getSslContext()).build()) {
             HttpClientContext context = HttpClientContext.create();
             CookieStore cookieStore = new BasicCookieStore();
             context.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
@@ -429,22 +429,26 @@ public class SecurityUtils {
 
     public static SSLConfig getConfiguredSslConfig() {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
-        try {
-            SSLContext sslContext = SSLContexts.custom()
-                .loadKeyMaterial(
-                    new File(tlsConfiguration.getKeyStore()),
-                    tlsConfiguration.getKeyStorePassword(),
-                    tlsConfiguration.getKeyPassword(),
-                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
-                .loadTrustMaterial(
-                    new File(tlsConfiguration.getTrustStore()),
-                    tlsConfiguration.getTrustStorePassword())
-                .build();
+            SSLContext sslContext = getSslContext();
             HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
             SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, hostnameVerifier));
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
+    }
+
+    public static SSLContext getSslContext() {
+        try {
+            return SSLContexts.custom()
+            .loadKeyMaterial(
+                new File(tlsConfiguration.getKeyStore()),
+                tlsConfiguration.getKeyStorePassword(),
+                tlsConfiguration.getKeyPassword(),
+                (aliases, socket) -> tlsConfiguration.getKeyAlias())
+            .loadTrustMaterial(
+                new File(tlsConfiguration.getTrustStore()),
+                tlsConfiguration.getTrustStorePassword())
+            .build();
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
-            | CertificateException | IOException e) {
+                | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
