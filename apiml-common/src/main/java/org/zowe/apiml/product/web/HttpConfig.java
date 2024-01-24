@@ -11,7 +11,6 @@
 package org.zowe.apiml.product.web;
 
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +26,18 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.cloud.netflix.eureka.http.EurekaClientHttpRequestFactorySupplier;
+import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
+import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.*;
 
 import javax.net.ssl.HostnameVerifier;
@@ -45,6 +48,8 @@ import java.util.function.Supplier;
 @Slf4j
 @Configuration
 public class HttpConfig {
+
+    private static final ApimlLogger apimlLog = ApimlLogger.of(HttpConfig.class, YamlMessageServiceInstance.getInstance());
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
@@ -298,13 +303,31 @@ public class HttpConfig {
     }
 
     @Bean
-    public RestTemplateDiscoveryClientOptionalArgs restTemplateDiscoveryClientOptionalArgs(EurekaClientHttpRequestFactorySupplier eurekaClientHttpRequestFactorySupplier) {
-        return new RestTemplateDiscoveryClientOptionalArgs(eurekaClientHttpRequestFactorySupplier);
+    public RestTemplateTransportClientFactories restTemplateTransportClientFactories(){
+        return new RestTemplateTransportClientFactories(defaultArgs());
     }
 
-    @Bean
-    public RestTemplateTransportClientFactories restTemplateTransportClientFactories(RestTemplateDiscoveryClientOptionalArgs args){
-        return new RestTemplateTransportClientFactories(args);
+    private RestTemplateDiscoveryClientOptionalArgs defaultArgs() {
+        RestTemplateDiscoveryClientOptionalArgs clientArgs = new RestTemplateDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+
+        if (eurekaServerUrl.startsWith("http://")) {
+            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+        } else {
+            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
+
+            clientArgs.setSSLContext(secureSslContext);
+            clientArgs.setHostnameVerifier(secureHostnameVerifier);
+        }
+
+        return clientArgs;
+    }
+
+    private static DefaultEurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
+        RestTemplateTimeoutProperties properties = new RestTemplateTimeoutProperties();
+        properties.setConnectTimeout(180000);
+        properties.setConnectRequestTimeout(180000);
+        properties.setSocketTimeout(180000);
+        return new DefaultEurekaClientHttpRequestFactorySupplier(properties);
     }
 
 //    @Bean
