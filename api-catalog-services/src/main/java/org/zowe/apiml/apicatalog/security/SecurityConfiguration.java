@@ -23,6 +23,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -95,24 +96,24 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                    baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
+                baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
-                    .authorizeRequests(requests -> requests
-                            .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
-                    .authenticationProvider(gatewayLoginProvider)
-                    .authenticationProvider(gatewayTokenProvider)
-                    .authenticationProvider(new CertificateAuthenticationProvider());
+                .authorizeHttpRequests(requests -> requests
+                    .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider)
+                .authenticationProvider(new CertificateAuthenticationProvider());
 
             if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
                     http.x509(x509 -> x509
                             .userDetailsService(x509UserDetailsService()))
-                            .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
-                            .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
-                            .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+                        .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
+                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
+                        .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
                 } else {
                     http.x509(x509 -> x509
-                            .userDetailsService(x509UserDetailsService()));
+                        .userDetailsService(x509UserDetailsService()));
                 }
             }
 
@@ -152,19 +153,19 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(baseConfiguration(http))
-                    .authorizeRequests(requests -> requests
-                            .requestMatchers("/static-api/**").authenticated()
-                            .requestMatchers("/containers/**").authenticated()
-                            .requestMatchers(APIDOC_ROUTES).authenticated()
-                            .requestMatchers("/application/health", "/application/info").permitAll())
-                    .authenticationProvider(gatewayLoginProvider)
-                    .authenticationProvider(gatewayTokenProvider);
+                .authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/static-api/**").authenticated()
+                    .requestMatchers("/containers/**").authenticated()
+                    .requestMatchers(APIDOC_ROUTES).authenticated()
+                    .requestMatchers("/application/health", "/application/info").permitAll())
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider);
 
             if (isMetricsEnabled) {
-                http.authorizeRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
+                http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
             }
 
-            http.authorizeRequests(requests -> requests.requestMatchers("/application/**").authenticated());
+            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -174,39 +175,41 @@ public class SecurityConfiguration {
     }
 
     private HttpSecurity baseConfiguration(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())   // NOSONAR
-                .headers(headers -> headers
-                        .httpStrictTransportSecurity().disable()
-                        .frameOptions().disable())
-                .exceptionHandling(handling -> handling
+        http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
 
-                        .defaultAuthenticationEntryPointFor(
-                                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/application/**")
-                        )
-                        .defaultAuthenticationEntryPointFor(
-                                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(APIDOC_ROUTES)
-                        )
-                        .defaultAuthenticationEntryPointFor(
-                                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(STATIC_REFRESH_ROUTE)
-                        )
-                        .defaultAuthenticationEntryPointFor(
-                                handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
-                        ))
-                .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .headers(httpSecurityHeadersConfigurer ->
+                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
+                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+
+            .exceptionHandling(handling -> handling
+
+                .defaultAuthenticationEntryPointFor(
+                    handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/application/**")
+                )
+                .defaultAuthenticationEntryPointFor(
+                    handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(APIDOC_ROUTES)
+                )
+                .defaultAuthenticationEntryPointFor(
+                    handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(STATIC_REFRESH_ROUTE)
+                )
+                .defaultAuthenticationEntryPointFor(
+                    handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
+                ))
+            .sessionManagement(management -> management
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http;
     }
 
     private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
         http
-                // login endpoint
-                .authorizeRequests(requests -> requests
-                        .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
-                .logout(logout -> logout
-                        .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
-                        .logoutSuccessHandler(logoutSuccessHandler())).apply(new CustomSecurityFilters());
+            // login endpoint
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
+            .logout(logout -> logout
+                .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
+                .logoutSuccessHandler(logoutSuccessHandler())).with(new CustomSecurityFilters(), c -> {
+            });
 
         return http;
     }

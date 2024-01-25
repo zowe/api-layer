@@ -49,7 +49,6 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
         // Set the cookie to null and expired
         Cookie tokenCookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), null);
         tokenCookie.setPath(authConfigurationProperties.getCookieProperties().getCookiePath());
-        tokenCookie.setComment(authConfigurationProperties.getCookieProperties().getCookieComment());
         tokenCookie.setSecure(true);
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(0);

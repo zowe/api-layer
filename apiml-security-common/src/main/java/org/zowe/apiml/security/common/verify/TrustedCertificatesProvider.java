@@ -77,7 +77,7 @@ public class TrustedCertificatesProvider {
     private String callCertificatesEndpoint(String url) {
         try {
             HttpGet httpGet = new HttpGet(new URI(url));
-            ClassicHttpResponse httpResponse = httpClient.execute(httpGet); //TODO: Use the new API
+            ClassicHttpResponse httpResponse = httpClient.execute(httpGet, r -> r);
             final int statusCode = httpResponse.getCode();
             String body = "";
             if (httpResponse.getEntity() != null) {

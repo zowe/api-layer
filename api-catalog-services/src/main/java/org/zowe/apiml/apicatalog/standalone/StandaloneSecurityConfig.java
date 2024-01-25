@@ -12,17 +12,17 @@ package org.zowe.apiml.apicatalog.standalone;
 
 
 import jakarta.annotation.PostConstruct;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.zowe.apiml.product.constants.CoreService;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "true")
@@ -38,13 +38,12 @@ public class StandaloneSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain permitAll(HttpSecurity http) throws Exception {
         return http
-            .csrf().disable()   // NOSONAR
-            .headers().httpStrictTransportSecurity().disable()
-            .frameOptions().disable().and()
+            .csrf(CsrfConfigurer::disable)   // NOSONAR
+            .headers(httpSecurityHeadersConfigurer ->
+                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
+                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
 
-            .authorizeRequests()
-            .anyRequest().permitAll()
-            .and()
+            .authorizeHttpRequests(matcherRegistry -> matcherRegistry.anyRequest().permitAll())
             .build();
     }
 
