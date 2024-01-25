@@ -108,7 +108,7 @@ class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
                     .when()
                     .get(getDiscoveryUriWithPath("/eureka/apps"))
                     .then()
-                    .statusCode(is(HttpStatus.SC_FORBIDDEN))
+                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
                     .header(HttpHeaders.WWW_AUTHENTICATE, nullValue());
             }
 
@@ -119,7 +119,7 @@ class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
                     .when()
                     .get(getDiscoveryUriWithPath("/eureka/apps"))
                     .then()
-                    .statusCode(is(HttpStatus.SC_FORBIDDEN));
+                    .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
             }
         }
 

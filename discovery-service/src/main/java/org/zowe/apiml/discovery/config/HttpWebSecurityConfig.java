@@ -70,11 +70,12 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
         auth.authenticationProvider(new AuthenticationProvider() {
             private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
             @Override
             public Authentication authenticate(Authentication authentication) throws AuthenticationException {
                 if (
-                   StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
-                   authentication.getCredentials() != null
+                    StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
+                        authentication.getCredentials() != null
                 ) {
                     char[] credentials;
                     if (authentication.getCredentials() instanceof char[]) {
@@ -95,7 +96,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 }
 
                 throw new BadCredentialsException(this.messages
-                        .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
 
             }
 
@@ -123,17 +124,16 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http)
-            .httpBasic().realmName(DISCOVERY_REALM)
-            .and()
-            .authorizeRequests()
-            .requestMatchers("/application/info", "/application/health").permitAll()
-            .requestMatchers("/**").authenticated();
+            .httpBasic(s -> s.realmName(DISCOVERY_REALM))
+
+            .authorizeHttpRequests(s -> s.requestMatchers("/application/info", "/application/health").permitAll().requestMatchers("/**").authenticated());
 
         if (isMetricsEnabled) {
-            http.authorizeRequests().requestMatchers("/application/hystrixstream").permitAll();
+            http.authorizeHttpRequests(s -> s.requestMatchers("/application/hystrixstream").permitAll());
         }
 
-        return http.apply(new CustomSecurityFilters()).and().build();
+        return http.with(new CustomSecurityFilters(), t -> {
+        }).build();
     }
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {

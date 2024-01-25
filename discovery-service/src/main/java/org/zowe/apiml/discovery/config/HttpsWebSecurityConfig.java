@@ -91,19 +91,20 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-                "/application/**",
-                "/*"
+            "/application/**",
+            "/*"
         )))
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider)
-                .authorizeRequests(requests -> requests
-                        .requestMatchers("/**").authenticated())
-                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers("/**").authenticated())
+            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (isAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
-        return http.apply(new CustomSecurityFilters()).and().build();
+        return http.with(new CustomSecurityFilters(), t -> {
+        }).build();
     }
 
     /**
@@ -114,14 +115,16 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeRequests(requests -> requests
-                    .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+            http.x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
+                .authorizeHttpRequests(requests -> requests
+                    .anyRequest().authenticated()
+                );
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authorizeRequests(requests -> requests.anyRequest().permitAll());
+            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
         }
         return http.build();
     }
@@ -133,19 +136,20 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/discovery/**"))
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider)
-                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeRequests(requests -> requests.anyRequest().authenticated())
-                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         }
 
-        return http.apply(new CustomSecurityFilters()).and().build();
+        return http.with(new CustomSecurityFilters(), t -> {
+        }).build();
     }
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
