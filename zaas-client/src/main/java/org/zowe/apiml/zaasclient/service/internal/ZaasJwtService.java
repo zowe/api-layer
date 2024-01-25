@@ -86,7 +86,7 @@ class ZaasJwtService implements TokenService {
         var entity = new StringEntity(json);
         httpPost.setEntity(entity);
         httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        return new ClientWithResponse(client, client.execute(httpPost));
+        return new ClientWithResponse(client, client.execute(httpPost, r -> r));
     }
 
     @Override
@@ -166,7 +166,7 @@ class ZaasJwtService implements TokenService {
         var client = httpClientProvider.getHttpClient();
         var httpGet = new HttpGet(queryEndpoint);
         httpGet.addHeader(HttpHeaders.COOKIE, zassConfigProperties.getTokenPrefix() + "=" + jwtToken);
-        return new ClientWithResponse(client, client.execute(httpGet));
+        return new ClientWithResponse(client, client.execute(httpGet, r -> r));
     }
 
     private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException, ZaasClientException {
@@ -273,9 +273,9 @@ class ZaasJwtService implements TokenService {
         String token = "";
         int httpResponseCode = response.getCode();
         if (httpResponseCode == 204) {
-            var elements = response.getHeaders(HttpHeaders.COOKIE)[0];
-            Optional<Header> apimlAuthCookie = Stream.of(elements)
-                .filter(element -> element.getName().equals(zassConfigProperties.getTokenPrefix()))
+            var headers = response.getHeaders(HttpHeaders.COOKIE)[0];
+            Optional<Header> apimlAuthCookie = Stream.of(headers)
+                .filter(header -> header.getName().equals(zassConfigProperties.getTokenPrefix()))
                 .findFirst();
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get().getValue();
