@@ -4,7 +4,6 @@ dependencies {
     implementation libs.http.client5
     implementation libs.jackson.annotations
     implementation libs.jackson.databind
-//    implementation libs.slf4j.api
     implementation libs.jaxb.api
     implementation libs.jakarta.servlet.api
     implementation libs.spring.context
@@ -17,5 +16,4 @@ dependencies {
     testImplementation libs.json.smart
     testImplementation libs.junitJupiter
     testImplementation libs.jjwt.full
-//    testImplementation libs.logback.classic
 }

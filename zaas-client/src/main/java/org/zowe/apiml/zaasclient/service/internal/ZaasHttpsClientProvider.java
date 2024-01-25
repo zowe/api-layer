@@ -18,8 +18,10 @@ import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.util.Timeout;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
@@ -102,10 +104,9 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             if (kmf == null) {
                 initializeKeyStoreManagerFactory();
             }
-            var manager = new PoolingHttpClientConnectionManager();
+            var manager = PoolingHttpClientConnectionManagerBuilder.create().setSSLSocketFactory(new SSLConnectionSocketFactory(getSSLContext())).build();
 
             httpsClient = createSecureHttpClient(manager).build();
-//            httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
         }
         return httpsClient;
     }
