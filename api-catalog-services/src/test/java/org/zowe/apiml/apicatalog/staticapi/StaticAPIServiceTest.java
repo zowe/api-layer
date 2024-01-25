@@ -10,11 +10,10 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -56,10 +55,6 @@ class StaticAPIServiceTest {
     @Mock
     private CloseableHttpResponse notFoundResponse;
     @Mock
-    private StatusLine okStatusLine;
-    @Mock
-    private StatusLine notFoundStatusLine;
-    @Mock
     private HttpEntity entity;
 
     @Mock
@@ -76,9 +71,7 @@ class StaticAPIServiceTest {
 
             @BeforeEach
             void setup() throws IOException {
-
-                when(okResponse.getStatusLine()).thenReturn(okStatusLine);
-                when(okStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
+                when(okResponse.getCode()).thenReturn(HttpStatus.OK.value());
 
                 when(okResponse.getEntity()).thenReturn(entity);
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(BODY.getBytes()));
@@ -112,9 +105,7 @@ class StaticAPIServiceTest {
             class WhenOneSucceedsTest {
                 @BeforeEach
                 void setup() throws IOException {
-
-                    when(okResponse.getStatusLine()).thenReturn(okStatusLine);
-                    when(okStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
+                    when(okResponse.getCode()).thenReturn(HttpStatus.OK.value());
 
                     when(okResponse.getEntity()).thenReturn(entity);
                     when(entity.getContent()).thenReturn(new ByteArrayInputStream(BODY.getBytes()));
@@ -132,8 +123,7 @@ class StaticAPIServiceTest {
                 @Test
                 void whenFirstFails_thenReturnResponseFromSecond() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
-                    when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
-                    when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
+                    when(notFoundResponse.getCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     mockRestTemplateExchange(DISCOVERY_LOCATION_2);
                     StaticAPIResponse actualResponse = staticAPIService.refresh();
                     StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
@@ -146,8 +136,7 @@ class StaticAPIServiceTest {
                 @Test
                 void whenBothFail_thenReturnResponseFromSecond() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
-                    when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
-                    when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
+                    when(notFoundResponse.getCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     when(notFoundResponse.getEntity()).thenReturn(entity);
                     when(entity.getContent()).thenAnswer(invocation -> new ByteArrayInputStream(BODY.getBytes()));
                     mockRestTemplateExchange(DISCOVERY_LOCATION_3);
@@ -175,8 +164,8 @@ class StaticAPIServiceTest {
 
         when(httpClient.execute(any())).thenAnswer((invocation) -> {
             HttpPost httpRequest = (HttpPost) invocation.getArguments()[0];
-            URI uri = httpRequest.getURI();
-            int i = uri.compareTo(post.getURI());
+            URI uri = httpRequest.getUri();
+            int i = uri.compareTo(post.getUri());
             if (i == 0) {
                 return okResponse;
             } else {
