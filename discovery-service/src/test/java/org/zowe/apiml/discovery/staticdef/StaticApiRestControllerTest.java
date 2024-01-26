@@ -10,6 +10,13 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.resources.ServerCodecs;
+import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import com.netflix.appinfo.InstanceInfo;
@@ -33,7 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {

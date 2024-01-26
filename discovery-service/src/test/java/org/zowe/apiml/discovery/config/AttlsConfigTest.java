@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
+import java.io.IOException;
 import java.net.ConnectException;
 
 import static io.restassured.RestAssured.given;
@@ -61,11 +62,10 @@ class AttlsConfigTest extends DiscoveryFunctionalTest {
                 .when()
                     .get(getDiscoveryUriWithPath("/application/info"))
                 .then()
-                    .log().all()
-                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+                    .log().all();
                 fail("Expected SSL failure");
             } catch (Exception e) {
-                assertInstanceOf(ConnectException.class, e);
+                assertInstanceOf(IOException.class, e);
             }
         }
     }

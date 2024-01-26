@@ -67,9 +67,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
-    @Value("${apiml.metrics.enabled:false}")
-    private boolean isMetricsEnabled;
-
     @Bean
     public WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
@@ -85,7 +82,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             web.ignoring().requestMatchers(noSecurityAntMatchers);
         };
     }
-
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
      */
