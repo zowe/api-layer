@@ -29,11 +29,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -96,7 +102,8 @@ public class HttpConfig {
     private int readTimeout;
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
-
+    private final Timer connectionManagerTimer = new Timer(
+        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
@@ -176,9 +183,18 @@ public class HttpConfig {
             .setSocketTimeout(Timeout.ofMilliseconds(requestConnectionTimeout))
             .setTimeToLive(Timeout.ofMilliseconds(timeToLive))
             .build();
+        this.connectionManagerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                connectionManager.closeExpired();
+                connectionManager.closeIdle(Timeout.ofSeconds(idleConnTimeoutSeconds));
+            }
+        }, 3000, 3000);
+
         connectionManager.setDefaultConnectionConfig(connConfig);
         connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
         connectionManager.setMaxTotal(maxTotalConnections);
+
         return connectionManager;
     }
 
@@ -223,7 +239,7 @@ public class HttpConfig {
     @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore(RestTemplateBuilder builder) {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
-  //      factory.setReadTimeout(readTimeout);
+        factory.setConnectionRequestTimeout(requestConnectionTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
@@ -239,7 +255,7 @@ public class HttpConfig {
     @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
-    //    factory.setReadTimeout(readTimeout);
+        factory.setConnectionRequestTimeout(requestConnectionTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
