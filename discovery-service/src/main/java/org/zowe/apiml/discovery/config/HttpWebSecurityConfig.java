@@ -62,9 +62,6 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.discovery.password:password}")
     private char[] eurekaPassword;
 
-    @Value("${apiml.metrics.enabled:false}")
-    private boolean isMetricsEnabled;
-
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
@@ -127,10 +124,6 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .httpBasic(s -> s.realmName(DISCOVERY_REALM))
 
             .authorizeHttpRequests(s -> s.requestMatchers("/application/info", "/application/health").permitAll().requestMatchers("/**").authenticated());
-
-        if (isMetricsEnabled) {
-            http.authorizeHttpRequests(s -> s.requestMatchers("/application/hystrixstream").permitAll());
-        }
 
         return http.with(new CustomSecurityFilters(), t -> {
         }).build();

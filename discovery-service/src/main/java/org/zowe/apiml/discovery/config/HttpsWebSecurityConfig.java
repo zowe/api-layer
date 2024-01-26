@@ -24,6 +24,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.zowe.apiml.filter.AttlsFilter;
@@ -85,10 +87,18 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     }
 
     /**
-     * Filter chain for protecting endpoints with MF credentials (basic or token)
+     * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
      */
     @Bean
     @Order(1)
+    public SecurityFilterChain errorHandler(HttpSecurity http) throws Exception {
+        return baseConfigure(http.securityMatcher("/error")).build();
+    }
+    /**
+     * Filter chain for protecting endpoints with MF credentials (basic or token)
+     */
+    @Bean
+    @Order(2)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
             "/application/**",
@@ -111,7 +121,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      * Filter chain for protecting endpoints with client certificate
      */
     @Bean
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
@@ -133,7 +143,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
      */
     @Bean
-    @Order(3)
+    @Order(4)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/discovery/**"))
             .authenticationProvider(gatewayLoginProvider)
@@ -151,6 +161,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         return http.with(new CustomSecurityFilters(), t -> {
         }).build();
     }
+
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
         @Override

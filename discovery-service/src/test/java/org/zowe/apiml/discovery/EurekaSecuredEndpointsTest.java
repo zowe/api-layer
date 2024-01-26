@@ -10,7 +10,10 @@
 
 package org.zowe.apiml.discovery;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +27,7 @@ import java.util.Base64;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "eureka.client.fetchRegistry=false",
-        "eureka.client.registerWithEureka=false"
-    },
-    classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
-)
+@SpringBootTest
 @AutoConfigureMockMvc
 class EurekaSecuredEndpointsTest {
     private static final String EUREKA_ENDPOINT = "/eureka/apps";
