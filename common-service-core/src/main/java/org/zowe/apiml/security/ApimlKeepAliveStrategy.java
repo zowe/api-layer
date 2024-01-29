@@ -13,16 +13,12 @@ package org.zowe.apiml.security;
 import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
 import org.apache.hc.core5.annotation.Contract;
 import org.apache.hc.core5.annotation.ThreadingBehavior;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.message.BasicHeaderElementIterator;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.util.TimeValue;
-
-import java.util.Iterator;
-
-import static org.apache.http.protocol.HTTP.CONN_KEEP_ALIVE;
+import org.apache.http.protocol.HTTP;
 
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
@@ -33,8 +29,10 @@ public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
 
     @Override
     public TimeValue getKeepAliveDuration(HttpResponse response, HttpContext context) {
-        for (Iterator<Header> i = response.headerIterator(CONN_KEEP_ALIVE); i.hasNext(); ) {
-            Header he = i.next();
+        BasicHeaderElementIterator it = new BasicHeaderElementIterator
+            (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+        while (it.hasNext()) {
+            HeaderElement he = it.next();
             String param = he.getName();
             String value = he.getValue();
             if (value != null && param.equalsIgnoreCase

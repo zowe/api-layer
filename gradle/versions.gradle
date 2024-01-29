@@ -167,7 +167,7 @@ dependencyResolutionManagement {
             version('micronaut', '3.10.3')
             version('micronautPlugin', '3.7.10')
             version('shadow', '8.1.1')
-            version('gradleTomcatPlugin', '2.7.0')
+         //   version('gradleTomcatPlugin', '2.7.0')
             // version 10.x+ requires Java 11
             version('checkstyle', '9.3')
             version('jacoco', '0.8.11')
@@ -399,7 +399,7 @@ dependencyResolutionManagement {
             library('gradle_licencer', 'gradle.plugin.org.cadixdev.gradle', 'licenser').versionRef('gradleLicencer')
             library('gradle_jib_plugin', 'gradle.plugin.com.google.cloud.tools', 'jib-gradle-plugin').versionRef('gradleJibPlugin')
             library('gradle_test_logger', 'com.adarshr', 'gradle-test-logger-plugin').versionRef('gradleTestLogger')
-            library('gradle_tomcat_plugin', 'com.bmuschko', 'gradle-tomcat-plugin').versionRef('gradleTomcatPlugin')
+         //   library('gradle_tomcat_plugin', 'com.bmuschko', 'gradle-tomcat-plugin').versionRef('gradleTomcatPlugin')
             library('micronaut_http_client', 'io.micronaut', 'micronaut-http-client').versionRef('micronaut')
 
             plugin('gradle_git_properties', 'com.gorylenko.gradle-git-properties').versionRef('gradleGitProperties')
@@ -410,7 +410,7 @@ dependencyResolutionManagement {
             plugin('micronaut_minimal_application', 'io.micronaut.minimal.application').versionRef('micronautPlugin')
             plugin('micronaut_docker', 'io.micronaut.docker').versionRef('micronautPlugin')
             plugin('shadow', 'com.github.johnrengelman.shadow').versionRef('shadow')
-            plugin('gradle_tomcat', 'com.bmuschko.tomcat').versionRef('gradleTomcatPlugin')
+       //     plugin('gradle_tomcat', 'com.bmuschko.tomcat').versionRef('gradleTomcatPlugin')
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - no not use in Spring unless really necessary

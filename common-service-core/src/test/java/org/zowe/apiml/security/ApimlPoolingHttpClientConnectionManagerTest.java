@@ -20,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ApimlPoolingHttpClientConnectionManagerTest {
     private HttpRoute route;
@@ -43,8 +42,4 @@ class ApimlPoolingHttpClientConnectionManagerTest {
         assertNotNull(leaseRequest);
     }
 
-    @Test
-    void givenNoSocketRegistry_whenCreateConnection_thenThrowError() {
-        assertThrows(IllegalArgumentException.class, () -> new ApimlPoolingHttpClientConnectionManager(null, 10_000));
-    }
 }

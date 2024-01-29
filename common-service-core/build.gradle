@@ -28,16 +28,19 @@ dependencies {
     testImplementation libs.eh.cache
 
     compileOnly libs.spring.boot.starter.cache
+    testImplementation libs.http.client5
     testImplementation libs.spring.boot.starter.cache
 //    implementation libs.spring.web
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
     testImplementation libs.jackson.core
     testImplementation libs.jackson.databind
-    testImplementation libs.javax.servlet.api
+ //   testImplementation libs.javax.servlet.api
     testImplementation libs.json.unit.fluent
     testImplementation libs.json.unit
     testImplementation libs.hamcrest
+    testImplementation libs.spring.boot.starter.web
+
 //    testImplementation libs.logback.classic
 //    testImplementation libs.tomcat.embed.core
 //    testImplementation libs.mockito.core
