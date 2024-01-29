@@ -97,11 +97,7 @@ dependencyResolutionManagement {
 //            }
             version('lombok', '1.18.30')
 
-//            version('mockitoInline') {
-//                // version 5.x requires Java 11
-//                strictly '[4.11.0, 5.0.0['
-//                prefer '4.11.0'
-//            }
+
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
             version('netty', '4.1.101.Final')
@@ -306,7 +302,6 @@ dependencyResolutionManagement {
 //            library('logback_core', 'ch.qos.logback', 'logback-core').versionRef('logback')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
 //            library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
-//            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
             library('netflix_commons_util', 'com.netflix.netflix-commons', 'netflix-commons-util').versionRef('netflixCommonsUtil')
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('netty', 'io.netty', 'netty-all').versionRef('netty')
@@ -416,10 +411,11 @@ dependencyResolutionManagement {
             // Pure Java dependencies - no not use in Spring unless really necessary
             version('logback', '1.4.14')
             version('mockitoCore', '5.10.0')
+            version('mockitoInline', '5.2.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
-
+            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
         }
     }
 }
