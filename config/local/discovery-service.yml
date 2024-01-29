@@ -16,10 +16,9 @@ spring.output.ansi.enabled: always
 ---
 spring.config.activate.on-profile: https
 
-eureka:
-    client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+apiml:
+    discovery:
+        allPeersUrls: https://${apiml.service.hostname}:10021/eureka/
 
 server:
     ssl:

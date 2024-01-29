@@ -10,53 +10,47 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.eureka.EurekaServerConfig;
-import com.netflix.eureka.resources.ServerCodecs;
-import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.config.EurekaConfig;
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "eureka.client.fetchRegistry=false",
-        "eureka.client.registerWithEureka=false"
-    },
-    classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
-)
-@AutoConfigureMockMvc
 class StaticApiRestControllerTest {
 
     private static final String CREDENTIALS = "eureka:password";
 
-    @Autowired
+    List<InstanceInfo> instancesInfo;
     private MockMvc mockMvc;
+    String serviceName = "service";
 
-    @MockBean
+    @BeforeEach
+    public void setup() {
+
+        registrationService = mock(StaticServicesRegistrationService.class);
+        instancesInfo = Collections.singletonList(
+            InstanceInfo.Builder.newBuilder()
+                .setAppName(serviceName)
+                .build()
+        );
+        mockMvc = standaloneSetup(new StaticApiRestController(registrationService)).build();
+    }
+
+
     private StaticServicesRegistrationService registrationService;
 
     @Test
@@ -64,14 +58,7 @@ class StaticApiRestControllerTest {
         String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
 
-        List<InstanceInfo> instancesInfo = Arrays.asList(
-            InstanceInfo.Builder.newBuilder()
-                .setAppName(serviceName)
-                .build()
-        );
         when(registrationService.getStaticInstances()).thenReturn(instancesInfo);
-
-
         this.mockMvc.perform(get("/discovery/api/v1/staticApi").header("Authorization", basicToken))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].app", hasItem(serviceName.toUpperCase())));
@@ -81,15 +68,11 @@ class StaticApiRestControllerTest {
 
     @Test
     void reloadDefinitions() throws Exception {
-        String serviceName = "service";
+
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
 
         StaticRegistrationResult result = new StaticRegistrationResult();
-        List<InstanceInfo> instancesInfo = Arrays.asList(
-            InstanceInfo.Builder.newBuilder()
-                .setAppName(serviceName)
-                .build()
-        );
+
         result.getInstances().addAll(instancesInfo);
 
         when(registrationService.reloadServices()).thenReturn(result);

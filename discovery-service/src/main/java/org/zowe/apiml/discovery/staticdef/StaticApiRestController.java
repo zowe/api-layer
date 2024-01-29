@@ -29,12 +29,12 @@ public class StaticApiRestController {
         this.registrationService = registrationService;
     }
 
-    @GetMapping
+    @GetMapping(produces = "application/json")
     public List<InstanceInfo> list() {
         return registrationService.getStaticInstances();
     }
 
-    @PostMapping
+    @PostMapping(produces = "application/json")
     public StaticRegistrationResult reload() {
         return registrationService.reloadServices();
     }
