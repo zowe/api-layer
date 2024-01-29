@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.security.common.verify;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -66,17 +66,14 @@ class TrustedCertificatesProviderTest {
     private TrustedCertificatesProvider provider;
     private CloseableHttpClient closeableHttpClient;
     private CloseableHttpResponse httpResponse;
-    private StatusLine statusLine;
     private HttpEntity responseEntity;
 
     @BeforeEach
     void setup() throws IOException {
         closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
-        statusLine = mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
+        when(httpResponse.getCode()).thenReturn(HttpStatus.SC_OK);
+        when(closeableHttpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(httpResponse);
         responseEntity = mock(HttpEntity.class);
         when(httpResponse.getEntity()).thenReturn(responseEntity);
     }
@@ -110,7 +107,7 @@ class TrustedCertificatesProviderTest {
 
         @Test
         void whenIOError_thenNoCertificatesReturned() throws IOException {
-            when(closeableHttpClient.execute(any())).thenThrow(new IOException("communication error"));
+            when(closeableHttpClient.execute(any(), any(HttpClientResponseHandler.class))).thenThrow(new IOException("communication error"));
             provider = new TrustedCertificatesProvider(closeableHttpClient);
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
@@ -166,7 +163,7 @@ class TrustedCertificatesProviderTest {
     class GivenErrorResponseCode {
         @BeforeEach
         void setup() {
-            when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
+            when(httpResponse.getCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
         }
 
         @Test
@@ -180,8 +177,6 @@ class TrustedCertificatesProviderTest {
 
         @Test
         void whenNoStatusLine_thenNoCertificatesReturned() {
-            when(httpResponse.getStatusLine()).thenReturn(null);
-
             provider = new TrustedCertificatesProvider(closeableHttpClient);
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);

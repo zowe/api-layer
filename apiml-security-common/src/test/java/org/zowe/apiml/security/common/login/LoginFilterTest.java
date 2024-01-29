@@ -35,7 +35,7 @@ import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 

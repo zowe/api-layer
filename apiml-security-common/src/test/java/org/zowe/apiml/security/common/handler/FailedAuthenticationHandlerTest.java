@@ -16,7 +16,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

@@ -90,7 +90,7 @@ class SafResourceAccessEndpointTest {
         doReturn(
             new ResponseEntity<>((SafResourceAccessEndpoint.Response) null, HttpStatus.OK)
         ).when(restTemplate).exchange(
-            anyString(), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), (Object[]) any()
+            anyString(), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), any(Object[].class)
         );
         assertFalse(safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
