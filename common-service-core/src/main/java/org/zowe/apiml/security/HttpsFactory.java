@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.security;
 
-import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder;
+import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -35,13 +35,8 @@ import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -265,8 +260,8 @@ public class HttpsFactory {
 
 
     //TODO: Consider using a different web client
-    public EurekaJersey3ClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId) {
-        EurekaJersey3ClientBuilder builder = new EurekaJersey3ClientBuilder();
+    public EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId) {
+        EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder builder = new EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder();
         builder.withClientName(serviceId);
         builder.withMaxTotalConnections(10);
         builder.withMaxConnectionsPerHost(10);

@@ -12,8 +12,6 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
 
 spring:
-    config:
-        useLegacyProcessing: true
     cloud:
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
@@ -28,6 +26,9 @@ spring:
             enabled: detect
     main:
         allow-circular-references: true
+    profiles.group:
+        dev: diag
+
 
 apiml:
     enabled: true
@@ -122,8 +123,7 @@ management:
             enabled: false
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -133,10 +133,7 @@ management:
                 include: "*"
 
 ---
-spring:
-    profiles: dev
-    profiles.include:
-        diag
+spring.config.activate.on-profile: dev
 
 logging:
     level:

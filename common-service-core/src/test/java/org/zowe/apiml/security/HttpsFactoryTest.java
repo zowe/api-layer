@@ -12,9 +12,9 @@ package org.zowe.apiml.security;
 
 import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +70,7 @@ class HttpsFactoryTest {
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
 
         var httpClient = httpsFactory.createSecureHttpClient(null);
-        assertEquals("org.apache.http.impl.client.InternalHttpClient", httpClient.getClass().getName());
+        assertEquals("org.apache.hc.client5.http.impl.classic.InternalHttpClient", httpClient.getClass().getName());
     }
 
     @Test

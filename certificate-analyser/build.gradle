@@ -4,8 +4,8 @@ plugins {
 
 dependencies {
     testImplementation libs.junitJupiter
-//    testImplementation libs.mockito.core
-//    testImplementation libs.mockito.inline
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.inline
     testImplementation libs.hamcrest
 
     implementation libs.picocli
