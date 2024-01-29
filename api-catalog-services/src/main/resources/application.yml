@@ -1,6 +1,4 @@
 spring:
-    config:
-        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
@@ -17,6 +15,8 @@ spring:
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
+    profiles.group:
+            dev: debug, diag
 
 springdoc:
     packagesToScan: org.zowe.apiml.apicatalog.controllers.api
@@ -216,13 +216,6 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
----
-spring.config.activate.on-profile: dev
-#    profiles.include:
-#        - debug
-#        - diag
-
 ---
 spring.config.activate.on-profile: attls
 

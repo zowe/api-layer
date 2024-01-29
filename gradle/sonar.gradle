@@ -64,12 +64,6 @@ project(":onboarding-enabler-nodejs") {
     }
 }
 
-project(":onboarding-enabler-java-sample-app-plain-java") {
-    sonar {
-        skipProject = true
-    }
-}
-
 project(":onboarding-enabler-nodejs-sample-app") {
     sonar {
         skipProject = true
@@ -77,12 +71,6 @@ project(":onboarding-enabler-nodejs-sample-app") {
 }
 
 project(":onboarding-enabler-micronaut-sample-app") {
-    sonar {
-        skipProject = true
-    }
-}
-
-project(":onboarding-enabler-java-sample-app") {
     sonar {
         skipProject = true
     }

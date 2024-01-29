@@ -40,24 +40,25 @@ public class EnableApiDiscoveryConfig {
         return messageService;
     }
 
-    @ConditionalOnMissingBean(EurekaClientProvider.class)
-    @Bean
+    @ConditionalOnMissingBean({EurekaClientProvider.class, EurekaClientConfigProvider.class})
+    @Bean("apiMediationClient")
     public ApiMediationClient defaultApiMediationClient() {
         return new ApiMediationClientImpl();
     }
 
     @ConditionalOnBean(EurekaClientProvider.class)
-    @Bean
-    public ApiMediationClient apiMediationClient(EurekaClientProvider eurekaClientProvider) {
+    @ConditionalOnMissingBean(EurekaClientConfigProvider.class)
+    @Bean("apiMediationClient")
+    public ApiMediationClient apiMediationClientWithProvider(EurekaClientProvider eurekaClientProvider) {
         if (eurekaClientProvider == null) {
             return new ApiMediationClientImpl();
         }
         return new ApiMediationClientImpl(eurekaClientProvider);
     }
 
-    @ConditionalOnBean(name = "EurekaClientProvider.class, EurekaClientConfigProvider.class")
-    @Bean
-    public ApiMediationClient apiMediationClient(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider) {
+    @ConditionalOnBean({EurekaClientProvider.class, EurekaClientConfigProvider.class})
+    @Bean("apiMediationClient")
+    public ApiMediationClient apiMediationClientWithConfig(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider) {
         if (eurekaClientProvider != null) {
             if (eurekaClientConfigProvider != null) {
                 return new ApiMediationClientImpl(eurekaClientProvider, eurekaClientConfigProvider);

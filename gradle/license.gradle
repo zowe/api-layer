@@ -20,7 +20,6 @@ ext.projectsNeedLicense = [
     'metrics-service-ui',
     'security-module',
     'security-service-client-spring',
-    'onboarding-enabler-java-sample-app',
     'onboarding-enabler-nodejs-sample-app',
     'onboarding-enabler-spring-sample-app',
     'onboarding-enabler-java',

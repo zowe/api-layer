@@ -36,8 +36,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         HttpSecurity newConf = http.csrf(csrf -> csrf.disable()) // NOSONAR
                 .authorizeRequests(requests -> requests
-                        .antMatchers("/ws/**").authenticated()
-                        .antMatchers("/**").permitAll())
+                        .requestMatchers("/ws/**").authenticated()
+                        .requestMatchers("/**").permitAll())
                             .httpBasic(withDefaults());
 
         if (isAttlsEnabled) {
@@ -60,6 +60,6 @@ public class SecurityConfiguration {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web ->
-            web.ignoring().antMatchers("/api/**");
+            web.ignoring().requestMatchers("/api/**");
     }
 }

@@ -118,7 +118,7 @@ class ApiMediationClientImplTest {
 
         client.register(config);
 
-        verify(clientProvider).client(any(), any(), any());
+        verify(clientProvider).client(any(), any(), any(), any());
     }
 
     @Test

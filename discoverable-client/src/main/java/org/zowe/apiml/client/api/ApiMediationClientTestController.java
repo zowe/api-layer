@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +33,6 @@ public class ApiMediationClientTestController {
 
     @PostMapping
     @Operation(summary = "Forward registration to discovery service via API mediation client")
-    @HystrixCommand
     public ResponseEntity<String> forwardRegistration() {
         try {
             apiMediationClientService.register();
@@ -46,7 +44,6 @@ public class ApiMediationClientTestController {
 
     @DeleteMapping
     @Operation(summary = "Forward un-registration to discovery service via API mediation client")
-    @HystrixCommand
     public ResponseEntity<String> forwardUnRegistration() {
         apiMediationClientService.unregister();
         return ResponseEntity.ok().build();

@@ -49,11 +49,7 @@ task liteLibJarAll(type: Jar) {
     entryCompression = ZipEntryCompression.STORED
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { rootProject.subprojects.collectMany {
-        if (it.properties.get('projectPath').toString() != ':onboarding-enabler-java-sample-app-plain-java') {
-            getLiteLibJarOutput(it.buildDir)
-        } else {
-            []
-        }
+        getLiteLibJarOutput(it.buildDir)
     }.collect() }
 }
 

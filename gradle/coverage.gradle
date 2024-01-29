@@ -12,7 +12,6 @@ ext.javaProjectsWithUnitTests = [
     'mock-services',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
-    'onboarding-enabler-java-sample-app',
     'security-module',
     'security-service-client-spring',
     //'onboarding-enabler-micronaut',

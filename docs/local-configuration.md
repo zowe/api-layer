@@ -85,26 +85,6 @@ To run onboarding-enabler-nodejs-sample-app, follow the steps below:
        
        Go to the [API Catalog](https://localhost:10010/apicatalog/ui/v1) and check if the API documentation of the service is retrieved.
 
-
-### Sample Application - onboarding-enabler-java-sample-app
-
-To run onboarding-enabler-java-sample-app, follow the steps below:
-
-1. Run `npm run onboarding-enabler-java-sample-app`
-  **Optional** : You can override the keystore and truststore location with these additional parameters on the java commandline: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
-If you need debug information about SSL configuration while deploying, use this parameter `-Djavax.net.debug=SSL`.
-
-2. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service `ENABLERJAVASAMPLEAPP` is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
-
-    * [https://localhost:10016/enablerJavaSampleApp/openapi.json](https://localhost:10016/enablerJavaSampleApp/openapi.json) which contains the API documentation.
-    * [https://localhost:10016/enablerJavaSampleApp/application/health](https://localhost:10016/enablerJavaSampleApp/application/health) for the health check endpoint containing the status of the application.
-    * [https://localhost:10016/enablerJavaSampleApp/application/info](https://localhost:10016/enablerJavaSampleApp/application/info) for the service information such as hostname, port etc.
-    * [https://localhost:10016](https://localhost:10016) for the homepage .
-    * [https://localhost:10016/enablerJavaSampleApp/api/v1/greeting](https://localhost:10016/enablerJavaSampleApp/api/v1/greeting) for the greeting endpoint.
-    * [https://localhost:10010/api/v1/enablerjavasampleapp/greeting](https://localhost:10010/enablerjavasampleapp/api/v1/greeting) for the greeting endpoint, routed through API Gateway.
-    
-    Go to the [API Catalog](https://localhost:10010/apicatalog/ui/v1) and check if the API documentation of the service is retrieved.
-
 ### Default Discovery Timing Settings 
 
 Default timings can require up to 3 minutes for service startup, discovery, and shutdown to be registered.

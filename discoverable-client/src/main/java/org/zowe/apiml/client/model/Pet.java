@@ -15,9 +15,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.zowe.apiml.client.model.state.Existing;
 import org.zowe.apiml.client.model.state.New;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import java.util.Objects;
 
 /**

@@ -20,15 +20,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
-import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableWebSocket
 @EnableApimlLogger
-@EnableCircuitBreaker
-@EnableHystrixDashboard
+// @EnableCircuitBreaker
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

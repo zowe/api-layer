@@ -2,29 +2,26 @@ dependencies {
     api project(':common-service-core')
     api project(':apiml-utility')
     implementation libs.jaxb.api
-    implementation libs.javax.annotation
     implementation libs.jackson.annotations
     implementation libs.jackson.dataformat.yaml
-//    implementation libs.eureka.client
-    implementation libs.spring.cloud.starter.eureka.client
     implementation libs.eureka.jersey.client
     implementation libs.jettison
     implementation libs.snakeyaml
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    compileOnly libs.javax.servlet.api
+    compileOnly libs.jakarta.servlet.api
     compileOnly libs.jakarta.inject
 
-//    testImplementation libs.mockito.core
+    testImplementation libs.jakarta.servlet.api
+    testImplementation libs.mockito.core
     testImplementation libs.spring4Mvc
     testImplementation libs.spring4Test
 
-//    testImplementation libs.logback.classic
+    testImplementation libs.logback.classic
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
-    testImplementation libs.javax.servlet.api
     testImplementation libs.hamcrest
 
     testImplementation libs.jakarta.inject

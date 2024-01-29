@@ -22,7 +22,7 @@ import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.product.logging.LogMessageTracker;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Collections;
 import java.util.function.Consumer;
 

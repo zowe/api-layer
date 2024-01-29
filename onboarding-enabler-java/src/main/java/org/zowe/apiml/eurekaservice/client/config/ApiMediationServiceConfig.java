@@ -15,7 +15,7 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 

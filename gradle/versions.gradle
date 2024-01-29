@@ -45,7 +45,7 @@ dependencyResolutionManagement {
             version('commonsFileUpload', '1.5')
             version('ehCache', '3.10.8')
 //            version('eureka', '1.10.18')
-            version('eurekaJerseyClient', '2.0.1')
+            version('eureka', '2.0.1')
             version('findBugs', '3.0.2')
             version('githubClassgraph', '4.8.165')
             version('gradleGitProperties', '2.4.1') // Used in classpath dependencies
@@ -70,7 +70,7 @@ dependencyResolutionManagement {
             version('jakartaServlet', '6.1.0-M1')
             version('javaxServletApi', '4.0.1')
             version('jaxbApi', '2.3.1')
-            version('jersey', '2.41')
+            version('jersey', '3.1.5')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.53.v20231009')
             version('jettison', '1.5.4')
@@ -96,11 +96,7 @@ dependencyResolutionManagement {
 //                prefer '1.2.13'
 //            }
             version('lombok', '1.18.30')
-//            version('mockitoCore') {
-//                // version 5.x requires Java 11
-//                strictly '[4.11.0, 5.0.0['
-//                prefer '4.11.0'
-//            }
+
 //            version('mockitoInline') {
 //                // version 5.x requires Java 11
 //                strictly '[4.11.0, 5.0.0['
@@ -142,7 +138,6 @@ dependencyResolutionManagement {
             version('swaggerInflector', '2.0.10')
             version('swaggerJaxrs2', '2.2.19')
             version('thymeleaf', '3.1.2.RELEASE')
-//            version('tomcat', '9.0.83')
             version('velocity', '2.3')
             version('woodstoxCore', '6.5.1')
             version('woodstoxStax2', '4.2.2')
@@ -251,7 +246,8 @@ dependencyResolutionManagement {
             library('caffeine', 'com.github.ben-manes.caffeine', 'caffeine').versionRef('caffeine')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
-            library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eurekaJerseyClient')
+         //   library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eureka')
+            library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eureka')
 //            library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eureka')
 //            library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
             library('findbugs', 'com.google.code.findbugs', 'jsr305').versionRef('findBugs')
@@ -309,7 +305,6 @@ dependencyResolutionManagement {
 //            library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
 //            library('logback_core', 'ch.qos.logback', 'logback-core').versionRef('logback')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
-//            library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
 //            library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
 //            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
             library('netflix_commons_util', 'com.netflix.netflix-commons', 'netflix-commons-util').versionRef('netflixCommonsUtil')
@@ -371,11 +366,10 @@ dependencyResolutionManagement {
             library('thymeleafSpring', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
 //            library('tomcat_annotations_api', 'org.apache.tomcat', 'tomcat-annotations-api').versionRef('tomcat')
-//            library('tomcat_coyote', 'org.apache.tomcat', 'tomcat-coyote').versionRef('tomcat')
-//            library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat')
-//            library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat')
-//            library('tomcat_embed_jasper', 'org.apache.tomcat.embed', 'tomcat-embed-jasper').versionRef('tomcat')
-//            library('tomcat_embed_logging-juli', 'org.apache.tomcat.embed', 'tomcat-embed-logging-juli').versionRef('tomcat')
+    //        library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat')
+   //         library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat')
+    //        library('tomcat_embed_jasper', 'org.apache.tomcat.embed', 'tomcat-embed-jasper').versionRef('tomcat')
+   //         library('tomcat_embed_logging-juli', 'org.apache.tomcat.embed', 'tomcat-embed-logging-juli').version('9.0.0.M6')
 //            library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcat')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('woodstox_stax2', 'org.codehaus.woodstox', 'stax2-api').versionRef('woodstoxStax2')
@@ -418,6 +412,14 @@ dependencyResolutionManagement {
             plugin('shadow', 'com.github.johnrengelman.shadow').versionRef('shadow')
             plugin('gradle_tomcat', 'com.bmuschko.tomcat').versionRef('gradleTomcatPlugin')
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
+
+            // Pure Java dependencies - no not use in Spring unless really necessary
+            version('logback', '1.4.14')
+            version('mockitoCore', '5.10.0')
+
+            library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
+            library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
+
         }
     }
 }

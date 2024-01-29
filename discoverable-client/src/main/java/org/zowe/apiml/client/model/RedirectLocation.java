@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.zowe.apiml.client.model.state.New;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * This model is used for integration test of PageRedirectionFilter.java

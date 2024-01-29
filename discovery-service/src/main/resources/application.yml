@@ -37,8 +37,6 @@ apiml:
         allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
 
 spring:
-    config:
-        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
@@ -53,6 +51,8 @@ spring:
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+    profiles.group:
+        dev: debug, diag
 
 server:
     address: ${apiml.service.ipAddress}
@@ -74,7 +74,6 @@ eureka:
         preferIpAddress: ${apiml.service.preferIpAddress}
         statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
         healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
-        webclient.enabled: false
     client:
         registerWithEureka: true
         fetchRegistry: true
@@ -176,10 +175,6 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
----
-spring.config.activate.on-profile: dev
-#spring.profiles.group.dev: debug, diag
 
 logbackServiceName: ZWEADS1
 
