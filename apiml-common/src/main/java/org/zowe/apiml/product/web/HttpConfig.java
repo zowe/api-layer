@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3Client;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -237,7 +238,7 @@ public class HttpConfig {
     @Bean
     @Primary
     @Qualifier("restTemplateWithKeystore")
-    public RestTemplate restTemplateWithKeystore(RestTemplateBuilder builder) {
+    public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         factory.setConnectionRequestTimeout(requestConnectionTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
