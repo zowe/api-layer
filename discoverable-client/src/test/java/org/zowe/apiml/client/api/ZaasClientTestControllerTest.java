@@ -28,7 +28,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

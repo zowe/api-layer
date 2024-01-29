@@ -32,7 +32,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     compileOnly libs.jakarta.inject
-//    implementation libs.eureka.client
+    implementation libs.eureka.jersey.client
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart

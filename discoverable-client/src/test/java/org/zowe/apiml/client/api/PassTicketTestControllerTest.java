@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.client.configuration.PassTicketConfiguration;
 import org.zowe.apiml.passticket.PassTicketService;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import java.util.Base64;
 
