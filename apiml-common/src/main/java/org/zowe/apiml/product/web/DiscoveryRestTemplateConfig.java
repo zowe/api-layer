@@ -17,7 +17,6 @@ import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClient
 import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 

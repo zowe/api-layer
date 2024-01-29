@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.product.web;
 
-import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3Client;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,17 +23,12 @@ import org.apache.hc.core5.util.Timeout;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
