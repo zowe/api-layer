@@ -12,6 +12,8 @@ package org.zowe.apiml.product.routing.transform;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -293,6 +295,30 @@ class TransformServiceTest {
             transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
         });
         assertEquals("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "service,api/v1,api/v1,api/v1,/service/api/{api-version}",
+        "srv,api/v1/home/page.html,api/v1,api/v1,/srv/api/{api-version}",
+        "srv,wrong/url,api/v1,api/v1,",
+        "srv,apiV1/home/page.html,api/v1,apiV1,/srv/api/{api-version}"
+    })
+    void testRetrieveApiBasePath(String serviceId, String url, String gatewayUrl, String serviceUrl, String expectedBasePath) {
+        RoutedService route = new RoutedService("api", gatewayUrl, serviceUrl);
+
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(route);
+
+        TransformService transformService = new TransformService(null);
+        String basePath;
+        try {
+            basePath = transformService.retrieveApiBasePath(serviceId, url, routedServices);
+        } catch (URLTransformationException e) {
+            basePath = null;
+        }
+
+        assertEquals(expectedBasePath, basePath);
     }
 
 }
