@@ -6,6 +6,11 @@
         <option name="name" value="spring.config.additional-location" />
         <option name="value" value="file:./config/local/discovery-service.yml" />
       </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="spring.profiles.active" />
+        <option name="value" value="https" />
+      </param>
     </additionalParameters>
     <module name="api-layer.discovery-service.main" />
     <option name="SHORTEN_COMMAND_LINE" value="ARGS_FILE" />
