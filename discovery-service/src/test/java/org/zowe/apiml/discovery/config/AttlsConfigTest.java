@@ -21,7 +21,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import java.io.IOException;
-import java.net.ConnectException;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
