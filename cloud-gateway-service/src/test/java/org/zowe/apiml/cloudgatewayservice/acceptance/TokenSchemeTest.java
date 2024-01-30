@@ -48,9 +48,9 @@ public abstract class TokenSchemeTest {
 
     private String getCookie(HttpExchange httpExchange, String cookieName) {
         List<String> cookieList = httpExchange.getRequestHeaders().get("Cookie");
-        if(cookieList == null || cookieList.isEmpty()) return null;
+        if (cookieList == null || cookieList.isEmpty()) return null;
         var allCookies = new ArrayList<String>();
-        for(String cookies : cookieList){
+        for (String cookies : cookieList) {
             allCookies.addAll(Arrays.asList(cookies.split(";")));
         }
         List<HttpCookie> cookies = allCookies.stream()

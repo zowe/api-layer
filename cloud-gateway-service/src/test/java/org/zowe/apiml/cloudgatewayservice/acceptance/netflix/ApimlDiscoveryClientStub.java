@@ -12,7 +12,6 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.netflix;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.StringUtils;
