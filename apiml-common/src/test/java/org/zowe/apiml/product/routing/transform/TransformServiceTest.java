@@ -235,7 +235,7 @@ class TransformServiceTest {
 
     @Test
     void givenServiceAndApiRoute_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
-        String url = "https://localhost:8080/" + SERVICE_ID;
+        String url = "https://localhost:8080/" + SERVICE_ID + "/" + API_PREFIX + "/v1";
 
         String serviceUrl = String.format("/%s/%s", SERVICE_ID, API_PREFIX);
         RoutedServices routedServices = new RoutedServices();
@@ -253,7 +253,7 @@ class TransformServiceTest {
 
     @Test
     void givenServiceAndApiRouteWithVersion_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
-        String url = "https://localhost:8080/" + SERVICE_ID;
+        String url = "https://localhost:8080/" + SERVICE_ID + "/" + API_PREFIX + "/v1";
 
         String serviceUrl = String.format("/%s/%s/%s", SERVICE_ID, API_PREFIX, "v1");
         RoutedServices routedServices = new RoutedServices();
