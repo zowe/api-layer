@@ -11,9 +11,9 @@
 package org.zowe.apiml.tomcat;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -22,16 +22,16 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.http11.Http11NioProtocol;
+import org.apache.tomcat.util.net.SSLHostConfig;
+import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 import org.zowe.apiml.security.HttpsConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
 
 @Slf4j
 public class TomcatServerFactory {
     private static final String SERVLET_NAME = "hello";
-    private static final char[] STORE_PASSWORD = "password".toCharArray();  // NOSONAR
 
     public Tomcat startTomcat(HttpsConfig httpsConfig) throws IOException {
         Tomcat tomcat = new Tomcat();
@@ -39,15 +39,16 @@ public class TomcatServerFactory {
         log.info("Tomcat contextPath: {}", contextPath);
         Context ctx = tomcat.addContext("", contextPath);
         tomcat.setConnector(createHttpsConnector(httpsConfig));
+
+
         Tomcat.addServlet(ctx, SERVLET_NAME, new HttpServlet() {
             @Override
-            public void service(ServletRequest req, ServletResponse response) throws ServletException, IOException {
-                response.setCharacterEncoding("UTF-8");
-                response.setContentType("text/plain");
-                try (Writer writer = response.getWriter()) {
-                    writer.write("OK");
-                    writer.flush();
-                }
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                resp.setCharacterEncoding("UTF-8");
+                resp.setContentType("text/plain");
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.getWriter().write("OK");
+                resp.getWriter().flush();
             }
         });
 
@@ -82,6 +83,16 @@ public class TomcatServerFactory {
         }
         httpsConnector.setProperty("sslProtocol", httpsConfig.getProtocol());
         httpsConnector.setProperty("SSLEnabled", "true");
+
+        var sslHostConfig = new SSLHostConfig();
+        httpsConnector.addSslHostConfig(sslHostConfig);
+
+        SSLHostConfigCertificate certificate = new SSLHostConfigCertificate(sslHostConfig, SSLHostConfigCertificate.Type.RSA);
+        certificate.setCertificateKeystoreFile(httpsConfig.getKeyStore());
+        certificate.setCertificateKeystorePassword(String.valueOf(httpsConfig.getKeyStorePassword()));
+        certificate.setCertificateKeyAlias(httpsConfig.getKeyAlias());
+
+        sslHostConfig.addCertificate(certificate);
         return httpsConnector;
     }
 
@@ -97,32 +108,4 @@ public class TomcatServerFactory {
         }
         return 0;
     }
-
-//    public static void main(String[] args) throws LifecycleException, ClientProtocolException, IOException {
-//        log.debug("Cwd: {}", System.getProperty("user.dir"));
-//
-//        HttpsConfig httpsConfig = HttpsConfig.builder()
-//            .keyStore(new File("keystore/localhost/localhost.keystore.p12").getCanonicalPath())
-//            .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD)
-//            .trustStore(new File("keystore/localhost/localhost.truststore.p12").getCanonicalPath())
-//            .trustStorePassword(STORE_PASSWORD).protocol("TLSv1.2").build();
-//        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-//
-//        Tomcat tomcat = new TomcatServerFactory().startTomcat(httpsConfig);
-//        try {
-//
-//            HttpClient client = httpsFactory.createSecureHttpClient(null);
-//
-//            int port = getLocalPort(tomcat);
-//            HttpGet get = new HttpGet(String.format("https://localhost:%d", port));
-//            HttpResponse response = client.execute(get);
-//
-//            String responseBody = EntityUtils.toString(response.getEntity());
-//
-//            assertEquals(200, response.getStatusLine().getStatusCode());
-//            assertEquals("OK", responseBody);
-//        } finally {
-//            tomcat.stop();
-//        }
-//    }
 }

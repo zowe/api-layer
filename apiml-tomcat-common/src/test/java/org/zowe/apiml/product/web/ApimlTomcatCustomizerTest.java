@@ -179,11 +179,6 @@ class ApimlTomcatCustomizerTest {
             }
 
             @Override
-            public SSLSupport getSslSupport(String clientCertProvider) {
-                return null;
-            }
-
-            @Override
             protected OperationState newOperationState(boolean read, ByteBuffer[] buffers, int offset, int length, BlockingMode block, long timeout, TimeUnit unit, Object attachment, CompletionCheck check, CompletionHandler handler, Semaphore semaphore, VectoredIOCompletionHandler completion) {
                 return null;
             }

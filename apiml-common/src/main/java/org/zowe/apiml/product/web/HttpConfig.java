@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.product.web;
 
-import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3Client;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +23,6 @@ import org.apache.hc.core5.util.Timeout;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -151,14 +149,14 @@ public class HttpConfig {
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
-            secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
+            secureHttpClient = factory.buildHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
 //            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
 //            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
-            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
 
             factory.setSystemSslProperties();
 

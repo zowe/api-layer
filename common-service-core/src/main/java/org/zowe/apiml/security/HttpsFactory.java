@@ -54,16 +54,16 @@ public class HttpsFactory {
     }
 
 
-    public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
+    public CloseableHttpClient buildHttpClient(HttpClientConnectionManager connectionManager) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectionRequestTimeout(Timeout.ofMilliseconds(config.getRequestConnectionTimeout()))
         .build();
        // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
 
         return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
-        //   .setSSLHostnameVerifier(getHostnameVerifier())
+//           .setSSLHostnameVerifier(getHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement()
-            //.setUserTokenHandler(userTokenHandler)
+//            .setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .evictExpiredConnections()
             .evictIdleConnections(Timeout.ofSeconds(config.getIdleConnTimeoutSeconds()))
