@@ -200,6 +200,13 @@ messages:
       text: "Mapping between distributed and mainframe identity failed. Reason: %s"
       reason: "Mapping between distributed and mainframe identity failed."
 
+    - key: org.zowe.apiml.security.common.OIDCConfigError
+      number: ZWEAT610
+      type: ERROR
+      text: "Missing registry name configuration."
+      reason: "The registry name configuration is required to correctly map distributed user name from the OIDC access token."
+      action: "Make sure that 'components.gateway.apiml.security.oidc.registry' is correctly set in 'zowe.yaml'."
+
     # Service specific messages
     # 700-999
 

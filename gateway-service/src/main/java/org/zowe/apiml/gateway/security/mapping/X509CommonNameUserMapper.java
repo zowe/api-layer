@@ -26,7 +26,8 @@ import java.security.cert.X509Certificate;
  * This mapper will be executed when ZSS is not used
  */
 @Component("x509Mapper")
-@ConditionalOnExpression("T(org.springframework.util.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl}')"
+@ConditionalOnExpression(
+    "T(org.apache.commons.lang3.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl:}') && '${apiml.security.useInternalMapper:false}' == 'false'"
 )
 public class X509CommonNameUserMapper implements AuthenticationMapper {
 

@@ -1,7 +1,7 @@
 dependencies {
     implementation libs.spring.boot.starter.web
 //    implementation libs.tomcat.embed.el
-    implementation libs.zowe.attls
+    implementation libs.zowe.zos.utils
 
 //    implementation libs.spring.aop
 //    implementation libs.spring.beans

@@ -16,7 +16,7 @@ import {
     fetchTilesStop,
     storeCurrentTileId,
 } from '../../actions/catalog-tile-actions';
-import { clearService } from '../../actions/selected-service-actions';
+import { clearService, storeContentAnchor } from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
 import { createLoadingSelector, getFilteredServices } from '../../selectors/selectors';
 import { clearError, refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
@@ -51,6 +51,7 @@ const mapDispatchToProps = {
     selectEnabler,
     closeAlert: () => userActions.closeAlert(),
     storeCurrentTileId: (id) => storeCurrentTileId(id),
+    storeContentAnchor: (id) => storeContentAnchor(id),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

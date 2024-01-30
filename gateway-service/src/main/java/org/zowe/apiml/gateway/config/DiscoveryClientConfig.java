@@ -36,6 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.CollectionUtils;
 import org.zowe.apiml.config.AdditionalRegistration;
@@ -66,6 +67,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_U
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+// There is an issue - clashing of XML configuration
+@DependsOn({"cacheConfig", "cacheManager"})
 public class DiscoveryClientConfig {
 //    private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;

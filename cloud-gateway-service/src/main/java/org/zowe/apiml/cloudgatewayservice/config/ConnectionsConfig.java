@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -144,12 +145,15 @@ public class ConnectionsConfig {
 
     @PostConstruct
     public void updateConfigParameters() {
+        ServerProperties serverProperties = context.getBean(ServerProperties.class);
         if (SecurityUtils.isKeyring(keyStorePath)) {
             keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
+            serverProperties.getSsl().setKeyStore(keyStorePath);
             if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
         }
         if (SecurityUtils.isKeyring(trustStorePath)) {
             trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
+            serverProperties.getSsl().setTrustStore(trustStorePath);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
         httpsFactory = factory();
@@ -191,6 +195,7 @@ public class ConnectionsConfig {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
                 if ("routingFilter".equals(beanName)) {
+                    log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
                     // once is creating original bean by autoconfiguration replace it with custom implementation
                     return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
                 }
@@ -212,10 +217,15 @@ public class ConnectionsConfig {
             trustManagerFactory.init(trustStore);
             builder.trustManager(trustManagerFactory);
 
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             if (setKeystore) {
                 KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 keyManagerFactory.init(keyStore, keyStorePassword);
+                builder.keyManager(keyManagerFactory);
+            } else {
+                KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                emptyKeystore.load(null, null);
+                keyManagerFactory.init(emptyKeystore, null);
                 builder.keyManager(keyManagerFactory);
             }
 

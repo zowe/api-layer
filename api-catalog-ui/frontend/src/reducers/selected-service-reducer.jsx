@@ -8,11 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
+import { CLEAR_SERVICE, SELECT_SERVICE, STORE_CONTENT_ANCHOR } from '../constants/selected-service-constants';
 
 const defaultState = {
     selectedService: {},
     selectedTile: null,
+    selectedContentAnchor: null,
 };
 
 const selectedServiceReducer = (state = defaultState, action = {}) => {
@@ -22,12 +23,19 @@ const selectedServiceReducer = (state = defaultState, action = {}) => {
                 ...state,
                 selectedService: action.selectedService,
                 selectedTile: action.selectedTile,
+                selectedContentAnchor: state.selectedContentAnchor,
             };
         case CLEAR_SERVICE:
             return {
                 ...state,
                 selectedService: {},
                 selectedTile: null,
+                selectedContentAnchor: null,
+            };
+        case STORE_CONTENT_ANCHOR:
+            return {
+                ...state,
+                selectedContentAnchor: action.payload,
             };
         default:
             return state;

@@ -400,12 +400,6 @@ public class MockService implements AutoCloseable {
                     httpExchange.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
                 }
 
-                httpExchange.sendResponseHeaders(responseCode, 0);
-
-                if (body != null) {
-                    httpExchange.getResponseBody().write(body.getBytes(StandardCharsets.UTF_8));
-                }
-
                 if (assertions != null) {
                     assertions.forEach(a -> {
                         try {
@@ -414,6 +408,12 @@ public class MockService implements AutoCloseable {
                             setAssertionError(afe);
                         }
                     });
+                }
+
+                httpExchange.sendResponseHeaders(responseCode, 0);
+
+                if (body != null) {
+                    httpExchange.getResponseBody().write(body.getBytes(StandardCharsets.UTF_8));
                 }
 
                 httpExchange.getResponseBody().close();

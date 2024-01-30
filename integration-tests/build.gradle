@@ -125,37 +125,6 @@ task runStartUpCheck(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task runWebsocketTests(type: Test) {
-    group "integration tests"
-    description "Runs tests for WebSockets"
-
-    systemProperties System.properties
-    useJUnitPlatform {
-        includeTags 'WebsocketTest'
-    }
-    outputs.upToDateWhen { false }
-}
-
-task runIntegrationTests(type: Test) {
-    group "Integration tests"
-    description "Run only tests without long tests"
-
-    dependsOn startUpCheck
-    systemProperties System.properties
-    useJUnitPlatform {
-        excludeTags(
-            'StartupCheck',
-            'EnvironmentCheck',
-            'SlowTests',
-            'AdditionalLocalTest',
-            'HATest',
-            'ChaoticHATest',
-            'OktaOauth2Test',
-            'MultipleRegistrationsTest'
-        )
-    }
-}
-
 task runLocalIntegrationTests(type: Test) {
     group "Integration tests"
     description "Run integration tests that are not dependent on mainframe"
@@ -169,27 +138,6 @@ task runLocalIntegrationTests(type: Test) {
             'SlowTests',
             'MainframeDependentTests',
             'AdditionalLocalTest',
-            'HATest',
-            'ChaoticHATest',
-            'OktaOauth2Test',
-            'MultipleRegistrationsTest'
-        )
-    }
-    outputs.upToDateWhen { false }
-}
-
-task runAllLocalIntegrationTests(type: Test) {
-    group "Integration tests"
-    description "Run integration tests for additional local services"
-
-    dependsOn startUpCheck
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        excludeTags(
-            'StartupCheck',
-            'EnvironmentCheck',
-            'SlowTests',
-            'MainframeDependentTests',
             'HATest',
             'ChaoticHATest',
             'OktaOauth2Test',
@@ -240,22 +188,13 @@ task runAllIntegrationTests(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task runTestWithoutStartupCheck(type: Test) {
-    group "Integration tests"
-    description "Run integration test without startup check"
-
-    useJUnitPlatform()
-
-    systemProperties System.properties
-
-    outputs.upToDateWhen { false }
-}
-
 task runAllIntegrationTestsForZoweTesting(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing"
 
+    systemProperty "environment.offPlatform", "true"
     systemProperties System.properties
+
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
@@ -331,21 +270,6 @@ task runContainerTests(type: Test) {
         )
     }
 }
-
-task runMainFrameTests(type: Test) {
-    group "integration tests"
-    description "Run tests that verify integration with MainFrame"
-
-    dependsOn startUpCheck
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'MainframeDependentTests'
-        )
-    }
-    outputs.upToDateWhen { false }
-}
-
 
 task runBaseTests(type: Test) {
     group "integration tests"
@@ -466,20 +390,6 @@ task runIdPrefixReplacerTests(type: Test) {
     }
 }
 
-task runSafAuthTest(type: Test) {
-    group "integration tests"
-    description "Run SAF dependant authentication tests only"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'SAFAuthTest'
-        )
-    }
-}
-
 task runZosmfAuthTest(type: Test) {
     group "integration tests"
     description "Run zOSMF dependant authentication tests only"
@@ -507,20 +417,6 @@ task runZaasTest(type: Test) {
     useJUnitPlatform {
         includeTags(
             'ZaasTest'
-        )
-    }
-}
-
-task runX509AuthTest(type: Test) {
-    group "integration tests"
-    description "Run x509 dependant authentication tests only"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'X509Test'
         )
     }
 }

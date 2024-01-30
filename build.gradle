@@ -164,11 +164,6 @@ task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:bu
     group "build"
 }
 
-task runIntegrationTests(dependsOn: ":integration-tests:runIntegrationTests") {
-    description "Run integration tests"
-    group "Integration tests"
-}
-
 task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTests") {
     description "Run all integration tests"
     group "Integration tests"
@@ -219,11 +214,6 @@ task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplace
     group "Integration tests"
 }
 
-task runMainFrameTests(dependsOn: ":integration-tests:runMainFrameTests") {
-    description "Run only tests related to the MainFrame"
-    group "Integration tests"
-}
-
 task publishAllVersions {
     group 'Zowe Publishing'
     description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
@@ -246,10 +236,7 @@ task runBaseTests(dependsOn: ":integration-tests:runBaseTests") {
     description "Run base tests"
     group "Integration tests"
 }
-task runSafAuthTest(dependsOn: ":integration-tests:runSafAuthTest") {
-    description "Run SAF dependant authentication tests only"
-    group "Integration tests"
-}
+
 task runZosmfAuthTest(dependsOn: ":integration-tests:runZosmfAuthTest") {
     description "Run zOSMF dependant authentication tests only"
     group "Integration tests"
@@ -258,10 +245,7 @@ task runZaasTest(dependsOn: ":integration-tests:runZaasTest") {
     description "Run Zaas dependant authentication tests only"
     group "Integration tests"
 }
-task runX509AuthTest(dependsOn: ":integration-tests:runX509AuthTest") {
-    description "Run x509 dependant authentication tests only"
-    group "Integration tests"
-}
+
 task runBaseTestsInternalPort(dependsOn: ":integration-tests:runBaseTestsInternalPort") {
     description "Run base tests on internal port"
     group "Integration tests"
