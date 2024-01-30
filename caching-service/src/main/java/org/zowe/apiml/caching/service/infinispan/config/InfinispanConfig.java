@@ -33,7 +33,7 @@ import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -81,7 +81,7 @@ public class InfinispanConfig {
 
         try (InputStream configurationStream = resourceLoader.getResource(
             "classpath:infinispan.xml").getInputStream()) {
-            holder = new ParserRegistry().parse(configurationStream, null, MediaType.APPLICATION_XML);
+            holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
         } catch (IOException e) {
             throw new InfinispanConfigException("Can't read configuration file", e);
         }

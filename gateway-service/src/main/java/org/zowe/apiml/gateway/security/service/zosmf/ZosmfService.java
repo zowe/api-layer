@@ -51,7 +51,7 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import jakarta.annotation.PostConstruct;
 
-import javax.management.ServiceNotFoundException;
+import jakarta.management.ServiceNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;

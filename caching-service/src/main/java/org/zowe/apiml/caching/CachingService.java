@@ -13,17 +13,16 @@ package org.zowe.apiml.caching;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.ApplicationListener;
 import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @SpringBootApplication
-@EnableCircuitBreaker
+// @EnableCircuitBreaker
 @EnableApiDiscovery
 @EnableRetry
 @EnableApimlLogger

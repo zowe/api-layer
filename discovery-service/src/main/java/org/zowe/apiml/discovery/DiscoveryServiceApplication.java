@@ -21,7 +21,7 @@ import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.version.BuildInfo;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @EnableEurekaServer
 @SpringBootApplication
