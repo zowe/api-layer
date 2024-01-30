@@ -208,7 +208,7 @@ public class VirtualService implements AutoCloseable {
      * @return this instance to next command
      */
     public VirtualService addServlet(String name, String pattern, Servlet servlet) {
-        Tomcat.addServlet(context, name, servlet);
+        Tomcat.addServlet(context, name, servlet.getClass().getName());
         context.addServletMappingDecoded(pattern, name);
 
         return this;
@@ -284,7 +284,7 @@ public class VirtualService implements AutoCloseable {
             int testCounter = 0;
             while (true) {
                 try {
-                    final ResponseBody responseBody = given().when()
+                    final ResponseBody<?> responseBody = given().when()
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
@@ -329,7 +329,7 @@ public class VirtualService implements AutoCloseable {
             while (true) {
                 try {
                     for (int i = 0; i < instanceCountBefore; i++) {
-                        final ResponseBody responseBody = given().when()
+                        final ResponseBody<?> responseBody = given().when()
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .get(url)
                             .body();
