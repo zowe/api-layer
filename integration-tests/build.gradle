@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
 //    testImplementation libs.http.client
-//    testImplementation libs.eureka.client
+    testImplementation libs.eureka.jersey.client
     testImplementation libs.jackson.dataformat.yaml
     testImplementation libs.json.path
     testImplementation libs.spring.boot.starter.websocket
