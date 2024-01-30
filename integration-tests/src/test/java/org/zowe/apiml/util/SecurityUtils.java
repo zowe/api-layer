@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.util;
 
-
-import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import com.nimbusds.jose.util.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -24,8 +22,8 @@ import io.restassured.http.Cookie;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.ssl.SSLContexts;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -45,7 +43,6 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,11 +50,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -69,7 +82,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.GENERATE_ACCESS_TOKEN;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
+import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
 
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
@@ -381,9 +397,8 @@ public class SecurityUtils {
                     new File(tlsConfiguration.getTrustStore()),
                     tlsConfiguration.getTrustStorePassword())
                 .build();
-            HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier();
-            SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, hostnameVerifier));
-            return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
+            X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
+            return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext,hostnameVerifier));
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
             | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);

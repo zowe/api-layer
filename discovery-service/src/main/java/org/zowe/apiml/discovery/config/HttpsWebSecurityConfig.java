@@ -24,8 +24,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandlerImpl;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.zowe.apiml.filter.AttlsFilter;
@@ -82,6 +80,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             web.ignoring().requestMatchers(noSecurityAntMatchers);
         };
     }
+
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
      */
@@ -90,6 +89,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     public SecurityFilterChain errorHandler(HttpSecurity http) throws Exception {
         return baseConfigure(http.securityMatcher("/error")).build();
     }
+
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token)
      */

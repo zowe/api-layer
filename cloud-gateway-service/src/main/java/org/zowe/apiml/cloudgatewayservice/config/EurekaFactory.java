@@ -13,7 +13,6 @@ package org.zowe.apiml.cloudgatewayservice.config;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.transport.jersey.TransportClientFactories;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
@@ -39,6 +38,6 @@ public class EurekaFactory {
 
     public CloudEurekaClient createCloudEurekaClient(EurekaInstanceConfig eurekaInstanceConfig, InstanceInfo newInfo, EurekaClientConfigBean configBean, ApplicationContext context, RestTemplateTransportClientFactories factories, RestTemplateDiscoveryClientOptionalArgs args1) {
         ApplicationInfoManager perClientAppManager = new ApplicationInfoManager(eurekaInstanceConfig, newInfo, null);
-       return new CloudEurekaClient(perClientAppManager, configBean, factories, args1, context);
+        return new CloudEurekaClient(perClientAppManager, configBean, factories, args1, context);
     }
 }

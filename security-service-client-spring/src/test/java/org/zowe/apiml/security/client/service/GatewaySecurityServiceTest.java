@@ -11,11 +11,10 @@
 package org.zowe.apiml.security.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,8 +34,14 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class GatewaySecurityServiceTest {
     private static final String USERNAME = "user";
@@ -80,16 +85,14 @@ class GatewaySecurityServiceTest {
 
     @Nested
     class GivenNoContent {
-        StatusLine statusLine;
+
         Header header;
         CloseableHttpResponse response;
 
         @BeforeEach
         void setup() throws IOException {
             response = mock(CloseableHttpResponse.class);
-            statusLine = mock(StatusLine.class);
-            when(response.getStatusLine()).thenReturn(statusLine);
-            when(statusLine.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT.value());
+            when(response.getCode()).thenReturn(HttpStatus.NO_CONTENT.value());
             header = mock(Header.class);
             when(response.getFirstHeader(HttpHeaders.SET_COOKIE)).thenReturn(header);
             when(header.getValue()).thenReturn(cookie);
@@ -125,7 +128,7 @@ class GatewaySecurityServiceTest {
                 Date issued = new Date();
                 Date exp = new Date(System.currentTimeMillis() + 10000);
 
-                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null, null,null);
+                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null, null, null);
                 String responseBody = objectMapper.writeValueAsString(expectedQueryResponse);
                 HttpEntity entity = mock(HttpEntity.class);
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(responseBody.getBytes()));
@@ -137,7 +140,7 @@ class GatewaySecurityServiceTest {
             @Test
             void givenGatewayUnauthorized_thenThrowException() throws IOException {
                 String responseBody = MESSAGE_KEY_STRING + "org.zowe.apiml.security.query.invalidToken\"";
-                when(statusLine.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
+                when(response.getCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
                 HttpEntity entity = mock(HttpEntity.class);
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(responseBody.getBytes()));
                 when(response.getEntity()).thenReturn(entity);
@@ -154,7 +157,6 @@ class GatewaySecurityServiceTest {
 
             private String uri;
             private CloseableHttpResponse response;
-            private StatusLine statusLine;
             private Header header;
             private HttpEntity entity;
 
@@ -163,9 +165,7 @@ class GatewaySecurityServiceTest {
                 uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
                     gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
                 response = mock(CloseableHttpResponse.class);
-                statusLine = mock(StatusLine.class);
-                when(response.getStatusLine()).thenReturn(statusLine);
-                when(statusLine.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
+                when(response.getCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
                 header = mock(Header.class);
                 when(response.getFirstHeader(HttpHeaders.SET_COOKIE)).thenReturn(header);
                 when(header.getValue()).thenReturn(cookie);

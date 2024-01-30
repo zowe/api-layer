@@ -15,6 +15,7 @@ import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -37,7 +38,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Strings.nullToEmpty;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -164,5 +164,9 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
         return new URL(conf.getScheme(), conf.getHost(), conf.getPort(), CENTRAL_REGISTRY_PATH)
             .toURI().resolve(query);
+    }
+
+    String nullToEmpty(String s) {
+        return StringUtils.defaultIfEmpty(s, "");
     }
 }
