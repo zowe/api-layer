@@ -20,7 +20,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 class TomcatKeyringFixTest {
 
@@ -34,7 +38,7 @@ class TomcatKeyringFixTest {
 
     private Connector getConnector() {
         Connector connector = mock(Connector.class);
-        doReturn(new SSLHostConfig[] {sslHostConfig}).when(connector).findSslHostConfigs();
+        doReturn(new SSLHostConfig[]{sslHostConfig}).when(connector).findSslHostConfigs();
         return connector;
     }
 
@@ -60,9 +64,7 @@ class TomcatKeyringFixTest {
         @Test
         void whenInvalidFormatAndMissingPassword_thenFixIt() {
             customize("safkeyring:///userId/ringIdKs", null, null, "safkeyringpce:////userId/ringIdTs", null);
-            verify(sslHostConfig).setCertificateKeystoreFile("safkeyring://userId/ringIdKs");
-            verify(sslHostConfig).setCertificateKeystorePassword(PASSWORD);
-            verify(sslHostConfig).setCertificateKeyPassword(PASSWORD);
+            verify(sslHostConfig).addCertificate(any(SSLHostConfigCertificate.class));
             verify(sslHostConfig).setTruststoreFile("safkeyringpce://userId/ringIdTs");
             verify(sslHostConfig).setTruststorePassword(PASSWORD);
         }
@@ -75,9 +77,7 @@ class TomcatKeyringFixTest {
         @Test
         void dontUpdate() {
             customize("/somePath", null, null, "/anotherPath", null);
-            verify(sslHostConfig, never()).setCertificateKeystoreFile(any());
-            verify(sslHostConfig, never()).setCertificateKeystorePassword(any());
-            verify(sslHostConfig, never()).setCertificateKeyPassword(any());
+            verify(sslHostConfig, never()).addCertificate(any());
             verify(sslHostConfig, never()).setTruststoreFile(any());
             verify(sslHostConfig, never()).setTruststorePassword(any());
         }

@@ -69,7 +69,7 @@ class HttpsFactoryTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
 
-        var httpClient = httpsFactory.createSecureHttpClient(null);
+        var httpClient = httpsFactory.buildHttpClient(null);
         assertEquals("org.apache.hc.client5.http.impl.classic.InternalHttpClient", httpClient.getClass().getName());
     }
 

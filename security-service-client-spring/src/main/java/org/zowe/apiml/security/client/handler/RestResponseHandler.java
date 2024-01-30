@@ -26,8 +26,6 @@ import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.io.IOException;
-
 /**
  * Handler for exceptions that are thrown during the security client rest calls
  */
@@ -60,7 +58,8 @@ public class RestResponseHandler {
                 throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage());
             case 405:
                 throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
-            case 500: case 503:
+            case 500:
+            case 503:
                 throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage());
             default:
                 addDebugMessage(null, ErrorType.AUTH_GENERAL.getDefaultMessage(), logParameters);

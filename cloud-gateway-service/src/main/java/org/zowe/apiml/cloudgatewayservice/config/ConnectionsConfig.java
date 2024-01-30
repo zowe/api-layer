@@ -14,10 +14,8 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.transport.jersey.TransportClientFactories;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.netty.handler.ssl.SslContext;
@@ -317,7 +315,7 @@ public class ConnectionsConfig {
         InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
         RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
         RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
-        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context,factories, args1);
+        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context, factories, args1);
     }
 
     @Bean

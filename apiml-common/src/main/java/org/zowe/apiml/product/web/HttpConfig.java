@@ -145,14 +145,14 @@ public class HttpConfig {
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
-            secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
+            secureHttpClient = factory.buildHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
 //            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
 //            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
-            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
 
             factory.setSystemSslProperties();
 

@@ -16,7 +16,6 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -147,18 +146,16 @@ class TomcatHttpsTest {
             socketFactoryRegistryBuilder.register("https", clientHttpsFactory.createSslSocketFactory());
             Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
             ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, clientConfig.getTimeToLive());
-            var client = clientHttpsFactory.createSecureHttpClient(connectionManager);
+            var client = clientHttpsFactory.buildHttpClient(connectionManager);
             int port = TomcatServerFactory.getLocalPort(tomcat);
 
             var get = new HttpGet(String.format("https://localhost:%d", port));
-            var response = client.execute(get, response1 -> response1);
-
-            String responseBody = EntityUtils.toString(response.getEntity());
-
-            assertEquals(200, response.getCode());
-            assertEquals("OK", responseBody);
-        } catch (ParseException e) {
-            log.error("Exception while parsing HTTP response with message: " + e.getMessage(), e);
+            client.execute(get, resp -> {
+                String responseBody = EntityUtils.toString(resp.getEntity());
+                assertEquals(200, resp.getCode());
+                assertEquals("OK", responseBody);
+                return responseBody;
+            });
         } finally {
             tomcat.stop();
         }
