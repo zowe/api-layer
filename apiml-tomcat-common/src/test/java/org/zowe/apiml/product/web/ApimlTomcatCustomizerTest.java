@@ -64,7 +64,7 @@ class ApimlTomcatCustomizerTest {
         ApimlTomcatCustomizer.ApimlAttlsHandler apimlAttlsHandler = new ApimlTomcatCustomizer.ApimlAttlsHandler(handler);
 
         when(socket.getIOChannel()).thenReturn(socketChannel);
-        SocketWrapperBase socketWrapper = getSocketWarapper(socket);
+        SocketWrapperBase socketWrapper = getSocketWrapper(socket);
         doAnswer(answer -> {
             int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
             int port = getPort(socketChannel);
@@ -85,7 +85,7 @@ class ApimlTomcatCustomizerTest {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    SocketWrapperBase getSocketWarapper(NioChannel socket) {
+    SocketWrapperBase getSocketWrapper(NioChannel socket) {
         return new SocketWrapperBase(socket, new NioEndpoint()) {
 
             @Override

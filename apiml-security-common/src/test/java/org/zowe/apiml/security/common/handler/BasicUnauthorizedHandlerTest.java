@@ -30,7 +30,7 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 
