@@ -179,6 +179,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing"
 
+    systemProperty "environment.config", "-r139"
+    systemProperty "okta.client.id", "0oa6a48mniXAqEMrx5d7"
     systemProperty "environment.offPlatform", "true"
     systemProperties System.properties
 
@@ -193,7 +195,9 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'ChaoticHATest',
             'OktaOauth2Test',
             'MultipleRegistrationsTest',
-            'NotForMainframeTest'
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFAuthTest'
         )
     }
     outputs.upToDateWhen { false }

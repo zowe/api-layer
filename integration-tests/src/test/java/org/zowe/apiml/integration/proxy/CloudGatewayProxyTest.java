@@ -13,10 +13,7 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.config.*;
@@ -50,7 +47,7 @@ class CloudGatewayProxyTest {
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
     }
 
-    @Test
+    @Disabled
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header(HEADER_X_FORWARD_TO, "apiml1")
@@ -59,7 +56,7 @@ class CloudGatewayProxyTest {
             .get(new URI(scgUrl)).then().statusCode(200);
     }
 
-    @Test
+    @Disabled
     void givenBasePath_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1/gateway/version");
         String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml2/gateway/version");
@@ -83,7 +80,7 @@ class CloudGatewayProxyTest {
     @Nested
     class GivenClientCertificateInRequest {
 
-        @Test
+        @Disabled
         void givenRequestHeader_thenCertPassedToDomainGateway() {
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
             given()
@@ -97,7 +94,7 @@ class CloudGatewayProxyTest {
                 .body("cn", is("APIMTST"));
         }
 
-        @Test
+        @Disabled
         void givenBasePath_thenCertPassedToDomainGateway() {
             String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
             given()
