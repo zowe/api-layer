@@ -25,7 +25,6 @@ import jakarta.annotation.Nonnull;
 
 @EnableEurekaServer
 @SpringBootApplication
-// @EnableCircuitBreaker
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.security",

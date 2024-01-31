@@ -22,7 +22,6 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import jakarta.annotation.Nonnull;
 
 @SpringBootApplication
-// @EnableCircuitBreaker
 @EnableApiDiscovery
 @EnableRetry
 @EnableApimlLogger

@@ -34,7 +34,6 @@ import org.zowe.apiml.product.version.BuildInfo;
 @EnableRetry
 @EnableAsync
 @EnableApimlLogger
-//@EnableCircuitBreaker
 public class ApiCatalogApplication {
 
     public static void main(String[] args) {

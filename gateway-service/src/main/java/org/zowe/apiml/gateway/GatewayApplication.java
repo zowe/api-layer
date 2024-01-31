@@ -30,7 +30,6 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 @EnableZuulProxy
 @EnableWebSecurity
 @SpringBootApplication
-// @EnableCircuitBreaker
 @ComponentScan(
     value = {
         "org.zowe.apiml.gateway",

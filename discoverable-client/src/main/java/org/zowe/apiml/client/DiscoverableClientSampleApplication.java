@@ -25,7 +25,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableApiDiscovery
 @EnableWebSocket
 @EnableApimlLogger
-// @EnableCircuitBreaker
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
