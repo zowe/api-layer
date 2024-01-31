@@ -54,10 +54,6 @@ public class SpringSecurityConfig {
 
         return web -> {
             web.ignoring().requestMatchers(noSecurityAntMatchers);
-
-            if (isMetricsEnabled) {
-                web.ignoring().requestMatchers("/application/hystrixstream");
-            }
         };
     }
 

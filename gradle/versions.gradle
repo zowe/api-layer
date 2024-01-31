@@ -123,11 +123,7 @@ dependencyResolutionManagement {
 //            version('slf4j', '1.7.36')
             version('snakeyaml', '2.2')
             version('springFox', '2.9.2')
-            version('springDoc') {
-                // version 1.7+ has a conflict with Jackson databind (displaying of examples)
-                strictly '[1.6.15, 1.7.0['
-                prefer '1.6.15'
-            }
+            version('springDoc', '2.3.0')
             version('spring4', '5.3.31') // Used within PJE in tests
             version('swagger3Core', '2.2.20')
             version('swagger3Parser', '2.1.19')
@@ -355,7 +351,7 @@ dependencyResolutionManagement {
             library('spring4Mvc', 'org.springframework', 'spring-webmvc').versionRef('spring4')
             library('spring4Test', 'org.springframework', 'spring-test').versionRef('spring4')
             library('springFox', 'io.springfox', 'springfox-swagger2').versionRef('springFox')
-            library('spring_doc', 'org.springdoc', 'springdoc-openapi-ui').versionRef('springDoc')
+            library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')
             library('spring_mock_mvc', 'io.rest-assured', 'spring-mock-mvc').versionRef('restAssured')
             library('swagger_core', 'io.swagger', 'swagger-core').versionRef('swaggerCore')
             library('swagger3_core', 'io.swagger.core.v3', 'swagger-core').versionRef('swagger3Core')

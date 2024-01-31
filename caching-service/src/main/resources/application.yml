@@ -38,6 +38,7 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -166,6 +167,7 @@ logging:
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework.security.web: INFO
 
 spring.config.activate.on-profile: dev
 
