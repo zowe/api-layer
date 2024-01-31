@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -46,22 +47,27 @@ class PassTicketServiceImpl implements PassTicketService {
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
         try {
             CloseableHttpClient closeableHttpsClient = httpClientProvider.getHttpClient();
-            ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
-            ObjectMapper mapper = new ObjectMapper();
-            zaasClientTicketRequest.setApplicationName(applicationId);
+            HttpPost httpPost = getHttpPost(jwtToken, applicationId);
 
-            HttpPost httpPost = new HttpPost(ticketUrl);
-            httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
-            httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-            httpPost.setHeader(HttpHeaders.COOKIE, passConfigProperties.getTokenPrefix() + "=" + jwtToken);
-
-            var response = closeableHttpsClient.execute(httpPost, r -> r);
+            var response = closeableHttpsClient.execute(httpPost);
             return extractPassTicket(response);
         } catch (ZaasConfigurationException e) {
             throw e;
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         }
+    }
+
+    private HttpPost getHttpPost(String jwtToken, String applicationId) throws JsonProcessingException {
+        var zaasClientTicketRequest = new ZaasClientTicketRequest();
+        var mapper = new ObjectMapper();
+        zaasClientTicketRequest.setApplicationName(applicationId);
+
+        var httpPost = new HttpPost(ticketUrl);
+        httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
+        httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+        httpPost.setHeader(HttpHeaders.COOKIE, passConfigProperties.getTokenPrefix() + "=" + jwtToken);
+        return httpPost;
     }
 
     private String extractPassTicket(ClassicHttpResponse response) throws IOException, ZaasClientException, ParseException {

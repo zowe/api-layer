@@ -86,7 +86,7 @@ class ZaasJwtService implements TokenService {
         var entity = new StringEntity(json);
         httpPost.setEntity(entity);
         httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        return new ClientWithResponse(client, client.execute(httpPost, r -> r));
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     @Override
@@ -100,7 +100,7 @@ class ZaasJwtService implements TokenService {
         var client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
-        return new ClientWithResponse(client, client.execute(httpPost, r -> r));
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     @Override
@@ -166,7 +166,7 @@ class ZaasJwtService implements TokenService {
         var client = httpClientProvider.getHttpClient();
         var httpGet = new HttpGet(queryEndpoint);
         httpGet.addHeader(HttpHeaders.COOKIE, zassConfigProperties.getTokenPrefix() + "=" + jwtToken);
-        return new ClientWithResponse(client, client.execute(httpGet, r -> r));
+        return new ClientWithResponse(client, client.execute(httpGet));
     }
 
     private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException, ZaasClientException {
@@ -188,7 +188,7 @@ class ZaasJwtService implements TokenService {
     }
 
     private ClientWithResponse getClientWithResponse(CloseableHttpClient client, HttpPost httpPost) throws IOException, ZaasClientException {
-        ClientWithResponse clientWithResponse = new ClientWithResponse(client, client.execute(httpPost, r -> r));
+        ClientWithResponse clientWithResponse = new ClientWithResponse(client, client.execute(httpPost));
         int httpResponseCode = clientWithResponse.getResponse().getCode();
         if (httpResponseCode == 204) {
             return clientWithResponse;
