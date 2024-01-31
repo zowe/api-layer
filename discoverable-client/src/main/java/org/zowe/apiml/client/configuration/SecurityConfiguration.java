@@ -16,12 +16,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.zowe.apiml.filter.AttlsFilter;
+
+import java.util.Collections;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -35,7 +38,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         HttpSecurity newConf = http.csrf(csrf -> csrf.disable()) // NOSONAR
-                .authorizeRequests(requests -> requests
+                .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/ws/**").authenticated()
                         .requestMatchers("/**").permitAll())
                             .httpBasic(withDefaults());
@@ -48,10 +51,8 @@ public class SecurityConfiguration {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder() // NOSONAR deprecated only to indicate not acceptable for production
-            .username("user")
-            .password("pass")
-            .roles("ADMIN")
+        UserDetails user = User
+            .withUserDetails(new User("user","pass", Collections.singleton(new SimpleGrantedAuthority("ADMIN"))))
             .build();
         return new InMemoryUserDetailsManager(user);
     }
