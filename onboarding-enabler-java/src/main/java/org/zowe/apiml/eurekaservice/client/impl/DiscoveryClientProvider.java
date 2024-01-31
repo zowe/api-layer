@@ -18,6 +18,8 @@ import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.TransportClientFactories;
 
 public class DiscoveryClientProvider implements org.zowe.apiml.eurekaservice.client.EurekaClientProvider {
+
+    @SuppressWarnings("rawtypes")
     @Override
     public EurekaClient client(ApplicationInfoManager applicationInfoManager,
                                EurekaClientConfig clientConfig,
