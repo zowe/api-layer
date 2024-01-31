@@ -16,9 +16,6 @@ spring.output.ansi.enabled: always
 ---
 spring.config.activate.on-profile: https
 
-apiml:
-    discovery:
-        allPeersUrls: https://${apiml.service.hostname}:10011/eureka/
 
 server:
     ssl:

@@ -273,7 +273,7 @@ class ZaasJwtService implements TokenService {
         String token = "";
         int httpResponseCode = response.getCode();
         if (httpResponseCode == 204) {
-            var headers = response.getHeaders(HttpHeaders.COOKIE)[0];
+            var headers = response.getHeaders(HttpHeaders.SET_COOKIE)[0];
             Optional<Header> apimlAuthCookie = Stream.of(headers)
                 .filter(header -> header.getName().equals(zassConfigProperties.getTokenPrefix()))
                 .findFirst();
