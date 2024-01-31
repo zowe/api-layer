@@ -49,48 +49,18 @@ gitProperties {
 }
 
 dependencies {
+    implementation libs.spring.boot.starter.web
+
+    implementation libs.apache.commons.lang3
     implementation libs.jjwt
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
-    implementation libs.apache.commons.lang3
     implementation libs.nimbusJoseJwt
-    implementation libs.jackson.databind
-
-    implementation libs.spring.boot.starter
-    implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.web
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.spring.boot.starter.websocket
-//    implementation libs.tomcat.annotations.api
-//    implementation libs.tomcat.embed.el
-//    implementation libs.tomcat.embed.core
-//    implementation libs.tomcat.embed.websocket
-//    implementation libs.logback.classic
-
-//    implementation libs.spring.aop
-//    implementation libs.spring.beans
-//    implementation libs.spring.context
-//    implementation libs.spring.core
-//    implementation libs.spring.expression
-//    implementation libs.spring.web
-//    implementation libs.spring.websocket
-//    implementation libs.spring.messaging
-//    implementation libs.spring.webmvc
-
-    implementation libs.bootstrap
-    implementation libs.jquery
-
-    implementation libs.gson
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
-    testImplementation libs.jjwt
-    testImplementation libs.jjwt.impl
-    testImplementation libs.jjwt.jackson
-    testImplementation libs.json.smart
 
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 }
 
 
