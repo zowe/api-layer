@@ -1,53 +1,19 @@
 dependencies {
-//    implementation libs.eureka.client
-//    implementation libs.netflix.servo
-    implementation libs.eureka.jersey.client
-    implementation libs.jettison
-    implementation libs.http.client5
-//    implementation libs.http.core
-    implementation libs.jackson.annotations
-    implementation libs.jackson.databind
-//    implementation libs.slf4j.api
-    implementation libs.snakeyaml
-
-    implementation libs.apache.commons.codec
     implementation libs.apache.commons.lang3
     implementation libs.apache.commons.text
-    implementation libs.xstream
-//    implementation libs.logback.core
-//    implementation libs.logback.classic
+    implementation libs.eureka.jersey.client
+    implementation libs.http.client5
 
-    implementation libs.jsr305
+    compileOnly libs.eh.cache
+    compileOnly libs.spring.boot.starter.web
 
-//    implementation libs.javax.servlet.api
+    testImplementation libs.eh.cache
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.web
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    compileOnly libs.eh.cache
-    testImplementation libs.eh.cache
-
-    compileOnly libs.spring.boot.starter.cache
-    testImplementation libs.http.client5
-    testImplementation libs.spring.boot.starter.cache
-//    implementation libs.spring.web
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
-    testImplementation libs.jackson.core
-    testImplementation libs.jackson.databind
- //   testImplementation libs.javax.servlet.api
-    testImplementation libs.json.unit.fluent
-    testImplementation libs.json.unit
-    testImplementation libs.hamcrest
-    testImplementation libs.spring.boot.starter.web
-
-//    testImplementation libs.logback.classic
-//    testImplementation libs.tomcat.embed.core
-//    testImplementation libs.mockito.core
-    compileOnly libs.spring.boot.starter.web
-//    implementation libs.spring.context
-//    implementation libs.spring.context.support
-//    implementation libs.spring.core
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 }

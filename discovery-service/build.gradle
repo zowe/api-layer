@@ -53,43 +53,25 @@ gitProperties {
 
 dependencies {
     api project(':apiml-tomcat-common')
-    api project(':apiml-security-common')
     api project(':security-service-client-spring')
-    implementation libs.spring.boot.starter.web
-    implementation libs.spring.boot.starter.websocket
-    implementation libs.spring.boot.starter.security
-    implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.cloud.starter.eureka.server
-    implementation libs.spring.cloud.circuit.breaker
-    implementation libs.apache.commons.lang3
-    implementation libs.http.client5
-    implementation libs.jackson.annotations
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.jackson.dataformat.yaml
-    implementation libs.jetty.client
-    implementation libs.jetty.http
-    implementation libs.jetty.io
-    implementation libs.jetty.util
-    implementation libs.xstream
-    implementation libs.commons.io
-    implementation libs.guava
 
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.cloud.starter.eureka.server
+
+    implementation libs.apache.commons.lang3
+    implementation libs.jackson.dataformat.yaml
+
+    testImplementation(testFixtures(project(":integration-tests")))
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.rest.assured
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    implementation libs.netflix.servo
-
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-
-    testImplementation libs.spring.boot.starter.test
-    testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: '6.2.1'
-    testImplementation libs.json.smart
-    testImplementation libs.awaitility
-    testImplementation libs.rest.assured
-    testImplementation(testFixtures(project(":integration-tests")))
 }
 
 

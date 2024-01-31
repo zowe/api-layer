@@ -12,7 +12,6 @@ package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
@@ -20,7 +19,6 @@ import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.util.Timeout;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -103,8 +101,6 @@ public class HttpConfig {
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
-//    private EurekaJersey3ClientBuilder eurekaJerseyClientBuilder;
-
     private Set<String> publicKeyCertificatesBase64;
 
     void updateStorePaths() {
@@ -148,8 +144,6 @@ public class HttpConfig {
             secureHttpClient = factory.buildHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
-//            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-//            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
@@ -197,30 +191,6 @@ public class HttpConfig {
     @Qualifier("publicKeyCertificatesBase64")
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
-    }
-
-    private void setTruststore(SslContextFactory sslContextFactory) {
-        if (StringUtils.isNotEmpty(trustStore)) {
-            sslContextFactory.setTrustStorePath(SecurityUtils.formatKeyringUrl(trustStore));
-            sslContextFactory.setTrustStoreType(trustStoreType);
-            sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
-        }
-    }
-
-    @Bean
-    @Qualifier("jettyClientSslContextFactory")
-    public SslContextFactory.Client jettyClientSslContextFactory() {
-        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
-        sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$", "^TLS_RSA_.*$");
-        setTruststore(sslContextFactory);
-        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
-        sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
-        if (!verifySslCertificatesOfServices) {
-            sslContextFactory.setTrustAll(true);
-        }
-
-        return sslContextFactory;
     }
 
     /**
@@ -283,15 +253,5 @@ public class HttpConfig {
     public HostnameVerifier secureHostnameVerifier() {
         return secureHostnameVerifier;
     }
-
-//    @Bean
-//    public EurekaJersey3Client eurekaJerseyClient() {
-//        return eurekaJerseyClientBuilder.build();
-//    }
-//
-//    @Bean
-//    public EurekaJersey3ClientBuilder eurekaJerseyClientBuilder() {
-//        return eurekaJerseyClientBuilder;
-//    }
 
 }

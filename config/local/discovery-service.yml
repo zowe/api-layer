@@ -18,7 +18,7 @@ spring.config.activate.on-profile: https
 
 apiml:
     discovery:
-        allPeersUrls: https://${apiml.service.hostname}:10021/eureka/
+        allPeersUrls: https://${apiml.service.hostname}:10011/eureka/
 
 server:
     ssl:

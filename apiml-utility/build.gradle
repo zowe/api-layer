@@ -1,21 +1,14 @@
 dependencies {
     api project(':common-service-core')
 
-    implementation libs.jackson.databind
     implementation libs.apache.commons.lang3
-//    implementation libs.http.client
-//    implementation libs.http.core
-    implementation libs.jetty.websocket.client
 
     compileOnly libs.spring.boot.starter.web
-    compileOnly libs.spring.boot.configuration.processor
-    implementation libs.findbugs
+
+    testImplementation libs.spring.boot.starter.test
+
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-
-    testImplementation libs.javax.servlet.api
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
