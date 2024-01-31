@@ -82,7 +82,7 @@ public class AdditionalRegistrationTest {
         private final AdditionalRegistration registration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-1").build();
 
         @BeforeEach
-        public void setUp() throws Exception{
+        public void setUp() throws Exception {
             ReflectionTestUtils.setField(connectionsConfig,"eurekaServerUrl","https://host:2222");
             ReflectionTestUtils.setField(connectionsConfig,"httpsFactory",httpsFactory);
             configSpy = Mockito.spy(connectionsConfig);

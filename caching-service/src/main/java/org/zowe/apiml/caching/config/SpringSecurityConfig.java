@@ -51,10 +51,10 @@ public class SpringSecurityConfig {
         };
 
         return web -> {
-            web.ignoring().antMatchers(noSecurityAntMatchers);
+            web.ignoring().requestMatchers(noSecurityAntMatchers);
 
             if (isMetricsEnabled) {
-                web.ignoring().antMatchers("/application/hystrixstream");
+                web.ignoring().requestMatchers("/application/hystrixstream");
             }
         };
     }

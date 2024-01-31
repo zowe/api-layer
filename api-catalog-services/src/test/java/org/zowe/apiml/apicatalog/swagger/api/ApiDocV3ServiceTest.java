@@ -33,7 +33,7 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
-import javax.validation.UnexpectedTypeException;
+import jakarta.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

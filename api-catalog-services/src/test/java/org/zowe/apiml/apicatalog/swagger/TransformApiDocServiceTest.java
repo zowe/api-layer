@@ -18,7 +18,7 @@ import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
 
-import javax.validation.UnexpectedTypeException;
+import jakarta.validation.UnexpectedTypeException;
 import java.util.function.Function;
 
 import static org.mockito.Mockito.*;

@@ -29,7 +29,7 @@ import org.zowe.apiml.caching.service.redis.exceptions.RedisOutOfMemoryException
 import org.zowe.apiml.caching.service.redis.exceptions.RetryableRedisException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 

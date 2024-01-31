@@ -102,8 +102,6 @@ apiml:
                 corsEnabled: false
 
 spring:
-    config:
-        useLegacyProcessing: true
     cloud:
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
@@ -152,9 +150,6 @@ management:
 hystrix.command.default.execution.timeout.enabled: false
 
 ---
-spring:
-    profiles: debug
-
 logging:
     level:
         ROOT: INFO
@@ -172,22 +167,12 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
 
----
-spring:
-    profiles: diag
-
----
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEACS1
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     attls:
@@ -203,5 +188,3 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
-
-

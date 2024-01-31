@@ -58,7 +58,7 @@ dependencyResolutionManagement {
             version('httpCore', '4.4.16')
             version('hystrix', '1.5.18')
             // version 14.x requires Java 11
-            version('infinispan', '13.0.21.Final')
+            version('infinispan', '14.0.22.Final')
             version('jacksonCore', '2.16.1')
             version('jacksonDatabind', '2.16.1')
             version('jacksonDataformatYaml', '2.16.1')
@@ -254,7 +254,9 @@ dependencyResolutionManagement {
             library('http_client5', 'org.apache.httpcomponents.client5', 'httpclient5').versionRef('httpClient5')
             library('http_core', 'org.apache.httpcomponents', 'httpcore').versionRef('httpCore')
             library('hystrix_core', 'com.netflix.hystrix', 'hystrix-core').versionRef('hystrix')
-            library('infinispan_core', 'org.infinispan', 'infinispan-core').versionRef('infinispan')
+
+            library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
+//            library('infinispan_core', 'org.infinispan', 'infinispan-core').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonCore')

@@ -35,7 +35,7 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 
-import javax.validation.UnexpectedTypeException;
+import jakarta.validation.UnexpectedTypeException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;

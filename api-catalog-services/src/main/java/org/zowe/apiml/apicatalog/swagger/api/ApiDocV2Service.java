@@ -25,7 +25,7 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import javax.validation.UnexpectedTypeException;
+import jakarta.validation.UnexpectedTypeException;
 import java.util.Collections;
 import java.util.Map;
 

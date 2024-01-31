@@ -12,7 +12,6 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.netflix;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +28,7 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
 
     public ApimlDiscoveryClientStub(ApplicationInfoManager applicationInfoManager, EurekaClientConfig config, ApplicationEventPublisher publisher, ApplicationRegistry applicationRegistry, RestTemplateTransportClientFactories factories, RestTemplateDiscoveryClientOptionalArgs args1) {
 
-        super(applicationInfoManager, config, factories, args1,publisher);
+        super(applicationInfoManager, config, factories, args1, publisher);
 
         this.applicationRegistry = applicationRegistry;
     }
@@ -37,7 +36,7 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
     @Override
     public Applications getApplications() {
         if (applicationRegistry != null) {
-           return applicationRegistry.getApplications();
+            return applicationRegistry.getApplications();
         } else {
             return new Applications();
         }

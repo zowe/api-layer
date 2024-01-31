@@ -18,6 +18,11 @@ repositories {
     mavenCentral()
 }
 
+configurations.all {
+    // Remove Spring Cloud enabler
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-eureka-client"
+}
+
 dependencies {
 //    testImplementation libs.http.client
     testImplementation libs.eureka.jersey.client
