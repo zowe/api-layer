@@ -18,8 +18,6 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.*;
 
-import static org.springframework.http.HttpMethod.*;
-
 
 public class OpenApiV2Validator extends AbstractSwaggerValidator {
 

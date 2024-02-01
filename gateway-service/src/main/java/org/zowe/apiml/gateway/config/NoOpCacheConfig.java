@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -21,8 +22,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.util.CacheUtils;
-
-import jakarta.annotation.PostConstruct;
 
 /**
  * Spring configuration to disable EhCache usage.

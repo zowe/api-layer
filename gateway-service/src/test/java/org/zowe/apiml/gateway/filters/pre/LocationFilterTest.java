@@ -21,8 +21,8 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 

@@ -12,7 +12,9 @@ package org.zowe.apiml.gateway.ribbon;
 
 import com.netflix.client.ClientException;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.retry.*;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.zowe.apiml.gateway.ribbon.http.RequestAbortException;
 
 /**

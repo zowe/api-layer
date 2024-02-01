@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.adapter.VersionAdapterUtils;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -103,7 +104,7 @@ public class ZosmfScheme implements IAuthenticationScheme {
 
     @Override
     public Optional<AuthSource> getAuthSource() {
-        return authSourceService.getAuthSourceFromRequest(RequestContext.getCurrentContext().getRequest());
+        return authSourceService.getAuthSourceFromRequest(VersionAdapterUtils.toJakarta(RequestContext.getCurrentContext().getRequest()));
     }
 
     @lombok.Value

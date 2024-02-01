@@ -11,7 +11,7 @@
 package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.zuul.context.RequestContext;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;

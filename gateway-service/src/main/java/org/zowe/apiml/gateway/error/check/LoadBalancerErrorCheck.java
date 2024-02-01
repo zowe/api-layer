@@ -11,14 +11,15 @@
 package org.zowe.apiml.gateway.error.check;
 
 import com.netflix.client.ClientException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Handler for exceptions that arise during load balancing

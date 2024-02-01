@@ -10,20 +10,10 @@
 
 package org.zowe.apiml.gateway.ws;
 
-import jakarta.annotation.PreDestroy;
-
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.stereotype.Component;
 
 /**
  * Factory for provisioning web socket client

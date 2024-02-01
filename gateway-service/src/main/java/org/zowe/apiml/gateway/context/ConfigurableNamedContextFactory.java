@@ -19,7 +19,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.core.env.MapPropertySource;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -93,7 +95,7 @@ public class ConfigurableNamedContextFactory<T extends NamedContextFactory.Speci
     }
 
     @Override
-    protected AnnotationConfigApplicationContext createContext(String name) {
+    public AnnotationConfigApplicationContext createContext(String name) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
         if (this.defaultConfigType != null) {

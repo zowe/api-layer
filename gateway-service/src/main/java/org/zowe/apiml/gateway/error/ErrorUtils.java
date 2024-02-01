@@ -10,10 +10,9 @@
 
 package org.zowe.apiml.gateway.error;
 
-import org.springframework.http.HttpStatus;
-
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 
 public class ErrorUtils {
     static final String UNEXPECTED_ERROR_OCCURRED = "Unexpected error occurred";

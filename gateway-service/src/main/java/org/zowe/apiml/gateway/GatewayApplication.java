@@ -35,9 +35,14 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product",
         "org.zowe.apiml.security.common"
+
+        ,
+        "org.springframework.cloud.netflix.zuul",
+        "org.springframework.cloud.netflix.ribbon"
     },
     excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig"),
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*OkHttpRibbonConfiguration.*")
     }
 )
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)

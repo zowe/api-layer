@@ -10,10 +10,11 @@
 
 package org.zowe.apiml.gateway.security.service.schema;
 
-import java.util.Optional;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+
+import java.util.Optional;
 
 
 /**

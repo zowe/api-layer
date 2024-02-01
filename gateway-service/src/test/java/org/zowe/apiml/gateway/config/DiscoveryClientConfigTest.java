@@ -34,9 +34,7 @@ import java.util.TreeMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 @ExtendWith(MockitoExtension.class)

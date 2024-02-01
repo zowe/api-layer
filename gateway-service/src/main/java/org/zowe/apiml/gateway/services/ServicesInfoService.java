@@ -29,23 +29,14 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.services.ServiceInfoUtils;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
-import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
-import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
-import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
-import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
+import static org.zowe.apiml.services.ServiceInfoUtils.*;
 
 @Slf4j
 @RequiredArgsConstructor

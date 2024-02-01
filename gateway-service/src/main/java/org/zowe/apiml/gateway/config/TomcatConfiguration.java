@@ -21,7 +21,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.security.SecurityUtils;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 

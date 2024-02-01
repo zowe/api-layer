@@ -14,7 +14,6 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +43,7 @@ import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
+import org.zowe.apiml.product.web.HttpConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,9 +52,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -70,12 +68,14 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_U
 // There is an issue - clashing of XML configuration
 @DependsOn({"cacheConfig", "cacheManager"})
 public class DiscoveryClientConfig {
-//    private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;
     private final ApplicationContext context;
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 //    private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+
+    @Autowired
+    private HttpConfig httpConfig;
 
     @Bean
     public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
@@ -84,19 +84,24 @@ public class DiscoveryClientConfig {
         return additionalRegistrations;
     }
 
-//    @Bean(destroyMethod = "shutdown")
-//    @RefreshScope
-//    public ApimlDiscoveryClient primaryApimlEurekaClient(ApplicationInfoManager manager,
-//                                                         EurekaClientConfig config,
-//                                                         @Autowired(required = false) HealthCheckHandler healthCheckHandler
-//    ) {
-//        ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
-//
-//        final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
-//        discoveryClientClient.registerHealthCheck(healthCheckHandler);
-//
-//        return discoveryClientClient;
-//    }
+    @Bean(destroyMethod = "shutdown")
+    @RefreshScope
+    public ApimlDiscoveryClient primaryApimlEurekaClient(ApplicationInfoManager manager,
+                                                         EurekaClientConfigBean config,
+                                                         @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    ) {
+        ApplicationInfoManager appManager = ProxyUtils.getTargetObject(manager);
+
+        RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
+
+        final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(
+                appManager, config, this.context, factories, args1);
+
+        discoveryClientClient.registerHealthCheck(healthCheckHandler);
+
+        return discoveryClientClient;
+    }
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
@@ -131,8 +136,8 @@ public class DiscoveryClientConfig {
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
 
-//            clientArgs.setSSLContext(httpsFactory.getSslContext());
-//            clientArgs.setHostnameVerifier(httpsFactory.getHostnameVerifier());
+            clientArgs.setSSLContext(httpConfig.getSecureSslContext());
+            clientArgs.setHostnameVerifier(httpConfig.getSecureHostnameVerifier());
         }
 
         return clientArgs;

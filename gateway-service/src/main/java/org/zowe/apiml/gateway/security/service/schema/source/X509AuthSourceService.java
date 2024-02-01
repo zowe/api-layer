@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
@@ -22,7 +23,6 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.security.login.dummy;
 
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
