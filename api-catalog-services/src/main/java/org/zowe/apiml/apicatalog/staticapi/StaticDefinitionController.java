@@ -25,7 +25,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/static-api")
 @RequiredArgsConstructor
-@PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
+@PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class StaticDefinitionController {
     private final StaticDefinitionGenerator staticDefinitionGenerator;
 
