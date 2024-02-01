@@ -155,15 +155,15 @@ management:
 logging:
     level:
         ROOT: DEBUG
-#        org.zowe.apiml: DEBUG
-#        org.zowe.apiml.discovery.GatewayNotifier: INFO
-#        org.springframework: INFO
-#        org.apache: INFO
-#        org.apache.http: DEBUG
-#        com.netflix: INFO
-#        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
-#        org.ehcache: INFO
-#        com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.zowe.apiml: DEBUG
+        org.zowe.apiml.discovery.GatewayNotifier: INFO
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: INFO
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        org.ehcache: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
 spring.config.activate.on-profile: diag
