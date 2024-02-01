@@ -118,13 +118,13 @@ public class VersionAdapterUtils {
         };
     }
 
+    final Adapter<org.apache.hc.core5.http.ClassicHttpResponse, org.apache.http.client.methods.CloseableHttpResponse> RESPONSE_ADAPTER =
+        new Adapter<>(org.apache.hc.core5.http.ClassicHttpResponse.class, org.apache.http.client.methods.CloseableHttpResponse.class);
+    final Adapter<org.apache.http.HttpRequest, org.apache.hc.core5.http.ClassicHttpRequest> REQUEST_ADAPTER =
+        new Adapter<>(org.apache.http.HttpRequest.class, org.apache.hc.core5.http.ClassicHttpRequest.class);
+    final Adapter<org.apache.http.protocol.HttpContext, org.apache.hc.core5.http.protocol.HttpContext> CONTEXT_ADAPTER =
+        new Adapter<>(org.apache.http.protocol.HttpContext.class, org.apache.hc.core5.http.protocol.HttpContext.class);
     public org.apache.http.impl.client.CloseableHttpClient httpClient4(org.apache.hc.client5.http.impl.classic.CloseableHttpClient i) {
-        final Adapter<org.apache.hc.core5.http.ClassicHttpResponse, org.apache.http.client.methods.CloseableHttpResponse> RESPONSE_ADAPTER =
-            new Adapter<>(org.apache.hc.core5.http.ClassicHttpResponse.class, org.apache.http.client.methods.CloseableHttpResponse.class);
-        final Adapter<org.apache.http.HttpRequest, org.apache.hc.core5.http.ClassicHttpRequest> REQUEST_ADAPTER =
-            new Adapter<>(org.apache.http.HttpRequest.class, org.apache.hc.core5.http.ClassicHttpRequest.class);
-        final Adapter<org.apache.http.protocol.HttpContext, org.apache.hc.core5.http.protocol.HttpContext> CONTEXT_ADAPTER =
-            new Adapter<>(org.apache.http.protocol.HttpContext.class, org.apache.hc.core5.http.protocol.HttpContext.class);
 
         return new org.apache.http.impl.client.CloseableHttpClient() {
             @Override
