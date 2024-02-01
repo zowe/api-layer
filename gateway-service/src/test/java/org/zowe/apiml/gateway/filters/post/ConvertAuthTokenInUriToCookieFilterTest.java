@@ -11,9 +11,9 @@
 package org.zowe.apiml.gateway.filters.post;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.Collections;
 import java.util.HashMap;

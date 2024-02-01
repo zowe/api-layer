@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +22,6 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.commons.usermap.MapperResponse;
-
-import javax.annotation.PostConstruct;
 
 import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 

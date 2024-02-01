@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,13 +30,15 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.util.StringUtils;
+import org.zowe.apiml.gateway.adapter.VersionAdapterUtils;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
 
 @Configuration
 @RequiredArgsConstructor
@@ -63,7 +65,7 @@ public class GatewayConfig {
     @Autowired
     public SimpleHostRoutingFilter simpleHostRoutingFilter2(ProxyRequestHelper helper, ZuulProperties zuulProperties,
                                                             @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore) {
-        return new SimpleHostRoutingFilter(helper, zuulProperties, secureHttpClientWithoutKeystore);
+        return new SimpleHostRoutingFilter(helper, zuulProperties, VersionAdapterUtils.httpClient4(secureHttpClientWithoutKeystore));
     }
 
     @Bean

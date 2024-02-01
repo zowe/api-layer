@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -27,7 +28,6 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
-import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 
 import static org.zowe.apiml.gateway.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;

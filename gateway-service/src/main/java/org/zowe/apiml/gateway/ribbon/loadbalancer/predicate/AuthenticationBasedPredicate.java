@@ -14,6 +14,7 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.gateway.adapter.VersionAdapterUtils;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
@@ -49,7 +50,7 @@ public class AuthenticationBasedPredicate extends RequestAwarePredicate {
             return true;
         }
 
-        Optional<String> authenticatedUser = authenticationService.getPrincipalFromRequest(requestContext.getRequest());
+        Optional<String> authenticatedUser = authenticationService.getPrincipalFromRequest(VersionAdapterUtils.toJakarta(requestContext.getRequest()));
 
         if (!authenticatedUser.isPresent()) {
             log.debug("No authentication present on request, not filtering instance: {}", instanceId);

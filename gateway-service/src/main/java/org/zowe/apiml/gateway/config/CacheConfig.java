@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,7 +27,6 @@ import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.util.CacheUtils;
 
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 
 /**

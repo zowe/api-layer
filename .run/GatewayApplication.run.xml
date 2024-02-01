@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="ACTIVE_PROFILES" value="debug,diag" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
@@ -11,6 +12,7 @@
     <module name="api-layer.gateway-service.main" />
     <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
+    <option name="VM_PARAMETERS" value="--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.zowe.apiml.gateway.*" />

@@ -10,10 +10,6 @@
 
 package org.zowe.apiml.gateway.filters.post;
 
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 import com.netflix.util.Pair;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +18,10 @@ import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.net.URI;
@@ -30,8 +30,8 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.apache.http.HttpHeaders.LOCATION;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;

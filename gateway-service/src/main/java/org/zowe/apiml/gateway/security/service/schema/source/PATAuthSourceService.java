@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.service.schema.source;
 
 import com.netflix.zuul.context.RequestContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,6 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 

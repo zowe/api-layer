@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.filters.post;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
+import org.zowe.apiml.gateway.adapter.VersionAdapterUtils;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.model.LoadBalancerCacheRecord;
@@ -21,7 +22,8 @@ import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 /**
  * This post filter allows, in case of sticky session, to store the instance selected by the RequestHeaderPredicate to the cache.
@@ -57,7 +59,7 @@ public class PostStoreLoadBalancerCacheFilter extends PostZuulFilter {
 
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
-        Optional<String> principal = authenticationService.getPrincipalFromRequest(context.getRequest());
+        Optional<String> principal = authenticationService.getPrincipalFromRequest(VersionAdapterUtils.toJakarta(context.getRequest()));
         if (principal.isPresent()) {
             // Dont store instance info when there is exception in request processing. This means failed request.
             if (context.get("throwable") != null) {

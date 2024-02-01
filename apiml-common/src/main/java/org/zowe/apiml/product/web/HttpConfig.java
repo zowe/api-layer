@@ -11,6 +11,7 @@
 package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -99,7 +100,9 @@ public class HttpConfig {
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
+    @Getter
     private SSLContext secureSslContext;
+    @Getter
     private HostnameVerifier secureHostnameVerifier;
     private Set<String> publicKeyCertificatesBase64;
 

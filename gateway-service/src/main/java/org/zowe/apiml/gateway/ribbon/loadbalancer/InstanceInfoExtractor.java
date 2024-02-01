@@ -15,7 +15,9 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import lombok.Getter;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 /**
  * Utility class to extract InstanceInfo object out of list of {@link Server} instances

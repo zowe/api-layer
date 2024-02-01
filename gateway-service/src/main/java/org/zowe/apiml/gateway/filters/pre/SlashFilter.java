@@ -11,9 +11,9 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
+import jakarta.servlet.http.HttpServletResponse;
 import org.zowe.apiml.util.UrlUtils;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.regex.Pattern;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;

@@ -12,11 +12,11 @@ package org.zowe.apiml.gateway.security.token;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

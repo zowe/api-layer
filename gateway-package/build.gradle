@@ -63,13 +63,13 @@ artifacts {
     zip packageApiGateway
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
-        }
-    }
-}
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+//        }
+//    }
+//}
 
 jar {
     enabled false

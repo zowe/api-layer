@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.gateway.security.query;
 
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 /**
  * Authentication provider that verifies the JWT token
