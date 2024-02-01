@@ -35,6 +35,7 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: INFO
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat

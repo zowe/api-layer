@@ -14,11 +14,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -40,6 +42,7 @@ import org.zowe.apiml.security.client.token.GatewayTokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
@@ -62,6 +65,8 @@ import java.util.Set;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableApimlAuth
+@EnableMethodSecurity
+@EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class SecurityConfiguration {
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
@@ -76,9 +81,6 @@ public class SecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
-
-    @Value("${apiml.metrics.enabled:false}")
-    private boolean isMetricsEnabled;
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
@@ -99,7 +101,7 @@ public class SecurityConfiguration {
                 baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
                 .authorizeHttpRequests(requests -> requests
-                    .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
+                    .anyRequest().authenticated())
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider)
                 .authenticationProvider(new CertificateAuthenticationProvider());
@@ -145,27 +147,22 @@ public class SecurityConfiguration {
                 "/",
                 "/static/**",
                 "/favicon.ico",
-                "/api-doc"
+                "/v3/api-docs",
+                "/index.html",
+                "/application/health",
+                "/application/info"
             };
             return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
         }
 
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
-            mainframeCredentialsConfiguration(baseConfiguration(http))
+            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers->matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES))))
                 .authorizeHttpRequests(requests -> requests
-                    .requestMatchers("/static-api/**").authenticated()
-                    .requestMatchers("/containers/**").authenticated()
-                    .requestMatchers(APIDOC_ROUTES).authenticated()
-                    .requestMatchers("/application/health", "/application/info").permitAll())
+                    .anyRequest().authenticated()
+                )
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider);
-
-            if (isMetricsEnabled) {
-                http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
-            }
-
-            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);

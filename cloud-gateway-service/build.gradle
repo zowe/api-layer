@@ -84,7 +84,7 @@ dependencies {
     implementation libs.nimbusJoseJwt
     implementation libs.janino
     implementation libs.spring.doc
-    implementation libs.swagger3.parser
+//    implementation libs.swagger3.parser
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
