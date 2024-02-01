@@ -101,7 +101,7 @@ public class FullApiMediationLayer {
         if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
-        mockZosmfService = new RunningService("zosmf", "mock-services/build/libs/mock-services.jar", before, after);
+        mockZosmfService = new RunningService("ibmzosmf", "mock-services/build/libs/mock-services.jar", before, after);
     }
 
     private void prepareDiscoverableClient() {
