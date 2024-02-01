@@ -33,8 +33,7 @@ The API Mediation Layer (API ML) provides a single point of access for mainframe
 
 The following platform is required to run the API Mediation Layer:
 
-* Java SE Development Kit 8 or 11
-* Java version 17 isn't supported for building yet
+* [IBM Semeru JDK](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) Java 17 or later
 
 The following tools are required to build and develop the API Mediation Layer:
 
@@ -70,7 +69,7 @@ Alternatively, to use Docker to run the API ML, consult the [Docker README](dock
 
 ## Security
 
-By default the API Mediation Layer for local development uses mock zOSMF as the authentication provider. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password
+By default, the API Mediation Layer for local development uses mock zOSMF as the authentication provider. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password
 
 The API Mediation Layer can also use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and `user` as the password.  
 <details>
