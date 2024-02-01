@@ -14,7 +14,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springdoc.core.GroupedOpenApi;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,7 +53,7 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
             .group("apiv1")
             .pathsToMatch("/api/v1/**")
-            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest1)))
+            .addOpenApiCustomizer(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest1)))
             .build();
     }
 
@@ -62,7 +62,7 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
             .group("apiv2")
             .pathsToMatch("/api/v2/**")
-            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest2)))
+            .addOpenApiCustomizer(openApi -> openApi.setInfo(openApi.getInfo().version(apiVersionRest2)))
             .build();
     }
 
@@ -71,7 +71,7 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
             .group("graphv1")
             .pathsToMatch("/graphql/v1/**")
-            .addOpenApiCustomiser(openApi -> openApi.setInfo(openApi.getInfo().version(graphqlVersion)))
+            .addOpenApiCustomizer(openApi -> openApi.setInfo(openApi.getInfo().version(graphqlVersion)))
             .build();
     }
 }
