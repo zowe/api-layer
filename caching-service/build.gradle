@@ -55,71 +55,29 @@ configurations.all {
 }
 
 dependencies {
-    api project(':apiml-utility')
-    api project(':common-service-core')
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
 
-    implementation libs.jjwt
-    implementation libs.jjwt.impl
-    implementation libs.jjwt.jackson
+    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.doc
+    implementation libs.spring.retry
+
     implementation libs.infinispan.spring.boot3.starter.embedded
-//    implementation libs.infinispan.core
     implementation libs.infinispan.jboss.marshalling
     implementation libs.infinispan.lock
 
-    implementation libs.spring.doc
-    implementation libs.spring.boot.starter
-    implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.web
-    implementation libs.spring.boot.starter.security
-    implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.retry
-    implementation libs.spring.boot.starter.aop
-//    implementation libs.spring.cloud.commons
-//    implementation libs.spring.cloud.starter.hystrix
-    implementation libs.lettuce
-//    implementation libs.spring.security.web
-//    implementation libs.spring.security.config
-//    implementation libs.spring.security.core
-//    implementation libs.spring.security.crypto
-
-//    implementation libs.tomcat.annotations.api
-//    implementation libs.tomcat.embed.core
-//    implementation libs.tomcat.embed.el
-//    implementation libs.tomcat.embed.websocket
-    implementation libs.xstream
-//    implementation libs.spring.aop
-//    implementation libs.spring.beans
-//    implementation libs.spring.context
-//    implementation libs.spring.context.support
-//    implementation libs.spring.core
-//    implementation libs.spring.expression
-//    implementation libs.spring.messaging
-//    implementation libs.spring.web
-//    implementation libs.spring.webflux
-//    implementation libs.spring.webmvc
-//    implementation libs.spring.websocket
-    implementation libs.bcprov;
-    implementation libs.bcpkix;
-    implementation libs.jackson.annotations
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-
-//    implementation libs.logback.core
-//    implementation libs.logback.classic
-
-    implementation libs.guava
-    implementation libs.gson
     implementation libs.janino
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok
+    implementation libs.jakarta.servlet.api
+    implementation libs.lettuce
+
+    testImplementation(testFixtures(project(":integration-tests")))
 
     testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
-    testImplementation libs.hamcrest
     testImplementation libs.rest.assured
-    testImplementation(testFixtures(project(":integration-tests")))
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 }
 
 jar {
