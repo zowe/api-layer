@@ -22,7 +22,8 @@ possible to disable parallel processing by setting `org.gradle.parallel` to `fal
 
 - Enable _Annotations processing_ if you haven't done so already (Just go to settings and search for 'annotation')
 - Install Lombok plugin. Go to the plugins in the setting and look for the lombok plugin.
-- Make sure that the Gradle JVM is set to the JDK 1.8. To set it go to the Settings->Build,Execution,Deployment->Build Tools->Gradle
+- Make sure that the Project SDK is set to JDK 17 ([IBM Semeru Runtime](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/)) and the Language level is also set to 17 (or SDK default)
+- Gradle JVM should be set to the Project SDK as well. To set it go to the Settings->Build,Execution,Deployment->Build Tools->Gradle
 
 ### Running of the services
 
@@ -30,7 +31,7 @@ possible to disable parallel processing by setting `org.gradle.parallel` to `fal
     1. ApiCatalogApplication - api-catalog-service
     2. DiscoverableClientSampleApplication - discoverable-client
     3. DiscoveryServiceApplication - discovery-service
-    4. EnablerV1SampleApplication - onboarding-enabler-spring-sample-app
+    4. SpringEnablerSampleApplication - onboarding-enabler-spring-sample-app
     5. GatewayApplication - gateway-service
     6. MockServicesApplication - mock-services
 
@@ -47,7 +48,17 @@ possible to disable parallel processing by setting `org.gradle.parallel` to `fal
 For each of the available services:
 
 1. Right click a service and select 'Edit Configuration' (or press Shift + F4 while the service is selected)
-2. Check that there are no set Environment variables (if you do not see the field you can press Alt + E or click on Modify options and select the Environment variables option from the list)
+2. To resolve issues with reflection in Java 9 or later, add following JVM parameters (Alt + E or click on Modify options > VM Options)
+   ```
+   --add-opens=java.base/java.lang=ALL-UNNAMED
+   --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+   --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+   --add-opens=java.base/java.util=ALL-UNNAMED
+   --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+   --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+   --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED
+   ```
+3. Check that there are no set Environment variables (if you do not see the field you can press Alt + E or click on Modify options and select the Environment variables option from the list)
     - For the Discovery service add Environment variable `spring.profiles.active` and it's value `https`
 5. Then in the 'Override configuration properties' section (Alt + P or select it from the Modify options list again) add a new parameter `spring.config.additional-location` and its value `file:./config/local/{SERVICE_NAME}.yml` Replace SERVICE_NAME with the above service names.
 6. Check that you are shortening the command line, Modify options -> Java -> Shorten command line and in the new field select JAR manifest.
@@ -79,8 +90,8 @@ You can use Visual Studio Code to develop and debug.
 **Follow these steps:**
 
 1. Install the [Java Extension Pack](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack), [Spring Boot Extension Pack](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-dev-pack) and [Lombok Annotations Support for VS Code](https://marketplace.visualstudio.com/items?itemName=GabrielBB.vscode-lombok) extensions.
-    - The VSCode Java Extension requires Java 11, which would need to be installed alongside with Java 8 (so long as APIML runs on Java 8). The VSCode `java.home` setting would need to point to the Java 11 installation.
-    - So long as APIML runs on Java 8, it is required that the `JAVA_HOME` environment variable points to Java 8 by default. This way, with the above-mentioned VSCode setting, the java extension will work fine with Java 11 while the debugger and the test runner will use Java 8.
+    - ~~The VSCode Java Extension requires Java 11, which would need to be installed alongside with Java 8 (so long as APIML runs on Java 8). The VSCode `java.home` setting would need to point to the Java 11 installation.~~
+    - ~~So long as APIML runs on Java 8, it is required that the `JAVA_HOME` environment variable points to Java 8 by default. This way, with the above-mentioned VSCode setting, the java extension will work fine with Java 11 while the debugger and the test runner will use Java 8.~~
 2. Run `gradlew eclipse` to generate the build information.
 3. Add the following definitions to the `launch.json` file in the workspace:
 
