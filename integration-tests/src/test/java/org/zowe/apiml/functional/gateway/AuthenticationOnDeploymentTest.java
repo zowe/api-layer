@@ -13,6 +13,7 @@ package org.zowe.apiml.functional.gateway;
 import io.restassured.RestAssured;
 import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -167,7 +168,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
             serviceList.forEach(s -> {
                 try {
                     s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
-                } catch (IOException | LifecycleException e) {
+                } catch (IOException | LifecycleException | JSONException e) {
                     e.printStackTrace();
                 }
             });

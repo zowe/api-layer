@@ -13,6 +13,8 @@ package org.zowe.apiml.apicatalog.functional;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.net.ssl.SSLException;
@@ -28,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.fail;
         "server.ssl.enabled=false"
     }
 )
+@DirtiesContext
+@ActiveProfiles("AttlsConfigTestCatalog")
 public class AttlsConfigTest extends ApiCatalogFunctionalTest {
 
     @Nested
@@ -57,7 +61,7 @@ public class AttlsConfigTest extends ApiCatalogFunctionalTest {
                 given()
                     .log().all()
                 .when()
-                    .get(getCatalogUriWithPath("http", "apicatalog/api/v1/containers"))
+                    .get(getCatalogUriWithPath("http", "apicatalog/containers"))
                 .then()
                     .log().all()
                     .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)

@@ -18,6 +18,7 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -184,7 +185,7 @@ class LoginTest implements TestWithStartedInstances {
         class ReturnsBadRequest {
             @ParameterizedTest(name = "givenCredentialsInTheWrongJsonFormat {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-            void givenCredentialsInTheWrongJsonFormat(URI loginUrl) {
+            void givenCredentialsInTheWrongJsonFormat(URI loginUrl) throws JSONException {
                 String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
 
                 JSONObject loginRequest = new JSONObject()
