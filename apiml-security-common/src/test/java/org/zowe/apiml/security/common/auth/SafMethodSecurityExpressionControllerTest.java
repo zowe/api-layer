@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.auth.saf.SafMethodSecurityExpressionRoot;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessDummy;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
@@ -150,6 +151,14 @@ class SafMethodSecurityExpressionControllerTest {
                     .and().build();
         }
 
+        @Bean
+        public SafMethodSecurityExpressionRoot safMethodSecurityExpressionRoot(
+            SafSecurityConfigurationProperties safSecurityConfigurationProperties,
+            SafResourceAccessVerifying safResourceAccessVerifying
+        ) {
+            return new SafMethodSecurityExpressionRoot(safSecurityConfigurationProperties, safResourceAccessVerifying);
+        }
+
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
             @Override
             public void configure(HttpSecurity http) throws Exception {
@@ -185,25 +194,25 @@ class SafMethodSecurityExpressionControllerTest {
         }
 
         @GetMapping(value = "/hasSafResourceAccessRead", produces = MediaType.APPLICATION_JSON_VALUE)
-        @PreAuthorize("hasSafResourceAccess('CLASS', 'RESOURCE', 'READ')")
+        @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafResourceAccess('CLASS', 'RESOURCE', 'READ', #root)")
         public ResponseEntity<String> test1read() {
             return getResponse();
         }
 
         @GetMapping(value = "/hasSafResourceAccessUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
-        @PreAuthorize("hasSafResourceAccess('CLASS', 'RESOURCE', 'UPDATE')")
+        @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafResourceAccess('CLASS', 'RESOURCE', 'UPDATE', #root)")
         public ResponseEntity<String> test1update() {
             return getResponse();
         }
 
         @GetMapping(value = "/hasSafServiceResourceAccessRead", produces = MediaType.APPLICATION_JSON_VALUE)
-        @PreAuthorize("hasSafServiceResourceAccess('RESOURCE', 'READ')")
+        @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('RESOURCE', 'READ', #root)")
         public ResponseEntity<String> test2read() {
             return getResponse();
         }
 
         @GetMapping(value = "/hasSafServiceResourceAccessUpdate", produces = MediaType.APPLICATION_JSON_VALUE)
-        @PreAuthorize("hasSafServiceResourceAccess('RESOURCE', 'UPDATE')")
+        @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('RESOURCE', 'UPDATE', #root)")
         public ResponseEntity<String> test2update() {
             return getResponse();
         }
