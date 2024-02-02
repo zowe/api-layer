@@ -15,6 +15,7 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -92,7 +93,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         class WhenOneIsDown {
 
             @BeforeAll
-            void setUp() throws LifecycleException, IOException {
+            void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
                 service1 = new VirtualService("testHaModeService1", ports.get(0));
@@ -152,7 +153,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         class OneReturns503 {
 
             @BeforeAll
-            void setUp() throws LifecycleException, IOException {
+            void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
                 service1 = new VirtualService("testHaModeService2", ports.get(0));
