@@ -11,7 +11,7 @@ dependencies {
     testImplementation libs.mockito.core
     testImplementation libs.spring4Test
 
-    testCompileOnly libs.jakarta.servlet.api
+    testImplementation libs.jakarta.servlet.api
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
