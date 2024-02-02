@@ -25,7 +25,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -273,12 +272,10 @@ class ZaasJwtService implements TokenService {
         String token = "";
         int httpResponseCode = response.getCode();
         if (httpResponseCode == 204) {
-            var headers = response.getHeaders(HttpHeaders.SET_COOKIE)[0];
-            Optional<Header> apimlAuthCookie = Stream.of(headers)
-                .filter(header -> header.getName().equals(zassConfigProperties.getTokenPrefix()))
-                .findFirst();
+            var vals = response.getHeaders(HttpHeaders.SET_COOKIE)[0].getValue().split(";");
+            var apimlAuthCookie = Stream.of(vals).filter(v -> v.startsWith(zassConfigProperties.getTokenPrefix())).map(v -> v.substring(v.indexOf("=") + 1)).findFirst();
             if (apimlAuthCookie.isPresent()) {
-                token = apimlAuthCookie.get().getValue();
+                token = apimlAuthCookie.get();
             }
             return token;
         }
