@@ -12,7 +12,6 @@ package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -29,7 +28,6 @@ import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 
 import java.io.IOException;
 
-@Slf4j
 class PassTicketServiceImpl implements PassTicketService {
 
     private final CloseableClientProvider httpClientProvider;
