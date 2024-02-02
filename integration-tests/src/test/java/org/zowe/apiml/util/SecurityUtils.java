@@ -33,6 +33,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
@@ -358,8 +359,12 @@ public class SecurityUtils {
         assertNotNull(username, "OKTA username is not set.");
         assertNotNull(password, "OKTA password is not set.");
         JSONObject requestBody = new JSONObject();
-        requestBody.put("username", username);
-        requestBody.put("password", password);
+        try {
+            requestBody.put("username", username);
+            requestBody.put("password", password);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         return given()
             .contentType(JSON)

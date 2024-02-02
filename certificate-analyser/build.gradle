@@ -3,13 +3,11 @@ plugins {
 }
 
 dependencies {
-    testImplementation libs.junitJupiter
-    testImplementation libs.mockito.core
-    testImplementation libs.mockito.inline
-    testImplementation libs.hamcrest
-
     implementation libs.picocli
     annotationProcessor libs.picocliCodegen
+
+    testImplementation libs.mockito.core
+    testImplementation libs.hamcrest
 }
 
 compileJava {
