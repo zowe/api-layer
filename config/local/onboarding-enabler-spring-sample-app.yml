@@ -1,6 +1,3 @@
-spring.profiles.include: diag
-
-
 apiml:
     service:
         serviceId: enablerv1sampleapp

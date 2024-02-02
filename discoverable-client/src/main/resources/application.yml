@@ -175,11 +175,6 @@ management:
         shutdown:
             enabled: true
 
-hystrix:
-    dashboard:
-        proxy-stream-allow-list: '*'
-    command.default.execution.timeout.enabled: false
-
 ---
 spring.config.activate.on-profile: diag
 

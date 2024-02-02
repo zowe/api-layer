@@ -16,30 +16,13 @@ publish {
 dependencies {
     api project(':onboarding-enabler-java')
 
-    implementation libs.spring.boot.starter.web
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.jettison
-//    implementation libs.spring.aop
-//    implementation libs.spring.beans
-//    implementation libs.spring.context
-//    implementation libs.spring.core
-//    implementation libs.spring.expression
-//    implementation libs.spring.web
-//    implementation libs.spring.webmvc
-
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok
-
-    compileOnly libs.jakarta.inject
+    implementation libs.spring.boot.starter
     implementation libs.eureka.jersey.client
 
     testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
-//    testImplementation libs.mockito.core
 
-    annotationProcessor libs.spring.boot.configuration.processor
-    testImplementation libs.gson
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 }
 
 jar {
