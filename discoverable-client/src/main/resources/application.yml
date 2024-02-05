@@ -167,7 +167,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: hystrixstream, health, info, routes, shutdown
+                include: health, info, routes, shutdown
     health:
         defaults:
             enabled: true
