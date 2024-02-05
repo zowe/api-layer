@@ -157,7 +157,7 @@ public class SecurityConfiguration {
 
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
-            baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES)))
+            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES))))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()
                 )
