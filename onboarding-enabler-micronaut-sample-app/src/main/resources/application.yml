@@ -9,22 +9,22 @@ micronaut:
     server:
         port: ${apiml.service.port}
         context-path: /${apiml.service.serviceId}
-    ssl:
-        enabled: true
-        key-store:
-            password: ${apiml.service.ssl[0].keyPassword}
-            type: ${apiml.service.ssl[0].keyStoreType}
-            path: file:${apiml.service.ssl[0].keyStore}
-        key:
-            alias: ${apiml.service.ssl[0].keyAlias}
-            password: ${apiml.service.ssl[0].keyPassword}
-        trust-store:
-            password: ${apiml.service.ssl[0].trustStorePassword}
-            path: file:${apiml.service.ssl[0].trustStore}
-            type: ${apiml.service.ssl[0].trustStoreType}
-        port: ${apiml.service.port}
-        ciphers: ${apiml.service.ssl[0].ciphers}
-        protocol: ${apiml.service.ssl[0].protocol}
+        ssl:
+            enabled: true
+            key-store:
+                password: ${apiml.service.ssl[0].keyPassword}
+                type: ${apiml.service.ssl[0].keyStoreType}
+                path: file:${apiml.service.ssl[0].keyStore}
+            key:
+                alias: ${apiml.service.ssl[0].keyAlias}
+                password: ${apiml.service.ssl[0].keyPassword}
+            trust-store:
+                password: ${apiml.service.ssl[0].trustStorePassword}
+                path: file:${apiml.service.ssl[0].trustStore}
+                type: ${apiml.service.ssl[0].trustStoreType}
+            port: ${apiml.service.port}
+            ciphers: ${apiml.service.ssl[0].ciphers}
+            protocol: ${apiml.service.ssl[0].protocol}
 
 
 apiml:

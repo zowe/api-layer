@@ -89,7 +89,7 @@ dependencies {
 bootJar {
     archiveFileName = "api-catalog-services.jar"
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
     archiveClassifier = "application"
 }

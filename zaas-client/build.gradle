@@ -1,19 +1,18 @@
 dependencies {
-    annotationProcessor libs.lombok
+    implementation libs.spring.boot.starter
 
-    implementation libs.http.client5
-    implementation libs.jackson.annotations
     implementation libs.jackson.databind
-    implementation libs.jaxb.api
-    implementation libs.jakarta.servlet.api
-    implementation libs.spring.context
-    implementation libs.apache.commons.codec
+    implementation libs.http.client5
 
-    compileOnly libs.lombok
+    compileOnly libs.jakarta.servlet.api
 
-    testImplementation libs.http.client5
     testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
-    testImplementation libs.junitJupiter
-    testImplementation libs.jjwt.full
+    testImplementation libs.jakarta.servlet.api
+    testImplementation libs.jjwt
+
+    testRuntimeOnly libs.jjwt.impl
+    testRuntimeOnly libs.jjwt.jackson
+
+    annotationProcessor libs.lombok
+    compileOnly libs.lombok
 }

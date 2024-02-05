@@ -15,7 +15,7 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @ConfigurationProperties("apiml.service")
 public class DiscoveryClientConfig extends ApiMediationServiceConfig {
