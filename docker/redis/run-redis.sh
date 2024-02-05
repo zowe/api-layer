@@ -19,6 +19,7 @@ log() {
 createFile() {
     log "Creating $2"
     sed -e "s|{APIML_VERSION}|${APIML_VERSION}|g" \
+        -e "s|{GATEWAY_VERSION}|${GATEWAY_VERSION}|g" \
         -e "s|{MOCK_ZOSMF_HOST}|${MOCK_ZOSMF_HOST}|g" \
         -e "s|{SENTINEL}|${SENTINEL}|g" \
         -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
@@ -79,6 +80,7 @@ KEYSTORE_DIR="${WORKSPACE}/keystore"
 COMPOSE_DIR="${SCRIPT_PWD}/compose"
 CONFIG_DIR="${SCRIPT_PWD}/config"
 REDIS_COMPOSE_FILE="redis.yml"
+GATEWAY_VERSION="7749575670-947"
 
 LINUX_SETTING="#"
 NOT_LINUX_SETTING=""

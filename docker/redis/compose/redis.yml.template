@@ -45,7 +45,7 @@ services:
             - apiml.env
     gateway-service:
         container_name: gateway-service
-        image: ghcr.io/balhar-jakub/gateway-service:{APIML_VERSION}
+        image: ghcr.io/balhar-jakub/gateway-service:{GATEWAY_VERSION}
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
 {NOT_LINUX_SETTING}            - 10010:10010
