@@ -214,7 +214,7 @@ dependencyResolutionManagement {
 //            library('spring_messaging', 'org.springframework', 'spring-messaging').versionRef('springFramework')
 //            library('spring_web', 'org.springframework', 'spring-web').versionRef('springFramework')
 //            library('spring_webmvc', 'org.springframework', 'spring-webmvc').versionRef('springFramework')
-//            library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
+            library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
 //            library('spring_websocket', 'org.springframework', 'spring-websocket').versionRef('springFramework')
 
             library('aopalliance', 'org.glassfish.hk2.external', 'aopalliance-repackaged').versionRef('aopalliance')

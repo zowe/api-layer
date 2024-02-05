@@ -30,6 +30,7 @@ dependencies {
     testImplementation libs.spring.boot.starter.actuator
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.boot.starter.websocket
+    testImplementation libs.spring.webflux
 
     testImplementation libs.bcpkix;
     testImplementation libs.jackson.dataformat.yaml
@@ -275,7 +276,6 @@ task runBaseTests(type: Test) {
             'GeneralAuthenticationTest',
             'DiscoverableClientDependentTest',
             'CachingServiceTest',
-            'MetricsServiceTest',
             'WebsocketTest'
         )
         excludeTags(
