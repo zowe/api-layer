@@ -48,7 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @DiscoverableClientDependentTest
 @Tag("CloudGatewayCentralRegistry")
 class CentralRegistryTest implements TestWithStartedInstances {
-    static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/";
+    static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry";
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
@@ -72,7 +72,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @Test
     @SneakyThrows
     void shouldFindRegisteredGatewayInCentralApiml() {
-        ValidatableResponse response = listCentralRegistry("central-apiml", "zowe.apiml.gateway", null);
+        ValidatableResponse response = listCentralRegistry("/central-apiml", "zowe.apiml.gateway", null);
 
         List<Map<String, Object>> services = response.extract().jsonPath().getObject("[0].services", new TypeRef<List<Map<String, Object>>>() {
         });
@@ -162,8 +162,8 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
         String query = String.format("%s?apiId=%s&serviceId=%s", nullToEmpty(apimlId), nullToEmpty(apiId), nullToEmpty(serviceId));
 
-        return new URL(conf.getScheme(), conf.getHost(), conf.getPort(), CENTRAL_REGISTRY_PATH)
-            .toURI().resolve(query);
+        return new URL(conf.getScheme(), conf.getHost(), conf.getPort(), CENTRAL_REGISTRY_PATH + query)
+            .toURI();
     }
 
     String nullToEmpty(String s) {
