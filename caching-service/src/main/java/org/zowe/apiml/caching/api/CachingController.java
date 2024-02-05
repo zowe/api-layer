@@ -39,7 +39,6 @@ public class CachingController {
     @Operation(summary = "Retrieves all values in the cache",
         description = "Values returned for the calling service")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> getAllValues(HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
@@ -56,7 +55,6 @@ public class CachingController {
     @Operation(summary = "Delete all values for service from the cache",
         description = "Will delete all key-value pairs for specific service")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> deleteAllValues(HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
@@ -80,7 +78,6 @@ public class CachingController {
     @Operation(summary = "Retrieves a specific value in the cache",
         description = "Value returned is for the provided {key}")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> getValue(@PathVariable String key, HttpServletRequest request) {
         return keyRequest(storage::read,
             key, request, HttpStatus.OK);
@@ -90,7 +87,6 @@ public class CachingController {
     @Operation(summary = "Delete key from the cache",
         description = "Will delete key-value pair for the provided {key}")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> delete(@PathVariable String key, HttpServletRequest request) {
         return keyRequest(storage::delete,
             key, request, HttpStatus.NO_CONTENT);
@@ -100,7 +96,6 @@ public class CachingController {
     @Operation(summary = "Create a new key in the cache",
         description = "A new key-value pair will be added to the cache")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         return keyValueRequest(storage::create,
             keyValue, request, HttpStatus.CREATED);
@@ -110,7 +105,6 @@ public class CachingController {
     @Operation(summary = "Add a new item in the cache map",
         description = "A new key-value pair will be added to the specific cache map with given map key.")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> storeMapItem(@PathVariable String mapKey, @RequestBody KeyValue keyValue, HttpServletRequest request) {
         return mapKeyValueRequest(storage::storeMapItem,
             mapKey, keyValue, request, HttpStatus.CREATED);
@@ -120,7 +114,6 @@ public class CachingController {
     @Operation(summary = "Retrieves all the items in the cache map",
         description = "Values returned for the calling service and specific cache map.")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> getAllMapItems(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
@@ -137,7 +130,6 @@ public class CachingController {
     @Operation(summary = "Retrieves all the maps in the cache",
         description = "Values returned for the calling service")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> getAllMaps(HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
@@ -154,7 +146,6 @@ public class CachingController {
     @Operation(summary = "Delete a record from a rules map in the cache",
         description = "Will delete a key-value pair from a specific rules map")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> evictRules(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
@@ -172,7 +163,6 @@ public class CachingController {
     @Operation(summary = "Delete a record from an invalid tokens map in the cache",
         description = "Will delete a key-value pair from a specific tokens map")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> evictTokens(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
@@ -190,7 +180,6 @@ public class CachingController {
     @Operation(summary = "Update key in the cache",
         description = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
-//    @HystrixCommand
     public ResponseEntity<Object> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
         return keyValueRequest(storage::update,
             keyValue, request, HttpStatus.NO_CONTENT);
