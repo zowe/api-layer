@@ -17,6 +17,15 @@ javaPlatform {
  */
 dependencies {
     api(platform(libs.spring.boot.dependencies))
+
+    constraints {
+        // to define preferred version (the minimal version constraints)
+        libs.getCommons().owner.config.libraries.values().forEach { x ->
+            def version = x.getVersion().getPreferredVersion()
+            if (version.isEmpty()) version = x.getVersion().toString()
+            api x.getGroup().toString() + ":" + x.getName().toString() + ":" + version
+        }
+    }
 }
 
 publishing {
