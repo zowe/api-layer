@@ -142,14 +142,10 @@ server:
 
 management:
     endpoints:
-        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,hystrixstream
-
-hystrix.command.default.execution.timeout.enabled: false
-
+                include: health,info
 ---
 logging:
     level:
