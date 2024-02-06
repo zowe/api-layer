@@ -38,72 +38,72 @@ import java.util.concurrent.TimeUnit;
  * @author Michael Wirth
  */
 public class DefaultApacheHttpClientConnectionManagerFactory
-		implements ApacheHttpClientConnectionManagerFactory {
+        implements ApacheHttpClientConnectionManagerFactory {
 
-	private static final Log LOG = LogFactory
-			.getLog(DefaultApacheHttpClientConnectionManagerFactory.class);
+    private static final Log LOG = LogFactory
+            .getLog(DefaultApacheHttpClientConnectionManagerFactory.class);
 
-	public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation,
-			int maxTotalConnections, int maxConnectionsPerRoute) {
-		return newConnectionManager(disableSslValidation, maxTotalConnections,
-				maxConnectionsPerRoute, -1, TimeUnit.MILLISECONDS, null);
-	}
+    public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation,
+            int maxTotalConnections, int maxConnectionsPerRoute) {
+        return newConnectionManager(disableSslValidation, maxTotalConnections,
+                maxConnectionsPerRoute, -1, TimeUnit.MILLISECONDS, null);
+    }
 
-	@Override
-	public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation,
-			int maxTotalConnections, int maxConnectionsPerRoute, long timeToLive,
-			TimeUnit timeUnit, RegistryBuilder registryBuilder) {
-		if (registryBuilder == null) {
-			registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
-					.register(HTTP_SCHEME, PlainConnectionSocketFactory.INSTANCE);
-		}
-		if (disableSslValidation) {
-			try {
-				final SSLContext sslContext = SSLContext.getInstance("SSL");
-				sslContext.init(null,
-						new TrustManager[] { new DisabledValidationTrustManager() },
-						new SecureRandom());
-				registryBuilder.register(HTTPS_SCHEME, new SSLConnectionSocketFactory(
-						sslContext, NoopHostnameVerifier.INSTANCE));
-			}
-			catch (NoSuchAlgorithmException e) {
-				LOG.warn("Error creating SSLContext", e);
-			}
-			catch (KeyManagementException e) {
-				LOG.warn("Error creating SSLContext", e);
-			}
-		}
-		else {
-			registryBuilder.register("https",
-					SSLConnectionSocketFactory.getSocketFactory());
-		}
-		final Registry<ConnectionSocketFactory> registry = registryBuilder.build();
+    @Override
+    public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation,
+            int maxTotalConnections, int maxConnectionsPerRoute, long timeToLive,
+            TimeUnit timeUnit, RegistryBuilder registryBuilder) {
+        if (registryBuilder == null) {
+            registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register(HTTP_SCHEME, PlainConnectionSocketFactory.INSTANCE);
+        }
+        if (disableSslValidation) {
+            try {
+                final SSLContext sslContext = SSLContext.getInstance("SSL");
+                sslContext.init(null,
+                        new TrustManager[] { new DisabledValidationTrustManager() },
+                        new SecureRandom());
+                registryBuilder.register(HTTPS_SCHEME, new SSLConnectionSocketFactory(
+                        sslContext, NoopHostnameVerifier.INSTANCE));
+            }
+            catch (NoSuchAlgorithmException e) {
+                LOG.warn("Error creating SSLContext", e);
+            }
+            catch (KeyManagementException e) {
+                LOG.warn("Error creating SSLContext", e);
+            }
+        }
+        else {
+            registryBuilder.register("https",
+                    SSLConnectionSocketFactory.getSocketFactory());
+        }
+        final Registry<ConnectionSocketFactory> registry = registryBuilder.build();
 
-		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-				registry, null, null, null, timeToLive, timeUnit);
-		connectionManager.setMaxTotal(maxTotalConnections);
-		connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+                registry, null, null, null, timeToLive, timeUnit);
+        connectionManager.setMaxTotal(maxTotalConnections);
+        connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
 
-		return connectionManager;
-	}
+        return connectionManager;
+    }
 
-	class DisabledValidationTrustManager implements X509TrustManager {
+    class DisabledValidationTrustManager implements X509TrustManager {
 
-		@Override
-		public void checkClientTrusted(X509Certificate[] x509Certificates, String s)
-				throws CertificateException {
-		}
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s)
+                throws CertificateException {
+        }
 
-		@Override
-		public void checkServerTrusted(X509Certificate[] x509Certificates, String s)
-				throws CertificateException {
-		}
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s)
+                throws CertificateException {
+        }
 
-		@Override
-		public X509Certificate[] getAcceptedIssuers() {
-			return null;
-		}
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
 
-	}
+    }
 
 }
