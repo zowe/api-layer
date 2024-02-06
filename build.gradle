@@ -159,7 +159,7 @@ subprojects {
 task downloadFile {
     doLast {
         // Specify the URL of the file to download
-        def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-service/2.14.6/gateway-service-2.14.6.jar'
+        def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-fat-jar/2.14.6/gateway-fat-jar-2.14.6-application.jar'
 
         // Set the destination directory and file name
         def destination = new File("$projectDir/gateway-service/build/libs/gateway-service-lite.jar")
