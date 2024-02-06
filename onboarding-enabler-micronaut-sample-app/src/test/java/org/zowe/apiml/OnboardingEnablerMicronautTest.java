@@ -21,7 +21,7 @@ import jakarta.inject.Inject;
 class OnboardingEnablerMicronautTest {
 
     @Inject
-    EmbeddedApplication application;
+    EmbeddedApplication<?> application;
 
     @Test
     void testItWorks() {

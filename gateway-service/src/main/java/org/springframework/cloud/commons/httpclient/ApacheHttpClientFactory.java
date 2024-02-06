@@ -20,11 +20,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
  */
 public interface ApacheHttpClientFactory {
 
-	/**
-	 * Creates an {@link HttpClientBuilder} that can be used to create a new
-	 * {@link CloseableHttpClient}.
-	 * @return A {@link HttpClientBuilder}.
-	 */
-	HttpClientBuilder createBuilder();
+    /**
+     * Creates an {@link HttpClientBuilder} that can be used to create a new
+     * {@link CloseableHttpClient}.
+     * @return A {@link HttpClientBuilder}.
+     */
+    HttpClientBuilder createBuilder();
 
 }
