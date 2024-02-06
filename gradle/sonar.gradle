@@ -124,6 +124,13 @@ project(":apiml-sample-extension-package") {
     }
 }
 
+// Packaging project: sonar does not apply
+project(":cloud-gateway-package") {
+    sonar {
+        skipProject = true
+    }
+}
+
 // Packaging project; sonar does not apply
 project(":apiml-sample-extension") {
     sonar {
