@@ -156,6 +156,28 @@ subprojects {
     }
 }
 
+task downloadFile {
+    doLast {
+        // Specify the URL of the file to download
+        def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-service/2.14.6/gateway-service-2.14.6.jar'
+
+        // Set the destination directory and file name
+        def destination = new File("$projectDir/gateway-service/build/libs/gateway-service.jar")
+
+        // Make sure the directory exists
+        destination.parentFile.mkdirs()
+
+        // Download the file
+        new URL(fileURL).withInputStream { i ->
+            destination.withOutputStream {
+                it << i
+            }
+        }
+        println "Downloaded file to ${destination.absolutePath}"
+    }
+}
+build.dependsOn downloadFile
+
 task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
                            ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':cloud-gateway-service:build']) {
     description "Build core components"
