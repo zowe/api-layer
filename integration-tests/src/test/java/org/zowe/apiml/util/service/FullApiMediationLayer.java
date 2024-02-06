@@ -80,7 +80,7 @@ public class FullApiMediationLayer {
     }
 
     private void prepareGateway() {
-        gatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null);
+        gatewayService = new RunningService("gateway", "gateway-package/src/main/resources/bin", null, null);
     }
 
     private void prepareCatalog() {

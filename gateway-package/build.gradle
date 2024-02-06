@@ -4,18 +4,13 @@ ext {
 }
 
 configurations {
-    gatewayServiceJar
     zip
 }
-
-dependencies {
-    gatewayServiceJar(project(path: ":gateway-service", configuration: "liteJarConfiguration"))
-}
+def resourceDir = 'src/main/resources/'
 
 task packageApiGateway(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
-    def resourceDir = 'src/main/resources/'
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
@@ -23,11 +18,37 @@ task packageApiGateway(type: Zip) {
     }
 
     into('bin/') {
-        from configurations.gatewayServiceJar
+        from "$resourceDir/bin/gateway-service-lite.jar"
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
 }
+
+task downloadFile {
+    doLast {
+        // Specify the URL of the file to download
+        def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-fat-jar/2.14.6/gateway-fat-jar-2.14.6-application.jar'
+
+        // Set the destination directory and file name
+        def destination = new File("$projectDir/$resourceDir/bin/gateway-service-lite.jar")
+        if (!destination.exists()) {
+            // Make sure the directory exists
+            destination.parentFile.mkdirs()
+
+            // Download the file
+            new URL(fileURL).withInputStream { i ->
+                destination.withOutputStream {
+                    it << i
+                }
+            }
+            println "Downloaded file to ${destination.absolutePath}"
+        } else {
+            println "File already exists ${destination.absolutePath}"
+        }
+    }
+}
+
+packageApiGateway.dependsOn downloadFile
 
 // save build information to manifest
 packageApiGateway.doFirst {
@@ -63,13 +84,13 @@ artifacts {
     zip packageApiGateway
 }
 
-//publishing {
-//    publications {
-//        mavenJava(MavenPublication) {
-//            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
-//        }
-//    }
-//}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
 
 jar {
     enabled false
