@@ -100,11 +100,12 @@ public class SecurityConfiguration {
             mainframeCredentialsConfiguration(
                 baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
-                .authorizeHttpRequests(requests -> requests
-                    .anyRequest().authenticated())
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider)
-                .authenticationProvider(new CertificateAuthenticationProvider());
+            .authorizeHttpRequests(requests -> requests
+                .anyRequest()
+                    .authenticated())
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .authenticationProvider(new CertificateAuthenticationProvider());
 
             if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
                 if (isAttlsEnabled) {
@@ -200,13 +201,16 @@ public class SecurityConfiguration {
 
     private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
         http.securityMatchers(matcher -> matcher.requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()))
-            // login endpoint
+        // login endpoint
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
+                .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll());
+
+        http.securityMatchers(matcher -> matcher.requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLogoutEndpoint()))
+        // logout endpoint
             .logout(logout -> logout
-                .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
-                .logoutSuccessHandler(logoutSuccessHandler())).with(new CustomSecurityFilters(), c -> {
-            });
+            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
+            .logoutSuccessHandler(logoutSuccessHandler())
+        ).with(new CustomSecurityFilters(), c -> { });
 
         return http;
     }
