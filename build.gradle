@@ -162,7 +162,7 @@ task downloadFile {
         def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-service/2.14.6/gateway-service-2.14.6.jar'
 
         // Set the destination directory and file name
-        def destination = new File("$projectDir/gateway-service/build/libs/gateway-service.jar")
+        def destination = new File("$projectDir/gateway-service/build/libs/gateway-service-lite.jar")
 
         // Make sure the directory exists
         destination.parentFile.mkdirs()
