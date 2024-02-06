@@ -84,5 +84,5 @@ task jacocoFullReport(type: JacocoReport) {
 }
 
 task coverage() {
-    dependsOn jacocoFullReport, ":api-catalog-ui:test", "metrics-service-ui:test", "zowe-cli-id-federation-plugin:test"
+    dependsOn jacocoFullReport, ":api-catalog-ui:test", "zowe-cli-id-federation-plugin:test"
 }
