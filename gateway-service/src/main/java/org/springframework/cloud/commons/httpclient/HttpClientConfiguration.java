@@ -24,31 +24,31 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class HttpClientConfiguration {
 
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnProperty(name = "spring.cloud.httpclientfactories.apache.enabled",
-			matchIfMissing = true)
-	@ConditionalOnClass(HttpClient.class)
-	static class ApacheHttpClientConfiguration {
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnProperty(name = "spring.cloud.httpclientfactories.apache.enabled",
+            matchIfMissing = true)
+    @ConditionalOnClass(HttpClient.class)
+    static class ApacheHttpClientConfiguration {
 
-		@Bean
-		@ConditionalOnMissingBean
-		public ApacheHttpClientConnectionManagerFactory connManFactory() {
-			return new DefaultApacheHttpClientConnectionManagerFactory();
-		}
+        @Bean
+        @ConditionalOnMissingBean
+        public ApacheHttpClientConnectionManagerFactory connManFactory() {
+            return new DefaultApacheHttpClientConnectionManagerFactory();
+        }
 
-		@Bean
-		@ConditionalOnMissingBean
-		public HttpClientBuilder apacheHttpClientBuilder() {
-			return HttpClientBuilder.create();
-		}
+        @Bean
+        @ConditionalOnMissingBean
+        public HttpClientBuilder apacheHttpClientBuilder() {
+            return HttpClientBuilder.create();
+        }
 
-		@Bean
-		@ConditionalOnMissingBean
-		public ApacheHttpClientFactory apacheHttpClientFactory(
-				HttpClientBuilder builder) {
-			return new DefaultApacheHttpClientFactory(builder);
-		}
+        @Bean
+        @ConditionalOnMissingBean
+        public ApacheHttpClientFactory apacheHttpClientFactory(
+                HttpClientBuilder builder) {
+            return new DefaultApacheHttpClientFactory(builder);
+        }
 
-	}
+    }
 
 }
