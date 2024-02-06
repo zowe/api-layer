@@ -123,10 +123,13 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         baseConfigure(http)
             .httpBasic(s -> s.realmName(DISCOVERY_REALM))
 
-            .authorizeHttpRequests(s -> s.requestMatchers("/application/info", "/application/health").permitAll().requestMatchers("/**").authenticated());
+            .authorizeHttpRequests(
+                s -> s.requestMatchers("/application/info", "/application/health").permitAll()
+                      .requestMatchers("/**").authenticated()
+            );
 
-        return http.with(new CustomSecurityFilters(), t -> {
-        }).build();
+        return http.with(new CustomSecurityFilters(), t -> { })
+                   .build();
     }
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
