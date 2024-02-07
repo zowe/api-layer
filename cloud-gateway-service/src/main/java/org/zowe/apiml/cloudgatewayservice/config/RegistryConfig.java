@@ -29,11 +29,4 @@ public class RegistryConfig {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }
 
-//    @Bean
-//    public EurekaRegistration eurekaRegistration(EurekaClient eurekaClient,
-//                                                 CloudEurekaInstanceConfig instanceConfig, ApplicationInfoManager applicationInfoManager,
-//                                                 @Autowired(required = false) ObjectProvider<HealthCheckHandler> healthCheckHandler) {
-//        return EurekaRegistration.builder(instanceConfig).with(applicationInfoManager).with(eurekaClient)
-//            .with(healthCheckHandler).build();
-//    }
 }
