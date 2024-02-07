@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GatewaySecurityServiceTest {
+
     private static final String USERNAME = "user";
     private static final char[] PASSWORD = "pass".toCharArray();
     private static final char[] NEW_PASSWORD = "newPass".toCharArray();
@@ -161,9 +162,11 @@ class GatewaySecurityServiceTest {
             }
         }
 
+        // TODO Verify what happens on an IOException / ParseException to add coverage to this class
 
         @Nested
         class WhenHandleBadResponse {
+
             private static final String LOG_PARAMETER_STRING = "Cannot access Gateway service. Uri '{}' returned: {}";
 
             @Mock
@@ -185,6 +188,7 @@ class GatewaySecurityServiceTest {
 
             @Nested
             class ThenHandleAuthGeneralError {
+
                 @Test
                 void givenInvalidMessageKey() throws IOException {
                     String errorMessage = MESSAGE_KEY_STRING + "badKey\"";
@@ -216,6 +220,5 @@ class GatewaySecurityServiceTest {
                 }
             }
         }
-
     }
 }
