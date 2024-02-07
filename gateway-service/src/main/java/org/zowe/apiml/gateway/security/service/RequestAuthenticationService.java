@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.gateway.security.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 /**

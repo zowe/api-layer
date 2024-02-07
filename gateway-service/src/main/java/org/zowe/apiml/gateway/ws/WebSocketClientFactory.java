@@ -10,10 +10,19 @@
 
 package org.zowe.apiml.gateway.ws;
 
+import javax.annotation.PreDestroy;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * Factory for provisioning web socket client
@@ -25,32 +34,32 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class WebSocketClientFactory {
 
-//    private final JettyWebSocketClient client;
-//
-//    @Autowired
-//    public WebSocketClientFactory(
-//        SslContextFactory.Client jettyClientSslContextFactory,
-//        @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout
-//        ) {
-//        log.debug("Creating Jetty WebSocket client, with SslFactory: {}",
-//            jettyClientSslContextFactory);
-//        WebSocketClient wsClient = new WebSocketClient(new HttpClient(jettyClientSslContextFactory));
-//        wsClient.setMaxIdleTimeout(maxIdleWebSocketTimeout);
-//        client = new JettyWebSocketClient(wsClient);
-//        client.start();
-//    }
-//
-//    JettyWebSocketClient getClientInstance() {
-//        return client;
-//    }
-//
-//    @PreDestroy
-//    void closeClient() {
-//        if (client.isRunning()) {
-//            log.debug("Closing Jetty WebSocket client");
-//            client.stop();
-//        }
-//
-//    }
+    private final JettyWebSocketClient client;
+
+    @Autowired
+    public WebSocketClientFactory(
+        SslContextFactory.Client jettyClientSslContextFactory,
+        @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout
+        ) {
+        log.debug("Creating Jetty WebSocket client, with SslFactory: {}",
+            jettyClientSslContextFactory);
+        WebSocketClient wsClient = new WebSocketClient(new HttpClient(jettyClientSslContextFactory));
+        wsClient.setMaxIdleTimeout(maxIdleWebSocketTimeout);
+        client = new JettyWebSocketClient(wsClient);
+        client.start();
+    }
+
+    JettyWebSocketClient getClientInstance() {
+        return client;
+    }
+
+    @PreDestroy
+    void closeClient() {
+        if (client.isRunning()) {
+            log.debug("Closing Jetty WebSocket client");
+            client.stop();
+        }
+
+    }
 
 }

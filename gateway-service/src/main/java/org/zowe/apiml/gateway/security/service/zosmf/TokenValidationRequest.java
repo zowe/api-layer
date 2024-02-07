@@ -10,9 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 

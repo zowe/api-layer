@@ -10,8 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import jakarta.servlet.http.HttpServletRequest;
-
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 /**

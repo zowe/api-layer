@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.zosmf;
 
+import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -17,8 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-
-import java.util.Map.Entry;
 
 import static org.zowe.apiml.gateway.security.service.zosmf.AbstractZosmfService.ZOSMF_CSRF_HEADER;
 

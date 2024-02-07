@@ -14,15 +14,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.socket.*;
+import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a connection in the proxying chain, establishes 'client' to
@@ -68,21 +68,19 @@ public class WebSocketRoutedSession {
 
     private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         try {
-            return null;
-            //FIXME:
-//            JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
-//            URI targetURI = new URI(targetUrl);
-//            WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
-//            ListenableFuture<WebSocketSession> futureSession = client
-//                .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
-//            return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+            JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
+            URI targetURI = new URI(targetUrl);
+            WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
+            ListenableFuture<WebSocketSession> futureSession = client
+                .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
+            return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
-//        } catch (ExecutionException e) {
-//            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+        } catch (ExecutionException e) {
+            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
         } catch (Exception e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
         }

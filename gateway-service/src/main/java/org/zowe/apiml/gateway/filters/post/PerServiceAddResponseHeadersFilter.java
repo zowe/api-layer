@@ -21,7 +21,7 @@ import org.zowe.apiml.gateway.services.ServiceInstancesUtils;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
  * This filter adds headers to the response as configured by the responding service's metadata.

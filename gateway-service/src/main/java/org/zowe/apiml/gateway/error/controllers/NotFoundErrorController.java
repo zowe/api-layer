@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.error.controllers;
 
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -25,6 +24,8 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.compatibility.ApimlErrorController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Not found endpoint controller

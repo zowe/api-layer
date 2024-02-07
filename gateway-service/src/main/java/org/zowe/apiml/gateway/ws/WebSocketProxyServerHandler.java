@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.ws;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +28,8 @@ import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;

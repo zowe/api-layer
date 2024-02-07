@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.gateway.adapter.VersionAdapterUtils;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtProvider;
@@ -92,7 +91,7 @@ public class SafIdtScheme implements IAuthenticationScheme {
 
     @Override
     public Optional<AuthSource> getAuthSource() {
-        return authSourceService.getAuthSourceFromRequest(VersionAdapterUtils.toJakarta(RequestContext.getCurrentContext().getRequest()));
+        return authSourceService.getAuthSourceFromRequest(RequestContext.getCurrentContext().getRequest());
     }
 
     private String getApplId(Authentication authentication) {

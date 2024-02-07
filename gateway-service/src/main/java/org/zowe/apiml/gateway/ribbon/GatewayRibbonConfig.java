@@ -12,12 +12,15 @@ package org.zowe.apiml.gateway.ribbon;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
@@ -31,6 +34,7 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.InstanceInfoExtractor;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
 
+import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,18 +123,18 @@ public class GatewayRibbonConfig {
             serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
-//    @Bean
-//    @ConditionalOnMissingBean
-//    public ServerList<?> ribbonServerList(IClientConfig config,
-//                                          Provider<EurekaClient> eurekaClientProvider) {
-//        if (this.propertiesFactory.isSet(ServerList.class, ribbonClientName)) {
-//            return this.propertiesFactory.get(ServerList.class, config, ribbonClientName);
-//        }
-//        DiscoveryEnabledNIWSServerList discoveryServerList = new DiscoveryEnabledNIWSServerList(
-//                config, eurekaClientProvider);
-//        DomainExtractingServerList serverList = new DomainExtractingServerList(
-//                discoveryServerList, config, this.approximateZoneFromHostname);
-//        return serverList;
-//    }
+    @Bean
+    @ConditionalOnMissingBean
+    public ServerList<?> ribbonServerList(IClientConfig config,
+                                          Provider<EurekaClient> eurekaClientProvider) {
+        if (this.propertiesFactory.isSet(ServerList.class, ribbonClientName)) {
+            return this.propertiesFactory.get(ServerList.class, config, ribbonClientName);
+        }
+        DiscoveryEnabledNIWSServerList discoveryServerList = new DiscoveryEnabledNIWSServerList(
+                config, eurekaClientProvider);
+        DomainExtractingServerList serverList = new DomainExtractingServerList(
+                discoveryServerList, config, this.approximateZoneFromHostname);
+        return serverList;
+    }
 
 }

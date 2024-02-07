@@ -14,9 +14,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.cglib.proxy.*;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
+import org.springframework.cloud.netflix.zuul.web.ZuulController;
 import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.config.ZuulConfigurationOverriden.ZuulController;
 import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
 import java.lang.reflect.Constructor;

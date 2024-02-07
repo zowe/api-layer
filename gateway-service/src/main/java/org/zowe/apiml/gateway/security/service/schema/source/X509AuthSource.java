@@ -10,13 +10,12 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Implementation of source of authentication based on client certificate.
