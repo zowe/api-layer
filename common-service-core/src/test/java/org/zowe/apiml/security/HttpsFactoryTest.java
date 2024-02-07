@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.security;
 
-import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
@@ -141,23 +140,5 @@ class HttpsFactoryTest {
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         HostnameVerifier hostnameVerifier = httpsFactory.getHostnameVerifier();
         assertEquals(NoopHostnameVerifier.class, hostnameVerifier.getClass());
-    }
-
-    @Test
-    void shouldCreateEurekaJerseyClientBuilderForHttps() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder clientBuilder =
-            httpsFactory.createEurekaJerseyClientBuilder("https" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
-        assertNotNull(clientBuilder);
-    }
-
-    @Test
-    void shouldCreateEurekaJerseyClientBuilderForHttp() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder clientBuilder =
-            httpsFactory.createEurekaJerseyClientBuilder("http" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
-        assertNotNull(clientBuilder);
     }
 }
