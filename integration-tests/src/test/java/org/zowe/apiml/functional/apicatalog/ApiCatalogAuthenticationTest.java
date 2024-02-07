@@ -142,7 +142,7 @@ class ApiCatalogAuthenticationTest {
                 request.execute(
                         given()
                             .config(SslContext.clientCertApiml)
-                            .auth().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                            .auth().basic(USERNAME, PASSWORD)
                             .when(),
                         endpoint
                     )
@@ -254,7 +254,7 @@ class ApiCatalogAuthenticationTest {
                     request.execute(
                             given()
                                 .config(SslContext.clientCertApiml)
-                                .auth().basic(USERNAME, PASSWORD) // Isn't this kind of strange behavior?
+                                .auth().basic(USERNAME, PASSWORD)
                                 .when(),
                             endpoint
                         )
