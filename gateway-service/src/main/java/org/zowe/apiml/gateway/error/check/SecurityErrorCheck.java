@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.error.check;
 
 import com.netflix.zuul.exception.ZuulException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +26,8 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Checks whether the error was caused by an invalid token or credentials.

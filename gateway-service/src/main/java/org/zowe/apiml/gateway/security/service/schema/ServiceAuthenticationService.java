@@ -11,11 +11,10 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
-import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
-
 import java.util.Optional;
+import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 
 /**
  * Interface with base method to get AuthenticationCommand by serviceId or Authentication.

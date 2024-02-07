@@ -15,8 +15,7 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
+import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +25,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApimlDiscoveryClientFactory {
 
-    public ApimlDiscoveryClient buildApimlDiscoveryClient(ApplicationInfoManager clientAppManager,
-                                                          EurekaClientConfigBean configBean,
-                                                          ApplicationContext context,
-                                                          RestTemplateTransportClientFactories factories,
-                                                          RestTemplateDiscoveryClientOptionalArgs args1) {
-        return new ApimlDiscoveryClient(clientAppManager, configBean, context, factories, args1);
+    public ApimlDiscoveryClient buildApimlDiscoveryClient(ApplicationInfoManager perClientAppManager, EurekaClientConfigBean configBean, MutableDiscoveryClientOptionalArgs args, ApplicationContext context) {
+        return new ApimlDiscoveryClient(perClientAppManager, configBean, args, context);
     }
 
     public InstanceInfo createInstanceInfo(EurekaInstanceConfig instanceConfig) {

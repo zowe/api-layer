@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
-import org.zowe.apiml.gateway.adapter.VersionAdapterUtils;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -56,7 +55,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
 
     @Override
     public Optional<AuthSource> getAuthSource() {
-        return authSourceService.getAuthSourceFromRequest(VersionAdapterUtils.toJakarta(RequestContext.getCurrentContext().getRequest()));
+        return authSourceService.getAuthSourceFromRequest(RequestContext.getCurrentContext().getRequest());
     }
 
     @Override

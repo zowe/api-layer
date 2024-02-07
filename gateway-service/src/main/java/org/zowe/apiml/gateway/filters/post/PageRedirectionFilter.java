@@ -26,8 +26,7 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import java.util.*;
 
 import static org.apache.http.HttpHeaders.LOCATION;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
  * This is a post filter for request which returns status code 3XX.

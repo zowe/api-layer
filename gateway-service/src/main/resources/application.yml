@@ -1,5 +1,3 @@
-spring.profiles.group.dev: dev,debug,diag
-
 logging:
     level:
         ROOT: INFO
@@ -191,8 +189,6 @@ ribbon:
     GZipPayload: false # this stops Gateway from deflating gzip responses from services
     MaxConnectionsPerHost: ${server.maxConnectionsPerRoute}
     MaxTotalConnections: ${server.maxTotalConnections}
-    client:
-        name: Gateway
 
 http:
     connection:
@@ -278,7 +274,7 @@ eureka:
 
 ---
 spring:
-    config.activate.on-profile: debug
+    profiles: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -309,7 +305,8 @@ logging:
         org.zowe.apiml.gateway.ws: DEBUG
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -325,12 +322,17 @@ server:
 zuul.debug.request: true
 
 ---
-spring.config.activate.on-profile: dev
+spring:
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
 
 logbackServiceName: ZWEAGW1
 
 ---
-spring.config.activate.on-profile: attls
+spring:
+    profiles: attls
 
 server:
     internal:
@@ -358,7 +360,8 @@ eureka:
                         documentationUrl: https://zowe.github.io/docs-site/
 
 ---
-spring.config.activate.on-profile: securityFilterchainDebug
+spring:
+    profiles: securityFilterchainDebug
 
 logging:
     level:
@@ -367,7 +370,8 @@ logging:
         org.zowe.apiml.gateway.security: DEBUG
 
 ---
-spring.config.activate.on-profile: zosmfDebug
+spring:
+    profiles: zosmfDebug
 
 logging:
     level:

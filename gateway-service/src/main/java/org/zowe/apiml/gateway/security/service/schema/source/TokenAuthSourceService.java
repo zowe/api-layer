@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 

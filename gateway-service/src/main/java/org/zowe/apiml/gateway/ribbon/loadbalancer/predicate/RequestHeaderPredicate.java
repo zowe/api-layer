@@ -12,9 +12,7 @@ package org.zowe.apiml.gateway.ribbon.loadbalancer.predicate;
 
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import org.apache.commons.lang3.StringUtils;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerConstants;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingContext;
-import org.zowe.apiml.gateway.ribbon.loadbalancer.RequestAwarePredicate;
+import org.zowe.apiml.gateway.ribbon.loadbalancer.*;
 
 /**
  * Predicate that looks for a presence of header containing serviceId value

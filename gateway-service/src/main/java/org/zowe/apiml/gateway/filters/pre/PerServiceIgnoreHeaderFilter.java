@@ -22,7 +22,7 @@ import org.zowe.apiml.gateway.services.ServiceInstancesUtils;
 
 import java.util.List;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 @Component
 @RequiredArgsConstructor

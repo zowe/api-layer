@@ -12,17 +12,17 @@ package org.zowe.apiml.gateway.error;
 
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.error.controllers.InternalServerErrorController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
-
-import javax.servlet.RequestDispatcher;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import javax.servlet.RequestDispatcher;
 
 class InternalServerErrorControllerTest {
     @Test

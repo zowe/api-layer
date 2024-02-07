@@ -65,34 +65,32 @@ dependencies {
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
-    implementation libs.spring.boot.starter.security
-//    implementation libs.spring.boot.starter.websocket
-//    implementation libs.spring.cloud.starter.hystrix
-//    implementation libs.spring.cloud.starter.eureka.server
-//    implementation libs.spring.security.web
-//    implementation libs.spring.security.config
-//    implementation libs.spring.security.core
-//    implementation libs.spring.security.crypto
+    implementation libs.spring.cloud.starter.hystrix
+    implementation libs.spring.cloud.starter.eureka.server
+    implementation libs.spring.security.web
+    implementation libs.spring.security.config
+    implementation libs.spring.security.core
+    implementation libs.spring.security.crypto
     implementation libs.xstream
     implementation libs.json.smart
 
     implementation libs.ribbon.eureka
-//    implementation libs.swagger3.parser
-//    implementation libs.swagger.models
+    implementation libs.swagger3.parser
+    implementation libs.swagger.models
     implementation libs.swagger.inflector
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
-//    implementation libs.tomcat.coyote
-//    implementation libs.tomcat.annotations.api
-//    implementation libs.tomcat.embed.core
-//    implementation libs.tomcat.embed.el
-//    implementation libs.tomcat.embed.websocket
-    implementation libs.spring.cloud.starter.eureka.client
-//    implementation libs.spring.cloud.commons
-//    implementation libs.spring.cloud.starter.bootstrap
+    implementation libs.tomcat.coyote
+    implementation libs.tomcat.annotations.api
+    implementation libs.tomcat.embed.core
+    implementation libs.tomcat.embed.el
+    implementation libs.tomcat.embed.websocket
+    implementation libs.spring.cloud.starter.eureka
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.cloud.starter.bootstrap
     implementation libs.spring.cloud.starter.zuul
-//    implementation libs.spring.cloud.starter.ribbon
+    implementation libs.spring.cloud.starter.ribbon
     implementation libs.jetty.websocket.common
     implementation libs.jetty.websocket.client
     implementation libs.jetty.client
@@ -105,23 +103,22 @@ dependencies {
 
     implementation libs.thymeleaf
     implementation libs.thymeleafSpring
-//    implementation libs.logback.core
-//    implementation libs.logback.classic
+    implementation libs.logback.core
+    implementation libs.logback.classic
 
     implementation libs.commons.io
     implementation libs.guava
-    implementation libs.javax.servlet.api
-//    implementation libs.spring.aop
-//    implementation libs.spring.beans
-//    implementation libs.spring.context
-//    implementation libs.spring.context.support
-//    implementation libs.spring.core
-//    implementation libs.spring.expression
-//    implementation libs.spring.messaging
-//    implementation libs.spring.web
-//    implementation libs.spring.webmvc
-//    implementation libs.spring.websocket
-//    implementation libs.spring.webflux
+    implementation libs.spring.aop
+    implementation libs.spring.beans
+    implementation libs.spring.context
+    implementation libs.spring.context.support
+    implementation libs.spring.core
+    implementation libs.spring.expression
+    implementation libs.spring.messaging
+    implementation libs.spring.web
+    implementation libs.spring.webmvc
+    implementation libs.spring.websocket
+    implementation libs.spring.webflux
 
     implementation libs.eh.cache
     implementation libs.spring.retry
@@ -132,12 +129,12 @@ dependencies {
     annotationProcessor libs.lombok
     annotationProcessor libs.spring.boot.configuration.processor
 
-//    testImplementation libs.mockito.core
-//    testImplementation libs.mockito.inline
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.inline
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
-//    testRuntimeOnly libs.http.client
+    testRuntimeOnly libs.http.client
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path
@@ -150,29 +147,12 @@ dependencies {
 
     implementation libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
-
-    implementation "javax.annotation:javax.annotation-api:1.3.2"
-    implementation "junit:junit:4.13.2"
-    implementation "org.mockito:mockito-core:2.28.2!!"
-
-    implementation "javax.xml.bind:jaxb-api:2.3.1"
-    //implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
-    //implementation 'com.sun.xml.bind:jaxb-impl:2.3.1'
-    //implementation 'jakarta.xml.bind:jakarta.xml.bind-api:2.3.3'
-    //implementation 'com.sun.xml.bind:jaxb-ri:2.3.9'
-    //implementation 'jakarta.xml.bind:jakarta.xml.bind-api:2.3.3'
-    implementation 'com.sun.xml.bind:jaxb-impl:2.3.9!!'
-
-    //implementation libs.spring.cloud.commons
-    //implementation libs.spring.boot.configuration.processor
-
-    testImplementation libs.javax.inject
 }
 
 bootJar {
     archiveFileName = "gateway-service.jar"
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
     archiveClassifier = "application"
 }
@@ -189,13 +169,13 @@ bootRun {
     systemProperties = System.properties
 }
 
-//publishing {
-//    publications {
-//        mavenJavaFat(MavenPublication) {
-//            groupId = 'org.zowe.apiml'
-//            artifactId = 'gateway-fat-jar'
-//
-//            artifact bootJar
-//        }
-//    }
-//}
+publishing {
+    publications {
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml'
+            artifactId = 'gateway-fat-jar'
+
+            artifact bootJar
+        }
+    }
+}
