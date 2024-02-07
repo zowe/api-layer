@@ -14,6 +14,7 @@ import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.UserTokenHandler;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -35,7 +36,11 @@ import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 
@@ -57,13 +62,12 @@ public class HttpsFactory {
     public CloseableHttpClient buildHttpClient(HttpClientConnectionManager connectionManager) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectionRequestTimeout(Timeout.ofMilliseconds(config.getRequestConnectionTimeout()))
-        .build();
-       // UserTokenHandler userTokenHandler = context -> context.getAttribute("my-token");
+            .build();
+        UserTokenHandler userTokenHandler = (route, context) -> context.getAttribute("my-token");
 
         return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig)
-//           .setSSLHostnameVerifier(getHostnameVerifier())
             .setConnectionManager(connectionManager).disableCookieManagement()
-//            .setUserTokenHandler(userTokenHandler)
+            .setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .evictExpiredConnections()
             .evictIdleConnections(Timeout.ofSeconds(config.getIdleConnTimeoutSeconds()))
