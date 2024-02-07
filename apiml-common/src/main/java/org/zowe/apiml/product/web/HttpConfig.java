@@ -181,7 +181,7 @@ public class HttpConfig {
                 connectionManager.closeExpired();
                 connectionManager.closeIdle(Timeout.ofSeconds(idleConnTimeoutSeconds));
             }
-        }, 3000, 3000);
+        }, 30000, 30000);
 
         connectionManager.setDefaultConnectionConfig(connConfig);
         connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);

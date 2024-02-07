@@ -205,9 +205,6 @@ management:
 
 ---
 spring.config.activate.on-profile: dev
-#    profiles.include:
-#        - debug
-#        - diag
 
 ---
 spring.config.activate.on-profile: attls
