@@ -34,8 +34,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -67,8 +68,8 @@ class RefreshablePeerEurekaNodesTest {
     EurekaClientConfig clientConfig;
     @Mock
     ServerCodecs serverCodecs;
-    @Mock
-    Collection<ClientRequestFilter> replicationClientAdditionalFilters;
+
+    List<ClientRequestFilter> replicationClientAdditionalFilters = new ArrayList<>();
 
     ApplicationInfoManager applicationInfoManager;
 
