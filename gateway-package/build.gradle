@@ -67,7 +67,7 @@ packageApiGateway.doFirst {
         .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
         .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
 
-    Provider<Directory> output = layout.buildDirectory.dir("convert");
+    Provider<Directory> output = layout.buildDirectory.dir("convert")
     def scriptOutputDir = output.get().asFile
     if (!scriptOutputDir.exists()) {
         scriptOutputDir.mkdirs()
@@ -78,7 +78,7 @@ packageApiGateway.doFirst {
     if (convertedManifest.exists()) {
         convertedManifest.delete()
     }
-    convertedManifest.createNewFile();
+    convertedManifest.createNewFile()
     convertedManifest.write(manifest)
 }
 
