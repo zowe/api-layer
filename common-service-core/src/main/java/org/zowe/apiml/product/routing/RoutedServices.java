@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.routing;
 
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.util.UrlUtils;
 
 import java.util.HashMap;
@@ -102,7 +103,7 @@ public class RoutedServices {
     }
 
     private boolean isMatchingApiRoute(String serviceUrl, String routeServiceUrl) {
-        return routeServiceUrl.startsWith(serviceUrl.toLowerCase());
+        return StringUtils.startsWithIgnoreCase(serviceUrl, routeServiceUrl);
     }
 
     @Override
