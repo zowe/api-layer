@@ -19,8 +19,8 @@ import org.zowe.apiml.config.DiscoveryClientConfig;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class ApiMlRegistrar {

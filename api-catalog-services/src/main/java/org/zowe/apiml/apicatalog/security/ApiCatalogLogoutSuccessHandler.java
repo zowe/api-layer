@@ -17,10 +17,10 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Handles logout success by removing cookie and clearing security context
@@ -49,7 +49,6 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
         // Set the cookie to null and expired
         Cookie tokenCookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), null);
         tokenCookie.setPath(authConfigurationProperties.getCookieProperties().getCookiePath());
-        tokenCookie.setComment(authConfigurationProperties.getCookieProperties().getCookieComment());
         tokenCookie.setSecure(true);
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(0);

@@ -64,8 +64,7 @@ management:
                   PARTIAL: 200
             show-details: always
 ---
-spring:
-    profiles: https
+spring.config.activate.on-profile: https
 
 server:
     ssl:

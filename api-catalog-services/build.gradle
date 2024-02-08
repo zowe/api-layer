@@ -61,83 +61,35 @@ gitProperties {
 
 dependencies {
     api project(':apiml-tomcat-common')
-    api project(':apiml-security-common')
     api project(':security-service-client-spring')
+
+    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.doc
+    implementation libs.spring.retry
+
+    implementation libs.apache.velocity
+    implementation libs.openapidiff
+    implementation libs.swagger.inflector
+    implementation libs.jaxb.api
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.mock.mvc
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-    annotationProcessor libs.spring.boot.configuration.processor
-
-    implementation libs.swagger.models
-    implementation libs.spring.boot.starter.web
-    implementation libs.spring.boot.starter.websocket
-    implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.configuration.processor
-    implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.eureka.client.v3
-    implementation libs.spring.cloud.starter.hystrix
-    implementation libs.spring.retry
-    implementation libs.jackson.annotations
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.apache.commons.lang3
-    implementation libs.spring.boot.starter.thymeleaf
-    implementation libs.apache.velocity
-    implementation libs.openapidiff
-    implementation libs.http.client
-    implementation libs.jetty.client
-    implementation libs.jetty.http
-    implementation libs.jetty.io
-    implementation libs.jetty.util
-    implementation libs.jetty.websocket.api
-    implementation libs.jetty.websocket.client
-    implementation libs.jetty.websocket.common
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.crypto
-    implementation libs.spring.security.web
-    implementation libs.tomcat.annotations.api
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.websocket
-    implementation libs.xstream
-    implementation libs.commons.io
-    implementation libs.guava
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.context.support
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.messaging
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
-    implementation libs.spring.webflux
-    implementation libs.spring.websocket
-    implementation libs.spring.doc
-    implementation libs.thymeleaf
-    implementation libs.thymeleafSpring
-    implementation libs.logback.core
-    implementation libs.logback.classic
-    implementation libs.swagger3.parser
-    implementation libs.swagger.inflector
-    implementation libs.commons.fileupload
-
-    testImplementation libs.rest.assured
-    testImplementation libs.spring.mock.mvc
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
 }
 
 bootJar {
     archiveFileName = "api-catalog-services.jar"
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
     archiveClassifier = "application"
 }

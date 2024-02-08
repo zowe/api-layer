@@ -11,9 +11,9 @@
 package org.zowe.apiml.util;
 
 import com.google.common.net.HttpHeaders;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.message.BasicHeader;
 
 import java.net.HttpCookie;
 import java.util.ArrayList;

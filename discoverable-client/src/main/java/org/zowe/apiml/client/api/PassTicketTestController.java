@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +44,6 @@ public class PassTicketTestController {
      */
     @GetMapping(value = "/api/v1/passticketTest")
     @Operation(summary = "Validate that the PassTicket in Authorization header is valid", tags = {"Test Operations"})
-    @HystrixCommand()
     public void passticketTest(@RequestHeader("authorization") String authorization,
                                @RequestHeader(value = "X-Zowe-Auth-Failure", required = false) String zoweAuthFailure,
                                @RequestParam(value = "applId", defaultValue = "", required = false) String applId)

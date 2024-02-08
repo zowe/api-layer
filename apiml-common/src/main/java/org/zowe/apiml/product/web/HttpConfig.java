@@ -10,17 +10,16 @@
 
 package org.zowe.apiml.product.web;
 
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,21 +27,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -88,14 +79,8 @@ public class HttpConfig {
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
-    @Value("${spring.application.name}")
-    private String serviceId;
-
     @Value("${server.ssl.trustStoreRequired:false}")
     private boolean trustStoreRequired;
-
-    @Value("${eureka.client.serviceUrl.defaultZone}")
-    private String eurekaServerUrl;
 
     @Value("${server.maxConnectionsPerRoute:#{10}}")
     private Integer maxConnectionsPerRoute;
@@ -111,19 +96,15 @@ public class HttpConfig {
     private int readTimeout;
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
-
-    private CloseableHttpClient secureHttpClient;
-    private CloseableHttpClient secureHttpClientWithoutKeystore;
-    private SSLContext secureSslContext;
-    private HostnameVerifier secureHostnameVerifier;
-    private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
-
+    private CloseableHttpClient secureHttpClient;
+    private CloseableHttpClient secureHttpClientWithoutKeystore;
+    @Getter
+    private SSLContext secureSslContext;
+    @Getter
+    private HostnameVerifier secureHostnameVerifier;
     private Set<String> publicKeyCertificatesBase64;
-
-    @Resource
-    private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
 
     void updateStorePaths() {
         if (SecurityUtils.isKeyring(keyStore)) {
@@ -163,14 +144,12 @@ public class HttpConfig {
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
-            secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
+            secureHttpClient = factory.buildHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
-            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-            optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
-            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
 
             factory.setSystemSslProperties();
 
@@ -191,15 +170,23 @@ public class HttpConfig {
         socketFactoryRegistryBuilder.register("https", factory.createSslSocketFactory());
         Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
         ApimlPoolingHttpClientConnectionManager connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry, timeToLive);
+        ConnectionConfig connConfig = ConnectionConfig.custom()
+            .setConnectTimeout(Timeout.ofMilliseconds(requestConnectionTimeout))
+            .setSocketTimeout(Timeout.ofMilliseconds(requestConnectionTimeout))
+            .setTimeToLive(Timeout.ofMilliseconds(timeToLive))
+            .build();
         this.connectionManagerTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                connectionManager.closeExpiredConnections();
-                connectionManager.closeIdleConnections(idleConnTimeoutSeconds, TimeUnit.SECONDS);
+                connectionManager.closeExpired();
+                connectionManager.closeIdle(Timeout.ofSeconds(idleConnTimeoutSeconds));
             }
         }, 30000, 30000);
+
+        connectionManager.setDefaultConnectionConfig(connConfig);
         connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
         connectionManager.setMaxTotal(maxTotalConnections);
+
         return connectionManager;
     }
 
@@ -207,30 +194,6 @@ public class HttpConfig {
     @Qualifier("publicKeyCertificatesBase64")
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
-    }
-
-    private void setTruststore(SslContextFactory sslContextFactory) {
-        if (StringUtils.isNotEmpty(trustStore)) {
-            sslContextFactory.setTrustStorePath(SecurityUtils.formatKeyringUrl(trustStore));
-            sslContextFactory.setTrustStoreType(trustStoreType);
-            sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
-        }
-    }
-
-    @Bean
-    @Qualifier("jettyClientSslContextFactory")
-    public SslContextFactory.Client jettyClientSslContextFactory() {
-        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
-        sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$", "^TLS_RSA_.*$");
-        setTruststore(sslContextFactory);
-        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
-        sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
-        if (!verifySslCertificatesOfServices) {
-            sslContextFactory.setTrustAll(true);
-        }
-
-        return sslContextFactory;
     }
 
     /**
@@ -244,7 +207,7 @@ public class HttpConfig {
     @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
-        factory.setReadTimeout(readTimeout);
+        factory.setConnectionRequestTimeout(requestConnectionTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
@@ -260,7 +223,7 @@ public class HttpConfig {
     @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
-        factory.setReadTimeout(readTimeout);
+        factory.setConnectionRequestTimeout(requestConnectionTimeout);
         factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
@@ -292,16 +255,6 @@ public class HttpConfig {
     @Bean
     public HostnameVerifier secureHostnameVerifier() {
         return secureHostnameVerifier;
-    }
-
-    @Bean
-    public EurekaJerseyClient eurekaJerseyClient() {
-        return eurekaJerseyClientBuilder.build();
-    }
-
-    @Bean
-    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
-        return eurekaJerseyClientBuilder;
     }
 
 }

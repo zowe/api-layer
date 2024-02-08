@@ -10,15 +10,15 @@
 
 package org.zowe.apiml.security;
 
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpResponse;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
+import org.apache.hc.core5.annotation.Contract;
+import org.apache.hc.core5.annotation.ThreadingBehavior;
+import org.apache.hc.core5.http.HeaderElement;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.message.BasicHeaderElementIterator;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
 
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
@@ -26,19 +26,21 @@ public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
     private static final int KEEPALIVE_TIMOUT_MILLIS = 2000;
 
     public static final ApimlKeepAliveStrategy INSTANCE = new ApimlKeepAliveStrategy();
+
     @Override
-    public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
-        HeaderElementIterator it = new BasicHeaderElementIterator
+    public TimeValue getKeepAliveDuration(HttpResponse response, HttpContext context) {
+        BasicHeaderElementIterator it = new BasicHeaderElementIterator
             (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
         while (it.hasNext()) {
-            HeaderElement he = it.nextElement();
+            HeaderElement he = it.next();
             String param = he.getName();
             String value = he.getValue();
             if (value != null && param.equalsIgnoreCase
                 ("timeout")) {
-                return Long.parseLong(value) * 1000;
+                return TimeValue.ofMilliseconds(Long.parseLong(value) * 1000);
             }
         }
-        return KEEPALIVE_TIMOUT_MILLIS;
+
+        return TimeValue.ofMilliseconds(KEEPALIVE_TIMOUT_MILLIS);
     }
 }

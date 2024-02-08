@@ -16,9 +16,9 @@ import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class FailedAccessTokenHandler extends FailedAuthenticationHandler {

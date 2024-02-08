@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +28,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,10 +74,11 @@ public class WebSecurity {
         http.x509(x509 ->
                 x509
                     .principalExtractor(principalExtractor)
-                    .authenticationManager(authenticationManager)).authorizeExchange()
-            .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
-            .and().csrf().disable()
-            .authorizeExchange().anyExchange().permitAll();
+                    .authenticationManager(authenticationManager))
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec.pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
+            ).authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().permitAll())
+            .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         return http.build();
     }

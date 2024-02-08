@@ -14,10 +14,10 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -47,7 +47,7 @@ public class AttlsFilter extends OncePerRequestFilter {
     }
 
     public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {
-        byte[] encodedCert = Base64.encodeBase64(rawCertificate);
+        byte[] encodedCert = Base64.encodeBase64(rawCertificate, false);
         String s = new String(encodedCert);
         s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
         X509Certificate certificate = (X509Certificate) CertificateFactory

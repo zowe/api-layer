@@ -31,7 +31,7 @@ import java.time.Duration;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_SSE_EVENTS;
 
 @TestsNotMeantForZowe
 public class ServerSentEventsProxyTest {

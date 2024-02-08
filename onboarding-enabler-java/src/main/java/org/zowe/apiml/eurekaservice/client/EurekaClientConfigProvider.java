@@ -13,7 +13,7 @@ package org.zowe.apiml.eurekaservice.client;
 import com.netflix.discovery.EurekaClientConfig;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 /**
  * Provides a EurekaClientConfig implementation based on the provided ApiMl service configuration.

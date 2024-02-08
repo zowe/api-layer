@@ -11,19 +11,20 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.cookie.SM;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicStatusLine;
+import jakarta.servlet.http.Cookie;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -35,12 +36,16 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import javax.servlet.http.Cookie;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -54,18 +59,20 @@ class ZaasJwtServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final ConfigProperties configProperties = new ConfigProperties();
+    @Captor
+    ArgumentCaptor<HttpUriRequestBase> requestCaptor;
 
     private static final String EXPIRED_PASSWORD_RESPONSE =
         "{\n" +
-        "    \"messages\": [\n" +
-        "        {\n" +
-        "            \"messageType\": \"ERROR\",\n" +
-        "            \"messageNumber\": \"ZWEAT412E\",\n" +
-        "            \"messageContent\": \"The password for the specified identity has expired\",\n" +
-        "            \"messageKey\": \"org.zowe.apiml.security.platform.errno.EMVSEXPIRE\"\n" +
-        "        }\n" +
-        "    ]\n" +
-        "}";
+            "    \"messages\": [\n" +
+            "        {\n" +
+            "            \"messageType\": \"ERROR\",\n" +
+            "            \"messageNumber\": \"ZWEAT412E\",\n" +
+            "            \"messageContent\": \"The password for the specified identity has expired\",\n" +
+            "            \"messageKey\": \"org.zowe.apiml.security.platform.errno.EMVSEXPIRE\"\n" +
+            "        }\n" +
+            "    ]\n" +
+            "}";
 
     @Mock
     private CloseableHttpClient closeableHttpClient;
@@ -86,26 +93,23 @@ class ZaasJwtServiceTest {
     void givenJwtToken_whenLogout_thenSetCookie() throws ZaasClientException, IOException {
         mockHttpClient(204);
         zaasJwtService.logout(JWT_TOKEN);
-        verify(closeableHttpClient, times(1)).execute(
-            argThat(x ->
-                (x.getHeaders(SM.COOKIE) != null) &&
-                    (x.getHeaders(SM.COOKIE).length == 1) &&
-                    (COOKIE_NAME + "=" + JWT_TOKEN).equals(x.getHeaders(SM.COOKIE)[0].getValue())
-            )
-        );
+        verify(closeableHttpClient, times(1)).execute(requestCaptor.capture());
+        var capturedRequest = requestCaptor.getValue();
+        assertTrue((capturedRequest.getHeaders(HttpHeaders.COOKIE) != null) &&
+            (capturedRequest.getHeaders(HttpHeaders.COOKIE).length == 1) &&
+            (COOKIE_NAME + "=" + JWT_TOKEN).equals(capturedRequest.getHeaders(HttpHeaders.COOKIE)[0].getValue()));
     }
 
     @Test
     void givenAuthorizationHeaderWithJwtToken_whenLogout_thenAuthorizationHeader() throws ZaasClientException, IOException {
         mockHttpClient(204);
         zaasJwtService.logout(HEADER_AUTHORIZATION);
-        verify(closeableHttpClient, times(1)).execute(
-            argThat(x ->
-                (x.getHeaders(HttpHeaders.AUTHORIZATION) != null) &&
-                    (x.getHeaders(HttpHeaders.AUTHORIZATION).length == 1) &&
-                    HEADER_AUTHORIZATION.equals(x.getHeaders(HttpHeaders.AUTHORIZATION)[0].getValue())
-            )
-        );
+
+        verify(closeableHttpClient, times(1)).execute(requestCaptor.capture());
+        var capturedRequest = requestCaptor.getValue();
+        assertTrue((capturedRequest.getHeaders(HttpHeaders.AUTHORIZATION) != null) &&
+            (capturedRequest.getHeaders(HttpHeaders.AUTHORIZATION).length == 1) &&
+            HEADER_AUTHORIZATION.equals(capturedRequest.getHeaders(HttpHeaders.AUTHORIZATION)[0].getValue()));
     }
 
     @Test
@@ -201,7 +205,7 @@ class ZaasJwtServiceTest {
     void givenExpiredPassword_whenQuery_thenThrowException() throws IOException {
         mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
         zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
-                () -> zaasJwtService.query("jwt"));
+            () -> zaasJwtService.query("jwt"));
     }
 
     private void mockHttpClient(int statusCode) throws IOException {
@@ -210,11 +214,10 @@ class ZaasJwtServiceTest {
 
     private void mockHttpClient(int statusCode, String content) throws IOException {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-        doReturn(new BasicStatusLine(mock(ProtocolVersion.class), statusCode, null))
-            .when(response).getStatusLine();
+        doReturn(statusCode).when(response).getCode();
         HttpEntity entity = new StringEntity(content, ContentType.TEXT_PLAIN);
         doReturn(entity).when(response).getEntity();
-        doReturn(response).when(closeableHttpClient).execute(any());
+        doReturn(response).when(closeableHttpClient).execute(any(HttpUriRequestBase.class));
     }
 
     private void zaasClientTestAssertThrows(ZaasClientErrorCodes code, String message, Executable executable) {

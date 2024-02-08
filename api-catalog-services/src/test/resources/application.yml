@@ -172,8 +172,7 @@ management:
 
 logbackServiceName: ZWEAAC1
 ---
-spring:
-    profiles: debug
+spring.config.activate.on-profile: debug
 
 management:
     endpoints:
@@ -194,8 +193,7 @@ logging:
         org.ehcache: INFO
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -206,15 +204,10 @@ management:
                 include: "*"
 
 ---
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+spring.config.activate.on-profile: dev
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     attls:

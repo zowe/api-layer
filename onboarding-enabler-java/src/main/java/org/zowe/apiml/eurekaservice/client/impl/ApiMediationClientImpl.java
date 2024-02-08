@@ -14,11 +14,9 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
+import com.netflix.discovery.*;
+import com.netflix.discovery.shared.transport.jersey.TransportClientFactories;
+import com.netflix.discovery.shared.transport.jersey3.Jersey3TransportClientFactories;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
@@ -155,13 +153,11 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         HttpsFactory factory = new HttpsFactory(httpsConfig);
 
-        EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
-            config.getDiscoveryServiceUrls().get(0), config.getServiceId()).build();
-
-        AbstractDiscoveryClientOptionalArgs<?> args = new DiscoveryClient.DiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(eurekaJerseyClient);
+        AbstractDiscoveryClientOptionalArgs<?> args = new Jersey3DiscoveryClientOptionalArgs();
+        args.setSSLContext(factory.getSslContext());
+        TransportClientFactories<?> transportClientFactories = Jersey3TransportClientFactories.getInstance();
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
-        return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, args);
+        return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, transportClientFactories, args);
     }
 
     void updateStorePaths(Ssl config) {

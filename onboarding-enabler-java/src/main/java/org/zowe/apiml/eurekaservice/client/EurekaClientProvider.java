@@ -14,6 +14,7 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.shared.transport.jersey.TransportClientFactories;
 
 /**
  * Hide the actual code for obtaining the Eureka Client behind interface to simplify testing.
@@ -26,5 +27,8 @@ public interface EurekaClientProvider {
      * @param args Relevant filters for Eureka
      * @return Valid client for the Discovery service
      */
-    EurekaClient client(ApplicationInfoManager applicationInfoManager, final EurekaClientConfig config, AbstractDiscoveryClientOptionalArgs<?> args);
+    EurekaClient client(ApplicationInfoManager applicationInfoManager,
+                        final EurekaClientConfig config,
+                        TransportClientFactories<?> transportClientFactories,
+                        AbstractDiscoveryClientOptionalArgs<?> args);
 }

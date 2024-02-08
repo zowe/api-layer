@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -34,11 +36,11 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        HttpSecurity newConf = http.csrf(csrf -> csrf.disable()) // NOSONAR
-                .authorizeRequests(requests -> requests
-                        .antMatchers("/ws/**").authenticated()
-                        .antMatchers("/**").permitAll())
-                            .httpBasic(withDefaults());
+        HttpSecurity newConf = http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers("/ws/**").authenticated()
+                .requestMatchers("/**").permitAll())
+            .httpBasic(withDefaults());
 
         if (isAttlsEnabled) {
             newConf.addFilterBefore(new AttlsFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -48,10 +50,8 @@ public class SecurityConfiguration {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder() // NOSONAR deprecated only to indicate not acceptable for production
-            .username("user")
-            .password("pass")
-            .roles("ADMIN")
+        UserDetails user = User.withDefaultPasswordEncoder()
+            .username("user").password("pass").authorities(new SimpleGrantedAuthority("ADMIN"))
             .build();
         return new InMemoryUserDetailsManager(user);
     }
@@ -60,6 +60,6 @@ public class SecurityConfiguration {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web ->
-            web.ignoring().antMatchers("/api/**");
+            web.ignoring().requestMatchers("/api/**");
     }
 }

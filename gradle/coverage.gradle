@@ -8,12 +8,10 @@ ext.javaProjectsWithUnitTests = [
     'apiml-common',
     'apiml-utility',
     'caching-service',
-    'gateway-service',
     'cloud-gateway-service',
     'mock-services',
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
-    'onboarding-enabler-java-sample-app',
     'security-module',
     'security-service-client-spring',
     //'onboarding-enabler-micronaut',
@@ -86,5 +84,5 @@ task jacocoFullReport(type: JacocoReport) {
 }
 
 task coverage() {
-    dependsOn jacocoFullReport, ":api-catalog-ui:test", "metrics-service-ui:test", "zowe-cli-id-federation-plugin:test"
+    dependsOn jacocoFullReport, ":api-catalog-ui:test", "zowe-cli-id-federation-plugin:test"
 }

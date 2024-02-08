@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +32,6 @@ public class GreetingController {
      */
     @GetMapping(value = "/greeting")
     @Operation(summary = "Get a greeting", tags = {"Other Operations"})
-    @HystrixCommand()
     public Greeting greeting(@RequestParam(value = "name", defaultValue = "world") String name,
                              @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
         if (delayMs > 0) {
@@ -51,7 +49,6 @@ public class GreetingController {
      */
     @GetMapping(value = {"/{yourName}/greeting"})
     @Operation(summary = "Get a greeting", tags = {"Other Operations"})
-    @HystrixCommand()
     public Greeting customGreeting(@PathVariable(value = "yourName") String yourName) {
         return new Greeting(new Date(), String.format(TEMPLATE, yourName));
     }

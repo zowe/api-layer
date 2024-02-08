@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.caching.CachingService;
@@ -32,15 +33,17 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest(
     classes = CachingService.class,
-    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles("AttlsConfigTestCachingService")
 @TestPropertySource(
     properties = {
         "server.attls.enabled=true",
-        "server.ssl.enabled=false"
+        "server.ssl.enabled=false",
+        "caching.storage.mode=inMemory"
     }
 )
+@DirtiesContext
 @TestInstance(Lifecycle.PER_CLASS)
 public class AttlsConfigTest {
 

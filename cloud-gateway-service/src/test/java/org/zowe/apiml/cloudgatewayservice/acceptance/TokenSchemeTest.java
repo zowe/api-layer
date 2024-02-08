@@ -12,7 +12,6 @@ package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.lang3.StringUtils;
-import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -27,11 +26,10 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import java.io.IOException;
 import java.net.HttpCookie;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,18 +44,21 @@ public abstract class TokenSchemeTest {
     private static final ZaasTokenResponse OK_RESPONSE = new ZaasTokenResponse(COOKIE_NAME, JWT);
 
     public abstract String getTokenEndpoint();
+
     public abstract AuthenticationScheme getAuthenticationScheme();
 
     private String getCookie(HttpExchange httpExchange, String cookieName) {
-        List<HttpCookie> cookies = Optional.ofNullable(httpExchange.getRequestHeaders().get("Cookie"))
-            .orElse(Collections.emptyList())
-            .stream()
-            .flatMap(cookieStr -> Arrays.asList(cookieStr.split(";")).stream())
-            .map(String.class::cast)
+        List<String> cookieList = httpExchange.getRequestHeaders().get("Cookie");
+        if (cookieList == null || cookieList.isEmpty()) return null;
+        var allCookies = new ArrayList<String>();
+        for (String cookies : cookieList) {
+            allCookies.addAll(Arrays.asList(cookies.split(";")));
+        }
+        List<HttpCookie> cookies = allCookies.stream()
             .map(HttpCookie::parse)
             .flatMap(Collection::stream)
             .filter(c -> StringUtils.equalsIgnoreCase(cookieName, c.getName()))
-            .collect(Collectors.toList());
+            .toList();
         assertTrue(cookies.size() <= 1);
         return cookies.isEmpty() ? null : cookies.get(0).getValue();
     }

@@ -1,26 +1,9 @@
 dependencies {
     implementation libs.spring.boot.starter.web
-    implementation libs.tomcat.embed.el
     implementation libs.zowe.zos.utils
 
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.websocket
-    implementation libs.logback.classic
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
+    testImplementation libs.spring.boot.starter.test
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-
-    testImplementation libs.mockito.core
-    testImplementation libs.mockito.jupiter
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
 }

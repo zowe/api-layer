@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
@@ -58,7 +58,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -66,11 +66,9 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            metrics-service:
-                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -83,7 +81,7 @@ jobs:
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
@@ -100,7 +98,7 @@ jobs:
         timeout-minutes: 10
         services:
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
@@ -117,7 +115,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -142,12 +140,12 @@ jobs:
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://cloud-gateway-service:10023/gateway/certificates
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
@@ -163,7 +161,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -179,7 +177,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
@@ -199,7 +197,7 @@ jobs:
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             cloud-gateway-service:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -207,7 +205,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -223,7 +221,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
@@ -244,7 +242,7 @@ jobs:
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service
@@ -265,7 +263,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_SERVICE_PORT: 10031
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service-2
@@ -287,7 +285,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_SERVICEURL: /
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -303,7 +301,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CloudGatewayCentralRegistry-${{ env.JOB_ID }}
@@ -333,12 +331,12 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -351,7 +349,7 @@ jobs:
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
@@ -383,7 +381,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
                     APIML_SECURITY_X509_ENABLED: true
@@ -402,7 +400,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH34201
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -421,7 +419,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZaas-${{ env.JOB_ID }}
@@ -451,7 +449,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -462,7 +460,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -477,7 +475,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
@@ -507,7 +505,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -518,7 +516,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -530,7 +528,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsZosmfPH34201-${{ env.JOB_ID }}
@@ -559,7 +557,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -570,7 +568,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: ''
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -582,7 +580,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
@@ -612,7 +610,7 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -623,7 +621,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -635,7 +633,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint-${{ env.JOB_ID }}
@@ -664,18 +662,16 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            metrics-service:
-                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -690,7 +686,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
@@ -706,7 +702,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -753,7 +749,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
@@ -769,7 +765,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -822,7 +818,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
@@ -873,17 +869,17 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -902,7 +898,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}
@@ -949,13 +945,13 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
@@ -963,7 +959,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -997,7 +993,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: LbHaTests-${{ env.JOB_ID }}
@@ -1037,17 +1033,17 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1067,7 +1063,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
@@ -1107,17 +1103,17 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1137,7 +1133,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsGatewayChaoticHA-${{ env.JOB_ID }}
@@ -1181,17 +1177,17 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1211,7 +1207,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsDicoverableClientChaoticHA-${{ env.JOB_ID }}
@@ -1255,17 +1251,17 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1292,7 +1288,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
@@ -1344,14 +1340,14 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1366,7 +1362,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
@@ -1394,14 +1390,12 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            metrics-service:
-                image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
@@ -1409,10 +1403,6 @@ jobs:
                 uses: bahmutov/npm-install@v1
                 with:
                     working-directory: api-catalog-ui/frontend
-            -   name: Install npm dependencies Metrics service
-                uses: bahmutov/npm-install@v1
-                with:
-                   working-directory: metrics-service-ui/frontend
             -   name: Cache NPM and Cypress 📦
                 uses: actions/cache@v2
                 with:
@@ -1424,22 +1414,12 @@ jobs:
                 run: |
                     cd api-catalog-ui/frontend
                     npm run cy:e2e:ci
-            -   name: Cypress run Metrics service
-                run: |
-                    cd metrics-service-ui/frontend
-                    npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
-            -   name: Upload screenshots Metrics service
-                uses: actions/upload-artifact@v2
-                if: failure()
-                with:
-                    name: cypress-snapshots
-                    path: metrics-service-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
 
     CITestsServicePrefixReplacer:
@@ -1462,11 +1442,11 @@ jobs:
                 env:
                     APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
             gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1478,7 +1458,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}
@@ -1501,39 +1481,39 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: containercitestszosmfrsu2012
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
                     path: ContainerCITestsWithRedisReplica
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
                     path: ContainerCITestsWithRedisSentinel
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
                     path: cloudgatewayproxy
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: citestswebsocketchaoticha
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
                     path: cloudgatewayservicerouting

@@ -11,9 +11,9 @@
 package org.zowe.apiml.util;
 
 import com.google.common.net.HttpHeaders;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.message.BasicHeader;
 
 import java.net.HttpCookie;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class RequestUtils {
     }
 
     private List<Header> getAllHeaders() {
-        return new ArrayList<>(Arrays.asList(request.getAllHeaders()));
+        return new ArrayList<>(Arrays.asList(request.getHeaders()));
     }
 
     public List<Header> getHeader(String needle) {

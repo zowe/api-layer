@@ -110,8 +110,6 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             Map<String, String> responseHeaders = new HashMap<>();
 
             response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));
-            //responseHeaders.forEach((k,v)->System.out.println("printing"+ k +"key"+ v + "value"));
-
 
             expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
             forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));

@@ -10,27 +10,28 @@
 
 package org.zowe.apiml.functional.apicatalog;
 
-import static io.restassured.RestAssured.when;
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.restassured.RestAssured;
+import io.restassured.config.SSLConfig;
+import io.restassured.response.ValidatableResponse;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.config.ApiCatalogServiceConfiguration;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.config.ApiCatalogServiceConfiguration;
-import org.zowe.apiml.util.config.ConfigReader;
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.restassured.RestAssured;
-import io.restassured.config.SSLConfig;
-import io.restassured.response.ValidatableResponse;
-
+@Tag("ApiCatalogStandaloneTest")
 public class ApiCatalogStandaloneTest {
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/containers";
@@ -67,10 +68,10 @@ public class ApiCatalogStandaloneTest {
             @Test
             void whenGetContainers() throws IOException {
                 final ValidatableResponse response = when()
-                                                        .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
-                                                        .then()
-                                                            .statusCode(is(SC_OK))
-                                                            .contentType("application/json");
+                    .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
+                    .then()
+                    .statusCode(is(SC_OK))
+                    .contentType("application/json");
 
                 List<Map<String, Object>> list = response.extract().jsonPath().getList("$.");
                 assertEquals(2, list.size());
@@ -85,20 +86,20 @@ public class ApiCatalogStandaloneTest {
             @Test
             void whenGetApiDocDefaultEndpoint() {
                 final ValidatableResponse response = when()
-                                                        .get(baseHost + GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT)
-                                                        .then()
-                                                            .statusCode(is(SC_OK))
-                                                            .contentType("application/json");
+                    .get(baseHost + GET_API_CATALOG_API_DOC_DEFAULT_ENDPOINT)
+                    .then()
+                    .statusCode(is(SC_OK))
+                    .contentType("application/json");
                 assertEquals("Service 2 - v1 (default)", response.extract().jsonPath().get("info.title"));
             }
 
             @Test
             void whenGetApiDocv2Endpoint() {
                 final ValidatableResponse response = when()
-                                                        .get(baseHost + GET_API_CATALOG_API_DOC_ENDPOINT)
-                                                        .then()
-                                                            .statusCode(is(SC_OK))
-                                                            .contentType("application/json");
+                    .get(baseHost + GET_API_CATALOG_API_DOC_ENDPOINT)
+                    .then()
+                    .statusCode(is(SC_OK))
+                    .contentType("application/json");
                 assertEquals("Service 2 - v2", response.extract().jsonPath().get("info.title"));
             }
         }
@@ -114,12 +115,12 @@ public class ApiCatalogStandaloneTest {
             void givenBasicAuthenticationIsProvided() {
                 given()
                     .auth()
-                        .basic(USERNAME, new String(PASSWORD))
+                    .basic(USERNAME, PASSWORD)
                     .when()
-                        .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
+                    .get(baseHost + GET_ALL_CONTAINERS_ENDPOINT)
                     .then()
-                        .statusCode(is(SC_OK))
-                        .contentType("application/json");
+                    .statusCode(is(SC_OK))
+                    .contentType("application/json");
             }
         }
     }

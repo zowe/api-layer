@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,28 +53,26 @@ public class SpringSecurityConfig {
         };
 
         return web -> {
-            web.ignoring().antMatchers(noSecurityAntMatchers);
-
-            if (isMetricsEnabled) {
-                web.ignoring().antMatchers("/application/hystrixstream");
-            }
+            web.ignoring().requestMatchers(noSecurityAntMatchers);
         };
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())   // NOSONAR
-                .headers(headers -> headers.httpStrictTransportSecurity().disable()).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.csrf(AbstractHttpConfigurer::disable)   // NOSONAR
+                .headers(httpSecurityHeadersConfigurer ->
+                    httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable))
+            .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.authorizeRequests(requests -> requests.anyRequest().authenticated())
+            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                     .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authorizeRequests(requests -> requests.anyRequest().permitAll());
+            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
         }
 
         return http.build();

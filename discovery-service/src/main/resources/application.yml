@@ -13,7 +13,7 @@ logging:
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-
+        org.springframework.security.web: INFO
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
@@ -37,8 +37,6 @@ apiml:
         allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
 
 spring:
-    config:
-        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
@@ -53,6 +51,8 @@ spring:
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+    profiles.group:
+        dev: debug, diag
 
 server:
     address: ${apiml.service.ipAddress}
@@ -100,10 +100,8 @@ management:
         health:
             show-details: always
 
-hystrix.command.default.execution.timeout.enabled: false
 ---
-spring:
-    profiles: https
+spring.config.activate.on-profile: https
 
 apiml:
     discovery:
@@ -141,8 +139,7 @@ eureka:
             defaultZone: ${apiml.discovery.allPeersUrls}
 
 ---
-spring:
-    profiles: debug
+spring.config.activate.on-profile: debug
 
 management:
     endpoints:
@@ -150,14 +147,14 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,shutdown,hystrixstream
+                include: health,info,loggers,shutdown
     endpoint:
         shutdown:
             enabled: true
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: DEBUG
         org.zowe.apiml.discovery.GatewayNotifier: INFO
         org.springframework: INFO
@@ -169,8 +166,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -180,18 +176,10 @@ management:
             exposure:
                 include: "*"
 
----
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
-
 logbackServiceName: ZWEADS1
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     attls:
@@ -203,4 +191,3 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
-

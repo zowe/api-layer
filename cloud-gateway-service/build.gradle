@@ -59,49 +59,34 @@ configurations.all {
 }
 
 dependencies {
-    api project(':common-service-core')
     api project(':apiml-utility')
 
-    implementation libs.eh.cache
-    implementation libs.spring.cloud.starter.gateway
-
-    implementation libs.netty.reactor.core
-    implementation libs.netty.reactor.http
-
-    implementation libs.spring.eureka.client.v3
     implementation libs.spring.boot.starter.security
-
-    implementation libs.jackson.databind
-    implementation libs.spring.boot.starter.actuator
-
     implementation libs.spring.cloud.circuit.breaker
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.web
-    implementation libs.spring.aop
-    implementation libs.spring.expression
-    implementation libs.bcpkix
-    implementation libs.nimbusJoseJwt
-    implementation libs.janino
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
-    implementation libs.swagger3.parser
+
+    implementation libs.bcpkix
+    implementation libs.janino
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.commons.io
+    testImplementation libs.reactorTest
+    testImplementation libs.rest.assured
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-    annotationProcessor libs.spring.boot.configuration.processor
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.rest.assured
-    testImplementation libs.reactorTest
-    testImplementation libs.mockito.inline
 }
 
 bootJar {
     archiveFileName = "cloud-gateway-service.jar"
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
     archiveClassifier = "application"
 }

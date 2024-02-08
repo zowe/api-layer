@@ -27,9 +27,9 @@ apply from: "$rootDir/gradle/lite-project.gradle"
 task liteJar(type: BootJar) {
     //Do not allow duplicates by ignoring subsequent items to be created at the same path.
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
+    targetJavaVersion = JavaVersion.VERSION_17
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
     def modulesJar = getModulesJarNames()
     archiveFileName = getBaseNameLite() + ".jar"

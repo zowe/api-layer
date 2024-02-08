@@ -18,48 +18,38 @@ repositories {
     mavenCentral()
 }
 
+configurations.all {
+    // Remove Spring Cloud enabler
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-eureka-client"
+}
+
 dependencies {
-    testImplementation libs.http.client
-    testImplementation libs.eureka.client
-    testImplementation libs.jackson.dataformat.yaml
-    testImplementation libs.json.path
-    testImplementation libs.spring.boot.starter.websocket
-    testImplementation libs.spring.boot.starter.actuator
-    testImplementation libs.spring.boot.starter.webflux
-    testImplementation libs.spring.web.test.client
-    testImplementation libs.spring4Test
-    testImplementation libs.json
-    testImplementation libs.json.smart
-    testImplementation libs.jjwt
-    testImplementation libs.reactorTest
-    testImplementation libs.bcpkix;
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
 
-    testImplementation libs.hamcrest
-    testImplementation libs.awaitility
-    testImplementation libs.logback.classic
-    testCompileOnly libs.lombok
-    testAnnotationProcessor libs.lombok
-    testImplementation libs.jsoup
-    testImplementation libs.rest.assured
-    testImplementation libs.jackson.annotations
-    testImplementation libs.jackson.core
-    testImplementation libs.jackson.databind
+    testImplementation libs.spring.boot.starter.actuator
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.websocket
+    testImplementation libs.spring.webflux
+
+    testImplementation libs.bcpkix;
     testImplementation libs.jackson.dataformat.yaml
-    testImplementation libs.javax.servlet.api
-    testImplementation libs.assertj.core
+    testImplementation libs.jjwt
+    testImplementation libs.netty.reactor.http
     testImplementation libs.nimbusJoseJwt
+    testImplementation libs.reactorTest
+    testImplementation libs.rest.assured
+
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
 
-    testFixturesImplementation(project(':apiml-security-common'))
-    testFixturesImplementation libs.spring.core
-    testFixturesImplementation libs.slf4j.api
+    testFixturesImplementation libs.spring.boot.starter
     testFixturesImplementation libs.rest.assured
-    testFixturesImplementation libs.lombok
-    testFixturesImplementation libs.http.client
 
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+    testFixturesImplementation libs.lombok
     testFixturesAnnotationProcessor libs.lombok
 }
 
@@ -286,7 +276,6 @@ task runBaseTests(type: Test) {
             'GeneralAuthenticationTest',
             'DiscoverableClientDependentTest',
             'CachingServiceTest',
-            'MetricsServiceTest',
             'WebsocketTest'
         )
         excludeTags(

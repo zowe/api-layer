@@ -10,21 +10,7 @@
 
 package org.zowe.apiml.integration.proxy;
 
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
-import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Base64;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import io.restassured.RestAssured;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,16 +24,27 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import io.restassured.RestAssured;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Base64;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-@TestsNotMeantForZowe
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
+
 @WebsocketTest
 class WebSocketProxyTest implements TestWithStartedInstances {
     private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -255,7 +252,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         void getGreetingFromREST() {
             given()
                 .get(DC_WS_REST_ENDPOINT)
-                .then().body("content",is("Hello, Web service!"))
+                .then().body("content", is("Hello, Web service!"))
                 .and()
                 .statusCode(SC_OK);
         }

@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.client.api;
 
-import com.google.common.io.CharStreams;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.Value;
 import org.springframework.http.MediaType;
@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
@@ -35,6 +33,7 @@ import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -58,7 +57,6 @@ public class RequestInfoController {
         @ApiResponse(responseCode = "500", description = "Error in parsing of request ")
     })
     @ResponseBody
-    @HystrixCommand
     public RequestInfo getRequestInfo(HttpServletRequest httpServletRequest) throws CertificateEncodingException, IOException {
         RequestInfo out = new RequestInfo();
 
@@ -103,7 +101,7 @@ public class RequestInfoController {
     }
 
     private void setContent(HttpServletRequest httpServletRequest, RequestInfo requestInfo) throws IOException {
-        requestInfo.content = CharStreams.toString(httpServletRequest.getReader());
+        requestInfo.content = httpServletRequest.getReader().lines().collect(Collectors.joining());
     }
 
     @Schema(description = "Request info detail")

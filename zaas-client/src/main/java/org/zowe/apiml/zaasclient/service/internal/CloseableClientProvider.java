@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 interface CloseableClientProvider {

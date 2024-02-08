@@ -14,8 +14,6 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 spring:
-    config:
-        useLegacyProcessing: true
     cloud:
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
@@ -28,6 +26,8 @@ spring:
             enabled: detect
     main:
         allow-circular-references: true
+    profiles.group:
+        dev: diag
 
 eureka:
     client:
@@ -167,7 +167,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: hystrixstream, health, info, routes, shutdown
+                include: health, info, routes, shutdown
     health:
         defaults:
             enabled: true
@@ -175,14 +175,8 @@ management:
         shutdown:
             enabled: true
 
-hystrix:
-    dashboard:
-        proxy-stream-allow-list: '*'
-    command.default.execution.timeout.enabled: false
-
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -196,10 +190,7 @@ management:
             enabled: true
 
 ---
-spring:
-    profiles: dev
-    profiles.include:
-        diag
+spring.config.activate.on-profile: dev
 
 logging:
     level:
@@ -212,8 +203,7 @@ logging:
 logbackServiceName: ZWEADC1
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 apiml:
     service:

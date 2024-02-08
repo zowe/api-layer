@@ -114,7 +114,7 @@ class ApiCatalogAuthenticationTest {
             void givenValidBasicAuthentication(String endpoint, Request request) {
                 request.execute(
                         given()
-                            .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
+                            .auth().basic(USERNAME, PASSWORD)
                             .when(),
                         endpoint
                     )
@@ -142,7 +142,7 @@ class ApiCatalogAuthenticationTest {
                 request.execute(
                         given()
                             .config(SslContext.clientCertApiml)
-                            .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
+                            .auth().basic(USERNAME, PASSWORD)
                             .when(),
                         endpoint
                     )
@@ -179,7 +179,7 @@ class ApiCatalogAuthenticationTest {
 
                 request.execute(
                         given()
-                            .auth().preemptive().basic(INVALID_USERNAME, new String(INVALID_PASSWORD))
+                            .auth().basic(INVALID_USERNAME, INVALID_PASSWORD)
                             .when(),
                         endpoint
                     )
@@ -254,7 +254,7 @@ class ApiCatalogAuthenticationTest {
                     request.execute(
                             given()
                                 .config(SslContext.clientCertApiml)
-                                .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
+                                .auth().basic(USERNAME, PASSWORD)
                                 .when(),
                             endpoint
                         )

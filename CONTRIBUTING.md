@@ -46,7 +46,6 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | metrics-service-ui                       | Core - Service - Metrics Service UI|
 | mock-services                            | Test - Mock z/OS services          |
 | onboarding-enabler-java                  | APIML SDK - Java Enabler           |
-| onboarding-enabler-java-sample-app       | Sample Service - Java Enabler      |
 | onboarding-enabler-micronaut             | APIML SDK - Micronaut Enabler      |
 | onboarding-enabler-micronaut-sample-app  | Sample Service - Micronaut Enabler |
 | onboarding-enabler-nodejs                | APIML SDK - Node.js Enabler        |

@@ -11,7 +11,6 @@
 package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,14 +29,12 @@ public class StaticApiRestController {
         this.registrationService = registrationService;
     }
 
-    @GetMapping
-    @HystrixCommand
+    @GetMapping(produces = "application/json")
     public List<InstanceInfo> list() {
         return registrationService.getStaticInstances();
     }
 
-    @PostMapping
-    @HystrixCommand
+    @PostMapping(produces = "application/json")
     public StaticRegistrationResult reload() {
         return registrationService.reloadServices();
     }

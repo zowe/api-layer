@@ -14,14 +14,12 @@ import org.zowe.apiml.client.model.UploadFileResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 public class MultipartController {
     @PostMapping(
         value = "api/v1/multipart",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @HystrixCommand
     public UploadFileResponse uploadFileWithPost(@RequestParam("file") MultipartFile file) {
         return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
@@ -29,7 +27,6 @@ public class MultipartController {
     @PutMapping(
         value = "api/v1/multipart",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @HystrixCommand
     public UploadFileResponse uploadFileWithPut(@RequestParam("file") MultipartFile file) {
         return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
     }

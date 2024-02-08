@@ -17,6 +17,7 @@ import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.servo.monitor.StatsMonitor;
+import jakarta.ws.rs.client.ClientRequestFilter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,15 +28,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -50,6 +51,7 @@ class RefreshablePeerEurekaNodesTest {
 
     private static final int DEFAULT_MAX_RETRIES = 10;
     private static final VarHandle MODIFIERS;
+
     static {
         try {
             var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
@@ -66,8 +68,8 @@ class RefreshablePeerEurekaNodesTest {
     EurekaClientConfig clientConfig;
     @Mock
     ServerCodecs serverCodecs;
-    @Mock
-    ReplicationClientAdditionalFilters replicationClientAdditionalFilters;
+
+    List<ClientRequestFilter> replicationClientAdditionalFilters = new ArrayList<>();
 
     ApplicationInfoManager applicationInfoManager;
 
@@ -88,7 +90,6 @@ class RefreshablePeerEurekaNodesTest {
     void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
-        when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
 
         Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
         MODIFIERS.set(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);

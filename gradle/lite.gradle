@@ -49,19 +49,12 @@ task liteLibJarAll(type: Jar) {
     entryCompression = ZipEntryCompression.STORED
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { rootProject.subprojects.collectMany {
-        if (it.properties.get('projectPath').toString() != ':onboarding-enabler-java-sample-app-plain-java') {
-            getLiteLibJarOutput(it.buildDir)
-        } else {
-            []
-        }
+        getLiteLibJarOutput(it.buildDir)
     }.collect() }
 }
 
-liteLibJarAll.dependsOn(":gateway-service:build")
 liteLibJarAll.dependsOn(":discovery-service:build")
 liteLibJarAll.dependsOn(":api-catalog-services:build")
 
-liteLibJarAll.dependsOn(":gateway-service:liteLibJar")
 liteLibJarAll.dependsOn(":discovery-service:liteLibJar")
 liteLibJarAll.dependsOn(":api-catalog-services:liteLibJar")
-liteLibJarAll.dependsOn(":metrics-service:liteLibJar")

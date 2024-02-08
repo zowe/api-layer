@@ -22,8 +22,6 @@ gitProperties {
 
 dependencies {
     compileOnly libs.spring.doc
-    compileOnly libs.spring.webmvc
-    compileOnly libs.guava
 }
 
 jar {

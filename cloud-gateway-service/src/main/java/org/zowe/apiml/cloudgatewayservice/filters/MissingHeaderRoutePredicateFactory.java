@@ -12,7 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.filters;
 
 import java.util.function.Predicate;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import lombok.Getter;
 import org.springframework.cloud.gateway.handler.predicate.AbstractRoutePredicateFactory;

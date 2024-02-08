@@ -20,8 +20,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.utils.X509Utils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

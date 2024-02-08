@@ -16,7 +16,8 @@ import com.netflix.appinfo.InstanceInfo;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
-import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +36,8 @@ public class EurekaFactory {
         return new InstanceInfoFactory().create(instanceConfig);
     }
 
-    public CloudEurekaClient createCloudEurekaClient(EurekaInstanceConfig eurekaInstanceConfig, InstanceInfo newInfo, EurekaClientConfigBean configBean, MutableDiscoveryClientOptionalArgs args, ApplicationContext context) {
+    public CloudEurekaClient createCloudEurekaClient(EurekaInstanceConfig eurekaInstanceConfig, InstanceInfo newInfo, EurekaClientConfigBean configBean, ApplicationContext context, RestTemplateTransportClientFactories factories, RestTemplateDiscoveryClientOptionalArgs args1) {
         ApplicationInfoManager perClientAppManager = new ApplicationInfoManager(eurekaInstanceConfig, newInfo, null);
-        return new CloudEurekaClient(perClientAppManager, configBean, args, context);
+        return new CloudEurekaClient(perClientAppManager, configBean, factories, args1, context);
     }
 }

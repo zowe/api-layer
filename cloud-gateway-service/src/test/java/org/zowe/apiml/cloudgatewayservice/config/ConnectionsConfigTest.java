@@ -13,7 +13,6 @@ package org.zowe.apiml.cloudgatewayservice.config;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -44,7 +43,6 @@ class ConnectionsConfigTest {
         @Test
         void thenIsNotNull() {
             assertThat(connectionsConfig).isNotNull();
-            assertThat(connectionsConfig.getEurekaJerseyClient()).isNotNull();
         }
     }
 
@@ -57,14 +55,11 @@ class ConnectionsConfigTest {
         private EurekaClientConfig config;
 
         @Mock
-        private EurekaJerseyClient eurekaJerseyClient;
-
-        @Mock
         private HealthCheckHandler healthCheckHandler;
 
         @Test
         void thenCreateIt() {
-            assertThat(connectionsConfig.primaryEurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler)).isNotNull();
+            assertThat(connectionsConfig.primaryEurekaClient(manager, config, healthCheckHandler)).isNotNull();
         }
     }
 

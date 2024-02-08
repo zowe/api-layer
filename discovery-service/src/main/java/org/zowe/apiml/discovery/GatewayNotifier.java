@@ -20,11 +20,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -34,8 +35,8 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.EurekaUtils;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -174,10 +175,10 @@ public class GatewayNotifier implements Runnable {
         notify(instanceId, instanceInfo -> {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
-                CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
-                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                ClassicHttpResponse response = httpClient.execute(new HttpDelete(url)); //TODO: Use the new API
+                final int statusCode = response.getCode();
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getCode());
                     apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url, instanceId);
                 }
             } catch (IOException e) {
@@ -191,10 +192,10 @@ public class GatewayNotifier implements Runnable {
         notify(null, instanceInfo -> {
             final String url = getServiceUrl(serviceId, instanceInfo);
             try {
-                CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
-                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                ClassicHttpResponse response = httpClient.execute(new HttpDelete(url));  //TODO: Use the new API
+                final int statusCode = response.getCode();
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getCode());
                     apimlLogger.log(GW_UNREGISTRATION_NOTIFY_LOG_KEY, url);
                 }
             } catch (IOException e) {
@@ -212,10 +213,10 @@ public class GatewayNotifier implements Runnable {
                 .append(instanceId);
 
             try {
-                CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));
-                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));  //TODO: Use the new API
+                final int statusCode = response.getCode();
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
+                    log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getCode());
                     apimlLogger.log(GW_REGISTRATION_NOTIFY_LOG_KEY, url.toString(), instanceId);
                 }
             } catch (IOException e) {

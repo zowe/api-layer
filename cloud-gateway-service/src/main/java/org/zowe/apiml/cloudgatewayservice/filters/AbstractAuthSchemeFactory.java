@@ -17,7 +17,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -180,7 +180,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     ) {
         return requestCreator.apply(serviceInstanceIterator.next())
             .retrieve()
-            .onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.empty())
+            .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> Mono.empty())
             .bodyToMono(getResponseClass())
             .onErrorResume(exception -> exception instanceof WebClientResponseException.Unauthorized ? Mono.just(getResponseFor401()) : Mono.error(exception))
             .switchIfEmpty(serviceInstanceIterator.hasNext() ?
@@ -261,7 +261,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
                 List<Map.Entry<String, String>> newHeaders = Stream.concat(
                     nonCredentialHeaders,
                     nonCredentialCookies
-                ).collect(Collectors.toList());
+                ).toList();
 
                 headers.clear();
                 newHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));

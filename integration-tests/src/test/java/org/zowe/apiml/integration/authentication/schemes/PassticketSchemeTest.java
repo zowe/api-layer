@@ -18,6 +18,7 @@ import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
 import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -200,7 +201,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#getTokens")
             @InfinispanStorageTest
             @TestsNotMeantForZowe
-            void whenCallPassTicketService(String tokenType, int status) {
+            void whenCallPassTicketService(String tokenType, int status) throws JSONException {
                 String token = getToken(tokenType);
 
                 //@formatter:off

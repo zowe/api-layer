@@ -15,7 +15,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -229,8 +229,8 @@ class ApiMediationServiceConfigReaderTest {
         String additionalFileName = "/additional-service-configuration_ip-address-null_bad-baseUrl.yml";
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        
-        Exception exception = assertThrows(ServiceDefinitionException.class, 
+
+        Exception exception = assertThrows(ServiceDefinitionException.class,
             () -> apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName));
 
         assertThat(exception.getCause(), instanceOf(MalformedURLException.class));
@@ -242,7 +242,7 @@ class ApiMediationServiceConfigReaderTest {
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
-        Exception exception = assertThrows(ServiceDefinitionException.class, 
+        Exception exception = assertThrows(ServiceDefinitionException.class,
             () -> apiMediationServiceConfigReader.loadConfiguration(internalFileName, null));
 
         assertThat(exception.getCause(), instanceOf(UnknownHostException.class));

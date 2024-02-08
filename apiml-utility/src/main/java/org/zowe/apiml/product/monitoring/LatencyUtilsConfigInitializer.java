@@ -13,7 +13,7 @@ package org.zowe.apiml.product.monitoring;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * This class initializes the system property that disables LatencyUtils thread that measures time by low level java api

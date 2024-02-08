@@ -11,14 +11,18 @@
 package org.zowe.apiml.discovery.config;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 
 public abstract class AbstractWebSecurityConfigurer {
 
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
-        return http.csrf().disable()    // NOSONAR
-            .headers().httpStrictTransportSecurity().disable()
-            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and();
+        return http.csrf(CsrfConfigurer::disable)    // NOSONAR
+            .headers(httpSecurityHeadersConfigurer ->
+                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
+                    .xssProtection(xssProtection -> xssProtection.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK)))
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     }
 }

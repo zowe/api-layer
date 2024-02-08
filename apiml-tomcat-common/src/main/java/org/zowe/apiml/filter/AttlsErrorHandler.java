@@ -12,7 +12,7 @@ package org.zowe.apiml.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AttlsErrorHandler {

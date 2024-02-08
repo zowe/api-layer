@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
@@ -25,12 +26,9 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
 import org.zowe.commons.attls.InboundAttls;
 
-import javax.annotation.PostConstruct;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
-import java.util.Set;
 
 @Component
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
@@ -96,11 +94,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         public Object getGlobal() {
 
             return handler.getGlobal();
-        }
-
-        @Override
-        public Set<S> getOpenSockets() {
-            return handler.getOpenSockets();
         }
 
         @Override

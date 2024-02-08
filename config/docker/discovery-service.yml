@@ -1,3 +1,4 @@
+spring.profiles.include: diag
 apiml:
     service:
         hostname: discovery-service
@@ -23,8 +24,7 @@ eureka:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
 ---
-spring:
-    profiles: https
+spring.config.activate.on-profile: https
 
 server:
     address: ${apiml.service.hostname}

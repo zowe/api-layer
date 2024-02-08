@@ -24,11 +24,8 @@ ext.servicesToPublish = [
     'api-catalog-package',
     'caching-service',
     'caching-service-package',
-    'metrics-service',
-    'metrics-service-package',
     'discovery-service',
     'discovery-package',
-    'gateway-service',
     'gateway-package',
     'cloud-gateway-service',
     'cloud-gateway-package'

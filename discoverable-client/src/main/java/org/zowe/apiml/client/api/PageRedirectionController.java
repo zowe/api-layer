@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.client.model.RedirectLocation;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpHeaders.LOCATION;
 
@@ -56,7 +55,6 @@ public class PageRedirectionController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "307", description = "Redirect to specified location")
     })
-    @HystrixCommand
     public RedirectLocation redirectPage(@Parameter(description = "Location that need to be redirected to", required = true, example = "https://host:port/context/path")
                                          @RequestBody RedirectLocation redirectLocation,
                                          HttpServletResponse response) {

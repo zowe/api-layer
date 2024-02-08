@@ -15,7 +15,7 @@ import org.zowe.apiml.client.model.Pet;
 import org.zowe.apiml.client.service.PetService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import java.util.ArrayList;
 import java.util.List;

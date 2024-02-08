@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.security;
 
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpResponse;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicHeaderIterator;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.BasicHeaderIterator;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.http.protocol.HTTP;
 import org.junit.jupiter.api.Test;
 
@@ -30,10 +30,10 @@ class ApimlKeepAliveStrategyTest {
         Header header = new BasicHeader(HTTP.CONN_KEEP_ALIVE, "timeout=10");
         Header header1 = new BasicHeader(HTTP.CONN_KEEP_ALIVE, "20");
         Header[] headers = {header,header1};
-        HeaderIterator headerIterator = new BasicHeaderIterator(headers, HTTP.CONN_KEEP_ALIVE);
+        BasicHeaderIterator headerIterator = new BasicHeaderIterator(headers, HTTP.CONN_KEEP_ALIVE);
         when(response.headerIterator(HTTP.CONN_KEEP_ALIVE)).thenReturn(headerIterator);
         ApimlKeepAliveStrategy strategy = ApimlKeepAliveStrategy.INSTANCE;
-        assertEquals(10_000L, strategy.getKeepAliveDuration(response, null));
+        assertEquals(TimeValue.ofSeconds(10), strategy.getKeepAliveDuration(response, null));
     }
 
     @Test
@@ -41,9 +41,9 @@ class ApimlKeepAliveStrategyTest {
         HttpResponse response = mock(HttpResponse.class);
         Header header = new BasicHeader(HTTP.CONTENT_TYPE, "text/html");
         Header[] headers = {header};
-        HeaderIterator headerIterator = new BasicHeaderIterator(headers, HTTP.CONTENT_TYPE);
+        BasicHeaderIterator headerIterator = new BasicHeaderIterator(headers, HTTP.CONTENT_TYPE);
         when(response.headerIterator(HTTP.CONN_KEEP_ALIVE)).thenReturn(headerIterator);
         ApimlKeepAliveStrategy strategy = ApimlKeepAliveStrategy.INSTANCE;
-        assertEquals(2_000L, strategy.getKeepAliveDuration(response, null));
+        assertEquals(TimeValue.ofSeconds(2), strategy.getKeepAliveDuration(response, null));
     }
 }

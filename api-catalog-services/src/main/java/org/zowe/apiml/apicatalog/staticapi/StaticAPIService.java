@@ -12,10 +12,10 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -65,7 +65,7 @@ public class StaticAPIService {
                 }
                 // Return response if successful response or if none have been successful and this is the last URL to try
                 if (isSuccessful(response) || i == discoveryServiceUrls.size() - 1) {
-                    return new StaticAPIResponse(response.getStatusLine().getStatusCode(), responseBody);
+                    return new StaticAPIResponse(response.getCode(), responseBody);
                 }
 
             } catch (Exception e) {
@@ -77,7 +77,7 @@ public class StaticAPIService {
     }
 
     private boolean isSuccessful(CloseableHttpResponse response) {
-        return response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 299;
+        return response.getCode() >= 200 && response.getCode() <= 299;
     }
 
     private HttpPost getHttpRequest(String discoveryServiceUrl) {

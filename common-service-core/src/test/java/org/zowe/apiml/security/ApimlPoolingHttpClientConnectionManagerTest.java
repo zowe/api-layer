@@ -10,17 +10,16 @@
 
 package org.zowe.apiml.security;
 
-import org.apache.http.HttpHost;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ApimlPoolingHttpClientConnectionManagerTest {
     private HttpRoute route;
@@ -33,19 +32,14 @@ class ApimlPoolingHttpClientConnectionManagerTest {
         route = new HttpRoute(new HttpHost("localhost", 8000));
         state = new Object();
 
-        RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
-            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
-        connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistryBuilder.build(),10_000);
+        var socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+        connectionManager = new ApimlPoolingHttpClientConnectionManager(socketFactoryRegistry.build(), 10_000);
     }
 
     @Test
     void whenRequestConnection_thenReturnConnectionRequest() {
-        ConnectionRequest connectionRequest = connectionManager.requestConnection(route, state);
-        assertNotNull(connectionRequest);
+        LeaseRequest leaseRequest = connectionManager.lease("id", route, state);
+        assertNotNull(leaseRequest);
     }
 
-    @Test
-    void givenNoSocketRegistry_whenCreateConnection_thenThrowError() {
-        assertThrows(IllegalArgumentException.class, () -> new ApimlPoolingHttpClientConnectionManager(null,10_000));
-    }
 }

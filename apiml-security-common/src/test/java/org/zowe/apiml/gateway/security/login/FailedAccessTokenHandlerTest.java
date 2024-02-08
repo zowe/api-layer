@@ -20,7 +20,7 @@ import org.zowe.apiml.security.common.audit.Rauditx;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import static org.mockito.Mockito.*;
 

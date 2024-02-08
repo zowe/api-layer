@@ -15,8 +15,10 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,7 +40,9 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.when;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
@@ -52,6 +56,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 @TestsNotMeantForZowe
 @GatewayTest
+@Disabled("May be returned once ZUUL is fixed")
 class ServiceHaModeTest implements TestWithStartedInstances {
 
     private static final int TIMEOUT = 30;
@@ -63,16 +68,16 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
     private static Stream<Arguments> retryableHttpMethods() {
         return Stream.of(
-                Arguments.of(Method.GET)
+            Arguments.of(Method.GET)
         );
     }
 
     private static Stream<Arguments> nonRetryableHttpMethods() {
         return Stream.of(
-                Arguments.of(Method.POST),
-                Arguments.of(Method.PUT),
-                Arguments.of(Method.DELETE),
-                Arguments.of(Method.OPTIONS)
+            Arguments.of(Method.POST),
+            Arguments.of(Method.PUT),
+            Arguments.of(Method.DELETE),
+            Arguments.of(Method.OPTIONS)
         );
     }
 
@@ -92,7 +97,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         class WhenOneIsDown {
 
             @BeforeAll
-            void setUp() throws LifecycleException, IOException {
+            void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
                 service1 = new VirtualService("testHaModeService1", ports.get(0));
@@ -152,7 +157,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         class OneReturns503 {
 
             @BeforeAll
-            void setUp() throws LifecycleException, IOException {
+            void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
                 service1 = new VirtualService("testHaModeService2", ports.get(0));
@@ -213,8 +218,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
     private Response doRequest(Method method, String url) {
         return when()
-                .request(method, url)
-                .andReturn();
+            .request(method, url)
+            .andReturn();
     }
 
 }

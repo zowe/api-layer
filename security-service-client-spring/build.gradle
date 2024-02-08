@@ -1,26 +1,13 @@
 dependencies {
     api project(':apiml-security-common')
 
-    implementation libs.spring.boot.starter.web
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
-    implementation libs.tomcat.embed.el
-    implementation libs.spring.security.web
-    implementation libs.spring.security.config
-    implementation libs.apache.commons.lang3
-    implementation libs.eureka.client
-    implementation libs.jackson.core
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.cloud.starter.eureka.client
 
-    compileOnly libs.javax.servlet.api
+    implementation libs.apache.commons.lang3
+
+    testImplementation libs.spring.boot.starter.test
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-
-    testImplementation project(':apiml-security-common')
-    testImplementation libs.mockito.core
-    testImplementation libs.spring.mock.mvc
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.spring.security.config
-    testImplementation libs.jackson.databind
-    testImplementation libs.json.smart
 }

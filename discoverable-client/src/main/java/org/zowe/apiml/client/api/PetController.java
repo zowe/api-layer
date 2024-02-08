@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,7 +68,6 @@ public class PetController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "List of pets")
     })
-    @HystrixCommand()
     public List<Pet> getAllPets() {
         List<Pet> pets = petService.getAll();
         if (pets == null) {
@@ -103,7 +101,6 @@ public class PetController {
         @ApiResponse(responseCode = "401", description = "Authentication is required"),
         @ApiResponse(responseCode = "400", description = "Request object is not valid")
     })
-    @HystrixCommand()
     public Pet addPet(@Parameter(description = "Pet object that needs to be added", required = true)
                       @Validated(value = {New.class})
                       @RequestBody Pet pet) {
@@ -131,7 +128,6 @@ public class PetController {
         @ApiResponse(responseCode = "401", description = "Authentication is required"),
         @ApiResponse(responseCode = "404", description = "The pet with id is not found.")
     })
-    @HystrixCommand()
     public Pet getPetById(@Parameter(description = "Pet id to return", required = true, example = "1")
                           @PathVariable("id") Long id) {
         Pet pet = petService.getById(id);
@@ -165,7 +161,6 @@ public class PetController {
         @ApiResponse(responseCode = "401", description = "Authentication is required"),
         @ApiResponse(responseCode = "404", description = "Pet not found")
     })
-    @HystrixCommand()
     public Pet updatePetById(@Parameter(description = "Pet id to update", required = true, example = "1")
                              @PathVariable("id") Long id,
                              @Parameter(description = "Pet object that needs to be updated", required = true)
@@ -203,7 +198,6 @@ public class PetController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Pet not found")
     })
-    @HystrixCommand()
     public void deletePetById(@Parameter(description = "Pet id to delete", required = true, example = "1")
                               @PathVariable("id") Long id) {
         petService.deleteById(id);

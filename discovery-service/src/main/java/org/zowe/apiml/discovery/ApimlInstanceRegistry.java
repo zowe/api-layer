@@ -17,6 +17,7 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
+import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
@@ -48,7 +49,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private MethodHandle handleRegistrationMethod;
     private MethodHandle handlerResolveInstanceLeaseDurationMethod;
-    private MethodHandle handleCancelationMethod;
+    private MethodHandle handleCancellationMethod;
 
     private MethodHandle register2ArgsMethodHandle;
     private MethodHandle register3ArgsMethodHandle;
@@ -62,12 +63,13 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         EurekaClientConfig clientConfig,
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
+        EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
         InstanceRegistryProperties instanceRegistryProperties,
         ApplicationContext appCntx,
         EurekaConfig.Tuple tuple
     ) {
 
-        super(serverConfig, clientConfig, serverCodecs, eurekaClient,
+        super(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory,
             instanceRegistryProperties.getExpectedNumberOfClientsSendingRenews(),
             instanceRegistryProperties.getDefaultOpenForTrafficCount()
         );
@@ -95,7 +97,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
                     String.class, String.class, boolean.class
                 );
             cancelationMethod.setAccessible(true);
-            handleCancelationMethod = MethodHandles.lookup().unreflect(cancelationMethod);
+            handleCancellationMethod = MethodHandles.lookup().unreflect(cancelationMethod);
 
             Method resolveInstanceLeaseDurationMethod =
                 InstanceRegistry.class.getDeclaredMethod("resolveInstanceLeaseDuration",
@@ -185,7 +187,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             String[] updatedValues = replaceValues(appName, serverId);
             final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
-            handleCancelationMethod.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
+            handleCancellationMethod.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
             return out;
         } catch (ClassCastException | WrongMethodTypeException e) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);

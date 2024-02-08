@@ -52,7 +52,7 @@ import java.util.Collections;
 })
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Profile({"!https", "!attls"})
+@Profile("!https & !attls")
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
@@ -62,19 +62,17 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.discovery.password:password}")
     private char[] eurekaPassword;
 
-    @Value("${apiml.metrics.enabled:false}")
-    private boolean isMetricsEnabled;
-
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
         auth.authenticationProvider(new AuthenticationProvider() {
             private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
             @Override
             public Authentication authenticate(Authentication authentication) throws AuthenticationException {
                 if (
-                   StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
-                   authentication.getCredentials() != null
+                    StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
+                        authentication.getCredentials() != null
                 ) {
                     char[] credentials;
                     if (authentication.getCredentials() instanceof char[]) {
@@ -95,7 +93,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 }
 
                 throw new BadCredentialsException(this.messages
-                        .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
 
             }
 
@@ -117,23 +115,21 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/fonts/**",
             "/eureka/images/**"
         };
-        return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+        return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
     }
 
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http)
-            .httpBasic().realmName(DISCOVERY_REALM)
-            .and()
-            .authorizeRequests()
-            .antMatchers("/application/info", "/application/health").permitAll()
-            .antMatchers("/**").authenticated();
+            .httpBasic(s -> s.realmName(DISCOVERY_REALM))
 
-        if (isMetricsEnabled) {
-            http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
-        }
+            .authorizeHttpRequests(
+                s -> s.requestMatchers("/application/info", "/application/health").permitAll()
+                      .requestMatchers("/**").authenticated()
+            );
 
-        return http.apply(new CustomSecurityFilters()).and().build();
+        return http.with(new CustomSecurityFilters(), t -> { })
+                   .build();
     }
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {

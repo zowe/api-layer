@@ -19,15 +19,17 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
 import org.zowe.apiml.product.web.TomcatKeyringFix;
 
 @Configuration
-@Import({ TomcatKeyringFix.class, TomcatAcceptFixConfig.class })
+@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class})
 @Data
 @ToString
-public class GeneralConfig {
+public class GeneralConfig implements WebMvcConfigurer {
     @Value("${caching.storage.evictionStrategy:reject}")
     private String evictionStrategy;
     @Value("${caching.storage.size:100}")
@@ -37,5 +39,10 @@ public class GeneralConfig {
     @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
         return new ApimlTomcatCustomizer<>();
+    }
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        configurer.setUseTrailingSlashMatch(true);
     }
 }

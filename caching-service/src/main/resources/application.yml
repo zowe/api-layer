@@ -38,6 +38,7 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -102,8 +103,6 @@ apiml:
                 corsEnabled: false
 
 spring:
-    config:
-        useLegacyProcessing: true
     cloud:
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
@@ -143,18 +142,11 @@ server:
 
 management:
     endpoints:
-        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: health,info,hystrixstream
-
-hystrix.command.default.execution.timeout.enabled: false
-
+                include: health,info
 ---
-spring:
-    profiles: debug
-
 logging:
     level:
         ROOT: INFO
@@ -171,23 +163,14 @@ logging:
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework.security.web: INFO
 
----
-spring:
-    profiles: diag
-
----
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEACS1
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     attls:
@@ -203,5 +186,3 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
-
-

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -42,7 +41,6 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/login")
     @Operation(summary = "Forward login to gateway service via zaas client")
-    @HystrixCommand
     public ResponseEntity<String> forwardLogin(@RequestBody LoginRequest loginRequest) {
         try {
             String jwt = zaasClient.login(loginRequest.getUsername(), loginRequest.getPassword());
@@ -55,7 +53,6 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/logout")
     @Operation(summary = "Forward logout to gateway service via zaas client")
-    @HystrixCommand
     public ResponseEntity<String> forwardLogout(
         @CookieValue(value = "apimlAuthenticationToken", required = false) String cookieToken,
         @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader

@@ -9,6 +9,7 @@ import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 group 'org.zowe.apiml'
 
 buildscript {
+
     ext.mavenRepositories = {
         maven {
             url artifactoryMavenSnapshotRepo
@@ -48,6 +49,9 @@ apply from: 'gradle/sonar.gradle'
 apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 allprojects {
     apply plugin: 'idea'
@@ -104,7 +108,6 @@ allprojects {
             substitute(module('org.bouncycastle:bcpkix-jdk15on')).using(module("org.bouncycastle:bcpkix-jdk18on:${libs.versions.bouncyCastle.get()}"))
         }
 
-        resolutionStrategy.force libs.slf4j.api
         resolutionStrategy.force libs.log4j.api
         resolutionStrategy.force libs.log4j.to.slf4j
         resolutionStrategy.force libs.caffeine
@@ -133,7 +136,6 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         api(platform(project(":platform")))
 
         testImplementation libs.junitJupiter
-        testImplementation libs.mockito.jupiter
 
         testImplementation libs.junit.platform.launcher
 
@@ -154,7 +156,7 @@ subprojects {
     }
 }
 
-task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
+task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
                            ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':cloud-gateway-service:build']) {
     description "Build core components"
     group "build"

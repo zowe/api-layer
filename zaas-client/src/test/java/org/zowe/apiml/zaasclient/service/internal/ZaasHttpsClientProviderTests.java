@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,9 @@ import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class ZaasHttpsClientProviderTests {
@@ -85,8 +86,8 @@ class ZaasHttpsClientProviderTests {
 
     @Test
     void whenGetHttpsClientWithKeyStoreAndTrustStore_thenIdenticalClientReturned() throws ZaasConfigurationException {
-        CloseableHttpClient client1 = zaasHttpsClientProvider.getHttpClient();
-        CloseableHttpClient client2 = zaasHttpsClientProvider.getHttpClient();
+        var client1 = zaasHttpsClientProvider.getHttpClient();
+        var client2 = zaasHttpsClientProvider.getHttpClient();
 
         assertEquals(client1, client2);
     }
@@ -157,14 +158,14 @@ class ZaasHttpsClientProviderTests {
     class WhenKeyringUrl {
 
         @CsvSource({
-                ",false",
-                "safkeyring://userid/ringid,true",
-                "safkeyring:////userid/ring/id,false",
-                "safkeyring:////userid//ringid,false",
-                "safkeyring://///userid//ringid,false",
-                "safkeyring:////id,false",
-                "safkeyringjce:////userid/ringid,true",
-                "keystore.p12,false"
+            ",false",
+            "safkeyring://userid/ringid,true",
+            "safkeyring:////userid/ring/id,false",
+            "safkeyring:////userid//ringid,false",
+            "safkeyring://///userid//ringid,false",
+            "safkeyring:////id,false",
+            "safkeyringjce:////userid/ringid,true",
+            "keystore.p12,false"
         })
         @ParameterizedTest(name = "isKeyring({0}) should return {1}")
         void isKeyringReturnsTrueIfItIsValid(String url, boolean validity) {
@@ -172,13 +173,13 @@ class ZaasHttpsClientProviderTests {
         }
 
         @CsvSource({
-                ",",
-                "safkeyring://userid/ringid,safkeyring://userid/ringid",
-                "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
-                "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
-                "safkeyring:////id,safkeyring:////id",
-                "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
-                "keystore.p12,keystore.p12"
+            ",",
+            "safkeyring://userid/ringid,safkeyring://userid/ringid",
+            "safkeyring:////userid/ring/id,safkeyring:////userid/ring/id",
+            "safkeyring:////userid//ringid,safkeyring:////userid//ringid",
+            "safkeyring:////id,safkeyring:////id",
+            "safkeyringjce:////userid/ringid,safkeyringjce://userid/ringid",
+            "keystore.p12,keystore.p12"
         })
         @ParameterizedTest(name = "formatKeyringUrl({0}) should return {1}")
         void formatKeyringUrlFixTheFormatIfPossible(String input, String expectedOutput) {

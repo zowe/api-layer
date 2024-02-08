@@ -1,6 +1,9 @@
 dependencies {
     api project(':onboarding-enabler-java')
-    implementation libs.javax.servlet.api
+
+    implementation libs.jakarta.servlet.api
+
+    runtimeOnly libs.logback.classic
 }
 
 jar {

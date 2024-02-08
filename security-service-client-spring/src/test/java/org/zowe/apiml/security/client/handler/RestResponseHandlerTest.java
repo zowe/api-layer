@@ -10,8 +10,7 @@
 
 package org.zowe.apiml.security.client.handler;
 
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,15 +39,14 @@ class RestResponseHandlerTest {
 
     private RestResponseHandler handler;
     private CloseableHttpResponse response;
-    private StatusLine statusLine;
+
 
     @BeforeEach
     void setUp() {
         handler = new RestResponseHandler();
         response = mock(CloseableHttpResponse.class);
-        statusLine = mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(401);
-        when(response.getStatusLine()).thenReturn(statusLine);
+
+        when(response.getCode()).thenReturn(401);
     }
 
     @Nested
@@ -83,13 +81,13 @@ class RestResponseHandlerTest {
 
             @Test
             void thenCredentialsNotFoundError() {
-                when(statusLine.getStatusCode()).thenReturn(400);
+                when(response.getCode()).thenReturn(400);
                 assertThrows(AuthenticationCredentialsNotFoundException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
             }
 
             @Test
             void thenAuthMethodNotSupportedError() {
-                when(statusLine.getStatusCode()).thenReturn(405);
+                when(response.getCode()).thenReturn(405);
                 assertThrows(AuthMethodNotSupportedException.class, () -> {
                     handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
                 });
@@ -97,13 +95,13 @@ class RestResponseHandlerTest {
 
             @Test
             void thenGenericErrorWithNoLogMessage() {
-                when(statusLine.getStatusCode()).thenReturn(504);
+                when(response.getCode()).thenReturn(504);
                 assertThrows(AuthenticationServiceException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE));
             }
 
             @Test
             void thenGenericErrorWithLogMessage() {
-                when(statusLine.getStatusCode()).thenReturn(504);
+                when(response.getCode()).thenReturn(504);
                 assertThrows(AuthenticationServiceException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
             }
 
@@ -115,13 +113,13 @@ class RestResponseHandlerTest {
 
             @Test
             void thenServiceUnavailableError() {
-                when(statusLine.getStatusCode()).thenReturn(503);
+                when(response.getCode()).thenReturn(503);
                 assertThrows(ServiceNotAccessibleException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
             }
 
             @Test
             void thenHttpServerError() {
-                when(statusLine.getStatusCode()).thenReturn(500);
+                when(response.getCode()).thenReturn(500);
                 assertThrows(ServiceNotAccessibleException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
             }
         }

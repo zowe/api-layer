@@ -11,14 +11,17 @@
 package org.zowe.apiml.security.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,10 +38,16 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class GatewaySecurityServiceTest {
+
     private static final String USERNAME = "user";
     private static final char[] PASSWORD = "pass".toCharArray();
     private static final char[] NEW_PASSWORD = "newPass".toCharArray();
@@ -46,12 +55,15 @@ class GatewaySecurityServiceTest {
     private static final String GATEWAY_SCHEME = "https";
     private static final String GATEWAY_HOST = "localhost:10010";
 
+    @Spy
+    private RestResponseHandler responseHandler;
+    @Mock
+    private CloseableHttpClient closeableHttpClient;
+
     private GatewayConfigProperties gatewayConfigProperties;
     private AuthConfigurationProperties authConfigurationProperties;
     private GatewaySecurityService securityService;
     private String cookie;
-    private RestResponseHandler responseHandler;
-    private CloseableHttpClient closeableHttpClient;
     private ObjectMapper objectMapper = new ObjectMapper();
     private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
 
@@ -63,8 +75,6 @@ class GatewaySecurityServiceTest {
             .build();
         GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
         authConfigurationProperties = new AuthConfigurationProperties();
-        closeableHttpClient = mock(CloseableHttpClient.class);
-        responseHandler = spy(new RestResponseHandler());
 
         securityService = new GatewaySecurityService(
             gatewayClient,
@@ -80,25 +90,23 @@ class GatewaySecurityServiceTest {
 
     @Nested
     class GivenNoContent {
-        StatusLine statusLine;
-        Header header;
-        CloseableHttpResponse response;
 
-        @BeforeEach
-        void setup() throws IOException {
-            response = mock(CloseableHttpResponse.class);
-            statusLine = mock(StatusLine.class);
-            when(response.getStatusLine()).thenReturn(statusLine);
-            when(statusLine.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT.value());
-            header = mock(Header.class);
-            when(response.getFirstHeader(HttpHeaders.SET_COOKIE)).thenReturn(header);
-            when(header.getValue()).thenReturn(cookie);
-            when(closeableHttpClient.execute(any()))
-                .thenReturn(response);
-        }
+        @Mock
+        private Header header;
+        @Mock
+        CloseableHttpResponse response;
 
         @Nested
         class WhenDoLogin {
+
+            @BeforeEach
+            void setUp() throws IOException {
+                when(response.getCode()).thenReturn(HttpStatus.NO_CONTENT.value());
+                when(closeableHttpClient.execute(any()))
+                    .thenReturn(response);
+                when(response.getFirstHeader(HttpHeaders.SET_COOKIE)).thenReturn(header);
+                when(header.getValue()).thenReturn(cookie);
+            }
 
             @Test
             void givenValidAuth_thenGetToken() {
@@ -120,14 +128,23 @@ class GatewaySecurityServiceTest {
         @Nested
         class WhenDoQuery {
 
+            @Mock
+            private HttpEntity entity;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                when(response.getCode()).thenReturn(HttpStatus.NO_CONTENT.value());
+                when(closeableHttpClient.execute(any()))
+                    .thenReturn(response);
+            }
+
             @Test
             void givenValidAuth_thenSuccessfulResponse() throws IOException {
                 Date issued = new Date();
                 Date exp = new Date(System.currentTimeMillis() + 10000);
 
-                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null, null,null);
+                QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", issued, exp, null, null, null);
                 String responseBody = objectMapper.writeValueAsString(expectedQueryResponse);
-                HttpEntity entity = mock(HttpEntity.class);
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(responseBody.getBytes()));
                 when(response.getEntity()).thenReturn(entity);
                 QueryResponse query = securityService.query("token");
@@ -137,8 +154,7 @@ class GatewaySecurityServiceTest {
             @Test
             void givenGatewayUnauthorized_thenThrowException() throws IOException {
                 String responseBody = MESSAGE_KEY_STRING + "org.zowe.apiml.security.query.invalidToken\"";
-                when(statusLine.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
-                HttpEntity entity = mock(HttpEntity.class);
+                when(response.getCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
                 when(entity.getContent()).thenReturn(new ByteArrayInputStream(responseBody.getBytes()));
                 when(response.getEntity()).thenReturn(entity);
                 Exception exception = assertThrows(TokenNotValidException.class, () -> securityService.query("token"));
@@ -146,36 +162,33 @@ class GatewaySecurityServiceTest {
             }
         }
 
+        // TODO Verify what happens on an IOException / ParseException to add coverage to this class
 
         @Nested
         class WhenHandleBadResponse {
+
             private static final String LOG_PARAMETER_STRING = "Cannot access Gateway service. Uri '{}' returned: {}";
 
+            @Mock
+            private CloseableHttpResponse response;
+            @Mock
+            private Header header;
+            @Mock
+            private HttpEntity entity;
 
             private String uri;
-            private CloseableHttpResponse response;
-            private StatusLine statusLine;
-            private Header header;
-            private HttpEntity entity;
 
             @BeforeEach
             void setup() {
                 uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
                     gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
-                response = mock(CloseableHttpResponse.class);
-                statusLine = mock(StatusLine.class);
-                when(response.getStatusLine()).thenReturn(statusLine);
-                when(statusLine.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
-                header = mock(Header.class);
-                when(response.getFirstHeader(HttpHeaders.SET_COOKIE)).thenReturn(header);
-                when(header.getValue()).thenReturn(cookie);
-                entity = mock(HttpEntity.class);
+                when(response.getCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
                 when(response.getEntity()).thenReturn(entity);
-
             }
 
             @Nested
             class ThenHandleAuthGeneralError {
+
                 @Test
                 void givenInvalidMessageKey() throws IOException {
                     String errorMessage = MESSAGE_KEY_STRING + "badKey\"";
@@ -207,6 +220,5 @@ class GatewaySecurityServiceTest {
                 }
             }
         }
-
     }
 }

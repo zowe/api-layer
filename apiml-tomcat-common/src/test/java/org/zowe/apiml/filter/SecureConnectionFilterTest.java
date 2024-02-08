@@ -10,37 +10,58 @@
 
 package org.zowe.apiml.filter;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.commons.attls.*;
+import org.zowe.commons.attls.AttlsContext;
+import org.zowe.commons.attls.InboundAttls;
+import org.zowe.commons.attls.IoctlCallException;
+import org.zowe.commons.attls.StatConn;
+import org.zowe.commons.attls.UnknownEnumValueException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class SecureConnectionFilterTest {
 
-    FilterChain chain = mock(FilterChain.class);
+    @Mock
+    FilterChain chain;
+
     HttpServletResponse response = new MockHttpServletResponse();
+
+    class AttlsContextTest extends AttlsContext {
+
+        StatConn statConn;
+
+        public AttlsContextTest(StatConn statConn) {
+            super(0, false);
+            this.statConn = statConn;
+        }
+
+        @Override
+        public StatConn getStatConn() throws UnknownEnumValueException, IoctlCallException {
+            return statConn;
+        }
+    }
 
     @Nested
     class Success {
         @Test
         void whenConnectionIsSecure() throws IOException, ServletException, UnknownEnumValueException, IoctlCallException {
             SecureConnectionFilter filter = new SecureConnectionFilter();
-            AttlsContext context = mock(AttlsContext.class);
             ThreadLocal<AttlsContext> contexts = new ThreadLocal<>();
-            contexts.set(context);
+            contexts.set(new AttlsContextTest(StatConn.SECURE));
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", contexts);
-            when(context.getStatConn()).thenReturn(StatConn.SECURE);
             filter.doFilterInternal(new MockHttpServletRequest(), response, chain);
             assertEquals(200, response.getStatus());
             InboundAttls.dispose();
@@ -52,11 +73,9 @@ class SecureConnectionFilterTest {
         @Test
         void whenConnectionIsNotSecure_thenRespondWithErrorCode() throws IOException, ServletException, UnknownEnumValueException, IoctlCallException {
             SecureConnectionFilter filter = new SecureConnectionFilter();
-            AttlsContext context = mock(AttlsContext.class);
             ThreadLocal<AttlsContext> contexts = new ThreadLocal<>();
-            contexts.set(context);
+            contexts.set(new AttlsContextTest(StatConn.NOTSECURE));
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", contexts);
-            when(context.getStatConn()).thenReturn(StatConn.NOTSECURE);
             filter.doFilterInternal(new MockHttpServletRequest(), response, chain);
             assertEquals(500, response.getStatus());
             InboundAttls.dispose();

@@ -22,6 +22,7 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.HttpMethod;
@@ -29,10 +30,10 @@ import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.util.UrlUtils;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -126,7 +127,7 @@ public class VirtualService implements AutoCloseable {
      * @throws IOException        problem with socket
      * @throws LifecycleException Tomcat exception
      */
-    public VirtualService start() throws IOException, LifecycleException {
+    public VirtualService start() throws IOException, LifecycleException, JSONException {
         // start Tomcat to get listening port
         tomcat.start();
         instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
@@ -147,7 +148,7 @@ public class VirtualService implements AutoCloseable {
      * @throws IOException        problem with socket
      * @throws LifecycleException Tomcat exception
      */
-    public VirtualService start(String status) throws IOException, LifecycleException {
+    public VirtualService start(String status) throws IOException, LifecycleException, JSONException {
         // start Tomcat to get listening port
         tomcat.start();
         instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
@@ -208,7 +209,7 @@ public class VirtualService implements AutoCloseable {
      * @return this instance to next command
      */
     public VirtualService addServlet(String name, String pattern, Servlet servlet) {
-        Tomcat.addServlet(context, name, servlet);
+        Tomcat.addServlet(context, name, servlet.getClass().getName());
         context.addServletMappingDecoded(pattern, name);
 
         return this;
@@ -284,7 +285,7 @@ public class VirtualService implements AutoCloseable {
             int testCounter = 0;
             while (true) {
                 try {
-                    final ResponseBody responseBody = given().when()
+                    final ResponseBody<?> responseBody = given().when()
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
@@ -329,7 +330,7 @@ public class VirtualService implements AutoCloseable {
             while (true) {
                 try {
                     for (int i = 0; i < instanceCountBefore; i++) {
-                        final ResponseBody responseBody = given().when()
+                        final ResponseBody<?> responseBody = given().when()
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .get(url)
                             .body();
@@ -409,7 +410,7 @@ public class VirtualService implements AutoCloseable {
         return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
-    public void register(String status) throws UnknownHostException {
+    public void register(String status) throws UnknownHostException, JSONException {
         addDefaultRouteIfMissing();
 
         postRegistration(status).then().statusCode(SC_NO_CONTENT);
@@ -417,7 +418,7 @@ public class VirtualService implements AutoCloseable {
         registered = true;
     }
 
-    public Response postRegistration(String status) throws UnknownHostException {
+    public Response postRegistration(String status) throws UnknownHostException, JSONException {
         return given().when()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(new JSONObject()

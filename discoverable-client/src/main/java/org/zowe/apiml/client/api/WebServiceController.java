@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +31,6 @@ public class WebServiceController {
      */
     @GetMapping(value = {"/ws", "/sse"})
     @Operation(summary = "Get a greeting", tags = {"Web Service"})
-    @HystrixCommand()
     public Greeting weServiceGreet() {
 
         return new Greeting(new Date(), String.format(TEMPLATE, "Web service"));

@@ -12,8 +12,8 @@ package org.zowe.apiml.util.service;
 
 import lombok.Getter;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.function.Predicate;
 

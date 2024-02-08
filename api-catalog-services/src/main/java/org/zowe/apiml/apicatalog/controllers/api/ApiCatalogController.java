@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -86,7 +85,6 @@ public class ApiCatalogController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    @HystrixCommand
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
             Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
@@ -123,7 +121,6 @@ public class ApiCatalogController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    @HystrixCommand
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();

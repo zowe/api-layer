@@ -66,34 +66,34 @@ dependencies {
     implementation libs.spring.doc
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.aop
-    implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.cloud.starter.turbine
-    implementation libs.spring.security.web
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.crypto
-    implementation libs.tomcat.annotations.api
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.websocket
+//    implementation libs.spring.cloud.commons
+//    implementation libs.spring.cloud.starter.bootstrap
+//    implementation libs.spring.cloud.starter.turbine
+//    implementation libs.spring.security.web
+//    implementation libs.spring.security.config
+//    implementation libs.spring.security.core
+//    implementation libs.spring.security.crypto
+//    implementation libs.tomcat.annotations.api
+//    implementation libs.tomcat.embed.core
+//    implementation libs.tomcat.embed.el
+//    implementation libs.tomcat.embed.websocket
     implementation libs.gson
     implementation libs.xstream
     implementation libs.commons.io
     implementation libs.guava
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.context.support
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.messaging
-    implementation libs.spring.web
-    implementation libs.spring.webflux
-    implementation libs.spring.webmvc
-    implementation libs.spring.websocket
-    implementation libs.logback.core
-    implementation libs.logback.classic
+//    implementation libs.spring.aop
+//    implementation libs.spring.beans
+//    implementation libs.spring.context
+//    implementation libs.spring.context.support
+//    implementation libs.spring.core
+//    implementation libs.spring.expression
+//    implementation libs.spring.messaging
+//    implementation libs.spring.web
+//    implementation libs.spring.webflux
+//    implementation libs.spring.webmvc
+//    implementation libs.spring.websocket
+//    implementation libs.logback.core
+//    implementation libs.logback.classic
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

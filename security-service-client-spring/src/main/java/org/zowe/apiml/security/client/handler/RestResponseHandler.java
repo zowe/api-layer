@@ -11,7 +11,7 @@
 package org.zowe.apiml.security.client.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,8 +26,6 @@ import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.io.IOException;
-
 /**
  * Handler for exceptions that are thrown during the security client rest calls
  */
@@ -36,7 +34,7 @@ import java.io.IOException;
 public class RestResponseHandler {
 
     public void handleErrorType(CloseableHttpResponse response, ErrorType errorType, Object... logParameters) {
-        switch (response.getStatusLine().getStatusCode()) {
+        switch (response.getCode()) {
             case 401:
                 if (errorType != null) {
                     if (errorType.equals(ErrorType.BAD_CREDENTIALS)) {
@@ -60,7 +58,8 @@ public class RestResponseHandler {
                 throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage());
             case 405:
                 throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
-            case 500: case 503:
+            case 500:
+            case 503:
                 throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage());
             default:
                 addDebugMessage(null, ErrorType.AUTH_GENERAL.getDefaultMessage(), logParameters);
@@ -68,7 +67,7 @@ public class RestResponseHandler {
         }
     }
 
-    public void handleException(IOException exception) {
+    public void handleException(Exception exception) { //TODO: maybe revert
         throw new GatewayNotAvailableException(ErrorType.GATEWAY_NOT_AVAILABLE.getDefaultMessage(), exception);
     }
 

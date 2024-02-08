@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -18,8 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -34,7 +33,6 @@ public class NotFoundErrorController implements ApimlErrorController {
 
 
     @GetMapping(value = "/not_found")
-    @HystrixCommand
     public String handleError(HttpServletRequest request) {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 
