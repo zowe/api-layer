@@ -45,7 +45,7 @@ jobs:
     create-image-all-services-amd64:
         strategy:
             matrix:
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service, cloud-gateway-service ]
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, cloud-gateway-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -91,7 +91,7 @@ jobs:
         strategy:
             max-parallel: 1
             matrix:
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service, cloud-gateway-service ]
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, cloud-gateway-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -147,7 +147,7 @@ jobs:
             - create-image-all-services-s390x
         strategy:
             matrix:
-                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service, cloud-gateway-service ]
+                service: [ gateway-service, discovery-service, api-catalog-services, caching-service, cloud-gateway-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
