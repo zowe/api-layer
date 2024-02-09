@@ -120,18 +120,15 @@ dependencyResolutionManagement {
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
 
-            //library('spring_cloud_hystrix_dashboard', 'org.springframework.cloud', 'spring-cloud-starter-netflix-hystrix-dashboard').versionRef('springCloud')
             library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudZuulNetflix')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
             library('spring_cloud_starter_ribbon', 'org.springframework.cloud', 'spring-cloud-starter-netflix-ribbon').versionRef('springCloudZuulNetflix')
-            //library('spring_cloud_starter_turbine', 'org.springframework.cloud', 'spring-cloud-starter-netflix-turbine').versionRef('springCloud')
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')
             library('spring_cloud_circuit_breaker', 'org.springframework.cloud', 'spring-cloud-starter-circuitbreaker-reactor-resilience4j').versionRef('springCloudCB')
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetry')
-            //library('spring_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('springWebTestClient')
             library('spring_context', 'org.springframework', 'spring-context').versionRef('springFramework')
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
 
