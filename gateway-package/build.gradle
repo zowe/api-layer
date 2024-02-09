@@ -29,8 +29,10 @@ task downloadFile {
         // Specify the URL of the file to download
         def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-fat-jar/2.14.6/gateway-fat-jar-2.14.6-application.jar'
 
+        RegularFile gatewayJar = layout.projectDirectory.file("src/main/resources/bin/gateway-service-lite.jar")
+
         // Set the destination directory and file name
-        def destination = new File("$projectDir/$resourceDir/bin/gateway-service-lite.jar")
+        def destination = gatewayJar.asFile
         if (!destination.exists()) {
             // Make sure the directory exists
             destination.parentFile.mkdirs()
@@ -65,15 +67,18 @@ packageApiGateway.doFirst {
         .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
         .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
 
-    def scriptOutputDir = new File("$buildDir/convert/");
+    Provider<Directory> output = layout.buildDirectory.dir("convert")
+    def scriptOutputDir = output.get().asFile
     if (!scriptOutputDir.exists()) {
-        scriptOutputDir.mkdirs();
+        scriptOutputDir.mkdirs()
     }
-    File convertedManifest = new File("$buildDir/convert/manifest.yaml");
+
+    Provider<RegularFile> manifestOutput = layout.buildDirectory.file("convert/manifest.yaml")
+    File convertedManifest = manifestOutput.get().asFile
     if (convertedManifest.exists()) {
-        convertedManifest.delete();
+        convertedManifest.delete()
     }
-    convertedManifest.createNewFile();
+    convertedManifest.createNewFile()
     convertedManifest.write(manifest)
 }
 
