@@ -22,9 +22,19 @@ import io.restassured.http.Cookie;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.http.ssl.TrustStrategy;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -119,7 +129,6 @@ public class SecurityUtils {
         return USERNAME;
     }
 
-
     //@formatter:off
 
     public static String getGatewayUrl(String path) {
@@ -167,7 +176,38 @@ public class SecurityUtils {
     }
 
     public static String getZosmfJwtToken() {
-        return getZosmfToken("jwtToken");
+        return getZosmfTokenWebClient("jwtToken");
+    }
+
+    public static String getZosmfLtpaToken() {
+        return getZosmfTokenWebClient("LtpaToken2");
+    }
+
+    public static String getZosmfTokenWebClient(String cookie) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) { // Can't think of a reason to test SSL connection between Integration test runner and z/OSMF
+            HttpClientContext context = HttpClientContext.create();
+            CookieStore cookieStore = new BasicCookieStore();
+            context.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
+
+            HttpUriRequest request = new HttpPost(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT));
+            request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+            request.addHeader(HttpHeaders.AUTHORIZATION, String.format("Basic %s", java.util.Base64.getEncoder().encodeToString(String.format("%s:%s", USERNAME, PASSWORD).getBytes())));
+            request.addHeader("X-CSRF-ZOSMF-HEADER", "csrf");
+
+            CloseableHttpResponse response = httpClient.execute(request, context);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return cookieStore.getCookies()
+                    .stream()
+                    .filter(c -> cookie.equals(c.getName()))
+                    .findFirst()
+                    .map(c -> c.getValue())
+                    .orElseThrow(() -> new RuntimeException("Cookie " + cookie + " not found in z/OSMF response"));
+            } else {
+                throw new RuntimeException("Request to z/OSMF failed with status code " + response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String getZosmfToken(String cookie) {
@@ -391,21 +431,36 @@ public class SecurityUtils {
 
     public static SSLConfig getConfiguredSslConfig() {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+        SSLContext sslContext = getSslContext();
+        X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
+        return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext,hostnameVerifier));
+    }
+
+    static SSLContext getRelaxedSslContext() {
+        final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
         try {
-            SSLContext sslContext = SSLContexts.custom()
-                .loadKeyMaterial(
-                    new File(tlsConfiguration.getKeyStore()),
-                    tlsConfiguration.getKeyStorePassword(),
-                    tlsConfiguration.getKeyPassword(),
-                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
-                .loadTrustMaterial(
-                    new File(tlsConfiguration.getTrustStore()),
-                    tlsConfiguration.getTrustStorePassword())
+            return SSLContexts.custom()
+                .loadTrustMaterial(null, acceptingTrustStrategy)
                 .build();
-            X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-            return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext,hostnameVerifier));
+        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static SSLContext getSslContext() {
+        try {
+            return SSLContexts.custom()
+            .loadKeyMaterial(
+                new File(tlsConfiguration.getKeyStore()),
+                tlsConfiguration.getKeyStorePassword(),
+                tlsConfiguration.getKeyPassword(),
+                (aliases, socket) -> tlsConfiguration.getKeyAlias())
+            .loadTrustMaterial(
+                new File(tlsConfiguration.getTrustStore()),
+                tlsConfiguration.getTrustStorePassword())
+            .build();
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
-            | CertificateException | IOException e) {
+                | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
