@@ -73,7 +73,7 @@ dependencies {
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.commons.io
-    testImplementation libs.reactorTest
+    testImplementation libs.reactor.test
     testImplementation libs.rest.assured
 
     compileOnly libs.lombok

@@ -36,8 +36,8 @@ dependencies {
     testImplementation libs.jackson.dataformat.yaml
     testImplementation libs.jjwt
     testImplementation libs.netty.reactor.http
-    testImplementation libs.nimbusJoseJwt
-    testImplementation libs.reactorTest
+    testImplementation libs.nimbus.jose.jwt
+    testImplementation libs.reactor.test
     testImplementation libs.rest.assured
 
     runtimeOnly libs.jjwt.impl

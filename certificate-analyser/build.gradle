@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation libs.picocli
-    annotationProcessor libs.picocliCodegen
+    annotationProcessor libs.picocli.codegen
 
     testImplementation libs.mockito.core
     testImplementation libs.hamcrest

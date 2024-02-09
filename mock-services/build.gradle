@@ -55,7 +55,7 @@ dependencies {
     implementation libs.jjwt
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
-    implementation libs.nimbusJoseJwt
+    implementation libs.nimbus.jose.jwt
 
     testImplementation libs.spring.boot.starter.test
 
