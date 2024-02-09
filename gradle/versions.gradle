@@ -45,6 +45,7 @@ dependencyResolutionManagement {
             version('jaxbApi', '2.3.1')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.53.v20231009')
+            version('jettison', '1.5.4')
             version('jjwt', '0.11.5')
             version('jsonPath', '2.8.0')
             version('jsonSmart', '2.5.0')
@@ -75,6 +76,7 @@ dependencyResolutionManagement {
             version('swaggerInflector', '2.0.10')
             version('thymeleaf', '3.1.2.RELEASE')
             version('velocity', '2.3')
+            version('woodstoxCore', '6.6.0')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
                 strictly '[1.4.20,2.0['
@@ -169,6 +171,7 @@ dependencyResolutionManagement {
             library('jetty_websocket_api', 'org.eclipse.jetty.websocket', 'websocket-api').versionRef('jettyWebSocketClient')
             library('jetty_websocket_client', 'org.eclipse.jetty.websocket', 'websocket-client').versionRef('jettyWebSocketClient')
             library('jetty_websocket_common', 'org.eclipse.jetty.websocket', 'websocket-common').versionRef('jettyWebSocketClient')
+            library('jettison', 'org.codehaus.jettison', 'jettison').versionRef('jettison')
             library('json_smart', 'net.minidev', 'json-smart').versionRef('jsonSmart')
             library('jjwt', 'io.jsonwebtoken', 'jjwt-api').versionRef('jjwt')
             library('jjwt_impl', 'io.jsonwebtoken', 'jjwt-impl').versionRef('jjwt')
@@ -201,6 +204,7 @@ dependencyResolutionManagement {
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
+            library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
