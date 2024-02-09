@@ -30,6 +30,8 @@ micronaut {
 dependencies {
     api project(':onboarding-enabler-micronaut')
 
+    testImplementation("io.micronaut:micronaut-jackson-databind")
+
     testImplementation libs.micronaut.http.client
  }
 

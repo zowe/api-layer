@@ -21,7 +21,7 @@ micronaut {
 }
 
 dependencies {
-    implementation project(':onboarding-enabler-java')
+    api project(':onboarding-enabler-java')
 
     implementation("io.micronaut:micronaut-validation:${libs.versions.micronautValidation.get()}")
     implementation("io.micronaut:micronaut-runtime")
