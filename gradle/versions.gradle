@@ -99,7 +99,7 @@ dependencyResolutionManagement {
             version('micronaut', '4.3.0')
             version('micronautValidation', '3.10.3')
             version('micronautSerialization', '2.8.1')
-            version('micronautPlugin', '4.3.1')
+            version('micronautPlugin', '4.3.2')
             version('shadow', '8.1.1')
             version('checkstyle', '10.13.0')
             version('jacoco', '0.8.11')
@@ -222,7 +222,9 @@ dependencyResolutionManagement {
             plugin('micronaut_application', 'io.micronaut.application').versionRef('micronautPlugin')
             plugin('micronaut_minimal_application', 'io.micronaut.minimal.application').versionRef('micronautPlugin')
             plugin('micronaut_docker', 'io.micronaut.docker').versionRef('micronautPlugin')
+
             plugin('shadow', 'com.github.johnrengelman.shadow').versionRef('shadow')
+
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary

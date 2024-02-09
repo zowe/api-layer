@@ -23,9 +23,7 @@ micronaut {
 dependencies {
     api project(':onboarding-enabler-java')
 
-    implementation("io.micronaut:micronaut-validation:${libs.versions.micronautValidation.get()}")
     implementation("io.micronaut:micronaut-runtime")
-    implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-jackson-databind")
 
     testImplementation("io.micronaut.test:micronaut-test-junit5")
