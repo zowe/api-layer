@@ -21,6 +21,12 @@ micronaut {
 }
 
 dependencies {
+    constraints {
+        implementation(libs.spring.bom) {
+            because 'previous versions affected by CVE-2024-22233'
+        }
+    }
+
     api project(':onboarding-enabler-java')
 
     implementation("io.micronaut:micronaut-runtime")
