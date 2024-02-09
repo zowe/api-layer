@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Route {
+
     private String gatewayUrl;
     private String serviceUrl;
+
 }

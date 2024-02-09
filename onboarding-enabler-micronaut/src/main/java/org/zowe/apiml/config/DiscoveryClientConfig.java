@@ -11,17 +11,20 @@
 package org.zowe.apiml.config;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
+import jakarta.annotation.PostConstruct;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import jakarta.annotation.PostConstruct;
-
-@ConfigurationProperties("apiml.service")
+@ConfigurationProperties(
+    value = "apiml.service"
+)
 public class DiscoveryClientConfig extends ApiMediationServiceConfig {
+
     @PostConstruct
     @Override
     public void setIpAddressIfNotPresents() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader.setServiceIpAddress(this);
     }
+
 }

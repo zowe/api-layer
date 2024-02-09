@@ -10,7 +10,7 @@
 
 package org.zowe.apiml;
 
-import io.micronaut.runtime.EmbeddedApplication;
+import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,11 +21,11 @@ import jakarta.inject.Inject;
 class OnboardingEnablerMicronautTest {
 
     @Inject
-    EmbeddedApplication<?> application;
+    EmbeddedServer server;
 
     @Test
     void testItWorks() {
-        Assertions.assertTrue(application.isRunning());
+        Assertions.assertTrue(server.isRunning());
     }
 
 }
