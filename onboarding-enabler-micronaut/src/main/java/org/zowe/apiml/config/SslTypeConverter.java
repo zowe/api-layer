@@ -20,6 +20,10 @@ import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 
+/**
+ * In Micronaut 4.x serialization engine changed. The default fails with exception converting the keystore / keyring password into char[]
+ * This issue does not happen with Jackson implementation.
+ */
 @Singleton
 public class SslTypeConverter implements TypeConverter<LinkedHashMap<?, ?>, Ssl> {
 
