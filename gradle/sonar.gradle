@@ -1,29 +1,29 @@
-apply plugin: 'org.sonarqube'
+apply plugin: "org.sonarqube"
 
-ext.pullRequest = System.getenv()['CHANGE_ID'] ?: null
+ext.pullRequest = System.getenv()["CHANGE_ID"] ?: null
 
 sonar {
     properties {
-        property 'sonar.host.url', project.getProperty('sonar.host.url')
-        property 'sonar.token', project.hasProperty('sonar.token') ? project.getProperty('sonar.token') : null
-        property 'sonar.sourceEncoding', 'UTF-8'
-        property 'sonar.organization', 'zowe'
-        property 'sonar.projectKey', 'zowe_api-layer'
-        property 'sonar.projectName', 'Zowe API Mediation Layer'
-        property 'sonar.projectVersion', project.version
-        property 'sonar.language', 'java'
-        property 'sonar.links.scm', 'https://github.com/zowe/api-layer'
-        property 'sonar.links.ci', System.getenv()['BUILD_URL'] ?: null
+        property "sonar.host.url", project.getProperty("sonar.host.url")
+        property "sonar.token", project.hasProperty("sonar.token") ? project.getProperty("sonar.token") : null
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.organization", "zowe"
+        property "sonar.projectKey", "zowe_api-layer"
+        property "sonar.projectName", "Zowe API Mediation Layer"
+        property "sonar.projectVersion", project.version
+        property "sonar.language", "java"
+        property "sonar.links.scm", "https://github.com/zowe/api-layer"
+        property "sonar.links.ci", System.getenv()["BUILD_URL"] ?: null
 
         if (pullRequest != null) {
-            property 'sonar.pullrequest.key', System.getenv()['CHANGE_ID'] ?: null
-            property 'sonar.pullrequest.branch', System.getenv()['CHANGE_BRANCH'] ?: null
-            property 'sonar.pullrequest.base', System.getenv()['CHANGE_TARGET'] ?: null
-            property 'sonar.github.pullRequest', pullRequest
-            property 'sonar.github.repository', 'zowe/api-layer'
-            property 'sonar.github.oauth',  project.hasProperty('sonar.github.oauth') ? project.getProperty('sonar.github.oauth') : null
+            property "sonar.pullrequest.key", System.getenv()["CHANGE_ID"] ?: null
+            property "sonar.pullrequest.branch", System.getenv()["CHANGE_BRANCH"] ?: null
+            property "sonar.pullrequest.base", System.getenv()["CHANGE_TARGET"] ?: null
+            property "sonar.github.pullRequest", pullRequest
+            property "sonar.github.repository", "zowe/api-layer"
+            property "sonar.github.oauth",  project.hasProperty("sonar.github.oauth") ? project.getProperty("sonar.github.oauth") : null
         } else {
-            property 'sonar.branch.name', System.getenv()['BRANCH_NAME'] ?: null
+            property "sonar.branch.name", System.getenv()["BRANCH_NAME"] ?: null
         }
     }
 }
@@ -31,135 +31,135 @@ sonar {
 subprojects {
     sonar {
         properties {
-            property 'sonar.sources', 'src/main/java'
-            property 'sonar.tests', 'src/test/java'
+            property "sonar.sources", "src/main/java"
+            property "sonar.tests", "src/test/java"
         }
     }
 }
 
-project(':api-catalog-ui') {
+project(":api-catalog-ui") {
     sonar {
         properties {
-            property 'sonar.sources', 'frontend/src'
-            property 'sonar.tests', 'frontend/test'
-            property 'sonar.javascript.lcov.reportPaths', 'frontend/coverage/lcov.info'
-            property 'sonar.exclusions', '**/*.test.*, **/*.css, **/*index.js, **/*setupTests.js'
+            property "sonar.sources", "frontend/src"
+            property "sonar.tests", "frontend/test"
+            property "sonar.javascript.lcov.reportPaths", "frontend/coverage/lcov.info"
+            property "sonar.exclusions", "**/*.test.*, **/*.css, **/*index.js, **/*setupTests.js"
         }
     }
 }
 
-project(':zowe-cli-id-federation-plugin') {
+project(":zowe-cli-id-federation-plugin") {
     sonar {
         properties {
-            property 'sonar.sources', 'src'
-            property 'sonar.tests', '__tests__'
-            property 'sonar.javascript.lcov.reportPaths', '__tests__/__results__/unit/coverage/lcov.info'
-            property 'sonar.exclusions', '**/*index.ts, **/*healthCheck.Handler.ts'
+            property "sonar.sources", "src"
+            property "sonar.tests", "__tests__"
+            property "sonar.javascript.lcov.reportPaths", "__tests__/__results__/unit/coverage/lcov.info"
+            property "sonar.exclusions", "**/*index.ts, **/*healthCheck.Handler.ts"
         }
     }
 }
 
-project(':onboarding-enabler-nodejs') {
+project(":onboarding-enabler-nodejs") {
     sonar {
         skipProject = true
     }
 }
 
-project(':onboarding-enabler-nodejs-sample-app') {
+project(":onboarding-enabler-nodejs-sample-app") {
     sonar {
         skipProject = true
     }
 }
 
-project(':onboarding-enabler-micronaut-sample-app') {
+project(":onboarding-enabler-micronaut-sample-app") {
     sonar {
         skipProject = true
     }
 }
 
-project(':onboarding-enabler-spring-sample-app') {
+project(":onboarding-enabler-spring-sample-app") {
     sonar {
         skipProject = true
     }
 }
 
-project(':platform') {
-    sonar {
-        skipProject = true
-    }
-}
-
-// Packaging project; sonar does not apply
-project(':api-catalog-package') {
+project(":platform") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project; sonar does not apply
-project(':discovery-package') {
+project(":api-catalog-package") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project; sonar does not apply
-project(':caching-service-package') {
+project(":discovery-package") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project; sonar does not apply
-project(':apiml-common-lib-package') {
+project(":caching-service-package") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project; sonar does not apply
-project(':apiml-sample-extension-package') {
+project(":apiml-common-lib-package") {
+    sonar {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
+project(":apiml-sample-extension-package") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project: sonar does not apply
-project(':cloud-gateway-package') {
+project(":cloud-gateway-package") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project: sonar does not apply
-project(':gateway-package') {
+project(":gateway-package") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project; sonar does not apply
-project(':apiml-sample-extension') {
+project(":apiml-sample-extension") {
     sonar {
         skipProject = true
     }
 }
 
 // Packaging project; sonar does not apply
-project(':mock-services') {
+project(":mock-services") {
     sonar {
         skipProject = true
     }
 }
 
-project(':integration-tests') {
+project(":integration-tests") {
     sonar {
         properties {
-            property 'sonar.sources', 'nosonar'
-            property 'sonar.exclusions', 'nosonar/**/*'
-            property 'sonar.test', 'src/test/java'
-            property 'sonar.java.binaries', 'build/libs'
-            property 'sonar.junit.reportPaths','build/test-results/test'
+            property "sonar.sources", "nosonar"
+            property "sonar.exclusions", "nosonar/**/*"
+            property "sonar.test", "src/test/java"
+            property "sonar.java.binaries", "build/libs"
+            property "sonar.junit.reportPaths","build/test-results/test"
         }
     }
 }
