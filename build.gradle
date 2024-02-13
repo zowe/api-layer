@@ -92,23 +92,6 @@ allprojects {
         }
     }
 
-    configurations.all {
-        exclude group: "javax.servlet", module: "servlet-api"
-        exclude group: 'org.glassfish', module: 'jakarta.el'
-        exclude group: 'commons-httpclient', module: 'commons-httpclient'
-
-        resolutionStrategy.dependencySubstitution {
-            substitute(module('aopalliance:aopalliance:1.0')).using(module("org.glassfish.hk2.external:aopalliance-repackaged:${libs.versions.aopalliance.get()}"))
-
-            // upgrade Bouncy Castle from 1.5 to 1.8
-            substitute(module('org.bouncycastle:bcprov-jdk15on')).using(module("org.bouncycastle:bcprov-jdk18on:${libs.versions.bouncyCastle.get()}"))
-            substitute(module('org.bouncycastle:bcpkix-jdk15on')).using(module("org.bouncycastle:bcpkix-jdk18on:${libs.versions.bouncyCastle.get()}"))
-        }
-
-        resolutionStrategy.force libs.log4j.api
-        resolutionStrategy.force libs.log4j.to.slf4j
-        resolutionStrategy.force libs.caffeine
-    }
 }
 
 configure(subprojects.findAll {it.name != 'platform'}) {
