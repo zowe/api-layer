@@ -99,10 +99,10 @@ dependencies {
     implementation libs.jetty.util
     implementation libs.jetty.websocket.api
     implementation libs.jjwt
-    implementation libs.nimbusJoseJwt
+    implementation libs.nimbus.jose.jwt
 
     implementation libs.thymeleaf
-    implementation libs.thymeleafSpring
+    implementation libs.thymeleaf.spring5
     implementation libs.logback.core
     implementation libs.logback.classic
 

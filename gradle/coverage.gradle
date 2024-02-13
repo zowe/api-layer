@@ -14,7 +14,7 @@ ext.javaProjectsWithUnitTests = [
     'onboarding-enabler-spring',
     'security-module',
     'security-service-client-spring',
-    //'onboarding-enabler-micronaut',
+    'onboarding-enabler-micronaut',
     //'onboarding-enabler-micronaut-sample-app',
     'apiml-security-common',
     'zaas-client',
