@@ -87,7 +87,7 @@ function buildPackage {
 }
 
 function buildApimlCommonPackage {
-    buildPackage "apiml-common-lib-package" "packageCommonLib -x gateway-service:test -x discovery-service:test -x api-catalog-services:test -x api-catalog-ui:test -x api-catalog-ui:npmLint"
+    buildPackage "apiml-common-lib-package" "packageCommonLib -x discovery-service:test -x api-catalog-services:test -x api-catalog-ui:test -x api-catalog-ui:npmLint"
 }
 
 function preparePackage {
