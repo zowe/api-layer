@@ -64,11 +64,9 @@ class TomcatKeyringFixTest {
         @Test
         void whenInvalidFormatAndMissingPassword_thenFixIt() {
             customize("safkeyring:///userId/ringIdKs", null, null, "safkeyringpce:////userId/ringIdTs", null);
-            verify(sslHostConfig).addCertificate(any(SSLHostConfigCertificate.class));
             verify(sslHostConfig).setTruststoreFile("safkeyringpce://userId/ringIdTs");
             verify(sslHostConfig).setTruststorePassword(PASSWORD);
         }
-
     }
 
     @Nested
@@ -81,7 +79,6 @@ class TomcatKeyringFixTest {
             verify(sslHostConfig, never()).setTruststoreFile(any());
             verify(sslHostConfig, never()).setTruststorePassword(any());
         }
-
     }
 
     @Nested
@@ -96,7 +93,5 @@ class TomcatKeyringFixTest {
             customize("safkeyring:///userId/ringIdKs", null, null, "safkeyringpce:////userId/ringIdTs", null);
             assertSame(cert, ReflectionTestUtils.getField(sslHostConfig, "defaultCertificate"));
         }
-
     }
-
 }
