@@ -25,9 +25,12 @@ import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SafIdtConfiguration;
 import org.zowe.apiml.util.config.SslContext;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -42,10 +45,11 @@ import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
     private static final CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     @SuppressWarnings("unused")
     private static Stream<Arguments> validToBeTransformed() {
-        return Stream.of(
+        List<Arguments> arguments = Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
                 assertNull(response.jsonPath().getString("headers.authorization"));
@@ -56,17 +60,20 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
                 assertNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             }),
-            // Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
-            //     assertNull(response.jsonPath().getString("cookies.jwtToken"));
-            //     assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
-            //     assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
-            // }),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("headers.authorization"));
                 assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         );
+        if (safIdtConf.isEnabled()) {
+            arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
+                assertNull(response.jsonPath().getString("cookies.jwtToken"));
+                assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+            }));
+        }
+        return arguments.stream();
     }
 
     @SuppressWarnings("unused")
@@ -79,12 +86,15 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
             assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
         };
 
-        return Stream.of(
+        List<Arguments> arguments = Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, assertions),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
-            // Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
         );
+        if (safIdtConf.isEnabled()) {
+            arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions));
+        }
+        return arguments.stream();
     }
 
     @BeforeAll

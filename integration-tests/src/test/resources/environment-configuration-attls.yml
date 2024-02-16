@@ -52,6 +52,10 @@ zosmfServiceConfiguration:
     host: localhost
     port: 10013
     serviceId: mockzosmf
+safIdtConfiguration:
+    enabled: true
+oidcConfiguration:
+    clientId:
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 instanceEnv:

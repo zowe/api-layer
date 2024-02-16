@@ -119,7 +119,7 @@ public class SecurityUtils {
     public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
     public final static String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
-    public final static String OKTA_CLIENT_ID = System.getProperty("okta.client.id");
+    public final static String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
     public final static String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
     public final static String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
     public final static String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();

@@ -180,7 +180,6 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     description "Run all integration tests for Zowe testing"
 
     systemProperty "environment.config", "-r139"
-    systemProperty "okta.client.id", "0oa6a48mniXAqEMrx5d7"
     systemProperty "environment.offPlatform", "true"
     systemProperties System.properties
 

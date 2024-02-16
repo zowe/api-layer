@@ -43,7 +43,9 @@ import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
 
 @zOSMFAuthTest
 class ZosmfLoginTest implements TestWithStartedInstances {
+
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String ZOSMF_ENDPOINT = "/" + ZOSMF_SERVICE_ID + "/api/v1/restfiles/ds";
 
     @BeforeAll
@@ -78,7 +80,6 @@ class ZosmfLoginTest implements TestWithStartedInstances {
         }
     }
 
-
     @Nested
     class WhenUserAuthenticatesTests {
         @Nested
@@ -97,7 +98,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                         .extract()
                         .detailedCookie(COOKIE_NAME);
 
-                assertValidAuthToken(cookie, Optional.of("PROD001"));
+                assertValidAuthToken(cookie, Optional.of(USERNAME));
             }
 
             @ParameterizedTest(name = "givenValidClientCertAndInvalidBasic {index} {0} ")
@@ -114,7 +115,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                         .cookie(COOKIE_NAME, not(isEmptyString()))
                         .extract().detailedCookie(COOKIE_NAME);
 
-                assertValidAuthToken(cookie, Optional.of("PROD001"));
+                assertValidAuthToken(cookie, Optional.of(USERNAME));
             }
         }
     }

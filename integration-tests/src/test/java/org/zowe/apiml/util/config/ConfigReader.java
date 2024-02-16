@@ -68,6 +68,8 @@ public class ConfigReader {
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
                         IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
+                        SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
+                        OidcConfiguration oidcConfiguration = new OidcConfiguration("");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -82,7 +84,10 @@ public class ConfigReader {
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
                             null,
-                            idpConfiguration);
+                            idpConfiguration,
+                            safIdtConfiguration,
+                            oidcConfiguration
+                        );
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
@@ -128,6 +133,10 @@ public class ConfigReader {
                     configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
                     configuration.getIdpConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getIdpConfiguration().getAlternateUser()));
                     configuration.getIdpConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getIdpConfiguration().getAlternatePassword()));
+
+                    configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
+
+                    configuration.getOidcConfiguration().setClientId(System.getProperty("okta.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
