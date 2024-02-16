@@ -179,7 +179,7 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing"
 
-    systemProperty "environment.config", "-r139"
+    //systemProperty "environment.config", "-sys"
     systemProperty "environment.offPlatform", "true"
     systemProperties System.properties
 
