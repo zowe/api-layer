@@ -48,8 +48,6 @@ public class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
 
-    private static final String OKTA_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
-
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
@@ -68,6 +66,7 @@ public class ZaasNegativeTest {
         add(generateJwtWithRandomSignature("https://localhost:10010"));
     }};
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
@@ -83,6 +82,7 @@ public class ZaasNegativeTest {
         return argumentsList.stream();
     }
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> provideZaasEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
@@ -95,6 +95,7 @@ public class ZaasNegativeTest {
         return argumentsList.stream();
     }
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> provideZaasTokenEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : tokenEndpoints) {
@@ -143,9 +144,10 @@ public class ZaasNegativeTest {
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
         void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
+            String oktaTokenNoMapping = SecurityUtils.validOktaAccessToken(false);
             //@formatter:off
             requestSpecification
-                .header("Authorization", "Bearer " + OKTA_TOKEN_NO_MAPPING)
+                .header("Authorization", "Bearer " + oktaTokenNoMapping)
             .when()
                 .post(uri)
             .then()

@@ -112,13 +112,11 @@ class RoutedServicesTest {
         routedServices.addRoutedService(routedService1);
         routedServices.addRoutedService(routedService2);
 
-        routedService = routedServices.getBestMatchingApiUrl("/test");
+        routedService = routedServices.getBestMatchingApiUrl("/test2/api/v2");
 
         assertEquals("api_v2", routedService.getSubServiceId());
         assertEquals("api/v2", routedService.getGatewayUrl());
         assertEquals("/test2/api/v2", routedService.getServiceUrl());
-
-
     }
 
     @Test
