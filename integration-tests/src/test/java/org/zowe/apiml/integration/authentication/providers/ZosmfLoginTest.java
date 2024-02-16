@@ -45,7 +45,7 @@ import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
 class ZosmfLoginTest implements TestWithStartedInstances {
 
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
     private final static String ZOSMF_ENDPOINT = "/" + ZOSMF_SERVICE_ID + "/api/v1/restfiles/ds";
 
     @BeforeAll
