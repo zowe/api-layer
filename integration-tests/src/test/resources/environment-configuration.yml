@@ -59,7 +59,7 @@ zosmfServiceConfiguration:
     port: 10013
     serviceId: mockzosmf
 auxiliaryUserList:
-    value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
+    value: 'servicesinfo-authorized,USER,validPassword,APIMTST;servicesinfo-unauthorized,USER1,validPassword,APIMTST'
 idpConfiguration:
     host: https://dev-95727686.okta.com
 safIdtConfiguration:
