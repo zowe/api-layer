@@ -4,6 +4,7 @@ apiml:
     service:
         forwardClientCertEnabled: true
         hostname: localhost
+        port: 10023
 eureka:
     client:
         serviceUrl:
