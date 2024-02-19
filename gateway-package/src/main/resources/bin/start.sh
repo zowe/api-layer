@@ -144,9 +144,9 @@ fi
 if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
-    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+    GATEWAY_LOADER_PATH=/usr/include/java_classes/IRRRacf.jar
 else
-    GATEWAY_LOADER_PATH=${COMMON_LIB}
+    GATEWAY_LOADER_PATH=""
 fi
 
 ATTLS_ENABLED="false"
