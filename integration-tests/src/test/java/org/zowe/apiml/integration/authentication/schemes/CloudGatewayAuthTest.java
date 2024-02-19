@@ -28,6 +28,7 @@ import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SafIdtConfiguration;
 import org.zowe.apiml.util.config.SslContext;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +50,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
     @SuppressWarnings("unused")
     private static Stream<Arguments> validToBeTransformed() {
-        List<Arguments> arguments = Arrays.asList(
+        List<Arguments> arguments = new ArrayList<>(Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
                 assertNull(response.jsonPath().getString("headers.authorization"));
@@ -65,7 +66,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
                 assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
-        );
+        ));
         if (safIdtConf.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
                 assertNull(response.jsonPath().getString("cookies.jwtToken"));
@@ -86,11 +87,11 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
             assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
         };
 
-        List<Arguments> arguments = Arrays.asList(
+        List<Arguments> arguments = new ArrayList<>(Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, assertions),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
-        );
+        ));
         if (safIdtConf.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions));
         }
