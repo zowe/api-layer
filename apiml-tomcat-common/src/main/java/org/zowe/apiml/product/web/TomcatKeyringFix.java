@@ -96,9 +96,7 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
 
             if (isKeyring(trustStore)) {
                 sslConfig.setTruststoreFile(formatKeyringUrl(trustStore));
-                if (trustStorePassword == null) {
-                    sslConfig.setTruststorePassword(KEYRING_PASSWORD);
-                }
+                sslConfig.setTruststorePassword(trustStorePassword == null ? KEYRING_PASSWORD : trustStorePassword);
             }
         });
     }
