@@ -85,14 +85,14 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
                 sslConfig.getCertificates().forEach(certificate -> {
                     certificate.setCertificateKeystoreFile(formatKeyringUrl(keyStore));
                     certificate.setCertificateKeyAlias(keyAlias);
-                    certificate.setCertificateKeystorePassword(keyStorePassword == null ? KEYRING_PASSWORD : keyStorePassword);
-                    certificate.setCertificateKeyPassword(keyPassword == null ? KEYRING_PASSWORD : keyPassword);
+                    certificate.setCertificateKeystorePassword(keyStorePassword == null ? KEYRING_PASSWORD : String.valueOf(keyStorePassword));
+                    certificate.setCertificateKeyPassword(keyPassword == null ? KEYRING_PASSWORD : String.valueOf(keyPassword));
                 });
             }
 
             if (isKeyring(trustStore)) {
                 sslConfig.setTruststoreFile(formatKeyringUrl(trustStore));
-                sslConfig.setTruststorePassword(trustStorePassword == null ? KEYRING_PASSWORD : trustStorePassword);
+                sslConfig.setTruststorePassword(trustStorePassword == null ? KEYRING_PASSWORD : String.valueOf(trustStorePassword));
             }
         });
     }
