@@ -2,6 +2,7 @@ credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
     user: USER
     password: validPassword
+    clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
     host: localhost
