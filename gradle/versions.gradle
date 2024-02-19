@@ -13,8 +13,8 @@ dependencyResolutionManagement {
             version('springCloudGateway', '3.1.9')
             version('springSecurity') {
                 // older versions are vulnerable to CVE-2023-20862
-                strictly '[5.8.9,6.0.0['
-                prefer '5.8.9'
+                strictly '[5.8.10,6.0.0['
+                prefer '5.8.10'
             }
             version('springFramework') {
                 // older versions are vulnerable to CVE-2023-20863
