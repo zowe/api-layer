@@ -65,7 +65,7 @@ class WebSocketClientFactoryTest {
         @BeforeEach
         void setUp() {
             SslContextFactory.Client sslClient = mock(SslContextFactory.Client.class);
-            this.webSocketClientFactory = new WebSocketClientFactory(sslClient, 1234);
+            this.webSocketClientFactory = new WebSocketClientFactory(sslClient, 1234, 0, 0, 0);
         }
 
         @Test

@@ -41,7 +41,6 @@ dependencies {
     testImplementation libs.logback.classic
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-    testImplementation libs.jsoup
     testImplementation libs.rest.assured
     testImplementation libs.jackson.annotations
     testImplementation libs.jackson.core
