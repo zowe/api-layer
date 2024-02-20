@@ -10,27 +10,33 @@
 
 package org.zowe.apiml.gateway.ws;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.api.WebSocketPolicy;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(
     properties = {
-        "server.webSocket.maxIdleTimeout",
-        "server.webSocket.connectTimeout",
-        "server.webSocket.stopTimeout",
-        "server.webSocket.asyncWriteTimeout",
+        "server.webSocket.maxIdleTimeout=10000",
+        "server.webSocket.connectTimeout=1000",
+        "server.webSocket.stopTimeout=500",
+        "server.webSocket.asyncWriteTimeout=1500",
     },
     classes = { WebSocketClientFactory.class }
 )
+@MockBean(SslContextFactory.Client.class)
 @ActiveProfiles("WebSocketClientFactoryContextTest")
 public class WebSocketClientFactoryContextTest {
 
@@ -42,21 +48,41 @@ public class WebSocketClientFactoryContextTest {
 
         @Test
         void thenBeanIsInitialized() {
-            // verify the fields in the autowired bean
-            // verify the values in the configured client.
             assertNotNull(webSocketClientFactory);
+
+            JettyWebSocketClient jettyWebSocketClient = (JettyWebSocketClient) ReflectionTestUtils.getField(webSocketClientFactory, "client");
+            WebSocketClient webSocketClient = (WebSocketClient) ReflectionTestUtils.getField(jettyWebSocketClient, "client");
+
+            WebSocketPolicy policy = webSocketClient.getPolicy();
+            HttpClient httpClient = webSocketClient.getHttpClient();
+
+            assertEquals(10000, policy.getIdleTimeout());
+            assertEquals(1000, httpClient.getConnectTimeout());
+            assertEquals(500, webSocketClient.getStopTimeout());
+            assertEquals(1500, policy.getAsyncWriteTimeout());
         }
 
     }
 
-    @TestConfiguration
-    @Profile("WebSocketClientFactoryContextTest")
-    public static class Config {
+    @Nested
+    class GivenFactory {
 
-        @Bean
-        SslContextFactory.Client jettyClientSslContextFactory() {
-            return null;
+        private JettyWebSocketClient client = mock(JettyWebSocketClient.class);
+        private WebSocketClientFactory factory = new WebSocketClientFactory(client);
+
+        @Test
+        void whenIsRunning_thenStop() {
+            doReturn(true).when(client).isRunning();
+            factory.closeClient();
+            verify(client).stop();
+        }
+
+        @Test
+        void whenIsNotRunning_thenDontStop() {
+            factory.closeClient();
+            verify(client, never()).stop();
         }
 
     }
+
 }
