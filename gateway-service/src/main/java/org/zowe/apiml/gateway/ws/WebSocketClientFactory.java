@@ -38,13 +38,19 @@ public class WebSocketClientFactory {
 
     @Autowired
     public WebSocketClientFactory(
-        SslContextFactory.Client jettyClientSslContextFactory,
-        @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout
+            SslContextFactory.Client jettyClientSslContextFactory,
+            @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout,
+            @Value("${server.webSocket.connectTimeout:15000}") long connectTimeout,
+            @Value("${server.webSocket.stopTimeout:30000}") long stopTimeout,
+            @Value("${server.webSocket.asyncWriteTimeout:60000}") long asyncWriteTimeout
         ) {
         log.debug("Creating Jetty WebSocket client, with SslFactory: {}",
             jettyClientSslContextFactory);
         WebSocketClient wsClient = new WebSocketClient(new HttpClient(jettyClientSslContextFactory));
         wsClient.setMaxIdleTimeout(maxIdleWebSocketTimeout);
+        wsClient.setConnectTimeout(connectTimeout);
+        wsClient.setStopTimeout(stopTimeout);
+        wsClient.setAsyncWriteTimeout(asyncWriteTimeout);
         client = new JettyWebSocketClient(wsClient);
         client.start();
     }
