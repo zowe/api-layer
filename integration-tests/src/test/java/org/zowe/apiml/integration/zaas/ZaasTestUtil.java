@@ -21,6 +21,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.util.SecurityUtils.getClientCertificate;
@@ -39,11 +41,15 @@ public class ZaasTestUtil {
     static final String COOKIE = "apimlAuthenticationToken";
     static final String LTPA_COOKIE = "LtpaToken2";
 
-    private static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
-        return Stream.of(
-            Arguments.of(getClientCertificate()),
-            Arguments.of(getDummyClientCertificate())
-        );
-    }
+    static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
 
+    @SuppressWarnings("unused")
+    private static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
+        List<Arguments> args = new ArrayList<>();
+        args.add(Arguments.of(getClientCertificate()));
+        if (!ZOS_TARGET) {
+            args.add(Arguments.of(getDummyClientCertificate()));
+        }
+        return args.stream();
+    }
 }

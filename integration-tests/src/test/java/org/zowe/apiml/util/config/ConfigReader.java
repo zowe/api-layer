@@ -170,6 +170,7 @@ public class ConfigReader {
         tlsConfiguration.setKeyAlias(System.getProperty("tlsConfiguration.keyAlias", tlsConfiguration.getKeyAlias()));
         tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyPassword", tlsConfiguration.getKeyPassword()));
         tlsConfiguration.setClientKeystore(System.getProperty("tlsConfiguration.clientKeyStore", tlsConfiguration.getClientKeystore()));
+        tlsConfiguration.setClientCN(System.getProperty("tlsConfiguration.clientCN", tlsConfiguration.getClientCN()));
         tlsConfiguration.setKeyStore(System.getProperty("tlsConfiguration.keyStore", tlsConfiguration.getKeyStore()));
         tlsConfiguration.setKeyStoreType(System.getProperty("tlsConfiguration.keyStoreType", tlsConfiguration.getKeyStoreType()));
         tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));

@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
+import org.zowe.apiml.util.categories.SafIdTokenTest;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -40,6 +41,7 @@ import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
+@SafIdTokenTest
 public class SafIdTokensTest implements TestWithStartedInstances {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();

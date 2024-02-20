@@ -49,8 +49,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @GeneralAuthenticationTest
 class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+
+    private static final String KEY_ALIAS = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyAlias();
+
+    private static final String APPLID = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
+
     private static final String INVALID_USER = "usr";
     private static final String INVALID_PASS = "usr";
     private static final String NULL_USER = null;
@@ -94,7 +99,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         inputStream = new FileInputStream(keyStoreFile);
         ks.load(inputStream, configProperties.getKeyStorePassword());
 
-        return ks.getKey("localhost", configProperties.getKeyStorePassword());
+        return ks.getKey(KEY_ALIAS, configProperties.getKeyStorePassword());
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
@@ -254,7 +259,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         @Test
         void givenValidToken_thenValidPassTicketIsReturned() throws ZaasClientException, ZaasConfigurationException {
             String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
-            String passTicket = tokenService.passTicket(token, "ZOWEAPPL");
+            String passTicket = tokenService.passTicket(token, APPLID);
             assertNotNull(passTicket);
             assertThat(token, is(not(EMPTY_STRING)));
         }
@@ -266,7 +271,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             void givenInvalidToken() {
                 assertThrows(ZaasClientException.class, () -> {
                     String invalidToken = "INVALID_TOKEN";
-                    tokenService.passTicket(invalidToken, "ZOWEAPPL");
+                    tokenService.passTicket(invalidToken, APPLID);
                 });
             }
 
@@ -274,7 +279,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             void givenEmptyToken() {
                 assertThrows(ZaasClientException.class, () -> {
                     String emptyToken = "";
-                    tokenService.passTicket(emptyToken, "ZOWEAPPL");
+                    tokenService.passTicket(emptyToken, APPLID);
                 });
             }
 

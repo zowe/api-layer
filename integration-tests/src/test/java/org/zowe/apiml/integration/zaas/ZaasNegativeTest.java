@@ -48,6 +48,8 @@ public class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
 
+    private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
+
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
@@ -204,7 +206,7 @@ public class ZaasNegativeTest {
                 .getBody()
                 .getSubject();
 
-            assertEquals("APIMTST", userId);
+            assertEquals(CLIENT_USER, userId);
         }
     }
 }

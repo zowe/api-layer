@@ -175,12 +175,18 @@ task runAllIntegrationTests(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task runAllIntegrationTestsForZoweTesting(type: Test) {
-    group "Integration tests"
-    description "Run all integration tests for Zowe testing"
+task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
+    // This task is intended to run on z/OS systems with some limitations:
+    // Only 1 Gateway
+    // z/OSMF Authentication provider only
+    // No support for SAF ID Tokens
 
-    //systemProperty "environment.config", "-sys"
+    group "Integration tests"
+    description "Run all integration tests for Zowe testing on z/OS (limited)"
+
+    systemProperty "environment.config", "-r151"
     systemProperty "environment.offPlatform", "true"
+    systemProperty "environment.zos.target", "true"
     systemProperties System.properties
 
     useJUnitPlatform {
@@ -196,7 +202,33 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
-            'SAFAuthTest'
+//            'SAFAuthTest',
+//            'CachingServiceTest',
+            'CloudGatewayProxyTest',
+            'SafIdTokensTest'
+        )
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runAllIntegrationTestsForZoweTesting(type: Test) {
+    group "Integration tests"
+    description "Run all integration tests for Zowe testing"
+
+    systemProperty "environment.offPlatform", "true"
+    systemProperties System.properties
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest',
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest'
         )
     }
     outputs.upToDateWhen { false }
