@@ -22,7 +22,7 @@ import static java.lang.annotation.ElementType.TYPE;
 /**
  * For testing SAF Id Tokens support through its default ZSS provider
  */
-@Tag("ZaasTest")
+@Tag("SafIdTokenTest")
 @Target({ TYPE, METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SafIdTokenTest {

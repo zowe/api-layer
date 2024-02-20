@@ -205,7 +205,7 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
 //            'SAFAuthTest',
 //            'CachingServiceTest',
             'CloudGatewayProxyTest',
-            'SafIdTokensTest'
+            'SafIdTokenTest'
         )
     }
     outputs.upToDateWhen { false }

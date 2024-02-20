@@ -145,9 +145,18 @@ public class ConfigReader {
                 }
             }
             log.info("Actual configuration: {}", instance);
+
+            verifyTlsPaths(instance);
         }
 
         return instance;
+    }
+
+    private static void verifyTlsPaths(EnvironmentConfiguration env) {
+        TlsConfiguration tlsConfig = env.getTlsConfiguration();
+        if (!new File(tlsConfig.getKeyStore()).exists()) throw new RuntimeException(String.format("%s does not exist", tlsConfig.getKeyStore()));
+        if (!new File(tlsConfig.getClientKeystore()).exists()) throw new RuntimeException(String.format("%s does not exist", tlsConfig.getClientKeystore()));
+        if (!new File(tlsConfig.getTrustStore()).exists()) throw new RuntimeException(String.format("%s does not exist", tlsConfig.getTrustStore()));
     }
 
     private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
