@@ -47,7 +47,7 @@ class CloudGatewayProxyTest {
         conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
     }
 
-    @Disabled
+    @Test
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
         given().header(HEADER_X_FORWARD_TO, "apiml1")
@@ -56,7 +56,7 @@ class CloudGatewayProxyTest {
             .get(new URI(scgUrl)).then().statusCode(200);
     }
 
-    @Disabled
+    @Test
     void givenBasePath_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1/gateway/version");
         String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml2/gateway/version");
@@ -80,7 +80,7 @@ class CloudGatewayProxyTest {
     @Nested
     class GivenClientCertificateInRequest {
 
-        @Disabled
+        @Test
         void givenRequestHeader_thenCertPassedToDomainGateway() {
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
             given()
@@ -94,7 +94,7 @@ class CloudGatewayProxyTest {
                 .body("cn", is("APIMTST"));
         }
 
-        @Disabled
+        @Test
         void givenBasePath_thenCertPassedToDomainGateway() {
             String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
             given()
