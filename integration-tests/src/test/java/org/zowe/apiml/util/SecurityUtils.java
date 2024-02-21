@@ -179,14 +179,51 @@ public class SecurityUtils {
         return cookie;
     }
 
+    /**
+     *
+     * @return
+     */
+    public static String getZosmfJwtTokenFromGw() {
+        return getZosmfTokenFromGw("apimlAuthenticationToken");
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static String getZosmfLtpaTokenFromGw() {
+        return getZosmfTokenFromGw("LtpaToken2");
+    }
+
+    /**
+     * Get z/OSMF jwtToken cookie value from a direct call to z/OSMF
+     *
+     * @return
+     */
     public static String getZosmfJwtToken() {
         return getZosmfTokenWebClient("jwtToken");
     }
 
+    /**
+     * Get z/OSMF LtpaToken2 cookie value from a direct call to z/OSMF
+     *
+     * @return
+     */
     public static String getZosmfLtpaToken() {
         return getZosmfTokenWebClient("LtpaToken2");
     }
 
+    public static String getZosmfTokenFromGw(String cookie) {
+        URI gwUrl = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
+        return getZosmfToken(gwUrl.toString(), cookie, SC_NO_CONTENT);
+    }
+
+    /**
+     * Direct call to z/OSMF using Apache HTTP client
+     *
+     * @param cookie Which cookie name to retrieve
+     * @return
+     */
     public static String getZosmfTokenWebClient(String cookie) {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) { // Can't think of a reason to test SSL connection between Integration test runner and z/OSMF
             HttpClientContext context = HttpClientContext.create();
@@ -214,7 +251,17 @@ public class SecurityUtils {
         }
     }
 
+    /**
+     * Direct call to z/OSMF using RestAssured
+     *
+     * @param cookie Which cookie name to retrieve
+     * @return
+     */
     public static String getZosmfToken(String cookie) {
+        return getZosmfToken(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT), cookie, SC_OK);
+    }
+
+    private static String getZosmfToken(String url, String cookie, int expectedCode) {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
@@ -223,9 +270,9 @@ public class SecurityUtils {
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
-            .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT))
+            .post(url)
             .then()
-            .statusCode(is(SC_OK))
+            .statusCode(is(expectedCode))
             .cookie(cookie, not(isEmptyString()))
             .extract().cookie(cookie);
 
