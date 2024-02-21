@@ -18,6 +18,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
+import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
@@ -383,12 +384,13 @@ public class SecurityUtils {
         queryParams.put("state", "TEST");
         queryParams.put("nonce", "TEST");
         Response authResponse = given()
-            .queryParams(queryParams)
+                .config(RestAssured.config().httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 30 * 1000)))
+                .queryParams(queryParams)
             .when()
-            .get(OKTA_HOSTNAME + "/oauth2/default/v1/authorize")
+                .get(OKTA_HOSTNAME + "/oauth2/default/v1/authorize")
             .then()
-            .statusCode(200)
-            .extract().response();
+                .statusCode(200)
+                .extract().response();
 
         // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
 

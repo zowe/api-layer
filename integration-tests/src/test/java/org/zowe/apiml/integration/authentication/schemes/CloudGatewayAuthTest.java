@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -106,7 +105,6 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
     }
 
     @Nested
-    @Timeout(value = 30L) // 30 seconds timeout (can fail up to 2:30 in real test)
     class ValidAuthScheme {
 
         @ParameterizedTest(name = "givenValidRequest_thenCredentialsAreTransformed {0} [{index}]")

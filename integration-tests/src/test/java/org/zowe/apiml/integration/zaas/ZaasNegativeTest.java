@@ -25,6 +25,7 @@ import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SafIdtConfiguration;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.util.config.TlsConfiguration;
@@ -40,20 +41,29 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_SAFIDT_URI;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOSMF_URI;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOWE_URI;
+import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
 
 @ZaasTest
 public class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
+    private final static SafIdtConfiguration SAFIDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
 
     private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
-        add(ZAAS_SAFIDT_URI);
+        if (SAFIDT_CONF.isEnabled()) {
+            add(ZAAS_SAFIDT_URI);
+        }
     }};
 
     private static final Set<URI> endpoints = new HashSet<URI>() {{
