@@ -203,6 +203,7 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
             'ApiCatalogStandaloneTest',
 //            'SAFAuthTest',
 //            'CachingServiceTest',
+            'SAFProviderTest',
             'CloudGatewayProxyTest',
             'SafIdTokenTest'
         )
