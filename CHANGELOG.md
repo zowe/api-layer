@@ -2,6 +2,25 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.15.0 (2024-02-21)`
+
+* Feature:  allow further customization of websocket webclient (#3315) ([7e8d855](https://github.com/zowe/api-layer/commit/7e8d855)), closes [#3315](https://github.com/zowe/api-layer/issues/3315)
+* Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
+* Feature:  Cloud Gateway SAF IDT auth scheme (#3234) ([8d397b3](https://github.com/zowe/api-layer/commit/8d397b3)), closes [#3234](https://github.com/zowe/api-layer/issues/3234)
+* Feature:  ZAAS /safIdt endpoint to generate SAF ID token for authenticated user (#3220) ([c72adbc](https://github.com/zowe/api-layer/commit/c72adbc)), closes [#3220](https://github.com/zowe/api-layer/issues/3220)
+* Feature:  Add Zowe authentication scheme to Cloud Gateway (#3214) ([b71fbc1](https://github.com/zowe/api-layer/commit/b71fbc1)), closes [#3214](https://github.com/zowe/api-layer/issues/3214)
+
+
+* Bugfix:  Fix base path in API Catalog (#3297) ([309aac0](https://github.com/zowe/api-layer/commit/309aac0)), closes [#3297](https://github.com/zowe/api-layer/issues/3297)
+* Bugfix:  Fix disabling EhCache (#3280) ([a3067b9](https://github.com/zowe/api-layer/commit/a3067b9)), closes [#3280](https://github.com/zowe/api-layer/issues/3280)
+* Bugfix:  Fix closing WebSocket in case of 401 and other exception (#3271) ([aa8b316](https://github.com/zowe/api-layer/commit/aa8b316)), closes [#3271](https://github.com/zowe/api-layer/issues/3271)
+* Bugfix:  Fix disabling EhCache (#3276) ([3c18920](https://github.com/zowe/api-layer/commit/3c18920)), closes [#3276](https://github.com/zowe/api-layer/issues/3276)
+* Bugfix:  use empty keystore instead of implicit (#3273) ([57a201d](https://github.com/zowe/api-layer/commit/57a201d)), closes [#3273](https://github.com/zowe/api-layer/issues/3273)
+* Bugfix:  Fix conflict of XML processing between EhCache and onboarding (#3266) ([8d30acb](https://github.com/zowe/api-layer/commit/8d30acb)), closes [#3266](https://github.com/zowe/api-layer/issues/3266)
+* Bugfix:  update keyring path, configure registry from start script, set logging levels (#3265) ([5593723](https://github.com/zowe/api-layer/commit/5593723)), closes [#3265](https://github.com/zowe/api-layer/issues/3265)
+* Bugfix:  Fix truststore for websockets in Spring Cloud Gateway (v2) (#3249) ([b4d6730](https://github.com/zowe/api-layer/commit/b4d6730)), closes [#3249](https://github.com/zowe/api-layer/issues/3249)
+* Bugfix:  Fix of resource leak in loading of images in API Catalog (#3233) ([29424cd](https://github.com/zowe/api-layer/commit/29424cd)), closes [#3233](https://github.com/zowe/api-layer/issues/3233)
+
 ## `2.14.4 / Zowe 2.14.0 (2023-01-19)`
 
 * Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
