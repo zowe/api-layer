@@ -183,7 +183,7 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing on z/OS (limited)"
 
-    systemProperty "environment.config", "-r151"
+    //systemProperty "environment.config", "-sys"
     systemProperty "environment.offPlatform", "true"
     systemProperty "environment.zos.target", "true"
     systemProperties System.properties
@@ -201,8 +201,6 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
-//            'SAFAuthTest',
-//            'CachingServiceTest',
             'SAFProviderTest',
             'CloudGatewayProxyTest',
             'SafIdTokenTest'
@@ -228,7 +226,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OktaOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest'
         )
     }
     outputs.upToDateWhen { false }
