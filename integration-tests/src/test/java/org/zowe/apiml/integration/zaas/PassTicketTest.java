@@ -46,7 +46,7 @@ import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
 import static org.zowe.apiml.util.SecurityUtils.USERNAME;
 import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtToken;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtTokenFromGw;
 import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
@@ -71,7 +71,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZosmfToken() {
-            String zosmfToken = getZosmfJwtToken();
+            String zosmfToken = getZosmfJwtTokenFromGw();
 
             //@formatter:off
             given()
@@ -170,7 +170,7 @@ class PassTicketTest implements TestWithStartedInstances {
     @Nested
     class WhenGeneratingPassTicket_returnBadRequest {
 
-        private final String jwt = getZosmfJwtToken();
+        private final String jwt = getZosmfJwtTokenFromGw();
 
         @Test
         void givenNoApplicationName() {

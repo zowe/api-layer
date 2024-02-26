@@ -63,7 +63,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            String ltpaToken = getZosmfToken(LTPA_COOKIE);
+            String ltpaToken = getZosmfLtpaToken();
             String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off

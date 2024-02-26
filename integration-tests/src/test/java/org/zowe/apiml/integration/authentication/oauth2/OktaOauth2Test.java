@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -45,14 +46,14 @@ public class OktaOauth2Test {
     private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
     private static final String EXPIRED_TOKEN = SecurityUtils.expiredOktaAccessToken();
 
-    private static Stream<Arguments> validTokens() {
+    static Stream<Arguments> validTokens() {
         return Stream.of(
             Arguments.of(VALID_TOKEN_WITH_MAPPING),
             Arguments.of(VALID_TOKEN_NO_MAPPING)
         );
     }
 
-    private static Stream<Arguments> invalidTokens() {
+    static Stream<Arguments> invalidTokens() {
         return Stream.of(
             Arguments.of(EXPIRED_TOKEN),
             Arguments.of("invalid_token")
@@ -476,9 +477,15 @@ public class OktaOauth2Test {
     }
 
     @Nested
+    @DisabledIfSystemProperty(
+        named = "environment.zos.target",
+        matches = "true",
+        disabledReason = "Running API ML on z/OS. These tests require ZSS mocking"
+    )
     class GivenMappingOrZssErrors {
 
         private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
+
         @Test
         void testEmptyDistuinguishedNameError() {
             setZssResponse(200, ZssResponse.ZssError.MAPPING_EMPTY_INPUT);
