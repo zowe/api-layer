@@ -59,7 +59,7 @@ safIdtConfiguration:
 oidcConfiguration:
     clientId:
 auxiliaryUserList:
-    value: 'servicesinfo-authorized,USER,validPassword,USER;servicesinfo-unauthorized,USER1,validPassword,USER1'
+    value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 instanceEnv:
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZOWE_EXPLORER_HOST: localhost

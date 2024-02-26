@@ -33,7 +33,7 @@ public class AuxiliaryUserList {
                 s.split(",")[0],
                 s.split(",")[1],
                 s.split(",")[2],
-                s.split(",")[3])
+                null)
             )
             .collect(Collectors.toList());
     }
@@ -47,7 +47,7 @@ public class AuxiliaryUserList {
                 s.split(",")[0],
                 s.split(",")[1],
                 s.split(",")[2],
-                s.split(",")[3])
+                null)
             )
             .filter(credentials -> key.equals(credentials.getKey()))
             .collect(Collectors.toList());
