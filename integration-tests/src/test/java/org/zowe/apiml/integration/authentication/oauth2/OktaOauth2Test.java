@@ -46,16 +46,14 @@ public class OktaOauth2Test {
     private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
     private static final String EXPIRED_TOKEN = SecurityUtils.expiredOktaAccessToken();
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> validTokens() {
+    static Stream<Arguments> validTokens() {
         return Stream.of(
             Arguments.of(VALID_TOKEN_WITH_MAPPING),
             Arguments.of(VALID_TOKEN_NO_MAPPING)
         );
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> invalidTokens() {
+    static Stream<Arguments> invalidTokens() {
         return Stream.of(
             Arguments.of(EXPIRED_TOKEN),
             Arguments.of("invalid_token")

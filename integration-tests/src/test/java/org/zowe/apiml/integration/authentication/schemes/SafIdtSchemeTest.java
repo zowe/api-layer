@@ -48,8 +48,7 @@ public class SafIdtSchemeTest {
         pat = personalAccessToken(scopes);
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> accessTokens() {
+    static Stream<Arguments> accessTokens() {
 
         return Stream.of(
             Arguments.of(pat, COOKIE_NAME),

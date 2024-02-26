@@ -78,8 +78,7 @@ public class ZaasNegativeTest {
         add(generateJwtWithRandomSignature("https://localhost:10010"));
     }};
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
+    static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
@@ -94,8 +93,7 @@ public class ZaasNegativeTest {
         return argumentsList.stream();
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideZaasEndpoints() {
+    static Stream<Arguments> provideZaasEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
@@ -107,8 +105,7 @@ public class ZaasNegativeTest {
         return argumentsList.stream();
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideZaasTokenEndpoints() {
+    static Stream<Arguments> provideZaasTokenEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : tokenEndpoints) {
             RequestSpecification requestSpec = given();

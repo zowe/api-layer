@@ -43,8 +43,7 @@ public class ZaasTestUtil {
 
     static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
+    static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
         args.add(Arguments.of(getClientCertificate()));
         if (!ZOS_TARGET) {

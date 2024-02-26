@@ -245,11 +245,9 @@ class LoginTest implements TestWithStartedInstances {
     }
     //@formatter:on
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> testLoginFactCombinationsSource() {
+    static Stream<Arguments> testLoginFactCombinationsSource() {
 
         LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD.toCharArray());
-        LoginRequest incorrectUser = new LoginRequest("aaa", "aaa".toCharArray());
         URI loginNew = LOGIN_ENDPOINT_URL;
         URI loginOld = LOGIN_ENDPOINT_URL_OLD_FORMAT;
 

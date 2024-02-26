@@ -115,9 +115,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         tokenService = new ZaasClientImpl(configProperties);
     }
 
-    @SuppressWarnings("unused")
-    // Sources for the codes
-    private static Stream<Arguments> provideInvalidUsernamePassword() {
+    static Stream<Arguments> provideInvalidUsernamePassword() {
         return Stream.of(
             Arguments.of(INVALID_USER, PASSWORD, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(NULL_USER, PASSWORD, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD),
@@ -125,16 +123,14 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         );
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideInvalidPassword() {
+    static Stream<Arguments> provideInvalidPassword() {
         return Stream.of(
             Arguments.of(USERNAME, INVALID_PASS, ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(USERNAME, NULL_PASS, ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD)
         );
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideInvalidAuthHeaders() {
+    static Stream<Arguments> provideInvalidAuthHeaders() {
         return Stream.of(
             Arguments.of(getAuthHeader(INVALID_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(NULL_USER, PASSWORD), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
@@ -144,8 +140,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
         );
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideInvalidPasswordAuthHeaders() {
+    static Stream<Arguments> provideInvalidPasswordAuthHeaders() {
         return Stream.of(
             Arguments.of(getAuthHeader(USERNAME, INVALID_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),
             Arguments.of(getAuthHeader(USERNAME, NULL_PASS), ZaasClientErrorCodes.INVALID_AUTHENTICATION),

@@ -183,7 +183,8 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing on z/OS (limited)"
 
-    //systemProperty "environment.config", "-sys"
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
     systemProperty "environment.offPlatform", "true"
     systemProperty "environment.zos.target", "true"
     systemProperties System.properties

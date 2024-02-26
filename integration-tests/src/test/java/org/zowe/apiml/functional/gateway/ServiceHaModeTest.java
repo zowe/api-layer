@@ -76,8 +76,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         );
     }
 
-    @SuppressWarnings("unused") // parameterized test
-    private static Stream<Arguments> httpMethods() {
+    static Stream<Arguments> httpMethods() {
         return Stream.concat(retryableHttpMethods(), nonRetryableHttpMethods());
     }
 

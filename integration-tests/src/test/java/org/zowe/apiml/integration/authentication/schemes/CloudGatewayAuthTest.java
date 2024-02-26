@@ -48,8 +48,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
     private static final CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
     private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> validToBeTransformed() {
+    static Stream<Arguments> validToBeTransformed() {
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
@@ -77,8 +76,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         return arguments.stream();
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> noAuthTransformation() {
+    static Stream<Arguments> noAuthTransformation() {
         Consumer<Response> assertions = response -> {
             assertEquals(200, response.getStatusCode());
             assertNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
