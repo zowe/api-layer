@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.util.categories;
+ package org.zowe.apiml.util.categories;
 
 import org.junit.jupiter.api.Tag;
 
@@ -20,10 +20,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
 /**
- * Tests intended to verify SAF authentication, through either of the providers.
+ * For testing SAF Id Tokens support through its default ZSS provider
  */
-@Tag("SAFAuthTest")
+@Tag("SafIdTokenTest")
 @Target({ TYPE, METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SAFAuthTest {
+public @interface SafIdTokenTest {
 }

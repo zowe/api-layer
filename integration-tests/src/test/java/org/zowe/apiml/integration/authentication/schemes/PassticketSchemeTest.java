@@ -79,7 +79,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         pat = personalAccessToken(scopes);
     }
 
-    private static Stream<Arguments> accessTokens() {
+    static Stream<Arguments> accessTokens() {
         return Stream.of(
             Arguments.of(jwt, COOKIE_NAME, new Header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)),
             Arguments.of(pat, COOKIE_NAME, new Header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)),

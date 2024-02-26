@@ -61,7 +61,6 @@ class ServicesInfoTest implements TestWithStartedInstances {
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
-
     @Nested
     class WhenGettingInformationAboutServices {
 
