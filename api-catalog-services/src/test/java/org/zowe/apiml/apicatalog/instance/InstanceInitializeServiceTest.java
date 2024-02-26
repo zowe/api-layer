@@ -47,6 +47,10 @@ class InstanceInitializeServiceTest {
     @Mock
     private CachedProductFamilyService cachedProductFamilyService;
 
+    @SuppressWarnings("unused")
+    @Mock
+    private InstanceRefreshService instanceRefreshService;
+
     @InjectMocks
     private InstanceInitializeService instanceInitializeService;
 
