@@ -18,6 +18,7 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
@@ -53,10 +54,16 @@ gitProperties {
 
 dependencies {
     api project(':apiml-tomcat-common')
+
+
     api project(':apiml-security-common')
     api project(':security-service-client-spring')
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.websocket
+
+    providedRuntime libs.spring.boot.starter.tomcat
+    //providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.cloud.commons
@@ -80,7 +87,9 @@ dependencies {
     implementation libs.spring.security.crypto
     implementation libs.spring.security.web
     implementation libs.tomcat.annotations.api
+
     implementation libs.tomcat.embed.core
+
     implementation libs.tomcat.embed.el
     implementation libs.tomcat.embed.websocket
     implementation libs.xstream
@@ -118,11 +127,16 @@ dependencies {
 
 
 bootJar {
+    enabled false
     archiveFileName = "discovery-service.jar"
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
     archiveClassifier = "application"
+}
+
+bootWar {
+    enabled true
 }
 
 jar {

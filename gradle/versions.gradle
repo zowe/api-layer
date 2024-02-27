@@ -178,6 +178,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_security', 'org.springframework.boot', 'spring-boot-starter-security').versionRef('springBoot')
             library('spring_boot_starter_validation', 'org.springframework.boot', 'spring-boot-starter-validation').versionRef('springBoot')
             library('spring_boot_starter_web', 'org.springframework.boot', 'spring-boot-starter-web').versionRef('springBoot')
+            library('spring_boot_starter_tomcat', 'org.springframework.boot', 'spring-boot-starter-tomcat').versionRef('springBoot')
             library('spring_boot_starter_websocket', 'org.springframework.boot', 'spring-boot-starter-websocket').versionRef('springBoot')
             library('spring_boot_starter_test', 'org.springframework.boot', 'spring-boot-starter-test').versionRef('springBoot')
             library('spring_boot_starter_aop', 'org.springframework.boot', 'spring-boot-starter-aop').versionRef('springBoot')
