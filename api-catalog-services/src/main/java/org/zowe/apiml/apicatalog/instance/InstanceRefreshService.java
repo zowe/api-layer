@@ -25,7 +25,6 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.*;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
 

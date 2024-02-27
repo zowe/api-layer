@@ -67,6 +67,7 @@ class LoginTest implements TestWithStartedInstances {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
@@ -244,11 +245,9 @@ class LoginTest implements TestWithStartedInstances {
     }
     //@formatter:on
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> testLoginFactCombinationsSource() {
+    static Stream<Arguments> testLoginFactCombinationsSource() {
 
         LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD.toCharArray());
-        LoginRequest incorrectUser = new LoginRequest("aaa", "aaa".toCharArray());
         URI loginNew = LOGIN_ENDPOINT_URL;
         URI loginOld = LOGIN_ENDPOINT_URL_OLD_FORMAT;
 
@@ -267,8 +266,8 @@ class LoginTest implements TestWithStartedInstances {
             Arguments.of("Login with aml cert (aml cert filtered out)", loginNew, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
             Arguments.of("Login with aml cert (aml cert filtered out)", loginOld, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
 
-            Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
-            Arguments.of("Login with trusted cert", loginOld, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, "APIMTST"),
+            Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, CLIENT_USER),
+            Arguments.of("Login with trusted cert", loginOld, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, CLIENT_USER),
 
             Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
             Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginOld, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)

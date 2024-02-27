@@ -33,4 +33,6 @@ public class EnvironmentConfiguration {
     private AuxiliaryUserList auxiliaryUserList;
     private Map<String, String> instanceEnv;
     private IDPConfiguration idpConfiguration;
+    private SafIdtConfiguration safIdtConfiguration;
+    private OidcConfiguration oidcConfiguration;
 }

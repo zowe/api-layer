@@ -17,16 +17,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Credentials {
+public class OidcConfiguration {
 
-    private String key;
-    private String user;
-    private String password;
-    private String clientUser;
-
-    public Credentials(String user, String password) {
-        this.user = user;
-        this.password = password;
-    }
+    private String clientId;
 
 }

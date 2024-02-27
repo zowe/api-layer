@@ -2,6 +2,7 @@ credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
     user: USER
     password: validPassword
+    clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
     host: gateway-service
@@ -49,6 +50,7 @@ tlsConfiguration:
     keyStoreType: PKCS12
     keyStore: ../keystore/docker/all-services.keystore.p12
     clientKeystore: ../keystore/client_cert/client-certs.p12
+    clientCN: APIMTST
     keyStorePassword: password
     trustStoreType: PKCS12
     trustStore: ../keystore/docker/all-services.truststore.p12
@@ -62,3 +64,7 @@ auxiliaryUserList:
     value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 idpConfiguration:
     host: https://dev-95727686.okta.com
+safIdtConfiguration:
+    enabled: true
+oidcConfiguration:
+    clientId:
