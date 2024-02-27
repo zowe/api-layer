@@ -125,7 +125,6 @@ dependencies {
     testImplementation(testFixtures(project(":integration-tests")))
 }
 
-
 bootJar {
     enabled false
     archiveFileName = "discovery-service.jar"

@@ -12,7 +12,9 @@ package org.zowe.apiml.discovery;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.context.ApplicationListener;
@@ -33,7 +35,7 @@ import javax.annotation.Nonnull;
     "org.zowe.apiml.product.web"
 })
 @EnableApimlLogger
-public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
+public class DiscoveryServiceApplication extends SpringBootServletInitializer implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
@@ -41,6 +43,11 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
+    }
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(DiscoveryServiceApplication.class);
     }
 
     @Override
