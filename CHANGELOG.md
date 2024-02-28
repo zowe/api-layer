@@ -2,6 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.15.0 / Zowe 2.15.0 (2024-02-21)`
+
+* Feature:  Support timeout configuration values of websocket webclient in the API Gateway (#3315) ([7e8d855](https://github.com/zowe/api-layer/commit/7e8d855)), closes [#3315](https://github.com/zowe/api-layer/issues/3315)
+
+
+* Bugfix:  Fix displaying base path in API Catalog (#3297) ([309aac0](https://github.com/zowe/api-layer/commit/309aac0)), closes [#3297](https://github.com/zowe/api-layer/issues/3297)
+* Bugfix:  Fix disabling EhCache using `apiml.caching.enabled=false` (#3280) ([a3067b9](https://github.com/zowe/api-layer/commit/a3067b9)), closes [#3280](https://github.com/zowe/api-layer/issues/3280)
+
 ## `2.14.4 / Zowe 2.14.0 (2023-01-19)`
 
 * Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
