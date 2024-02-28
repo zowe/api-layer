@@ -211,7 +211,7 @@ export default class DetailPage extends Component {
                                 )}
                             </div>
                             {/* Extra Zowe information */}
-                            {apiPortalEnabled && tiles[0].title.toLowerCase().indexOf('another') >= 0 && (
+                            {apiPortalEnabled && tiles[0].title.toLowerCase().indexOf('zowe') >= 0 && (
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <div>
                                         <img id="zowe" alt="Zowe" src={zoweImage} className="hover" />
