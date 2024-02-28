@@ -253,7 +253,7 @@ describe('>>> Util Functions tests', () => {
     });
     it('should format title with "zowe" in it', async () => {
         process.env.REACT_APP_API_PORTAL = true;
-        const wrapper = enzyme.shallow(findAndFormatZowe("Test API Catalog"))
+        const wrapper = enzyme.shallow(findAndFormatZowe("Zowe API Catalog"))
         expect(wrapper.text()).toContain("®");
     });
 });
