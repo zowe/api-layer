@@ -2,6 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.15.0 / Zowe 2.15.0 (2024-02-21)`
+
+* Feature:  Support timeout configuration values of websocket webclient in the API Gateway (#3315) ([7e8d855](https://github.com/zowe/api-layer/commit/7e8d855)), closes [#3315](https://github.com/zowe/api-layer/issues/3315)
+
+
+* Bugfix:  Fix displaying base path in API Catalog (#3297) ([309aac0](https://github.com/zowe/api-layer/commit/309aac0)), closes [#3297](https://github.com/zowe/api-layer/issues/3297)
+* Bugfix:  Fix disabling EhCache using `apiml.caching.enabled=false` (#3280) ([a3067b9](https://github.com/zowe/api-layer/commit/a3067b9)), closes [#3280](https://github.com/zowe/api-layer/issues/3280)
+
 ## `2.14.4 / Zowe 2.14.0 (2023-01-19)`
 
 * Feature:  Introduce native identity mapper as a replacement for ZSS identity mapping of x509 and OIDC id ([24ba6d2](https://github.com/zowe/api-layer/commit/24ba6d2)), closes [#3252](https://github.com/zowe/api-layer/issues/3252)
@@ -15,7 +23,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Fix disabling EhCache (#3276) ([3c189204](https://github.com/zowe/api-layer/commit/3c189204)), closes [#3276](https://github.com/zowe/api-layer/issues/3276)
 * Bugfix:  Fix enabling CORS by default in AT-TLS mode used in the API Gateway (#3270) ([9d5e3a31](https://github.com/zowe/api-layer/commit/9d5e3a31)), closes [#3270](https://github.com/zowe/api-layer/issues/3270)
 
-## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
+## `2.13.2 / Zowe 2.13.0 (2023-12-11)`
 
 * Feature:  CORS enabled in default mode with AT-TLS profile (#3221) ([047ec144](https://github.com/zowe/api-layer/commit/047ec144)), closes [#3221](https://github.com/zowe/api-layer/issues/3221)
 * Feature:  Add Zowe authentication scheme to Cloud Gateway (#3214) ([b71fbc1](https://github.com/zowe/api-layer/commit/b71fbc1)), closes [#3214](https://github.com/zowe/api-layer/issues/3214)
