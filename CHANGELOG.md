@@ -23,7 +23,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Fix disabling EhCache (#3276) ([3c189204](https://github.com/zowe/api-layer/commit/3c189204)), closes [#3276](https://github.com/zowe/api-layer/issues/3276)
 * Bugfix:  Fix enabling CORS by default in AT-TLS mode used in the API Gateway (#3270) ([9d5e3a31](https://github.com/zowe/api-layer/commit/9d5e3a31)), closes [#3270](https://github.com/zowe/api-layer/issues/3270)
 
-## `2.13.2 / Zowe 2.13.0 (2023-12-04)`
+## `2.13.2 / Zowe 2.13.0 (2023-12-11)`
 
 * Feature:  CORS enabled in default mode with AT-TLS profile (#3221) ([047ec144](https://github.com/zowe/api-layer/commit/047ec144)), closes [#3221](https://github.com/zowe/api-layer/issues/3221)
 * Feature:  Add Zowe authentication scheme to Cloud Gateway (#3214) ([b71fbc1](https://github.com/zowe/api-layer/commit/b71fbc1)), closes [#3214](https://github.com/zowe/api-layer/issues/3214)
