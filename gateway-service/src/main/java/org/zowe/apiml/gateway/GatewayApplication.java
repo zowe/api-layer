@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
@@ -47,7 +49,7 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 @EnableEurekaClient
 @EnableWebSocket
 @EnableAspectJAutoProxy
-public class GatewayApplication {
+public class GatewayApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
@@ -56,5 +58,10 @@ public class GatewayApplication {
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
+    }
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(GatewayApplication.class);
     }
 }

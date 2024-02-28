@@ -17,6 +17,7 @@ normalization {
     }
 }
 
+apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
@@ -62,6 +63,9 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.websocket
+
+    providedRuntime libs.spring.boot.starter.tomcat
+
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
@@ -150,11 +154,16 @@ dependencies {
 }
 
 bootJar {
+    enabled false
     archiveFileName = "gateway-service.jar"
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
     archiveClassifier = "application"
+}
+
+bootWar {
+    enabled true
 }
 
 jar {
