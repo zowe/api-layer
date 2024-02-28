@@ -195,3 +195,20 @@ export const customUIStyle = async (uiConfig) => {
 };
 
 export const isAPIPortal = () => process.env.REACT_APP_API_PORTAL === 'true';
+
+export const findAndFormatZowe = (title) => {
+    // const zowe =  Zowe<sup>&reg;</sup>;
+    if (isAPIPortal()) {
+        const zoweIndex = title.toLowerCase().indexOf('test');
+        if (zoweIndex >= 0) {
+            const before = title.substring(0, zoweIndex);
+            const after = title.substring(zoweIndex + 5);
+            return (
+                <span>
+                    {before}Zowe<sup>&reg;</sup> {after}
+                </span>
+            );
+        }
+    }
+    return title;
+};
