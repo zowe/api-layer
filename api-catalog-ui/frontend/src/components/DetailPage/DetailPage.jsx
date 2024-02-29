@@ -194,7 +194,6 @@ export default class DetailPage extends Component {
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
-                                        // Do same zowe work here as at services navigation bar
                                         <h2 id="title" className="text-block-11 title1">
                                             {findAndFormatZowe(tiles[0].title)}
                                         </h2>
