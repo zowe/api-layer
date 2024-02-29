@@ -85,9 +85,9 @@ public abstract class ExternalMapper {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
         } catch (IOException e) {
-            log.warn("Error occurred while communicating with external identity mapper", e);
+            log.error("Error occurred while communicating with external identity mapper", e);
         } catch (URISyntaxException e) {
-            log.warn("Configuration error: Failed to construct the external identity mapper URI.", e);
+            log.error("Configuration error: Failed to construct the external identity mapper URI.", e);
         }
 
         return null;
