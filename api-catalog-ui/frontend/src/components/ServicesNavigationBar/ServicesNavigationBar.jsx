@@ -85,7 +85,6 @@ export default class ServicesNavigationBar extends Component {
             const index = allServices.findIndex((item) => item.serviceId === serviceId);
             selectedTab = Number(index);
         }
-        // This is where we'd need to mess with zowe.  Check if label contatins zowe, split then return.
         const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
             <Tooltip title={label} placement="bottom">
                 <div className={classes.truncatedTabLabel}>{findAndFormatZowe(label)}</div>
