@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
@@ -73,8 +72,8 @@ public abstract class ExternalMapper {
             if (httpResponse.getEntity() != null) {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                log.warn("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+            if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
+                log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
                 return null;
             }
             log.debug("External identity mapper API returned: {}", response);
