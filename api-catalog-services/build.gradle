@@ -127,6 +127,7 @@ dependencies {
     implementation libs.swagger3.parser
     implementation libs.swagger.inflector
     implementation libs.commons.fileupload
+    implementation libs.microprofile.config.api
 
     testImplementation libs.rest.assured
     testImplementation libs.spring.mock.mvc

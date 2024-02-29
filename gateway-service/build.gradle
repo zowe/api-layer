@@ -127,6 +127,7 @@ dependencies {
     implementation libs.eh.cache
     implementation libs.spring.retry
     implementation libs.awaitility
+    implementation libs.microprofile.config.api
 
     compileOnly libs.jakarta.inject
     compileOnly libs.lombok

@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway;
 
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -28,6 +30,9 @@ import org.zowe.apiml.extension.ExtensionsLoader;
 import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.version.BuildInfo;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 
@@ -58,6 +63,13 @@ public class GatewayApplication extends SpringBootServletInitializer {
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        Config config = ConfigProvider.getConfig();
+        servletContext.setInitParameter("spring.config.additional-location", config.getValue("configYmlLocation", String.class));
+        super.onStartup(servletContext);
     }
 
     @Override

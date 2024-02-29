@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.apicatalog;
 
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -23,6 +25,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.version.BuildInfo;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 @SpringBootApplication
 @EnableEurekaClient
@@ -46,6 +51,13 @@ public class ApiCatalogApplication extends SpringBootServletInitializer {
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        Config config = ConfigProvider.getConfig();
+        servletContext.setInitParameter("spring.config.additional-location", config.getValue("configYmlLocation", String.class));
+        super.onStartup(servletContext);
     }
 
     @Override

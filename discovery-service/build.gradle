@@ -108,7 +108,7 @@ dependencies {
     implementation libs.spring.websocket
     implementation libs.logback.core
     implementation libs.logback.classic
-
+    implementation libs.microprofile.config.api
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

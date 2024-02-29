@@ -169,6 +169,7 @@ dependencyResolutionManagement {
             version('jacoco', '0.8.11')
             version('gradle', '8.4')
             version('assertjCore', '3.24.2')
+            version('microprofileConfig', '3.1')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
@@ -395,6 +396,7 @@ dependencyResolutionManagement {
             library('gradle_test_logger', 'com.adarshr', 'gradle-test-logger-plugin').versionRef('gradleTestLogger')
             library('gradle_tomcat_plugin', 'com.bmuschko', 'gradle-tomcat-plugin').versionRef('gradleTomcatPlugin')
             library('micronaut_http_client', 'io.micronaut', 'micronaut-http-client').versionRef('micronaut')
+            library('microprofile_config_api', 'org.eclipse.microprofile.config', 'microprofile-config-api').versionRef('microprofileConfig')
 
             plugin('gradle_git_properties', 'com.gorylenko.gradle-git-properties').versionRef('gradleGitProperties')
             plugin('gradle_node', 'com.github.node-gradle.node').versionRef('gradleNode')

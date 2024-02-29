@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.discovery;
 
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -25,6 +27,8 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.version.BuildInfo;
 
 import javax.annotation.Nonnull;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 @EnableEurekaServer
 @SpringBootApplication
@@ -43,6 +47,13 @@ public class DiscoveryServiceApplication extends SpringBootServletInitializer im
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        Config config = ConfigProvider.getConfig();
+        servletContext.setInitParameter("spring.config.additional-location", config.getValue("configYmlLocation", String.class));
+        super.onStartup(servletContext);
     }
 
     @Override
