@@ -18,6 +18,7 @@ normalization {
     }
 }
 
+apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
@@ -71,6 +72,9 @@ dependencies {
     implementation libs.swagger.models
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.websocket
+
+    providedRuntime libs.spring.boot.starter.tomcat
+
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.configuration.processor
     implementation libs.spring.cloud.commons
