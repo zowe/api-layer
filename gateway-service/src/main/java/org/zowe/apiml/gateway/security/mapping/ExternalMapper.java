@@ -73,7 +73,11 @@ public abstract class ExternalMapper {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
             if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
-                log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                if (org.springframework.http.HttpStatus.valueOf(statusCode).is5xxServerError()) {
+                    log.error("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                } else {
+                    log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                }
                 return null;
             }
             log.debug("External identity mapper API returned: {}", response);
