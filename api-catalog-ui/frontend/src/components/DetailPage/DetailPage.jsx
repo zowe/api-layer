@@ -21,7 +21,6 @@ import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import zoweImage from '../../assets/images/zowe-horizontal-color.png';
-import customDoc from '../../assets/images/ExternalLink.svg';
 
 import countAdditionalContents, {
     customUIStyle,
