@@ -17,6 +17,7 @@ normalization {
     }
 }
 
+apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
@@ -66,6 +67,9 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security
+
+    providedRuntime libs.spring.boot.starter.tomcat
+
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.retry
     implementation libs.spring.boot.starter.aop
@@ -93,11 +97,12 @@ dependencies {
     implementation libs.spring.webflux
     implementation libs.spring.webmvc
     implementation libs.spring.websocket
-    implementation libs.bcprov;
-    implementation libs.bcpkix;
+    implementation libs.bcprov
+    implementation libs.bcpkix
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
+    implementation libs.microprofile.config.api
 
     implementation libs.logback.core
     implementation libs.logback.classic
@@ -113,6 +118,10 @@ dependencies {
     testImplementation libs.hamcrest
     testImplementation libs.rest.assured
     testImplementation(testFixtures(project(":integration-tests")))
+}
+
+bootWar {
+    enabled true
 }
 
 jar {
