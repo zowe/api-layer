@@ -88,9 +88,13 @@ body {
         filter: invert(28%) sepia(93%) saturate(1803%) hue-rotate(190deg) brightness(96%) contrast(101%);
       }
       > a {
-        display: flex;
-        align-items: center;
-        text-align: right;
+        // display: flex;
+        // align-items: center;
+        // text-align: right;
+        white-space: nowrap;
+        img {
+          margin-bottom: -1px;
+        }
 
         img:first-child {
           margin-right: var( --spaceSmallest );
