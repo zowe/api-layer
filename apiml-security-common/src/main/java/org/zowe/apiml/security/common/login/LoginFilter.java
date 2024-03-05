@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
@@ -199,10 +200,9 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         try {
-            if (request.getInputStream().available() == 0) {
-                return Optional.empty();
-            }
             return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
+        } catch (MismatchedInputException mie) {
+            return Optional.empty();
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
