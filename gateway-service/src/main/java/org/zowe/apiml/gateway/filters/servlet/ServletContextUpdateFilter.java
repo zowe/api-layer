@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 
 @Component
@@ -26,7 +27,7 @@ public class ServletContextUpdateFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (StringUtils.isEmpty(request.getServletContext().getContextPath())) {
-            request = new ServletRequestWrapper(request) {
+            request = new HttpServletRequestWrapper((HttpServletRequestWrapper) request) {
                 @Override
                 public ServletContext getServletContext() {
                     return new ServletContextWrapper(super.getServletContext()) {
