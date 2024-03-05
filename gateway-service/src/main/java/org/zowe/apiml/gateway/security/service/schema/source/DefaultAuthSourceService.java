@@ -48,7 +48,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
     private final boolean isX509Enabled;
     private final boolean isPATEnabled;
     private final boolean isOIDCEnabled;
-
+    private static final String LOG_MESSAGE = "Authentication request towards the southbound service {} using the auth source {}";
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
      *
@@ -96,7 +96,6 @@ public class DefaultAuthSourceService implements AuthSourceService {
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
         AuthSourceService service = getService(AuthSourceType.JWT);
         Optional<AuthSource> authSource = service.getAuthSourceFromRequest(request);
-        String logMessage = "Authentication request towards the southbound service {} using the auth source {}";
         if (!authSource.isPresent() && isPATEnabled) {
             service = getService(AuthSourceType.PAT);
             authSource = service.getAuthSourceFromRequest(request);
@@ -109,7 +108,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
             service = getService(AuthSourceType.CLIENT_CERT);
             authSource = service.getAuthSourceFromRequest(request);
         }
-        authSource.ifPresent(source -> log.debug(logMessage, request.getRequestURI(), source.getType().toString()));
+        authSource.ifPresent(source -> log.debug(LOG_MESSAGE, request.getRequestURI(), source.getType()));
         return authSource;
     }
 

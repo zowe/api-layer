@@ -24,6 +24,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.validation.constraints.NotNull;
@@ -44,8 +46,10 @@ public abstract class ExternalMapper {
     private final CloseableHttpClient httpClientProxy;
     private final TokenCreationService tokenCreationService;
     private final AuthConfigurationProperties authConfigurationProperties;
-
     protected static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @InjectApimlLogger
+    protected ApimlLogger apimlLog = ApimlLogger.empty();
 
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
         if (StringUtils.isBlank(mapperUrl)) {
@@ -77,7 +81,7 @@ public abstract class ExternalMapper {
             }
             if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
                 if (org.springframework.http.HttpStatus.valueOf(statusCode).is5xxServerError()) {
-                    log.error("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                    apimlLog.log("org.zowe.apiml.gateway.security.unexpectedMappingResponse", statusCode, response);
                 } else {
                     log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
                 }
@@ -88,9 +92,9 @@ public abstract class ExternalMapper {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
         } catch (IOException e) {
-            log.error("Error occurred while communicating with external identity mapper", e);
+            apimlLog.log("org.zowe.apiml.gateway.security.InvalidMappingResponse", e);
         } catch (URISyntaxException e) {
-            log.error("Configuration error: Failed to construct the external identity mapper URI.", e);
+            apimlLog.log("org.zowe.apiml.gateway.security.InvalidMapperUrl", e);
         }
 
         return null;
