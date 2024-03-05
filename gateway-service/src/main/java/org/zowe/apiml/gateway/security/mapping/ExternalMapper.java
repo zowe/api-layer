@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
@@ -73,8 +72,15 @@ public abstract class ExternalMapper {
             if (httpResponse.getEntity() != null) {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                log.warn("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+            if (statusCode == 0) {
+                return null;
+            }
+            if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
+                if (org.springframework.http.HttpStatus.valueOf(statusCode).is5xxServerError()) {
+                    log.error("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                } else {
+                    log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                }
                 return null;
             }
             log.debug("External identity mapper API returned: {}", response);
@@ -82,9 +88,9 @@ public abstract class ExternalMapper {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
         } catch (IOException e) {
-            log.warn("Error occurred while communicating with external identity mapper", e);
+            log.error("Error occurred while communicating with external identity mapper", e);
         } catch (URISyntaxException e) {
-            log.warn("Configuration error: Failed to construct the external identity mapper URI.", e);
+            log.error("Configuration error: Failed to construct the external identity mapper URI.", e);
         }
 
         return null;
