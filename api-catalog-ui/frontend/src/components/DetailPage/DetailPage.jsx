@@ -132,7 +132,7 @@ export default class DetailPage extends Component {
         } = countAdditionalContents(selectedService);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         const showSideBar = false;
-        if (hasTiles && tiles[0]?.customStyleConfig) {
+        if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
 
