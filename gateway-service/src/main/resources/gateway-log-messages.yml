@@ -370,6 +370,27 @@ messages:
       reason: "The JWT token or client certificate is not valid"
       action: "Configure your client to provide valid authentication."
 
+    - key: org.zowe.apiml.gateway.security.unexpectedMappingResponse
+      number: ZWEAG169
+      type: ERROR
+      text: "Unexpected response from the external identity mapper. Status: %s body: %s"
+      reason: "The external identity mapper request failed with Internal Error"
+      action: "Verify that ZSS is responding."
+
+    - key: org.zowe.apiml.gateway.security.InvalidMappingResponse
+      number: ZWEAG170
+      type: ERROR
+      text: "Error occurred while trying to parse the response from the external identity mapper. Reason: %s"
+      reason: "The external identity mapper failed when trying to parse the response"
+      action: "Verify that the response is valid."
+
+    - key: org.zowe.apiml.gateway.security.InvalidMapperUrl
+      number: ZWEAG171
+      type: ERROR
+      text: "Configuration error. Failed to construct the external identity mapper URI. Reason: %s"
+      reason: "Failed to construct the external identity mapper URI"
+      action: "Verify that the external identity mapper URL specified in the configuration is valid."
+
     # Revoke personal access token
     - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
       number: ZWEAT607
