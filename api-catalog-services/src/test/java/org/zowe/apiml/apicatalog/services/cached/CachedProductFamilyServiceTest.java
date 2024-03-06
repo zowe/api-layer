@@ -99,7 +99,7 @@ class CachedProductFamilyServiceTest {
                         updatedMetadata);
 
                 when(transformService.transformURL(
-                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class)))
+                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), false))
                                 .thenReturn(instance.getHomePageUrl());
             }
 
