@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
@@ -25,6 +24,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.gateway.security.mapping.model.MapperResponse;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.validation.constraints.NotNull;
@@ -45,8 +46,10 @@ public abstract class ExternalMapper {
     private final CloseableHttpClient httpClientProxy;
     private final TokenCreationService tokenCreationService;
     private final AuthConfigurationProperties authConfigurationProperties;
-
     protected static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @InjectApimlLogger
+    protected ApimlLogger apimlLog = ApimlLogger.empty();
 
     MapperResponse callExternalMapper(@NotNull HttpEntity payload) {
         if (StringUtils.isBlank(mapperUrl)) {
@@ -73,8 +76,15 @@ public abstract class ExternalMapper {
             if (httpResponse.getEntity() != null) {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
             }
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                log.warn("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+            if (statusCode == 0) {
+                return null;
+            }
+            if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
+                if (org.springframework.http.HttpStatus.valueOf(statusCode).is5xxServerError()) {
+                    apimlLog.log("org.zowe.apiml.gateway.security.unexpectedMappingResponse", statusCode, response);
+                } else {
+                    log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                }
                 return null;
             }
             log.debug("External identity mapper API returned: {}", response);
@@ -82,9 +92,9 @@ public abstract class ExternalMapper {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
         } catch (IOException e) {
-            log.warn("Error occurred while communicating with external identity mapper", e);
+            apimlLog.log("org.zowe.apiml.gateway.security.InvalidMappingResponse", e);
         } catch (URISyntaxException e) {
-            log.warn("Configuration error: Failed to construct the external identity mapper URI.", e);
+            apimlLog.log("org.zowe.apiml.gateway.security.InvalidMapperUrl", e);
         }
 
         return null;

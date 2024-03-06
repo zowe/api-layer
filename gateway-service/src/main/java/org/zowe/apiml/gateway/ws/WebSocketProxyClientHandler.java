@@ -80,7 +80,7 @@ public class WebSocketProxyClientHandler extends AbstractWebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        log.warn("WebSocket transport error in session {}: {}", session.getId(), exception.getMessage());
+        log.debug("WebSocket transport error in session {}: {}", session.getId(), exception.getMessage());
 
         if (webSocketServerSession.isOpen()) {
             webSocketServerSession.close(getCloseStatusByError(exception));
