@@ -340,4 +340,9 @@ DetailPage.propTypes = {
     }).isRequired,
     selectedService: PropTypes.object.isRequired,
     selectedContentAnchor: PropTypes.string.isRequired,
+    tiles: PropTypes.arrayOf(
+        PropTypes.shape({
+            title: PropTypes.string.isRequired,
+        })
+    ).isRequired,
 };
