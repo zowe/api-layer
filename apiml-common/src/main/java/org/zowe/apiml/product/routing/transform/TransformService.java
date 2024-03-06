@@ -82,10 +82,8 @@ public class TransformService {
         }
 
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String scheme = gatewayConfigProperties.getScheme();
-        if (httpsScheme) {
-            scheme = "https";
-        }
+
+        String scheme = httpsScheme ? "https" : gatewayConfigProperties.getScheme();
         return String.format("%s://%s/%s/%s%s",
             scheme,
             gatewayConfigProperties.getHostname(),
