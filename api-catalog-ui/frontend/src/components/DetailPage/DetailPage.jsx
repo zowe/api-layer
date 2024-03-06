@@ -132,12 +132,7 @@ export default class DetailPage extends Component {
         } = countAdditionalContents(selectedService);
         const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         const showSideBar = false;
-        if (
-            hasTiles &&
-            'customStyleConfig' in tiles[0] &&
-            tiles[0].customStyleConfig &&
-            Object.keys(tiles[0].customStyleConfig).length > 0
-        ) {
+        if (hasTiles && tiles[0]?.customStyleConfig) {
             customUIStyle(tiles[0].customStyleConfig);
         }
 
@@ -209,7 +204,7 @@ export default class DetailPage extends Component {
                                 )}
                             </div>
                             {/* Extra Zowe information */}
-                            {apiPortalEnabled && tiles[0].title.toLowerCase().indexOf('zowe') >= 0 && (
+                            {apiPortalEnabled && hasTiles && tiles[0].title?.toLowerCase().indexOf('zowe') >= 0 && (
                                 <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
                                     <div>
                                         <img id="zowe" alt="Zowe" src={zoweImage} className="hover" />
