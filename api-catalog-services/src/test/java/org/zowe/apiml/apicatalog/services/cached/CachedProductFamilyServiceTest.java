@@ -114,9 +114,9 @@ class CachedProductFamilyServiceTest {
                 }
 
                 @Nested
-                class WhenCheckingAttlsProfile {
+                class WhenCheckingIfAttlsEnabled {
                     @Test
-                    void givenNoProfile_thenGetInstanceHomePageUrl() throws URLTransformationException {
+                    void givenNoAttls_thenGetInstanceHomePageUrl() throws URLTransformationException {
                         when(transformService.transformURL(
                             any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), eq(true)))
                             .thenReturn(instance.getHomePageUrl());
@@ -127,8 +127,8 @@ class CachedProductFamilyServiceTest {
                     }
                 }
                 @Test
-                void givenAttlsProfile_thenGetInstanceHomePageUrl() throws URLTransformationException {
-                    ReflectionTestUtils.setField(underTest, "springProfile", "attls");
+                void givenAttlsEnabled_thenGetInstanceHomePageUrl() throws URLTransformationException {
+                    ReflectionTestUtils.setField(underTest, "isAttlsEnabled", true);
                     when(transformService.transformURL(
                         any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), eq(true)))
                         .thenReturn(instance.getHomePageUrl());
