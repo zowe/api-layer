@@ -63,7 +63,7 @@ public class CachedProductFamilyService {
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
-    @Value("${spring.profiles.active}")
+    @Value("${spring.profiles.active:}")
     private String springProfile;
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
@@ -278,7 +278,7 @@ public class CachedProductFamilyService {
         if (hasHomePage(instanceInfo)) {
             instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-            boolean isAttlsEnabled = springProfile.equalsIgnoreCase("attls");
+            boolean isAttlsEnabled = springProfile != null && springProfile.equalsIgnoreCase("attls");
             try {
                 instanceHomePage = transformService.transformURL(
                     ServiceType.UI,

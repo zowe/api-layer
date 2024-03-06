@@ -30,6 +30,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -99,7 +100,7 @@ class CachedProductFamilyServiceTest {
                         updatedMetadata);
 
                 when(transformService.transformURL(
-                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), false))
+                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), eq(false)))
                                 .thenReturn(instance.getHomePageUrl());
             }
 
