@@ -29,8 +29,7 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -108,6 +107,31 @@ class CachedProductFamilyServiceTest {
             class GivenInstanceIsNotInCache {
                 @Test
                 void createNew() {
+                    APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
+
+                    List<APIContainer> lsContainer = underTest.getRecentlyUpdatedContainers();
+                    assertThatContainerIsCorrect(lsContainer, originalContainer, instance);
+                }
+
+                @Nested
+                class WhenCheckingAttlsProfile {
+                    @Test
+                    void givenNoProfile_thenGetInstanceHomePageUrl() throws URLTransformationException {
+                        when(transformService.transformURL(
+                            any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), eq(true)))
+                            .thenReturn(instance.getHomePageUrl());
+                        APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
+
+                        List<APIContainer> lsContainer = underTest.getRecentlyUpdatedContainers();
+                        assertThatContainerIsCorrect(lsContainer, originalContainer, instance);
+                    }
+                }
+                @Test
+                void givenAttlsProfile_thenGetInstanceHomePageUrl() throws URLTransformationException {
+                    ReflectionTestUtils.setField(underTest, "springProfile", "attls");
+                    when(transformService.transformURL(
+                        any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), eq(true)))
+                        .thenReturn(instance.getHomePageUrl());
                     APIContainer originalContainer = underTest.saveContainerFromInstance("demoapp", instance);
 
                     List<APIContainer> lsContainer = underTest.getRecentlyUpdatedContainers();
