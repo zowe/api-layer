@@ -343,6 +343,7 @@ DetailPage.propTypes = {
     tiles: PropTypes.arrayOf(
         PropTypes.shape({
             title: PropTypes.string.isRequired,
+            customStyleConfig: PropTypes.object.isRequired,
         })
     ).isRequired,
 };
