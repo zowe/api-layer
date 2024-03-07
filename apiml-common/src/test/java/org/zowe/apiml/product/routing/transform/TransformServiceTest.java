@@ -53,10 +53,30 @@ class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
 
         String expectedUrl = String.format("%s://%s/%s/%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
+            gatewayClient.getGatewayConfigProperties().getHostname(),
+            SERVICE_ID,
+            UI_PREFIX);
+        assertEquals(expectedUrl, actualUrl);
+    }
+
+    @Test
+    void givenHomePageWithAttlsEnabled_whenTransform_thenUseNewUrlWithHttps() throws URLTransformationException {
+        String url = "http://localhost:8080/ui";
+        RoutedServices routedServices = new RoutedServices();
+        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui");
+        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
+        routedServices.addRoutedService(routedService1);
+        routedServices.addRoutedService(routedService2);
+
+        TransformService transformService = new TransformService(gatewayClient);
+        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, true);
+
+        String expectedUrl = String.format("%s://%s/%s/%s",
+            "https",
             gatewayClient.getGatewayConfigProperties().getHostname(),
             SERVICE_ID,
             UI_PREFIX);
@@ -76,7 +96,7 @@ class TransformServiceTest {
         TransformService transformService = new TransformService(gatewayClient);
 
         Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+            transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
         });
         assertEquals("Not able to select route for url https://localhost:8080/u of the service service. Original url used.", exception.getMessage());
     }
@@ -92,7 +112,7 @@ class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices);
+        String actualUrl = transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices, false);
 
         String expectedUrl = String.format("%s://%s/%s/%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
@@ -113,7 +133,7 @@ class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.API, SERVICE_ID, url, routedServices);
+        String actualUrl = transformService.transformURL(ServiceType.API, SERVICE_ID, url, routedServices, false);
 
         String expectedUrl = String.format("%s://%s/%s/%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
@@ -131,7 +151,7 @@ class TransformServiceTest {
         TransformService transformService = new TransformService(gatewayClient);
 
         Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(null, null, url, null);
+            transformService.transformURL(null, null, url, null, false);
         });
         assertEquals("The URI " + url + " is not valid.", exception.getMessage());
     }
@@ -144,7 +164,7 @@ class TransformServiceTest {
         TransformService transformService = new TransformService(emptyGatewayClient);
 
         Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(null, null, url, null);
+            transformService.transformURL(null, null, url, null, false);
         });
         assertEquals("Gateway not found yet, transform service cannot perform the request", exception.getMessage());
     }
@@ -163,7 +183,7 @@ class TransformServiceTest {
         TransformService transformService = new TransformService(gatewayClient);
 
         Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices);
+            transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices, false);
         });
         assertEquals("The path /wss of the service URL https://localhost:8080/wss is not valid.", exception.getMessage());
     }
@@ -180,7 +200,7 @@ class TransformServiceTest {
 
         TransformService transformService = new TransformService(gatewayClient);
 
-        String actualUrl = transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices);
+        String actualUrl = transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices, false);
         String expectedUrl = String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
@@ -201,7 +221,7 @@ class TransformServiceTest {
 
         TransformService transformService = new TransformService(gatewayClient);
 
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
         String expectedUrl = String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
@@ -223,7 +243,7 @@ class TransformServiceTest {
 
         TransformService transformService = new TransformService(gatewayClient);
 
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
         String expectedUrl = String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),

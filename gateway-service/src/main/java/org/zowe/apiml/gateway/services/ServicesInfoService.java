@@ -193,7 +193,8 @@ public class ServicesInfoService {
                     type,
                     serviceId,
                     url,
-                    routes);
+                    routes,
+                    false);
         } catch (URLTransformationException e) {
             return url;
         }
