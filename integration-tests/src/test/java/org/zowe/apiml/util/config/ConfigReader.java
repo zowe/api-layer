@@ -68,6 +68,8 @@ public class ConfigReader {
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf");
                         IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
+                        SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
+                        OidcConfiguration oidcConfiguration = new OidcConfiguration("");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -82,7 +84,10 @@ public class ConfigReader {
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
                             null,
-                            idpConfiguration);
+                            idpConfiguration,
+                            safIdtConfiguration,
+                            oidcConfiguration
+                        );
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
@@ -129,6 +134,10 @@ public class ConfigReader {
                     configuration.getIdpConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getIdpConfiguration().getAlternateUser()));
                     configuration.getIdpConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getIdpConfiguration().getAlternatePassword()));
 
+                    configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
+
+                    configuration.getOidcConfiguration().setClientId(System.getProperty("okta.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
+
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
 
@@ -136,9 +145,18 @@ public class ConfigReader {
                 }
             }
             log.info("Actual configuration: {}", instance);
+
+            verifyTlsPaths(instance);
         }
 
         return instance;
+    }
+
+    private static void verifyTlsPaths(EnvironmentConfiguration env) {
+        TlsConfiguration tlsConfig = env.getTlsConfiguration();
+        if (!new File(tlsConfig.getKeyStore()).exists()) throw new RuntimeException(String.format("%s does not exist", tlsConfig.getKeyStore()));
+        if (!new File(tlsConfig.getClientKeystore()).exists()) throw new RuntimeException(String.format("%s does not exist", tlsConfig.getClientKeystore()));
+        if (!new File(tlsConfig.getTrustStore()).exists()) throw new RuntimeException(String.format("%s does not exist", tlsConfig.getTrustStore()));
     }
 
     private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
@@ -161,6 +179,7 @@ public class ConfigReader {
         tlsConfiguration.setKeyAlias(System.getProperty("tlsConfiguration.keyAlias", tlsConfiguration.getKeyAlias()));
         tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyPassword", tlsConfiguration.getKeyPassword()));
         tlsConfiguration.setClientKeystore(System.getProperty("tlsConfiguration.clientKeyStore", tlsConfiguration.getClientKeystore()));
+        tlsConfiguration.setClientCN(System.getProperty("tlsConfiguration.clientCN", tlsConfiguration.getClientCN()));
         tlsConfiguration.setKeyStore(System.getProperty("tlsConfiguration.keyStore", tlsConfiguration.getKeyStore()));
         tlsConfiguration.setKeyStoreType(System.getProperty("tlsConfiguration.keyStoreType", tlsConfiguration.getKeyStoreType()));
         tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));

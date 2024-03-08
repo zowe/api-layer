@@ -37,7 +37,6 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 @ZaasTest
 class ZosmfTokensTest implements TestWithStartedInstances {
 
-
     @Nested
     class WhenGeneratingZosmfTokens_returnValidZosmfToken {
 
@@ -66,7 +65,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            String ltpaToken = getZosmfToken(LTPA_COOKIE);
+            String ltpaToken = getZosmfLtpaToken();
             String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off
