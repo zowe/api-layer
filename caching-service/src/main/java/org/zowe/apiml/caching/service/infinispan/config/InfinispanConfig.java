@@ -60,6 +60,7 @@ public class InfinispanConfig {
     private String port;
     @Value("${jgroups.bind.address}")
     private String address;
+// 2157 is default from jgroups, Zowe default should be within the range of Zowe ports, e.g. 7xxx
     @Value("${jgroups.keyExchange.port:2157}")
     private String keyExchangePort;
 
