@@ -60,6 +60,8 @@ public class InfinispanConfig {
     private String port;
     @Value("${jgroups.bind.address}")
     private String address;
+    @Value("${jgroups.keyExchange.port:2157}")
+    private String keyExchangePort;
 
     @PostConstruct
     void updateKeyring() {
@@ -74,6 +76,7 @@ public class InfinispanConfig {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
+        System.setProperty("jgroups.keyExchange.port", keyExchangePort);
         System.setProperty("server.ssl.keyStoreType", keyStoreType);
         System.setProperty("server.ssl.keyStore", keyStore);
         System.setProperty("server.ssl.keyStorePassword", keyStorePass);
