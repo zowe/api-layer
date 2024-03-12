@@ -175,21 +175,6 @@
                 </a>
             </div>
         </li>
-        <li class="list-item" th:if="${metricsEnabled == true}">
-            <div class="wrap"><img class="status-icon"
-                                                                     th:src="@{${'/images/icon-notification-intent-' + metricsIconName + '.png'}}"
-                                                                     alt="Metrics service running icon"/>
-                <a class="active"
-                   th:if="${metricsLinkEnabled} == true"
-                   th:href="${metricsLink}"
-                   title="Go to the Metrics service">
-                    <p class="status-text" th:text="${metricsStatusText}"/>
-                </a>
-                <a class="disabled" th:if="${metricsLinkEnabled} == false">
-                    <p class="status-text" th:text="${metricsStatusText}"/>
-                </a>
-            </div>
-        </li>
         <li class="list-item">
             <div class="wrap"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + discoveryIconName + '.png'}}"

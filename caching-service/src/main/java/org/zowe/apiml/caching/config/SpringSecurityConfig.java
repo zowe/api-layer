@@ -41,9 +41,6 @@ public class SpringSecurityConfig {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
-    @Value("${apiml.metrics.enabled:false}")
-    private boolean isMetricsEnabled;
-
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
