@@ -108,8 +108,8 @@ export default class WizardDialog extends Component {
         const { updateUploadedYamlTitle, notifyInvalidYamlUpload } = this.props;
         e.preventDefault();
         const reader = new FileReader();
-        const filepath = e.target.value.split('\\');
-        const filename = filepath[2];
+        const filepath = e.target.files[0];
+        const filename = filepath.name;
         reader.onload = (event) => {
             const text = event.target.result;
             try {

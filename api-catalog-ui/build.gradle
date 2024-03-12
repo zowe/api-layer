@@ -18,7 +18,9 @@ node {
 }
 
 if (project.hasProperty('omitDevDependencies')) {
-    npmInstall.args = ['--production', '--omit=dev'] // different args for different npm versions
+    npmInstall.args = ['--production', '--omit=dev', '--legacy-peer-deps'] // different args for different npm versions
+} else {
+    npmInstall.args = ['--legacy-peer-deps']
 }
 
 // =================================================
