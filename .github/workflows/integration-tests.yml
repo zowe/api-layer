@@ -1402,6 +1402,7 @@ jobs:
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
+                    install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
             -   name: Cache NPM and Cypress 📦
                 uses: actions/cache@v2
