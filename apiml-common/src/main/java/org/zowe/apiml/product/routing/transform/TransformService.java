@@ -43,13 +43,15 @@ public class TransformService {
      * @param serviceId  the service id
      * @param serviceUrl the service URL
      * @param routes     the routes
+     * @param httpsScheme https scheme flag
      * @return the new URL
      * @throws URLTransformationException if the path of the service URL is not valid
      */
     public String transformURL(ServiceType type,
                                String serviceId,
                                String serviceUrl,
-                               RoutedServices routes) throws URLTransformationException {
+                               RoutedServices routes,
+                               boolean httpsScheme) throws URLTransformationException {
 
         if (!gatewayClient.isInitialized()) {
             apimlLog.log("org.zowe.apiml.common.gatewayNotFoundForTransformRequest");
@@ -81,8 +83,9 @@ public class TransformService {
 
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
 
+        String scheme = httpsScheme ? "https" : gatewayConfigProperties.getScheme();
         return String.format("%s://%s/%s/%s%s",
-            gatewayConfigProperties.getScheme(),
+            scheme,
             gatewayConfigProperties.getHostname(),
             serviceId,
             route.getGatewayUrl(),

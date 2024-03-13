@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.service.schema.source;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,13 +41,14 @@ import java.util.Optional;
 @Primary
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
+@Slf4j
 public class DefaultAuthSourceService implements AuthSourceService {
     private final Map<AuthSourceType, AuthSourceService> map = new EnumMap<>(AuthSourceType.class);
 
     private final boolean isX509Enabled;
     private final boolean isPATEnabled;
     private final boolean isOIDCEnabled;
-
+    private static final String LOG_MESSAGE = "Authentication request towards the southbound service {} using the auth source {}";
     /**
      * Build the map of the specific implementations of {@link AuthSourceService} for processing of different type of authentications
      *
@@ -106,6 +108,7 @@ public class DefaultAuthSourceService implements AuthSourceService {
             service = getService(AuthSourceType.CLIENT_CERT);
             authSource = service.getAuthSourceFromRequest(request);
         }
+        authSource.ifPresent(source -> log.debug(LOG_MESSAGE, request.getRequestURI(), source.getType()));
         return authSource;
     }
 
