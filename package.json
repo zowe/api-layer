@@ -17,8 +17,6 @@
         "api-layer-without-discovery": "concurrently --names \"GW,AC,DC\" -c cyan,white,blue npm:gateway-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-without-catalog": "concurrently --names \"GW,DS,DC\" -c cyan,yellow,blue npm:gateway-service npm:discovery-service npm:discoverable-client",
         "caching-service": "java $npm_package_config_jvmArgs -jar caching-service/build/libs/caching-service.jar",
-        "metrics-service": "java $npm_package_config_jvmArgs -jar metrics-service/build/libs/metrics-service.jar",
-        "metrics-service-thin": "java $npm_package_config_jvmArgs -Dloader.path=build/libs/api-layer-lite-lib-all.jar -jar metrics-service/build/libs/metrics-service-lite.jar",
         "gateway-service": "java $npm_package_config_jvmArgs -javaagent:scripts/jacocoagent.jar=includes=org.zowe.*,output=tcpserver,address=*,port=6300 -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true",
         "gateway-service-ci": "java $npm_package_config_jvmArgs -Dloader.path=build/libs/api-layer-lite-lib-all.jar -jar gateway-service/build/libs/gateway-service-lite.jar --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true --spring.profiles.include=diag --apiml.security.x509.enabled=true",
         "gateway-service-thin": "java $npm_package_config_jvmArgs -Dloader.path=build/libs/api-layer-lite-lib-all.jar -jar gateway-service/build/libs/gateway-service-lite.jar --spring.config.additional-location=file:./config/local/gateway-service.yml --apiml.security.ssl.verifySslCertificatesOfServices=true",

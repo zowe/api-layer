@@ -14,7 +14,6 @@ on:
                     - discovery-service
                     - api-catalog-services
                     - caching-service
-                    - metrics-service
                 required: true
                 default: 'all'
 
