@@ -84,7 +84,7 @@ dependencyResolutionManagement {
 
             version('jgit', '6.9.0.202403050737-r')
             version('gradleNode', '7.0.1')
-            version('sonarGradlePlugin', '4.4.1.3373')
+            version('sonarGradlePlugin', '4.0.0.2929')
             // version 3.x contains breaking changes
             version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
