@@ -81,15 +81,9 @@ dependencyResolutionManagement {
                 strictly '[1.4.20,2.0['
                 prefer '1.4.20'
             }
-
             version('jgit', '6.9.0.202403050737-r')
-            // version 6.x is not compatible with gradleGitProperties and requires Java 11
-//            version('jgit') {
-//                strictly '[5.13.2.202306221912-r,6.0.0.0['
-//                prefer '5.13.2.202306221912-r'
-//            }
             version('gradleNode', '7.0.1')
-            version('sonarGradlePlugin', '4.0.0.2929')
+            version('sonarGradlePlugin', '4.4.1.3373')
             // version 3.x contains breaking changes
             version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
