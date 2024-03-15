@@ -29,9 +29,6 @@ apiml:
                 authenticate: https://mock-services:10013/zss/saf/authenticate
                 verify: https://mock-services:10013/zss/saf/verify
     banner: console
-    metrics:
-        serviceId: metrics-service
-        enabled: true
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1

@@ -122,8 +122,6 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 |       Core Service - API Catalog UI   | [README](api-catalog-ui/frontend/README.md)                                                                                            |
 | Core Service - Discovery Service      | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                            |
 | Core Service - Gateway Service        | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                            |
-| Core Service - Metrics Service        | [README](metrics-service/README.md)                                                                                                    |
-|       Core Service - Metrics Service UI | [README](metrics-service-ui/README.md)                                                                                               |
 | APIML SDK - Java Enabler              | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-plain-java-enabler)                                               |
 | APIML SDK - Micronaut Enabler         | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-micronaut-enabler)                                                |
 | APIML SDK - Node.js Enabler           | [Zowe Docs](https://docs.zowe.org/stable/extend/extend-apiml/onboard-nodejs-enabler)                                                   |

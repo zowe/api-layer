@@ -24,6 +24,8 @@ public class Endpoints {
     public final static String ROUTED_LOGIN = "/gateway/api/v1/auth/login";
     public final static String ROUTED_LOGOUT = "/gateway/api/v1/auth/logout";
 
+    public final static String ROUTED_ZOSMF_AUTH = "/ibmzosmf/api/v1/services/authenticate";
+
     public final static String ZAAS_TICKET_ENDPOINT = "/gateway/zaas/ticket";
     public final static String ZAAS_ZOSMF_ENDPOINT = "/gateway/zaas/zosmf";
     public final static String ZAAS_ZOWE_ENDPOINT = "/gateway/zaas/zoweJwt";

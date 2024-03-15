@@ -7,7 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContents, { closeMobileMenu, customUIStyle, isValidUrl, openMobileMenu } from './utilFunctions';
+import * as enzyme from 'enzyme';
+import countAdditionalContents, {
+    closeMobileMenu,
+    customUIStyle,
+    findAndFormatZowe,
+    isValidUrl,
+    openMobileMenu,
+} from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
     function mockFetch() {
@@ -245,5 +252,14 @@ describe('>>> Util Functions tests', () => {
 
     it('should return true when URL is valid', async () => {
         expect(isValidUrl('https://localhost.com/hello')).toBe(true);
+    });
+
+    it('should not format title without zowe in it', async () => {
+        expect(findAndFormatZowe('String without key')).toEqual('String without key');
+    });
+    it('should format title with "zowe" in it', async () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const wrapper = enzyme.shallow(findAndFormatZowe('Zowe API Catalog'));
+        expect(wrapper.text()).toContain('®');
     });
 });

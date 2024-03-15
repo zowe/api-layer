@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,12 +54,12 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
 
     //500
     private void handleGatewayNotAvailable(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_500, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
         writeErrorResponse(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
     }
 
     private void handleServiceNotAccessible(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_500, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
         writeErrorResponse(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
     }
 }
