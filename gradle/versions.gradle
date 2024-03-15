@@ -91,7 +91,7 @@ dependencyResolutionManagement {
             version('gradleNode', '7.0.1')
             version('sonarGradlePlugin', '4.0.0.2929')
             // version 3.x contains breaking changes
-            version('gradleRelease', '2.8.1')
+            version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.2.1')
             version('taskTree', '2.1.1')
