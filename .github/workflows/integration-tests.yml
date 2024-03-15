@@ -1520,8 +1520,10 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
+                    echo "code coverage with sonar 4.3"
                     ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
-                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Psonar.host.url="${SONAR_HOST_URL}.toString() -Dsonar.token="${SONAR_TOKEN}".toString() -Partifactory_user="${ARTIFACTORY_USERNAME}".toString() -Partifactory_password="${ARTIFACTORY_PASSWORD}".toString()
+                    echo "code coverage with sonar 4.3 is done"
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
