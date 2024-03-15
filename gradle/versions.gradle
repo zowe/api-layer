@@ -33,9 +33,9 @@ dependencyResolutionManagement {
             version('hamcrest', '1.3')
             version('httpClient5', '5.3')
             version('infinispan', '14.0.25.Final')
-            version('jacksonCore', '2.17.0-rc1')
-            version('jacksonDatabind', '2.17.0-rc1')
-            version('jacksonDataformatYaml', '2.17.0-rc1')
+            version('jacksonCore', '2.17.0')
+            version('jacksonDatabind', '2.17.0')
+            version('jacksonDataformatYaml', '2.17.0')
             version('janino', '3.1.11')
             version('jakartaValidation', '3.1.0-M1')
             version('jakartaInject', '2.0.1')
@@ -82,12 +82,12 @@ dependencyResolutionManagement {
                 prefer '1.4.20'
             }
 
-         // version('jgit', '6.9.0.202403050737-r')
+            version('jgit', '6.9.0.202403050737-r')
             // version 6.x is not compatible with gradleGitProperties and requires Java 11
-            version('jgit') {
-                strictly '[5.13.2.202306221912-r,6.0.0.0['
-                prefer '5.13.2.202306221912-r'
-            }
+//            version('jgit') {
+//                strictly '[5.13.2.202306221912-r,6.0.0.0['
+//                prefer '5.13.2.202306221912-r'
+//            }
             version('gradleNode', '7.0.1')
             version('sonarGradlePlugin', '4.0.0.2929')
             // version 3.x contains breaking changes
