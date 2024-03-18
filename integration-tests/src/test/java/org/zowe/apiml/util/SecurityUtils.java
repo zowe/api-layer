@@ -510,7 +510,7 @@ public class SecurityUtils {
     }
 
     public static Claims parseJwtString(String untrustedJwtString) {
-        return Jwts.parserBuilder().build()
+        return Jwts.parser().build()
             .parseClaimsJwt(untrustedJwtString)
             .getBody();
     }

@@ -45,7 +45,7 @@ dependencyResolutionManagement {
             version('jettyWebSocketClient', '9.4.54.v20240208')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
-            version('jjwt', '0.11.5')
+            version('jjwt', '0.12.5')
             version('jsonPath', '2.8.0')
             version('jsonSmart', '2.5.0')
             version('junitJupiter', '5.10.1')

@@ -199,7 +199,7 @@ public class ZaasNegativeTest {
                 .jsonPath().getString("token");
             //@formatter:on
 
-            String userId = Jwts.parserBuilder().build()
+            String userId = Jwts.parser().build()
                 .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
                 .getBody()
                 .getSubject();
