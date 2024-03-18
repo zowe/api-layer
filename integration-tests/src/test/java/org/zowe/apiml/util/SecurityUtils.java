@@ -564,7 +564,7 @@ public class SecurityUtils {
         sb.append(Base64.encode("{\"typ\":\"JWT\",\"alg\":\"none\"}"));
         sb.append(jwtString.substring(i, j + 1));
 
-        return Jwts.parserBuilder().build()
+        return Jwts.parser().unsecured().build()
             .parseClaimsJwt(sb.toString())
             .getBody();
     }
