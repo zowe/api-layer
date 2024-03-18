@@ -62,13 +62,7 @@ dependencyResolutionManagement {
 
             // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
             version('ribbon', '2.3.0')
-            version('reactor') {
-                // 3.5.x+: removed method: reactor.core.publisher.Mono.subscriberContext(Lreactor/util/context/Context;)Lreactor/core/publisher/Mono;
-                // which means that the engine must select a version between 3.4.34 (included) and 3.6.2(excluded),
-                // and that if no other component in the graph needs a different version, it should prefer 3.6.1
-                strictly '[3.4.34, 3.6.2['
-                prefer '3.6.1'
-            }
+            version('reactor', '3.6.4')
             version('restAssured', '5.4.0')
             version('springDoc', '2.3.0')
             version('spring4', '5.3.31') // Used within PJE in tests
@@ -83,8 +77,7 @@ dependencyResolutionManagement {
             }
             version('jgit', '6.9.0.202403050737-r')
             version('gradleNode', '7.0.1')
-            version('sonarGradlePlugin', '4.0.0.2929')
-            // version 3.x contains breaking changes
+            version('sonarGradlePlugin', '4.4.1.3373')
             version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.2.1')
