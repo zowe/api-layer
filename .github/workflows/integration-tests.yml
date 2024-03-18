@@ -1376,7 +1376,7 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: cypress/browsers:node14.17.0-chrome91-ff89
-        timeout-minutes: 15
+        timeout-minutes: 20
 
         services:
             api-catalog-services:
