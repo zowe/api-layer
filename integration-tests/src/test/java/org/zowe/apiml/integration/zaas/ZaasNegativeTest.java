@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.integration.zaas;
 
-import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -24,11 +23,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SafIdtConfiguration;
-import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
-import org.zowe.apiml.util.config.TlsConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -41,14 +36,8 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_SAFIDT_URI;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOSMF_URI;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOWE_URI;
-import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
 public class ZaasNegativeTest {
@@ -58,7 +47,7 @@ public class ZaasNegativeTest {
 
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
 
-    private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
+    private static final Set<URI> tokenEndpoints = new HashSet<>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
         if (SAFIDT_CONF.isEnabled()) {
@@ -66,12 +55,12 @@ public class ZaasNegativeTest {
         }
     }};
 
-    private static final Set<URI> endpoints = new HashSet<URI>() {{
+    private static final Set<URI> endpoints = new HashSet<>() {{
         add(ZAAS_TICKET_URI);
         addAll(tokenEndpoints);
     }};
 
-    private static final Set<String> tokens = new HashSet<String>() {{
+    private static final Set<String> tokens = new HashSet<>() {{
         add(generateJwtWithRandomSignature(QueryResponse.Source.ZOSMF.value));
         add(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE.value));
         add(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE_PAT.value));
@@ -208,12 +197,7 @@ public class ZaasNegativeTest {
                 .jsonPath().getString("token");
             //@formatter:on
 
-            String userId = Jwts.parser().build()
-                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
-                .getBody()
-                .getSubject();
-
-            assertEquals(CLIENT_USER, userId);
+            assertEquals(CLIENT_USER, parseJwtStringUnsecure(token));
         }
     }
 }
