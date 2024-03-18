@@ -197,7 +197,7 @@ public class ZaasNegativeTest {
                 .jsonPath().getString("token");
             //@formatter:on
 
-            assertEquals(CLIENT_USER, parseJwtStringUnsecure(token));
+            assertEquals(CLIENT_USER, parseJwtStringUnsecure(token).getSubject());
         }
     }
 }
