@@ -134,7 +134,7 @@ class LoginTest implements TestWithStartedInstances {
 
                 int i = token.lastIndexOf('.');
                 String untrustedJwtString = token.substring(0, i + 1);
-                Claims claims = parseJwtString(untrustedJwtString);
+                Claims claims = parseJwtStringUnsecure(untrustedJwtString);
                 assertThatTokenIsValid(claims);
             }
         }
