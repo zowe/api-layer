@@ -17,16 +17,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Credentials {
-
-    private String key;
-    private String user;
-    private String password;
-    private String clientUser;
-
-    public Credentials(String user, String password) {
-        this.user = user;
-        this.password = password;
-    }
-
+public class SafIdtConfiguration {
+    private boolean enabled;
 }

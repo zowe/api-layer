@@ -20,7 +20,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -89,77 +93,74 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(message, status, response);
     }
 
-    // 400
     private void handleAuthenticationRequired(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleBadCredentials(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleAuthenticationCredentialsNotFound(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         writeErrorResponse(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
     }
 
     private void handleAuthMethodNotSupported(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         final HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
+        log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
+        final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         writeErrorResponse(message, status, response);
     }
 
     private void handleTokenNotValid(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleTokenNotProvided(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleTokenExpire(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleInvalidCertificate(HttpServletResponse response, RuntimeException ex) {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
         response.setStatus(HttpStatus.FORBIDDEN.value());
+        log.debug(MESSAGE_FORMAT, response.getStatus(), ex.getMessage());
     }
 
     private void handleTokenFormatException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, request, response);
     }
 
     private void handleInvalidTokenTypeException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleInvalidAccessTokenBodyException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         writeErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request, response);
     }
 
-    //500
     private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_500, ex);
         final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
         writeErrorResponse(message, status, response);
     }
 
     private void handleServiceNotAccessibleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_500, ex);
-
         final ApiMessageView message = messageService.createMessage(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         final HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
+        log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
         writeErrorResponse(message, status, response);
     }
 }

@@ -68,7 +68,7 @@
                                         },
                                         "debug": {
                                             "type": "boolean",
-                                            "description": "Enable debug logs in metrics service"
+                                            "description": "Enable debug logs in API Catalog"
                                         },
                                         "heap": {
                                             "type": "object",

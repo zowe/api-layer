@@ -16,6 +16,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
+import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
@@ -116,7 +117,7 @@ public class SecurityUtils {
     public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
     public final static String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
-    public final static String OKTA_CLIENT_ID = System.getProperty("okta.client.id");
+    public final static String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
     public final static String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
     public final static String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
     public final static String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
@@ -175,14 +176,51 @@ public class SecurityUtils {
         return cookie;
     }
 
+    /**
+     *
+     * @return
+     */
+    public static String getZosmfJwtTokenFromGw() {
+        return getZosmfTokenFromGw("apimlAuthenticationToken");
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static String getZosmfLtpaTokenFromGw() {
+        return getZosmfTokenFromGw("LtpaToken2");
+    }
+
+    /**
+     * Get z/OSMF jwtToken cookie value from a direct call to z/OSMF
+     *
+     * @return
+     */
     public static String getZosmfJwtToken() {
         return getZosmfTokenWebClient("jwtToken");
     }
 
+    /**
+     * Get z/OSMF LtpaToken2 cookie value from a direct call to z/OSMF
+     *
+     * @return
+     */
     public static String getZosmfLtpaToken() {
         return getZosmfTokenWebClient("LtpaToken2");
     }
 
+    public static String getZosmfTokenFromGw(String cookie) {
+        URI gwUrl = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
+        return getZosmfToken(gwUrl.toString(), cookie, SC_NO_CONTENT);
+    }
+
+    /**
+     * Direct call to z/OSMF using Apache HTTP client
+     *
+     * @param cookie Which cookie name to retrieve
+     * @return
+     */
     public static String getZosmfTokenWebClient(String cookie) {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) { // Can't think of a reason to test SSL connection between Integration test runner and z/OSMF
             HttpClientContext context = HttpClientContext.create();
@@ -210,7 +248,17 @@ public class SecurityUtils {
         }
     }
 
+    /**
+     * Direct call to z/OSMF using RestAssured
+     *
+     * @param cookie Which cookie name to retrieve
+     * @return
+     */
     public static String getZosmfToken(String cookie) {
+        return getZosmfToken(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT), cookie, SC_OK);
+    }
+
+    private static String getZosmfToken(String url, String cookie, int expectedCode) {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
@@ -219,9 +267,9 @@ public class SecurityUtils {
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
-            .post(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT))
+            .post(url)
             .then()
-            .statusCode(is(SC_OK))
+            .statusCode(is(expectedCode))
             .cookie(cookie, not(isEmptyString()))
             .extract().cookie(cookie);
 
@@ -380,12 +428,13 @@ public class SecurityUtils {
         queryParams.put("state", "TEST");
         queryParams.put("nonce", "TEST");
         Response authResponse = given()
-            .queryParams(queryParams)
+                .config(RestAssured.config().httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 30 * 1000)))
+                .queryParams(queryParams)
             .when()
-            .get(OKTA_HOSTNAME + "/oauth2/default/v1/authorize")
+                .get(OKTA_HOSTNAME + "/oauth2/default/v1/authorize")
             .then()
-            .statusCode(200)
-            .extract().response();
+                .statusCode(200)
+                .extract().response();
 
         // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
 
@@ -494,9 +543,7 @@ public class SecurityUtils {
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1L));
 
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
+        Claims claims = parseJwtStringUnsecure(cookie.getValue());
         assertThatTokenIsValid(claims, username);
     }
 
@@ -509,9 +556,16 @@ public class SecurityUtils {
         assertThat(claims.getSubject(), is(username.orElseGet(SecurityUtils::getUsername)));
     }
 
-    public static Claims parseJwtString(String untrustedJwtString) {
-        return Jwts.parser().build()
-            .parseClaimsJwt(untrustedJwtString)
+    public static Claims parseJwtStringUnsecure(String jwtString) {
+        int i = jwtString.indexOf('.');
+        int j = jwtString.lastIndexOf('.');
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(Base64.encode("{\"typ\":\"JWT\",\"alg\":\"none\"}"));
+        sb.append(jwtString.substring(i, j + 1));
+
+        return Jwts.parser().unsecured().build()
+            .parseClaimsJwt(sb.toString())
             .getBody();
     }
 

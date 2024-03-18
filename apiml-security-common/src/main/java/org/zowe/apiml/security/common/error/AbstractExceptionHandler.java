@@ -30,8 +30,7 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 public abstract class AbstractExceptionHandler {
-    protected static final String ERROR_MESSAGE_400 = "400 Status Code: {}";
-    protected static final String ERROR_MESSAGE_500 = "500 Status Code: {}";
+    protected static final String MESSAGE_FORMAT = "Status Code {}, error message: {}";
     private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
     protected final MessageService messageService;

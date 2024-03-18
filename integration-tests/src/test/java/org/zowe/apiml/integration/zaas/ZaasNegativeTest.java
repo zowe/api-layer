@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.integration.zaas;
 
-import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -24,10 +23,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
-import org.zowe.apiml.util.config.TlsConfiguration;
+import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -47,27 +43,31 @@ import static org.zowe.apiml.util.SecurityUtils.*;
 public class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
+    private final static SafIdtConfiguration SAFIDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
-    private static final Set<URI> tokenEndpoints = new HashSet<URI>() {{
+    private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
+
+    private static final Set<URI> tokenEndpoints = new HashSet<>() {{
         add(ZAAS_ZOWE_URI);
         add(ZAAS_ZOSMF_URI);
-        add(ZAAS_SAFIDT_URI);
+        if (SAFIDT_CONF.isEnabled()) {
+            add(ZAAS_SAFIDT_URI);
+        }
     }};
 
-    private static final Set<URI> endpoints = new HashSet<URI>() {{
+    private static final Set<URI> endpoints = new HashSet<>() {{
         add(ZAAS_TICKET_URI);
         addAll(tokenEndpoints);
     }};
 
-    private static final Set<String> tokens = new HashSet<String>() {{
+    private static final Set<String> tokens = new HashSet<>() {{
         add(generateJwtWithRandomSignature(QueryResponse.Source.ZOSMF.value));
         add(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE.value));
         add(generateJwtWithRandomSignature(QueryResponse.Source.ZOWE_PAT.value));
         add(generateJwtWithRandomSignature("https://localhost:10010"));
     }};
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
+    static Stream<Arguments> provideZaasEndpointsWithAllTokens() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
@@ -82,8 +82,7 @@ public class ZaasNegativeTest {
         return argumentsList.stream();
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideZaasEndpoints() {
+    static Stream<Arguments> provideZaasEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
@@ -95,8 +94,7 @@ public class ZaasNegativeTest {
         return argumentsList.stream();
     }
 
-    @SuppressWarnings("unused")
-    private static Stream<Arguments> provideZaasTokenEndpoints() {
+    static Stream<Arguments> provideZaasTokenEndpoints() {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : tokenEndpoints) {
             RequestSpecification requestSpec = given();
@@ -199,12 +197,7 @@ public class ZaasNegativeTest {
                 .jsonPath().getString("token");
             //@formatter:on
 
-            String userId = Jwts.parser().build()
-                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
-                .getBody()
-                .getSubject();
-
-            assertEquals("APIMTST", userId);
+            assertEquals(CLIENT_USER, parseJwtStringUnsecure(token).getSubject());
         }
     }
 }
