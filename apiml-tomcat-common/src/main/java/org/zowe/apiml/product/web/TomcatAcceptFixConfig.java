@@ -146,6 +146,8 @@ public class TomcatAcceptFixConfig {
      */
     class FixedServerSocketChannel extends ServerSocketChannel {
 
+        private static final String NETWORK_RECYCLED_EXCEPTION_CLASS = "com.ibm.net.NetworkRecycledException";
+
         /**
          * Wrapper server socket inside
          */
@@ -235,7 +237,7 @@ public class TomcatAcceptFixConfig {
                     // till TCP/IP stack is running again try to bind the port
                     bindWithWait();
 
-                    // in case of successfull update the connector instance, it is not handled by this wrapper anymore
+                    // in case of successfully update the connector instance, it is not handled by this wrapper anymore
                     rebindHandler.run();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -245,20 +247,40 @@ public class TomcatAcceptFixConfig {
             }
         }
 
+        boolean isRecycledClass(Throwable t) {
+            return NETWORK_RECYCLED_EXCEPTION_CLASS.equals(t.getClass().getName());
+        }
+
+        boolean isTcpStackRestarted(Throwable t) {
+            if ((t.getMessage() != null) && t.getMessage().contains("EDC5122I")) {
+                return true;
+            }
+
+            if (isRecycledClass(t)) {
+                return true;
+            }
+
+            Throwable cause = t.getCause();
+            if ((cause != null) && (cause != t)) {
+                return isTcpStackRestarted(cause);
+            }
+
+            return false;
+        }
+
         public SocketChannel accept() throws IOException {
             // obtain current state of rebinding to detection parallel actions
             final int stateBefore = state.get();
             try {
                 return socket.accept();
             } catch (IOException ioe) {
-                if (ioe.getMessage().contains("EDC5122I")) {
+                if (isTcpStackRestarted(ioe)) {
                     // the fix solve just one issue about stopped TCP/IP stack
                     log.debug("The TCP/IP stack was probably restarted. The socket of Tomcat will rebind.");
                     rebind(stateBefore);
                     return socket.accept();
-                } else {
-                    throw ioe;
                 }
+                throw ioe;
             }
         }
 
