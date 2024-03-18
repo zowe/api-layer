@@ -52,7 +52,7 @@ class QueryTest implements TestWithStartedInstances {
 
     private String token;
 
-    private static String[] queryUrlsSource() {
+    static String[] queryUrlsSource() {
         return new String[]{QUERY_ENDPOINT_URL, QUERY_ENDPOINT_URL_OLD_FORMAT};
     }
 

@@ -44,6 +44,5 @@ jobs:
                         caching-service/build/reports/**
                         cloud-gateway-service/build/reports/**
                         discovery-service/build/reports/**
-                        metrics-service/build/reports/**
 
             -   uses: ./.github/actions/teardown

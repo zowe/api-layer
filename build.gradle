@@ -204,7 +204,6 @@ task nodejsClean(type: Delete) {
     group = 'npm'
     if (cleanNode == 'true') {
         delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
-        delete 'metrics-service-ui/tools/nodejs', 'metrics-service-ui/tools/npm'
         delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
     }
 }

@@ -37,7 +37,6 @@ possible to disable parallel processing by setting `org.gradle.parallel` to `fal
 
 - There are no configuration files for:
     1. CachingService
-    2. MetricsServiceApplication
 
 - If you plan on using the [Dummy Authentication Provider](https://docs.zowe.org/stable/extend/extend-apiml/authentication-for-apiml-services/#dummy-authentication-provider) open the ./config/local/gateway-service.yml file and update `apiml.security.auth.provider:` to have value  `dummy`
 

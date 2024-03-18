@@ -31,22 +31,11 @@ import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.stream.Collectors.toList;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SSO;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_DESCRIPTION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_TITLE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_VERSION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * Caching service for eureka services
@@ -73,6 +62,9 @@ public class CachedProductFamilyService {
 
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
+
+    @Value("${server.attls.enabled:false}")
+    private boolean isAttlsEnabled;
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
@@ -286,13 +278,13 @@ public class CachedProductFamilyService {
         if (hasHomePage(instanceInfo)) {
             instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-
             try {
                 instanceHomePage = transformService.transformURL(
                     ServiceType.UI,
                     instanceInfo.getVIPAddress(),
                     instanceHomePage,
-                    routes);
+                    routes,
+                    isAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
                 apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
             }
