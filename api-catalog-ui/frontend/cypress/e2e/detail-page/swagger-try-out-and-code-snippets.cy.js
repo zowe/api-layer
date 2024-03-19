@@ -25,6 +25,12 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
 
     [
         {
+            tile: 'zOSMF',
+            id: 'mockzosmf',
+            selectOp: '#operations-pets-listPets', // Using swagger v2 pet store example for this
+            auth: false, // z/OSMF does not have integrated authentication in swagger
+        },
+        {
             tile: 'API Gateway',
             id: 'gateway',
             selectOp: '#operations-Security-RefreshTokenUsingPOST',
@@ -69,7 +75,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
             cy.contains(test.tile).click();
             cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
-            cy.get('.opblock-summary').eq(1).click();
+            cy.get('.opblock-control-arrow').eq(1).click();
             cy.get('.try-out').should('exist');
             cy.get('.try-out').click();
 
