@@ -35,9 +35,6 @@ apiml:
     banner: console
     discovery:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
-    metrics:
-        serviceId: metrics-service
-        enabled: true
 spring:
     output:
         ansi:
