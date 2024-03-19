@@ -125,6 +125,7 @@
         "rimraf": "3.0.2",
         "source-map-explorer": "2.3.1",
         "start-server-and-test": "2.0.3",
+        "caniuse-lite": "1.0.30001599",
         "tmpl": "1.0.5",
         "yaml": "1.10.2"
     },

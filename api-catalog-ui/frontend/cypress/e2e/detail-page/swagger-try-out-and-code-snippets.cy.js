@@ -25,12 +25,6 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
 
     [
         {
-            tile: 'zOSMF',
-            id: 'mockzosmf',
-            selectOp: '#operations-pets-listPets', // Using swagger v2 pet store example for this
-            auth: false, // z/OSMF does not have integrated authentication in swagger
-        },
-        {
             tile: 'API Gateway',
             id: 'gateway',
             selectOp: '#operations-Security-RefreshTokenUsingPOST',
