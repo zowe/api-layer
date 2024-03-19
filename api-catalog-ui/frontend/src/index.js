@@ -9,7 +9,7 @@
  */
 
 import 'react-app-polyfill/ie11';
-import { createRoot } from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore } from 'redux';
 import { createEpicMiddleware } from 'redux-observable';
@@ -67,14 +67,14 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));
 epicMiddleware.run(rootEpic);
 const persistor = persistStore(store);
-const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(
+
+ReactDOM.render(
     <HashRouter>
         <Provider store={store}>
             <PersistGate loading={<Spinner isLoading />} persistor={persistor}>
                 <AsyncAppContainer />
             </PersistGate>
         </Provider>
-    </HashRouter>
+    </HashRouter>,
+    document.getElementById('root')
 );
