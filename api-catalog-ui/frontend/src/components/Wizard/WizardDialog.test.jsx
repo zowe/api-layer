@@ -286,28 +286,19 @@ describe('>>> WizardDialog tests', () => {
             />
         );
 
-        // Setup the file to be uploaded
         const fileContents = `serviceId: enablerjavasampleapp
 title: Onboarding Enabler Java Sample App`;
         const filename = 'exampleFile.yaml';
         const fakeFile = new File([fileContents], filename, { type: 'text/yaml' });
 
-        // Find the file input and simulate the file selection
-        const fileInput = screen.getByLabelText(/Choose File/i); // Adjust based on your actual label or placeholder
+        const fileInput = screen.getByLabelText(/Choose File/i);
         fireEvent.change(fileInput, {
             target: { files: [fakeFile] },
             preventDefault: jest.fn(),
         });
 
-        // Wait for the file to be processed and for any expected outcomes (e.g., function calls, UI updates)
         await waitFor(() => {
-            // Replace the following with actual expectations based on the side effects of the file upload.
-            // For example, if the file upload results in displaying the file name somewhere in the UI, you can check for that.
             expect(mockUpdateUploadedYamlTitle).toHaveBeenCalledWith(filename);
-
-            // If the component updates the UI with the contents of the file or validates the file in any way, assert those changes.
-            // Example:
-            // expect(screen.getByText(expectedFileConversion.title)).toBeInTheDocument();
         });
     });
     it('should call fillInputs for the enablers', async () => {
