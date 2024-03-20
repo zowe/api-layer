@@ -1374,7 +1374,7 @@ jobs:
 
     E2EUITests:
         needs: PublishJibContainers
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         container: cypress/browsers:node-16.18.1-chrome-110.0.5481.96-1-ff-109.0-edge-110.0.1587.41-1
         timeout-minutes: 15
 
