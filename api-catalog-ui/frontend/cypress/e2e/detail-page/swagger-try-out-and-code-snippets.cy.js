@@ -10,12 +10,13 @@
 
 describe('>>> Swagger Try Out and Code Snippets Test', () => {
     beforeEach(() => {
+        cy.log(`Visiting /#/login`);
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
         const username = Cypress.env('username');
         const password = Cypress.env('password');
 
-        cy.get('button[type="submit"').as('submitButton');
+        cy.get('button[type="submit"').as('submitButton').debug();
 
         cy.get('#username').type(username);
         cy.get('input[name="password"]').type(password);
@@ -42,14 +43,13 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             cy.contains(test.tile).click();
             cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
             cy.get('.opblock-summary').eq(0).click();
-            cy.get('.try-out').should('exist');
+            cy.get('.try-out').should('exist').debug();
         });
 
         it('Should protect endpoint', () => {
             if (test.auth) {
                 cy.log(`Visiting ${test.tile}, ${test.id}`);
                 cy.contains(test.tile).click();
-                cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
                 cy.get('.authorization__btn').should('exist');
 
                 cy.get('.authorization__btn').eq(0).click();
@@ -74,21 +74,20 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         it('Should execute request and display basic code snippets', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
             cy.contains(test.tile).click();
-            cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
             cy.get('.opblock-control-arrow').eq(1).click();
-            cy.get('.try-out').should('exist');
+            cy.get('.try-out').should('exist').debug();
             cy.get('.try-out').click();
 
             cy.get('button.execute').click();
             cy.get(
                 `${test.selectOp} > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)`
-            ).should('exist');
+            ).should('exist').debug();
             cy.get('div.curl-command > div:nth-child(1) > div:nth-child(1) > h4').should('contain', 'cURL (CMD)');
             cy.get(
                 `${test.selectOp} > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre`
-            ).should('exist');
+            ).should('exist').debug();
             cy.get('div.curl-command > div:nth-child(1) > div:nth-child(2)').click();
-            cy.get('div.curl-command > div:nth-child(3) > pre').should('exist');
+            cy.get('div.curl-command > div:nth-child(3) > pre').debug().should('exist');
         });
     });
 });
