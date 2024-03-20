@@ -21,6 +21,7 @@ import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 
@@ -36,8 +37,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TomcatAcceptFixConfigTest {
@@ -225,6 +225,48 @@ class TomcatAcceptFixConfigTest {
         };
         TomcatAcceptFixConfig.FixedServerSocketChannel fixedServerSocketChannel = tomcatAcceptFixConfig.new FixedServerSocketChannel(socket, null, null);
         assertThrows(IllegalStateException.class, () -> fixedServerSocketChannel.implConfigureBlocking(true));
+    }
+
+    @Nested
+    class TcpStackRestartHandling {
+
+        ServerSocketChannel serverSocket = new TestServerSocketChannel(mock(SelectorProvider.class));
+        TomcatAcceptFixConfig.FixedServerSocketChannel channel = new TomcatAcceptFixConfig().new FixedServerSocketChannel(serverSocket, null, null);
+
+        @Test
+        void givenExceptionWithTheMessage_whenHandle_thenReturnTrue() {
+            assertTrue(channel.isTcpStackRestarted(new RuntimeException("EDC5122I TCP Stack restarted")));
+        }
+
+        @Test
+        void givenExceptionWithCyclicCause_whenHandle_thenReturnFalse() {
+            Exception e = spy(new RuntimeException("Error"));
+            doReturn(e).when(e).getCause();
+            assertFalse(channel.isTcpStackRestarted(e));
+        }
+
+        @Test
+        void givenExceptionWithTheMessageAsCause_whenHandle_thenReturnTrue() {
+            Exception e = new RuntimeException("EDC5122I TCP Stack restarted");
+            e = new RuntimeException("Wrapper1", e);
+            e = new RuntimeException("Wrapper2", e);
+            assertTrue(channel.isTcpStackRestarted(e));
+        }
+
+        @Test
+        void givenExceptionWithSpecificClassName_whenHandle_thenReturnTrue() {
+            TomcatAcceptFixConfig.FixedServerSocketChannel channel = new TomcatAcceptFixConfig().new FixedServerSocketChannel(serverSocket, null, null) {
+                @Override
+                boolean isRecycledClass(Throwable t) {
+                    return "java.lang.IllegalArgumentException".equals(t.getClass().getName());
+                }
+            };
+
+            Exception e = new IllegalArgumentException("Tested exception");
+            e = new RuntimeException("Wrapper", e);
+            assertTrue(channel.isTcpStackRestarted(e));
+        }
+
     }
 
     private static class TestEndpoint extends NioEndpoint {
