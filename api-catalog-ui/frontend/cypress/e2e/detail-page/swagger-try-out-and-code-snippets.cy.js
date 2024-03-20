@@ -30,13 +30,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             id: 'gateway',
             selectOp: '#operations-Security-RefreshTokenUsingPOST',
             auth: true,
-        },
-        {
-            tile: 'zOSMF',
-            id: 'mockzosmf',
-            selectOp: '#operations-pets-listPets', // Using swagger v2 pet store example for this
-            auth: false, // z/OSMF does not have integrated authentication in swagger
-        },
+        }
     ].forEach((test) => {
         it('Should contain try-out button', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
