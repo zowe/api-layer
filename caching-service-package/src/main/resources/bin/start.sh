@@ -137,10 +137,25 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 #   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
+# Check for Java version and set --add-opens Java option in case the version is 17 or later
+JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    | grep "major version" \
+    | cut -d " " -f5)
+ADD_OPENS=""
+if [ $JAVA_VERSION -ge 61 ]; then
+    ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+                --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+                --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+                --add-opens=java.base/java.util=ALL-UNNAMED
+                --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+fi
+
 CACHING_CODE=CS
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
    ${QUICK_START} \
+   ${ADD_OPENS} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
@@ -160,6 +175,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Djgroups.bind.address=${ZWE_haInstance_hostname:-localhost} \
   -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7098} \
+  -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7118} \
   -Dcaching.storage.infinispan.persistence.dataLocation=${ZWE_configs_storage_infinispan_persistence_dataLocation:-data} \
   -Dcaching.storage.infinispan.persistence.indexLocation=${ZWE_configs_storage_infinispan_persistence_indexLocation:-index} \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
