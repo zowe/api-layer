@@ -12,7 +12,7 @@ dependencyResolutionManagement {
             version('springCloudCommons', '4.1.0')
             version('springCloudCB', '3.1.0')
             version('springCloudGateway', '4.1.1')
-            version('springFramework', '6.1.4')
+            version('springFramework', '6.1.5')
             version('springRetry', '2.0.5')
             version('springWebTestClient', '5.4.0')
 
@@ -120,6 +120,10 @@ dependencyResolutionManagement {
             library('spring_context', 'org.springframework', 'spring-context').versionRef('springFramework')
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
             library('spring_bom', 'org.springframework', 'spring-framework-bom').versionRef('springFramework')
+            library('spring_web', 'org.springframework', 'spring-web').versionRef('springFramework')
+            library('spring_tx', 'org.springframework', 'spring-tx').versionRef('springFramework')
+            library('spring_webmvc', 'org.springframework', 'spring-webmvc').versionRef('springFramework')
+            library('spring_context_support', 'org.springframework', 'spring-context-support').versionRef('springFramework')
 
             library('apache_commons_lang3', 'org.apache.commons', 'commons-lang3').versionRef('commonsLang3')
             library('apache_commons_text', 'org.apache.commons', 'commons-text').versionRef('commonsText')
