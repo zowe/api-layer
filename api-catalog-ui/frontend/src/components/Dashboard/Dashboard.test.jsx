@@ -299,17 +299,15 @@ describe('>>> Dashboard component tests', () => {
         process.env.REACT_APP_API_PORTAL = true;
 
         const { getByText } = render(
-            <Suspense fallback={<div>loading</div>}>
-                <Dashboard
-                    tiles={null}
-                    fetchTilesStart={jest.fn()}
-                    fetchTilesStop={jest.fn()}
-                    clearService={jest.fn()}
-                    clear={jest.fn()}
-                    assertAuthorization={jest.fn()}
-                    authentication={jest.fn()}
-                />
-            </Suspense>
+            <Dashboard
+                tiles={null}
+                fetchTilesStart={jest.fn()}
+                fetchTilesStop={jest.fn()}
+                clearService={jest.fn()}
+                clear={jest.fn()}
+                assertAuthorization={jest.fn()}
+                authentication={jest.fn()}
+            />
         );
 
         await waitFor(() => {

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { connect } from 'react-redux';
-import SwaggerUI from './SwaggerUI';
+import SwaggerUIApiml from './SwaggerUIApiml';
 
 const mapStateToProps = (state) => ({
     selectedService: state.selectedServiceReducer.selectedService,
@@ -17,4 +17,4 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {};
 
-export default connect(mapStateToProps, mapDispatchToProps)(SwaggerUI);
+export default connect(mapStateToProps, mapDispatchToProps)(SwaggerUIApiml);
