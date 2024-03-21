@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import Loadable from 'react-loadable';
+import loadable from '@react-loadable/revised';
 import { lazy } from 'react';
 
-export const AsyncAppContainer = Loadable({
+export const AsyncAppContainer = loadable({
     loader: () => import('./AppContainer'), // eslint-disable-line import/no-cycle
     loading: () => null,
 });

@@ -446,7 +446,7 @@
 }
 
 .swagger-ui .responses-inner {
-    padding: 20px
+    padding: 20px;
 }
 
 .swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 {
@@ -1182,7 +1182,8 @@
 .swagger-ui table {
     width: 100%;
     padding: 0 10px;
-    border-collapse: collapse
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .swagger-ui table.model tbody tr td {
@@ -1191,7 +1192,7 @@
 }
 
 .swagger-ui table.model tbody tr td:first-of-type {
-    width: 100px;
+    width: 20%;
     padding: 0
 }
 
@@ -1200,7 +1201,6 @@
     font-weight: 300;
     vertical-align: middle;
     font-family: Source Code Pro, monospace;
-    font-weight: 600;
     color: #3b4151
 }
 

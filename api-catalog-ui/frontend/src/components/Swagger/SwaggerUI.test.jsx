@@ -11,7 +11,7 @@ import { act } from 'react-dom/test-utils';
 import { render } from 'react-dom';
 import { shallow } from 'enzyme';
 import { describe, expect, it, jest } from '@jest/globals';
-import SwaggerUI from './SwaggerUI';
+import SwaggerUIApiml from './SwaggerUIApiml';
 
 describe('>>> Swagger component tests', () => {
     afterEach(() => {
@@ -42,7 +42,7 @@ describe('>>> Swagger component tests', () => {
         };
         const wrapper = shallow(
             <div>
-                <SwaggerUI selectedService={service} />
+                <SwaggerUIApiml selectedService={service} />
             </div>
         );
         const swaggerDiv = wrapper.find('#swaggerContainer');
@@ -76,7 +76,7 @@ describe('>>> Swagger component tests', () => {
         };
         const wrapper = shallow(
             <div>
-                <SwaggerUI selectedService={service} />
+                <SwaggerUIApiml selectedService={service} />
             </div>
         );
         const swaggerDiv = wrapper.find('#swaggerContainer');
@@ -108,7 +108,7 @@ describe('>>> Swagger component tests', () => {
 
         const container = document.createElement('div');
         document.body.appendChild(container);
-        await act(async () => render(<SwaggerUI selectedService={service} />, container));
+        await act(async () => render(<SwaggerUIApiml selectedService={service} />, container));
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
 
@@ -152,7 +152,7 @@ describe('>>> Swagger component tests', () => {
         const container = document.createElement('div');
         document.body.appendChild(container);
 
-        await act(async () => render(<SwaggerUI selectedService={service} tiles={tiles} />, container));
+        await act(async () => render(<SwaggerUIApiml selectedService={service} tiles={tiles} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint}`);
     });
 
@@ -217,9 +217,9 @@ describe('>>> Swagger component tests', () => {
         const container = document.createElement('div');
         document.body.appendChild(container);
         const tiles = [{}];
-        await act(async () => render(<SwaggerUI selectedService={service1} tiles={tiles} />, container));
+        await act(async () => render(<SwaggerUIApiml selectedService={service1} tiles={tiles} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint1}`);
-        await act(async () => render(<SwaggerUI selectedService={service2} tiles={tiles} />, container));
+        await act(async () => render(<SwaggerUIApiml selectedService={service2} tiles={tiles} />, container));
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint2}`);
     });
 
@@ -255,7 +255,7 @@ describe('>>> Swagger component tests', () => {
         const container = document.createElement('div');
         document.body.appendChild(container);
 
-        await act(async () => render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container));
+        await act(async () => render(<SwaggerUIApiml selectedService={service1} selectedVersion="0" />, container));
         expect(container).not.toBeNull();
     });
 
@@ -290,7 +290,7 @@ describe('>>> Swagger component tests', () => {
         // eslint-disable-next-line no-unused-vars
         querySelectorSpy.mockImplementation((element) => divInfo);
 
-        const wrapper = shallow(<SwaggerUI selectedService={service} />);
+        const wrapper = shallow(<SwaggerUIApiml selectedService={service} />);
 
         wrapper.setProps({ selectedVersion: 'v2' });
 
@@ -330,7 +330,7 @@ describe('>>> Swagger component tests', () => {
         // eslint-disable-next-line no-unused-vars
         getElementByIdSpy.mockImplementation((elementId) => <span id="filter-label" />);
 
-        const wrapper = shallow(<SwaggerUI selectedService={service} />);
+        const wrapper = shallow(<SwaggerUIApiml selectedService={service} />);
 
         wrapper.setProps({ selectedVersion: 'v2' });
 
@@ -362,7 +362,7 @@ describe('>>> Swagger component tests', () => {
         jest.spyOn(document, 'getElementById').mockImplementation(() => null);
         const wrapper = shallow(
             <div>
-                <SwaggerUI selectedService={service} />
+                <SwaggerUIApiml selectedService={service} />
             </div>
         );
         const swaggerDiv = wrapper.find('span');
@@ -392,7 +392,7 @@ describe('>>> Swagger component tests', () => {
         const createElement = jest.spyOn(document, 'createElement');
         const wrapper = shallow(
             <div>
-                <SwaggerUI selectedService={service} />
+                <SwaggerUIApiml selectedService={service} />
             </div>
         );
         const swaggerDiv = wrapper.find('span');

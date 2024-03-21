@@ -51,7 +51,7 @@ describe('>>> Detail page test', () => {
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
         cy.get(
-            '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option'
+            '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > div > label > select > option'
         )
             .should('exist')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/api/v1`);
@@ -84,7 +84,7 @@ describe('>>> Detail page test', () => {
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
         cy.get(
-            '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option'
+            '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > div > label > select > option'
         )
             .should('exist')
             .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/gateway/api/v1`);
@@ -94,7 +94,7 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Service Homepage').should('exist');
 
-        cy.get('pre.version').should('contain', 'OAS3');
+        cy.get('pre.version').should('contain', 'OAS');
 
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
