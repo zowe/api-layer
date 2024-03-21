@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import yaml from 'js-yaml';
 import * as YAML from 'yaml';
 import { Component } from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
@@ -113,7 +112,7 @@ export default class WizardDialog extends Component {
         reader.onload = (event) => {
             const text = event.target.result;
             try {
-                const obj = yaml.load(text);
+                const obj = YAML.parse(text);
                 if (typeof obj !== 'object') {
                     throw Error('File not valid yaml!');
                 }
