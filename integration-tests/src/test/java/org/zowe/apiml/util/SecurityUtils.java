@@ -543,9 +543,7 @@ public class SecurityUtils {
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1L));
 
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
+        Claims claims = parseJwtStringUnsecure(cookie.getValue());
         assertThatTokenIsValid(claims, username);
     }
 
@@ -558,9 +556,16 @@ public class SecurityUtils {
         assertThat(claims.getSubject(), is(username.orElseGet(SecurityUtils::getUsername)));
     }
 
-    public static Claims parseJwtString(String untrustedJwtString) {
-        return Jwts.parserBuilder().build()
-            .parseClaimsJwt(untrustedJwtString)
+    public static Claims parseJwtStringUnsecure(String jwtString) {
+        int i = jwtString.indexOf('.');
+        int j = jwtString.lastIndexOf('.');
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(Base64.encode("{\"typ\":\"JWT\",\"alg\":\"none\"}"));
+        sb.append(jwtString.substring(i, j + 1));
+
+        return Jwts.parser().unsecured().build()
+            .parseClaimsJwt(sb.toString())
             .getBody();
     }
 
