@@ -300,7 +300,7 @@ body {
   }
 
   .content {
-    &, .main-content dashboard-content {
+    &, .main-content .dashboard-content {
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -349,7 +349,7 @@ body {
 
       .main-content2 {
         width: 100%;
-        padding: var( --contentTopPadding ) var( --contentRightPadding ) var( --contentBottomPadding ) var( --contentLeftPadding );
+        padding: var( --contentTopPadding ) var( --contentRightPadding ) 0 var( --contentLeftPadding );
         position: relative;
         overflow:auto;
 
