@@ -86,7 +86,7 @@
         "@testing-library/user-event": "13.5.0",
         "ansi-regex": "5.0.1",
         "body-parser": "1.19.2",
-        "caniuse-lite": "1.0.30001599",
+        "caniuse-lite": "1.0.30001600",
         "concurrently": "5.3.0",
         "cors": "2.8.5",
         "cross-env": "7.0.3",
