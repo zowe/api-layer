@@ -51,7 +51,7 @@ dependencyResolutionManagement {
             version('junitPlatform', '1.10.2')
             version('lettuce', '6.3.1.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
-            version('log4j', '3.0.0-beta2')
+            version('log4j', '2.23.1')
             version('lombok', '1.18.30')
             version('netty', '4.1.104.Final')
             version('nettyReactor', '1.1.14')
