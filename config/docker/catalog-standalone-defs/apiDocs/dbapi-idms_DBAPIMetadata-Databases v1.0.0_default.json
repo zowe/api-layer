@@ -1,0 +1,3377 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Database Metadata Service",
+        "description": "The Database Metadata Service provides a service to expose standard JDBC metadata. Press **Authorize** and use your mainframe credentials.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Data Sources",
+            "description": "REST API to return a list of defined data sources"
+        },
+        {
+            "name": "SQL",
+            "description": "REST API for database metadata functions"
+        }
+    ],
+    "paths": {
+        "/api/v1/datasources": {
+            "get": {
+                "tags": [
+                    "Data Sources"
+                ],
+                "summary": "Returns a list of data sources",
+                "description": "Returns a list of data sources defined in the datasources yml file",
+                "operationId": "getDatasources",
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Datasource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "401": {
+                        "description": "Authentication is required"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/datasources/{datasource}": {
+            "get": {
+                "tags": [
+                    "Data Sources"
+                ],
+                "summary": "Returns the specified data source",
+                "description": "Returns the data source identified by the data source name",
+                "operationId": "getDatasource",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Datasource name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Datasource"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "401": {
+                        "description": "Authentication is required"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/bestRowIdentifier/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns information about the optimal set of columns",
+                "description": "Returns a list of columns that represent the optimal set of columns in a table to uniquely identify a row",
+                "operationId": "getBestRowIdentifier",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schema",
+                        "in": "query",
+                        "description": "Schema name (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL"
+                    },
+                    {
+                        "name": "table",
+                        "in": "query",
+                        "description": "Table name (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEPARTMENT"
+                    },
+                    {
+                        "name": "scope",
+                        "in": "query",
+                        "description": "Scope of the result. Possible values are:\n- 0 - bestRowTemporary - only valid while using the row\n- 1 - bestRowTransaction - valid during current transaction\n- 2 - bestRowSession - valid during current session",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        },
+                        "example": 0
+                    },
+                    {
+                        "name": "nullable",
+                        "in": "query",
+                        "description": "Include nullable columns",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BestRowIdentifiersResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BestRowIdentifiersResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BestRowIdentifiersResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/columns/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of columns",
+                "description": "Returns a list of columns associated with the data source",
+                "operationId": "getColumns",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schemaPattern",
+                        "in": "query",
+                        "description": "Schema filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMO%"
+                    },
+                    {
+                        "name": "tablePattern",
+                        "in": "query",
+                        "description": "Table filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "BENEFITS"
+                    },
+                    {
+                        "name": "columnPattern",
+                        "in": "query",
+                        "description": "Column filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "FISCAL_YEAR"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ColumnsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ColumnsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ColumnsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/crossReference/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of cross-referenced foreign keys",
+                "description": "Returns a list of foreign keys that reference a given table's primary keys",
+                "operationId": "CrossReference",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "pcatalog",
+                        "in": "query",
+                        "description": "Parent table catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pschema",
+                        "in": "query",
+                        "description": "Parent table schema name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL"
+                    },
+                    {
+                        "name": "ptable",
+                        "in": "query",
+                        "description": "Parent table name filter (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "EMPLOYEE"
+                    },
+                    {
+                        "name": "fcatalog",
+                        "in": "query",
+                        "description": "Foreign table catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fschema",
+                        "in": "query",
+                        "description": "Foreign table schema name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL"
+                    },
+                    {
+                        "name": "ftable",
+                        "in": "query",
+                        "description": "Foreign table name filter (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "BENEFITS"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CrossReferenceResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CrossReferenceResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CrossReferenceResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/databaseProductInfo/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns information about the database product",
+                "description": "Returns the database product name, version number, and other information about the database",
+                "operationId": "getDatabaseProductInfo",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DatabaseProductInfoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DatabaseProductInfoResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DatabaseProductInfoResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/exportedKeys/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of exported keys",
+                "description": "Returns a list of exported keys associated with the data source",
+                "operationId": "getExportedKeys",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schema",
+                        "in": "query",
+                        "description": "Schema name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL"
+                    },
+                    {
+                        "name": "table",
+                        "in": "query",
+                        "description": "Table name filter (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "EMPLOYEE"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExportedKeysResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExportedKeysResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExportedKeysResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/importedKeys/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of imported keys",
+                "description": "Returns a list of imported keys associated with the data source",
+                "operationId": "getImportedKeys",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schema",
+                        "in": "query",
+                        "description": "Schema name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL"
+                    },
+                    {
+                        "name": "table",
+                        "in": "query",
+                        "description": "Table name filter (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "EMPLOYEE"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImportedKeysResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImportedKeysResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImportedKeysResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/indexInfo/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of indexes",
+                "description": "Returns a list of indexes associated with the data source",
+                "operationId": "getIndexInfo",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schema",
+                        "in": "query",
+                        "description": "Schema name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL"
+                    },
+                    {
+                        "name": "table",
+                        "in": "query",
+                        "description": "Table name filter (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEPARTMENT"
+                    },
+                    {
+                        "name": "unique",
+                        "in": "query",
+                        "description": "Unique; true or false",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "approximate",
+                        "in": "query",
+                        "description": "Approximate; true or false",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IndexInfosResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IndexInfosResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IndexInfosResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/primaryKeys/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of primary key columns",
+                "description": "Returns a list of primary key columns associated with the data source",
+                "operationId": "getPrimaryKeys",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schema",
+                        "in": "query",
+                        "description": "Schema name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "REL"
+                    },
+                    {
+                        "name": "table",
+                        "in": "query",
+                        "description": "Table name filter (case-sensitive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ORG"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PrimaryKeysResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PrimaryKeysResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PrimaryKeysResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/procedureColumns/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of procedure columns",
+                "description": "Returns a list of procedure columns associated with the data source",
+                "operationId": "getProcedureColumns",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schemaPattern",
+                        "in": "query",
+                        "description": "Schema filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMO%"
+                    },
+                    {
+                        "name": "procedurePattern",
+                        "in": "query",
+                        "description": "Procedure filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "IDMS%"
+                    },
+                    {
+                        "name": "columnPattern",
+                        "in": "query",
+                        "description": "Column filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "EMP%"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProcedureColumnsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProcedureColumnsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProcedureColumnsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/procedures/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of procedures",
+                "description": "Returns a list of procedures associated with the data source",
+                "operationId": "getProcedures",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schemaPattern",
+                        "in": "query",
+                        "description": "Schema filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMO%"
+                    },
+                    {
+                        "name": "procedurePattern",
+                        "in": "query",
+                        "description": "Procedure filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "IDMS%"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProceduresResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProceduresResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProceduresResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/schemas/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of schemas",
+                "description": "Returns a list of schemas associated with the data source",
+                "operationId": "getSchemas",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schemaPattern",
+                        "in": "query",
+                        "description": "Schema filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        },
+                        "example": "DEMO%"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SchemasResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SchemasResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SchemasResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/sql/tables/{datasource}": {
+            "get": {
+                "tags": [
+                    "SQL"
+                ],
+                "summary": "Returns a list of tables",
+                "description": "Returns a list of tables associated with the data source",
+                "operationId": "getTables",
+                "parameters": [
+                    {
+                        "name": "datasource",
+                        "in": "path",
+                        "description": "Data source name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SYSDEMO"
+                    },
+                    {
+                        "name": "catalog",
+                        "in": "query",
+                        "description": "Catalog name filter (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schemaPattern",
+                        "in": "query",
+                        "description": "Schema filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DEMOEMPL%"
+                    },
+                    {
+                        "name": "tablePattern",
+                        "in": "query",
+                        "description": "Table filter pattern (case-sensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "EMP%"
+                    },
+                    {
+                        "name": "types",
+                        "in": "query",
+                        "description": "TABLE, VIEW, or other types supported by the database",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TablesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TablesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TablesResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiMessage": {
+                "title": "API Messages",
+                "type": "object",
+                "properties": {
+                    "messages": {
+                        "type": "array",
+                        "description": "Set of API messages.",
+                        "items": {
+                            "$ref": "#/components/schemas/ResponseMessage"
+                        }
+                    }
+                }
+            },
+            "BestRowIdentifier": {
+                "type": "object",
+                "properties": {
+                    "scope": {
+                        "type": "integer",
+                        "description": "Scope of the result. Possible values are:\n- 0 - bestRowTemporary - only valid while using the row\n- 1 - bestRowTransaction - valid during current transaction\n- 2 - bestRowSession - valid during current session",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "columnName": {
+                        "type": "string",
+                        "description": "Column name",
+                        "nullable": true,
+                        "example": "DEPT_ID"
+                    },
+                    "dataType": {
+                        "type": "integer",
+                        "description": "SQL data type number",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 2
+                    },
+                    "typeName": {
+                        "type": "string",
+                        "description": "SQL data type name",
+                        "nullable": true,
+                        "example": "UNSIGNED_NUMERIC"
+                    },
+                    "columnSize": {
+                        "type": "integer",
+                        "description": "Maximum number of characters or digits the column may contain",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 4
+                    },
+                    "bufferLength": {
+                        "type": "integer",
+                        "description": "Unused",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "decimalDigits": {
+                        "type": "integer",
+                        "description": "Number of fractional digits",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "pseudoColumn": {
+                        "type": "integer",
+                        "description": "Indicates if the row is a pseudo column. Possible values are:\n- 0 - bestRowUnknown - unknown if this is a pseudo column\n- 1 - bestNotPseudo - column is not a pseudo columnn\n- 2 - bestPseudo - column is a pseudo column",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    }
+                },
+                "description": "BestRowIdentifier object",
+                "nullable": true
+            },
+            "BestRowIdentifiersResponse": {
+                "type": "object",
+                "properties": {
+                    "bestRowIdentifiers": {
+                        "type": "array",
+                        "description": "List of Best Row Identifier columns",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/BestRowIdentifier"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getBestRowIdentifier call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "BestRowIdentifiersResponse object"
+            },
+            "Column": {
+                "type": "object",
+                "properties": {
+                    "tableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "tableSchema": {
+                        "type": "string",
+                        "description": "Schema name",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "tableName": {
+                        "type": "string",
+                        "description": "Table name",
+                        "nullable": true,
+                        "example": "BENEFITS"
+                    },
+                    "columnName": {
+                        "type": "string",
+                        "description": "Column name",
+                        "nullable": true,
+                        "example": "FISCAL_YEAR"
+                    },
+                    "dataType": {
+                        "type": "integer",
+                        "description": "SQL data type number",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 2
+                    },
+                    "typeName": {
+                        "type": "string",
+                        "description": "SQL data type name",
+                        "nullable": true,
+                        "example": "UNSIGNED_NUMERIC"
+                    },
+                    "columnSize": {
+                        "type": "integer",
+                        "description": "Maximum number of characters or digits the column may contain",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 4
+                    },
+                    "bufferLength": {
+                        "type": "integer",
+                        "description": "Unused",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "decimalDigits": {
+                        "type": "integer",
+                        "description": "Number of fractional digits",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "numericPrecisionRadix": {
+                        "type": "integer",
+                        "description": "Numeric base. Typically base 10 or 2",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 10
+                    },
+                    "nullable": {
+                        "type": "integer",
+                        "description": "Indicates if null values are allowed. Possible values are:\n- 0 - columnNoNulls - might not allow NULL values\n- 1 - columnNullable - allows NULL values\n- 2 - columnNullableUnknown - nullability unknown",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "remarks": {
+                        "type": "string",
+                        "description": "Description of the column",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "columnDefault": {
+                        "type": "string",
+                        "description": "Default value of the column",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "sqlDataType": {
+                        "type": "integer",
+                        "description": "Unused",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "sqlDateTimeSubtype": {
+                        "type": "integer",
+                        "description": "Unused",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "characterOctetLength": {
+                        "type": "integer",
+                        "description": "Size of the column in bytes",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 4
+                    },
+                    "ordinalPosition": {
+                        "type": "integer",
+                        "description": "Position of the column in the table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "isNullable": {
+                        "type": "string",
+                        "description": "Indicates if the column may contain nulls. Possible values are:\n- YES - the column may contain nulls\n- NO - the column may not contain nulls\n- empty string - column nullability unknown",
+                        "nullable": true,
+                        "example": "NO"
+                    },
+                    "scopeCatalog": {
+                        "type": "string",
+                        "description": "Catalog of the table that is the scope of a reference attribute (null when DATA_TYPE is not REF)",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "scopeSchema": {
+                        "type": "string",
+                        "description": "Schema of the table that is the scope of a reference attribute (null when DATA_TYPE is not REF)",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "scopeTable": {
+                        "type": "string",
+                        "description": "Table name that is the scope of a reference attribute (null when DATA_TYPE is not REF)",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "sourceDataType": {
+                        "type": "integer",
+                        "description": "Source type of a distinct type or user-generated reference type (null when DATA_TYPE is not DISTINCT or REF)",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "isAutoIncrement": {
+                        "type": "string",
+                        "description": "Indicates if the column automatically increments. Possible values are:\n- YES - the column automatically increments\n- NO - the column does not automatically increment\n- empty string - it is unknown if the column automatically increments",
+                        "nullable": true,
+                        "example": "NO"
+                    }
+                },
+                "description": "Column object",
+                "nullable": true
+            },
+            "ColumnsResponse": {
+                "type": "object",
+                "properties": {
+                    "columns": {
+                        "type": "array",
+                        "description": "List of columns",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/Column"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getColumns call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "ColumnsResponse object"
+            },
+            "CrossReference": {
+                "type": "object",
+                "properties": {
+                    "primaryKeyTableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name that contains the primary key table",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "primaryKeyTableSchema": {
+                        "type": "string",
+                        "description": "Schema name of the primary key table",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "primaryKeyTableName": {
+                        "type": "string",
+                        "description": "Name of the primary key table",
+                        "nullable": true,
+                        "example": "EMPLOYEE"
+                    },
+                    "primaryKeyColumnName": {
+                        "type": "string",
+                        "description": "Column name of the primary key",
+                        "nullable": true,
+                        "example": "EMP_ID"
+                    },
+                    "foreignKeyTableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name that contains the foreign key table",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "foreignKeyTableSchema": {
+                        "type": "string",
+                        "description": "Schema name of the foreign key table",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "foreignKeyTableName": {
+                        "type": "string",
+                        "description": "Name of the foreign key table",
+                        "nullable": true,
+                        "example": "BENEFITS"
+                    },
+                    "foreignKeyColumnName": {
+                        "type": "string",
+                        "description": "Column name of the foreign key",
+                        "nullable": true,
+                        "example": "EMP_ID"
+                    },
+                    "keySequence": {
+                        "type": "integer",
+                        "description": "Column sequence within primary key",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    },
+                    "updateRule": {
+                        "type": "integer",
+                        "description": "Action applied to the foreign key when the primary key is updated\nPossible values are:\n- 3 - importedKeyNoAction - do not allow update of primary key if it has been imported\n- 0 - importedKeyCascade - when the primary key is updated, update the imported key to match\n- 2 - importedKeySetNull - change imported key to NULL if its primary key has been updated\n- 4 - importedKeySetDefault - change imported key to a default value if its primary key has been updated\n- 1 - importedKeyRestrict - do not allow update of the primary key if imported as a foreign key in another table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "deleteRule": {
+                        "type": "integer",
+                        "description": "Action applied to the foreign key when the primary key is deleted\nPossible values are:\n- 3 - importedKeyNoAction - do not allow delete of primary key if it has been imported\n\n- 0 - importedKeyCascade - when the primary key is deleted, delete the rows that import it\n- 2 - importedKeySetNull - change imported key to NULL if its primary key has been deleted\n- 4 - importedKeySetDefault - change imported key to a default value if its primary key has been deleted\n- 1 - importedKeyRestrict - do not allow delete of the primary key if imported as a foreign key in another table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "foreignKeyName": {
+                        "type": "string",
+                        "description": "Name of the foreign key",
+                        "nullable": true,
+                        "example": "EMP_BENEFITS"
+                    },
+                    "primaryKeyName": {
+                        "type": "string",
+                        "description": "Name of the primary key",
+                        "nullable": true,
+                        "example": "CALC"
+                    },
+                    "deferrability": {
+                        "type": "integer",
+                        "description": "Indicates if the evaluation of the foreign key constraint can be deferred until a commit\nPossible values are:\n- 5 - importedKeyInitiallyDeferred\n- 6 - importedKeyInitiallyImmediate\n- 7 - importedKeyNotDeferrable",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 7
+                    }
+                },
+                "description": "CrossReference object",
+                "nullable": true
+            },
+            "CrossReferenceResponse": {
+                "type": "object",
+                "properties": {
+                    "crossReference": {
+                        "type": "array",
+                        "description": "List of cross-referenced foreign keys",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/CrossReference"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getCrossReference call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "CrossReferenceResponse object"
+            },
+            "DatabaseProductInfo": {
+                "type": "object",
+                "properties": {
+                    "databaseProductName": {
+                        "type": "string",
+                        "description": "Name of the database product",
+                        "example": "IDMS"
+                    },
+                    "databaseProductVersion": {
+                        "type": "string",
+                        "description": "Version of the database product",
+                        "example": "19.00.04"
+                    },
+                    "allProceduresAreCallable": {
+                        "type": "boolean",
+                        "description": "All procedures returned by the getProcedures method can be called by the current user",
+                        "example": true
+                    },
+                    "allTablesAreSelectable": {
+                        "type": "boolean",
+                        "description": "All tables returned by the getTables method in a SELECT statement can be used by the current user",
+                        "example": true
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "URL for the DBMS",
+                        "example": "jdbc:idms://localhost:12345/APPLDICT"
+                    },
+                    "userName": {
+                        "type": "string",
+                        "description": "Name of the user as known to the database",
+                        "example": "user"
+                    },
+                    "isReadOnly": {
+                        "type": "boolean",
+                        "description": "Database is in read-only mode",
+                        "example": false
+                    },
+                    "nullsAreSortedHigh": {
+                        "type": "boolean",
+                        "description": "NULLs are sorted higher than any other value in the domain",
+                        "example": true
+                    },
+                    "nullsAreSortedLow": {
+                        "type": "boolean",
+                        "description": "NULLs are sorted lower than any other value in the domain",
+                        "example": false
+                    },
+                    "nullsAreSortedAtStart": {
+                        "type": "boolean",
+                        "description": "NULLSs are sorted at the start, regardless of sort order",
+                        "example": false
+                    },
+                    "nullsAreSortedAtEnd": {
+                        "type": "boolean",
+                        "description": "NULLs are sorted at the end, regardless of sort order",
+                        "example": false
+                    },
+                    "driverName": {
+                        "type": "string",
+                        "description": "Name of the JDBC driver",
+                        "example": "IDMS SERVER"
+                    },
+                    "driverVersion": {
+                        "type": "string",
+                        "description": "Version number of the JDBC driver",
+                        "example": "17.1"
+                    },
+                    "driverMajorVersion": {
+                        "type": "integer",
+                        "description": "Major version number of the JDBC driver",
+                        "format": "int32",
+                        "example": 17
+                    },
+                    "driverMinorVersion": {
+                        "type": "integer",
+                        "description": "Minor version number of the JDBC driver",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "usesLocalFiles": {
+                        "type": "boolean",
+                        "description": "Database stores tables in a local file",
+                        "example": false
+                    },
+                    "usesLocalFilePerTable": {
+                        "type": "boolean",
+                        "description": "Database uses a local file for each table",
+                        "example": false
+                    },
+                    "supportsMixedCaseIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case unquoted SQL identifiers as case sensitive and stores them in mixed case",
+                        "example": false
+                    },
+                    "storesUpperCaseIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case unquoted SQL identifiers as case insensitive and stores them in upper case",
+                        "example": true
+                    },
+                    "storesLowerCaseIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case unquoted SQL identifiers as case insensitive and stores them in lower case",
+                        "example": false
+                    },
+                    "storesMixedCaseIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case unquoted SQL identifiers as case insensitive and stores them in mixed case",
+                        "example": false
+                    },
+                    "supportsMixedCaseQuotedIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case quoted SQL identifiers as case sensitive and stores them in mixed case",
+                        "example": true
+                    },
+                    "storesUpperCaseQuotedIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case quoted SQL identifiers as case insensitive and stores them in upper case",
+                        "example": false
+                    },
+                    "storesLowerCaseQuotedIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case quoted SQL identifiers as case insensitive and stores them in lower case",
+                        "example": false
+                    },
+                    "storesMixedCaseQuotedIdentifiers": {
+                        "type": "boolean",
+                        "description": "Database treats mixed case quoted SQL identifiers as case insensitive and stores them in mixed case",
+                        "example": false
+                    },
+                    "identifierQuoteString": {
+                        "type": "string",
+                        "description": "String used to quote SQL identifiers",
+                        "example": "'\"'"
+                    },
+                    "sqlKeywords": {
+                        "type": "string",
+                        "description": "Comma-separated list of non-SQL 2003 keywords that exist in the database",
+                        "example": "keyword1,keyword2,keyword3"
+                    },
+                    "numericFunctions": {
+                        "type": "string",
+                        "description": "Comma-separated list of the available math functions in the database",
+                        "example": "ABS,ACOS,ASIN,ATAN,ATAN2,CEILING,COS,COT,DEGREES,EXP,FLOOR,LOG,LOG10,MOD,PI,POWER,RADIANS,RAND,ROUND,SIGN,SIN,SQRT,TAN,TRUNCATE"
+                    },
+                    "stringFunctions": {
+                        "type": "string",
+                        "description": "Comma-separated list of the available string functions in the database",
+                        "example": "CHAR,CHAR_LENGTH,CHARACTER_LENGTH,CONCAT,INSERT,LCASE,LEFT,LENGTH,LOCATE,LTRIM,OCTET_LENGTH,POSITION,REPEAT,REPLACE,RIGHT,RTRIM,SPACE,SUBSTRING,UCASE"
+                    },
+                    "systemFunctions": {
+                        "type": "string",
+                        "description": "Comma-separated list of the available system functions in the database",
+                        "example": "DATABASE,IFNULL,USER"
+                    },
+                    "timeDateFunctions": {
+                        "type": "string",
+                        "description": "Comma-separated list of the available time and date functions in the database",
+                        "example": "CURRENT_DATE,CURRENT_TIME,CURRENT_TIMESTAMP,CURDATE,CURTIME,DAY,DAYNAME,DAYOFMONTH,DAYOFWEEK,DAYOFYEAR,HOUR,MINUTE,MONTH,MONTHNAME,NOW,QUARTER,SECOND,TIME,WEEK,YEAR"
+                    },
+                    "searchStringEscape": {
+                        "type": "string",
+                        "description": "String used to escape wildcard characters in the database",
+                        "example": "\\"
+                    },
+                    "extraNameCharacters": {
+                        "type": "string",
+                        "description": "Characters beyond a-z, A-Z, 0-9, and _ that the database can use in unquoted identifier names",
+                        "example": "@#$"
+                    },
+                    "supportsAlterTableWithAddColumn": {
+                        "type": "boolean",
+                        "description": "Database supports ALTER TABLE with add column",
+                        "example": true
+                    },
+                    "supportsAlterTableWithDropColumn": {
+                        "type": "boolean",
+                        "description": "Database supports ALTER TABLE with drop column",
+                        "example": true
+                    },
+                    "supportsColumnAliasing": {
+                        "type": "boolean",
+                        "description": "Database supports column aliasing",
+                        "example": false
+                    },
+                    "nullPlusNonNullIsNull": {
+                        "type": "boolean",
+                        "description": "Database supports concatenations between NULL and non-NULL values being NULL",
+                        "example": true
+                    },
+                    "supportsConvert": {
+                        "type": "boolean",
+                        "description": "Database supports the JDBC scalar function CONVERT to convert one JDBC type to another",
+                        "example": false
+                    },
+                    "supportsTableCorrelationNames": {
+                        "type": "boolean",
+                        "description": "Database supports table correlation names",
+                        "example": true
+                    },
+                    "supportsDifferentTableCorrelationNames": {
+                        "type": "boolean",
+                        "description": "When table correlation names are supported, they must be different from the names of the tables",
+                        "example": false
+                    },
+                    "supportsExpressionsInOrderBy": {
+                        "type": "boolean",
+                        "description": "Database supports expressions in ORDER BY lists",
+                        "example": false
+                    },
+                    "supportsOrderByUnrelated": {
+                        "type": "boolean",
+                        "description": "Database supports using a column in the ORDER BY clause even if the column is not in the select statement",
+                        "example": true
+                    },
+                    "supportsGroupBy": {
+                        "type": "boolean",
+                        "description": "Database supports the GROUP BY clause",
+                        "example": true
+                    },
+                    "supportsGroupByUnrelated": {
+                        "type": "boolean",
+                        "description": "Database allows a column that is not in the SELECT statement to be used in a GROUP BY clause",
+                        "example": true
+                    },
+                    "supportsGroupByBeyondSelect": {
+                        "type": "boolean",
+                        "description": "Database supports using columns that are not included in the SELECT statement in a GROUP BY clause if all columns in the SELECT statement are included in the GROUP BY clause",
+                        "example": true
+                    },
+                    "supportsLikeEscapeClause": {
+                        "type": "boolean",
+                        "description": "Database supports the LIKE escape clause",
+                        "example": true
+                    },
+                    "supportsMultipleResultSets": {
+                        "type": "boolean",
+                        "description": "Database allows multiple ResultSet objects to be retrieved from a single execute method call",
+                        "example": true
+                    },
+                    "supportsMultipleTransactions": {
+                        "type": "boolean",
+                        "description": "Database supports multiple transactions to be open simultaneously on different connections",
+                        "example": true
+                    },
+                    "supportsNonNullableColumns": {
+                        "type": "boolean",
+                        "description": "Database allows columns to be defined as non-nullable",
+                        "example": true
+                    },
+                    "supportsMinimumSQLGrammar": {
+                        "type": "boolean",
+                        "description": "Database supports ODBC minimum SQL grammar",
+                        "example": true
+                    },
+                    "supportsCoreSQLGrammar": {
+                        "type": "boolean",
+                        "description": "Database supports ODBC Core SQL grammar",
+                        "example": true
+                    },
+                    "supportsExtendedSQLGrammar": {
+                        "type": "boolean",
+                        "description": "Database supports ODBC Extended SQL grammar",
+                        "example": false
+                    },
+                    "supportsAnsi92EntryLevelSql": {
+                        "type": "boolean",
+                        "description": "Database supports ANSI92 entry level SQL grammar",
+                        "example": true
+                    },
+                    "supportsAnsi92IntermediateSql": {
+                        "type": "boolean",
+                        "description": "Database supports ANSI92 intermediate level SQL grammar",
+                        "example": false
+                    },
+                    "supportsAnsi92FullSql": {
+                        "type": "boolean",
+                        "description": "Database supports ANSI92 full SQL grammar",
+                        "example": false
+                    },
+                    "supportsIntegrityEnhancementFacility": {
+                        "type": "boolean",
+                        "description": "Database supports SQL Integrity Enhancement Facility",
+                        "example": false
+                    },
+                    "supportsOuterJoins": {
+                        "type": "boolean",
+                        "description": "Database supports outer joins",
+                        "example": true
+                    },
+                    "supportsFullOuterJoins": {
+                        "type": "boolean",
+                        "description": "Database supports full nested outer joins",
+                        "example": true
+                    },
+                    "supportsLimitedOuterJoins": {
+                        "type": "boolean",
+                        "description": "Database has limited support for outer joins. True if the method supportsFullOuterJoins returns true",
+                        "example": true
+                    },
+                    "procedureTerm": {
+                        "type": "string",
+                        "description": "Term for \"procedure\" preferred by the database vendor",
+                        "example": "PROCEDURE"
+                    },
+                    "catalogTerm": {
+                        "type": "string",
+                        "description": "Term for \"catalog\" preferred by the database vendor",
+                        "example": "DATABASE"
+                    },
+                    "schemaTerm": {
+                        "type": "string",
+                        "description": "Term for \"schema\" preferred by the database vendor",
+                        "example": "SCHEMA"
+                    },
+                    "isCatalogAtStart": {
+                        "type": "boolean",
+                        "description": "If true, catalog appears at the start of a fully qualified table name. If false, catalog appears at the end",
+                        "example": false
+                    },
+                    "catalogSeparator": {
+                        "type": "string",
+                        "description": "String that the database uses to separate the catalog and table names",
+                        "example": "null"
+                    },
+                    "supportsSchemasInDataManipulation": {
+                        "type": "boolean",
+                        "description": "Database supports using a schema name in a data manipulation statement",
+                        "example": true
+                    },
+                    "supportsSchemasInProcedureCalls": {
+                        "type": "boolean",
+                        "description": "Database supports using a schema name in procedure call statements",
+                        "example": true
+                    },
+                    "supportsSchemasInTableDefinitions": {
+                        "type": "boolean",
+                        "description": "Database supports using a schema in table definition statements",
+                        "example": true
+                    },
+                    "supportsSchemasInIndexDefinitions": {
+                        "type": "boolean",
+                        "description": "Database supports using a schema in an index definition statement",
+                        "example": true
+                    },
+                    "supportsSchemasInPrivilegeDefinitions": {
+                        "type": "boolean",
+                        "description": "Database supports using a schema in privilege definition statements",
+                        "example": true
+                    },
+                    "supportsCatalogsInDataManipulation": {
+                        "type": "boolean",
+                        "description": "Database supports using a catalog name in data manipulation statements",
+                        "example": false
+                    },
+                    "supportsCatalogsInProcedureCalls": {
+                        "type": "boolean",
+                        "description": "Database supports using a catalog name in procedure call statements",
+                        "example": false
+                    },
+                    "supportsCatalogsInTableDefinitions": {
+                        "type": "boolean",
+                        "description": "Database supports using a catalog name in table definition statements",
+                        "example": false
+                    },
+                    "supportsCatalogsInIndexDefinitions": {
+                        "type": "boolean",
+                        "description": "Database supports using a catalog name in index definition statements",
+                        "example": false
+                    },
+                    "supportsCatalogsInPrivilegeDefinitions": {
+                        "type": "boolean",
+                        "description": "Database supports using a catalog name in privilege definition statements",
+                        "example": false
+                    },
+                    "supportsPositionedDelete": {
+                        "type": "boolean",
+                        "description": "Database supports positioned DELETE statements",
+                        "example": true
+                    },
+                    "supportsPositionedUpdate": {
+                        "type": "boolean",
+                        "description": "Database supports positioned UPDATE statements",
+                        "example": true
+                    },
+                    "supportsSelectForUpdate": {
+                        "type": "boolean",
+                        "description": "Database supports  SELECT FOR UPDATE statements",
+                        "example": true
+                    },
+                    "supportsStoredProcedures": {
+                        "type": "boolean",
+                        "description": "Database supports stored procedure calls that use stored procedure escape syntax",
+                        "example": true
+                    },
+                    "supportsSubqueriesInComparisons": {
+                        "type": "boolean",
+                        "description": "Database supports sub-queries in comparison expressions",
+                        "example": true
+                    },
+                    "supportsSubqueriesInExists": {
+                        "type": "boolean",
+                        "description": "Database supports sub-queries in EXISTS expressions",
+                        "example": true
+                    },
+                    "supportsSubqueriesInIns": {
+                        "type": "boolean",
+                        "description": "Database supports sub-queries in IN expressions",
+                        "example": true
+                    },
+                    "supportsSubqueriesInQuantifieds": {
+                        "type": "boolean",
+                        "description": "Database supports sub-queries in quantified expressions",
+                        "example": true
+                    },
+                    "supportsCorrelatedSubqueries": {
+                        "type": "boolean",
+                        "description": "Database supports correlated sub-queries",
+                        "example": true
+                    },
+                    "supportsUnion": {
+                        "type": "boolean",
+                        "description": "Database supports SQL UNION",
+                        "example": true
+                    },
+                    "supportsUnionAll": {
+                        "type": "boolean",
+                        "description": "Database supports SQL UNION ALL",
+                        "example": true
+                    },
+                    "supportsOpenCursorsAcrossCommit": {
+                        "type": "boolean",
+                        "description": "Database supports keeping cursors open across commits",
+                        "example": false
+                    },
+                    "supportsOpenCursorsAcrossRollback": {
+                        "type": "boolean",
+                        "description": "Database supports keeping cursors open across rollbacks",
+                        "example": false
+                    },
+                    "supportsOpenStatementsAcrossCommit": {
+                        "type": "boolean",
+                        "description": "Database supports keeping statements open across commits",
+                        "example": true
+                    },
+                    "supportsOpenStatementsAcrossRollback": {
+                        "type": "boolean",
+                        "description": "Database supports keeping statements open across rollbacks",
+                        "example": true
+                    },
+                    "maxBinaryLiteralLength": {
+                        "type": "integer",
+                        "description": "Maximum number of hexadecimal characters the database allows in an in-line binary literal",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "maxCharLiteralLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters that the database allows for a character literal",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "maxColumnNameLength": {
+                        "type": "integer",
+                        "description": "Maximum column name length in characters allowed by the database",
+                        "format": "int32",
+                        "example": 32
+                    },
+                    "maxColumnsInGroupBy": {
+                        "type": "integer",
+                        "description": "Maximum number of columns allowed in a GROUP BY clause by the database",
+                        "format": "int32",
+                        "example": 255
+                    },
+                    "maxColumnsInIndex": {
+                        "type": "integer",
+                        "description": "Maximum number of columns allowed in an index by the database",
+                        "format": "int32",
+                        "example": 32
+                    },
+                    "maxColumnsInOrderBy": {
+                        "type": "integer",
+                        "description": "Maximum number of columns allowed in an ORDER BY clause by the database",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "maxColumnsInSelect": {
+                        "type": "integer",
+                        "description": "Maximum number of columns allowed in a SELECT list by the database",
+                        "format": "int32",
+                        "example": 1024
+                    },
+                    "maxColumnsInTable": {
+                        "type": "integer",
+                        "description": "Maximum number of columns allowed in a table by the database",
+                        "format": "int32",
+                        "example": 1024
+                    },
+                    "maxConnections": {
+                        "type": "integer",
+                        "description": "Maximum number of concurrent connections allowed by the database",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "maxCursorNameLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters the database allows in a cursor name",
+                        "format": "int32",
+                        "example": 18
+                    },
+                    "maxIndexLength": {
+                        "type": "integer",
+                        "description": "Maximum number of bytes the database allows for all parts of the index",
+                        "format": "int32",
+                        "example": 256
+                    },
+                    "maxSchemaNameLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters the database allows in a schema name",
+                        "format": "int32",
+                        "example": 18
+                    },
+                    "maxProcedureNameLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters the database allows in a procedure name",
+                        "format": "int32",
+                        "example": 18
+                    },
+                    "maxCatalogNameLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters the database allows in a catalog name",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "maxRowSize": {
+                        "type": "integer",
+                        "description": "Maximum number of bytes in a single row that the database allows",
+                        "format": "int32",
+                        "example": 32760
+                    },
+                    "doesMaxRowSizeIncludeBlobs": {
+                        "type": "boolean",
+                        "description": "The maxRowSize method includes the SQL data types LONGVARCHAR and LONGVARBINARY",
+                        "example": true
+                    },
+                    "maxStatementLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters allowed in an SQL statement by the database",
+                        "format": "int32",
+                        "example": 8192
+                    },
+                    "maxStatements": {
+                        "type": "integer",
+                        "description": "Maximum number of active statements that the database can have open simultaneously",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "maxTableNameLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters allowed in a table name by the database",
+                        "format": "int32",
+                        "example": 18
+                    },
+                    "maxTablesInSelect": {
+                        "type": "integer",
+                        "description": "Maximum number of tables in a SELECT statement allowed by the database",
+                        "format": "int32",
+                        "example": 32
+                    },
+                    "maxUserNameLength": {
+                        "type": "integer",
+                        "description": "Maximum number of characters in a user name allowed by the database",
+                        "format": "int32",
+                        "example": 8
+                    },
+                    "defaultTransactionIsolation": {
+                        "type": "integer",
+                        "description": "Default transaction isolation level of the database. Levels are:\nTRANSACTION_NONE = 0\nTRANSACTION_READ_UNCOMMITTED = 1\nTRANSACTION_READ_COMMITTED = 2\nTRANSACTION_REPEATABLE_READ = 4\nTRANSACTION_SERIALIZABLE = 8",
+                        "format": "int32",
+                        "example": 2
+                    },
+                    "supportsTransactions": {
+                        "type": "boolean",
+                        "description": "Transactions are supported by the database",
+                        "example": true
+                    },
+                    "supportsDataDefinitionAndDataManipulationTransactions": {
+                        "type": "boolean",
+                        "description": "Both data definition and data manipulation statements are supported by the database within a transaction",
+                        "example": true
+                    },
+                    "supportsDataManipulationTransactionsOnly": {
+                        "type": "boolean",
+                        "description": "Data supports only data manipulation transactions within a transaction",
+                        "example": false
+                    },
+                    "dataDefinitionCausesTransactionCommit": {
+                        "type": "boolean",
+                        "description": "A data definition statement within a transaction forces a commit in the database",
+                        "example": false
+                    },
+                    "dataDefinitionIgnoredInTransactions": {
+                        "type": "boolean",
+                        "description": "Database ignores data definition statements within a transaction",
+                        "example": false
+                    },
+                    "supportsBatchUpdates": {
+                        "type": "boolean",
+                        "description": "Database supports batch updates",
+                        "example": true
+                    },
+                    "supportsSavepoints": {
+                        "type": "boolean",
+                        "description": "Database supports savepoints",
+                        "example": false
+                    },
+                    "supportsNamedParameters": {
+                        "type": "boolean",
+                        "description": "Database supports callable statements with named parameters",
+                        "example": true
+                    },
+                    "supportsMultipleOpenResults": {
+                        "type": "boolean",
+                        "description": "Database supports multiple ResultSet objects to be returned simultaneously from a CallableStatement object",
+                        "example": true
+                    },
+                    "supportsGetGeneratedKeys": {
+                        "type": "boolean",
+                        "description": "Database allows auto-generated keys to be retrieved after statement execution",
+                        "example": false
+                    },
+                    "databaseMajorVersion": {
+                        "type": "integer",
+                        "description": "Major version of the database product",
+                        "format": "int32",
+                        "example": 19
+                    },
+                    "databaseMinorVersion": {
+                        "type": "integer",
+                        "description": "Minor version of the database product",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "jdbcMajorVersion": {
+                        "type": "integer",
+                        "description": "Major JDBC version number for the driver",
+                        "format": "int32",
+                        "example": 4
+                    },
+                    "jdbcMinorVersion": {
+                        "type": "integer",
+                        "description": "Minor JDBC version number for the driver",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "sqlStateType": {
+                        "type": "integer",
+                        "description": "SQLSTATE returned by SQLException.getSQLState. Possible values are:\nsqlStateXOpen = 1\nsqlStateSQL = 2",
+                        "format": "int32",
+                        "example": 2
+                    },
+                    "locatorsUpdateCopy": {
+                        "type": "boolean",
+                        "description": "True if LOB updates are made to a copy; false if the LOB is updated directly",
+                        "example": false
+                    },
+                    "supportsStatementPooling": {
+                        "type": "boolean",
+                        "description": "Database supports statement pooling",
+                        "example": true
+                    },
+                    "supportsStoredFunctionsUsingCallSyntax": {
+                        "type": "boolean",
+                        "description": "Database supports functions that use the stored procedure escape syntax on user-defined or vendor functions",
+                        "example": false
+                    },
+                    "autoCommitFailureClosesAllResultSets": {
+                        "type": "boolean",
+                        "description": "All open ResultSets are closed if an SQLException occurs while autoCommit is true, even if holdable",
+                        "example": true
+                    },
+                    "generatedKeyAlwaysReturned": {
+                        "type": "boolean",
+                        "description": "If the column names or indexes provided for auto-generated key columns are valid and the statement succeeds, the generated key is always returned",
+                        "example": false
+                    },
+                    "supportsRefCursors": {
+                        "type": "boolean",
+                        "description": "Database supports REF CURSOR",
+                        "example": false
+                    },
+                    "maxLogicalLobSize": {
+                        "type": "integer",
+                        "description": "Maximum logical LOB size in bytes allowed by the database",
+                        "format": "int64",
+                        "example": 0
+                    }
+                },
+                "description": "DatabaseProductInfo object",
+                "nullable": true
+            },
+            "DatabaseProductInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "databaseProductInfo": {
+                        "$ref": "#/components/schemas/DatabaseProductInfo"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getDatabaseProductInfo call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "DatabaseProductInfoResponse  object"
+            },
+            "Datasource": {
+                "type": "object",
+                "properties": {
+                    "datasourceName": {
+                        "type": "string",
+                        "description": "Name of the data source",
+                        "example": "CASPROD"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the data source",
+                        "example": "Production CAS System"
+                    },
+                    "otherAttributes": {
+                        "type": "array",
+                        "description": "All other attributes of the Datasource",
+                        "example": {
+                            "portNumber": "1234",
+                            "networkProtocol": "TCP"
+                        },
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "description": "Datasource object"
+            },
+            "ExportedKey": {
+                "type": "object",
+                "properties": {
+                    "primaryKeyTableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name that contains the primary key table",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "primaryKeyTableSchema": {
+                        "type": "string",
+                        "description": "Schema name of the primary key table",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "primaryKeyTableName": {
+                        "type": "string",
+                        "description": "Name of the primary key table",
+                        "nullable": true,
+                        "example": "EMPLOYEE"
+                    },
+                    "primaryKeyColumnName": {
+                        "type": "string",
+                        "description": "Column name of the primary key",
+                        "nullable": true,
+                        "example": "EMP_ID"
+                    },
+                    "foreignKeyTableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name that contains the foreign key table being exported",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "foreignKeyTableSchema": {
+                        "type": "string",
+                        "description": "Schema name of the foreign key table being exported",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "foreignKeyTableName": {
+                        "type": "string",
+                        "description": "Name of the foreign key table being exported",
+                        "nullable": true,
+                        "example": "BENEFITS"
+                    },
+                    "foreignKeyColumnName": {
+                        "type": "string",
+                        "description": "Column name of the foreign key being exported",
+                        "nullable": true,
+                        "example": "EMP_ID"
+                    },
+                    "keySequence": {
+                        "type": "integer",
+                        "description": "Column sequence within primary key",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    },
+                    "updateRule": {
+                        "type": "integer",
+                        "description": "Action applied to the foreign key when the primary key is updated\nPossible values are:\n- 3 - importedKeyNoAction - do not allow update of primary key if it has been imported\n- 0 - importedKeyCascade - when the primary key is updated, update the imported key to match\n- 2 - importedKeySetNull - change imported key to NULL if its primary key has been updated\n- 4 - importedKeySetDefault - change imported key to a default value if its primary key has been updated\n- 1 - importedKeyRestrict - do not allow update of the primary key if imported as a foreign key in another table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "deleteRule": {
+                        "type": "integer",
+                        "description": "Action applied to the foreign key when the primary key is deleted\nPossible values are:\n- 3 - importedKeyNoAction - do not allow delete of primary key if it has been imported\n\n- 0 - importedKeyCascade - when the primary key is deleted, delete the rows that import it\n- 2 - importedKeySetNull - change imported key to NULL if its primary key has been deleted\n- 4 - importedKeySetDefault - change imported key to a default value if its primary key has been deleted\n- 1 - importedKeyRestrict - do not allow delete of the primary key if imported as a foreign key in another table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "foreignKeyName": {
+                        "type": "string",
+                        "description": "Name of the foreign key",
+                        "nullable": true,
+                        "example": "EMP_BENEFITS"
+                    },
+                    "primaryKeyName": {
+                        "type": "string",
+                        "description": "Name of the primary key",
+                        "nullable": true,
+                        "example": "CALC"
+                    },
+                    "deferrability": {
+                        "type": "integer",
+                        "description": "Indicates if the evaluation of the foreign key constraint can be deferred until a commit\nPossible values are:\n- 5 - importedKeyInitiallyDeferred\n- 6 - importedKeyInitiallyImmediate\n- 7 - importedKeyNotDeferrable",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 7
+                    }
+                },
+                "description": "ExportedKey object",
+                "nullable": true
+            },
+            "ExportedKeysResponse": {
+                "type": "object",
+                "properties": {
+                    "exportedKeys": {
+                        "type": "array",
+                        "description": "List of exported keys",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/ExportedKey"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getExportedKeys call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "ExportedKeysResponse object"
+            },
+            "ImportedKey": {
+                "type": "object",
+                "properties": {
+                    "primaryKeyTableCatalog": {
+                        "type": "string",
+                        "description": "Imported primary key catalog",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "primaryKeyTableSchema": {
+                        "type": "string",
+                        "description": "Imported primary key schema",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "primaryKeyTableName": {
+                        "type": "string",
+                        "description": "Imported primary key table name",
+                        "nullable": true,
+                        "example": "DEPARTMENT"
+                    },
+                    "primaryKeyColumnName": {
+                        "type": "string",
+                        "description": "Imported primary key column name",
+                        "nullable": true,
+                        "example": "DEPT_ID"
+                    },
+                    "foreignKeyTableCatalog": {
+                        "type": "string",
+                        "description": "Catalog of the foreign key",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "foreignKeyTableSchema": {
+                        "type": "string",
+                        "description": "Schema of the foreign key",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "foreignKeyTableName": {
+                        "type": "string",
+                        "description": "Table name of the foreign key",
+                        "nullable": true,
+                        "example": "EMPLOYEE"
+                    },
+                    "foreignKeyColumnName": {
+                        "type": "string",
+                        "description": "Column name of the foreign key",
+                        "nullable": true,
+                        "example": "DEPT_ID"
+                    },
+                    "keySequence": {
+                        "type": "integer",
+                        "description": "Column sequence within a foreign key",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    },
+                    "updateRule": {
+                        "type": "integer",
+                        "description": "Action applied to the foreign key when the primary key is updated\nPossible values are:\n- 3 - importedKeyNoAction - do not allow update of primary key if it has been imported\n- 0 - importedKeyCascade - when the primary key is updated, update the imported key to match\n- 2 - importedKeySetNull - change imported key to NULL if its primary key has been updated\n- 4 - importedKeySetDefault - change imported key to a default value if its primary key has been updated\n- 1 - importedKeyRestrict - do not allow update of the primary key if imported as a foreign key in another table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "deleteRule": {
+                        "type": "integer",
+                        "description": "Action applied to the foreign key when the primary key is deleted\nPossible values are:\n- 3 - importedKeyNoAction - do not allow delete of primary key if it has been imported\n\n- 0 - importedKeyCascade - when the primary key is deleted, delete the rows that import it\n- 2 - importedKeySetNull - change imported key to NULL if its primary key has been deleted\n- 4 - importedKeySetDefault - change imported key to a default value if its primary key has been deleted\n- 1 - importedKeyRestrict - do not allow delete of the primary key if imported as a foreign key in another table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "foreignKeyName": {
+                        "type": "string",
+                        "description": "Name of the foreign key",
+                        "nullable": true,
+                        "example": "DEPT_EMPLOYEE"
+                    },
+                    "primaryKeyName": {
+                        "type": "string",
+                        "description": "Name of the primary key",
+                        "nullable": true,
+                        "example": "CALC"
+                    },
+                    "deferrability": {
+                        "type": "integer",
+                        "description": "Indicates if the evaluation of the foreign key constraint can be deferred until a commit\nPossible values are:\n- 5 - importedKeyInitiallyDeferred\n- 6 - importedKeyInitiallyImmediate\n- 7 - importedKeyNotDeferrable",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 7
+                    }
+                },
+                "description": "Imported Key object",
+                "nullable": true
+            },
+            "ImportedKeysResponse": {
+                "type": "object",
+                "properties": {
+                    "importedKeys": {
+                        "type": "array",
+                        "description": "List of imported keys",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/ImportedKey"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getImportedKeys call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "ImportedKeys response object"
+            },
+            "IndexInfo": {
+                "type": "object",
+                "properties": {
+                    "tableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "tableSchema": {
+                        "type": "string",
+                        "description": "Schema name",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "tableName": {
+                        "type": "string",
+                        "description": "Table name",
+                        "example": "DEPARTMENT"
+                    },
+                    "nonUnique": {
+                        "type": "boolean",
+                        "description": "Indicates if index values can be non-unique. It will be false when TYPE is tableIndexStatistic",
+                        "example": false
+                    },
+                    "indexQualifier": {
+                        "type": "string",
+                        "description": "Index catalog (may be null); null when TYPE is tableIndexStatistic",
+                        "example": "null"
+                    },
+                    "indexName": {
+                        "type": "string",
+                        "description": "Index name; null when TYPE is tableIndexStatistic",
+                        "example": "DE_CODE_NDX"
+                    },
+                    "type": {
+                        "type": "integer",
+                        "description": "Index type\n- 0 - tableIndexStatistic - this identifies table statistics that are returned in conjuction with a table's index descriptions\n- 1 - tableIndexClustered - this is a clustered index\n- 2 - tableIndexHashed - this is a hashed index\n- 3 - tableIndexOther - this is some other style of index\n",
+                        "format": "int32",
+                        "example": 3
+                    },
+                    "ordinalPosition": {
+                        "type": "integer",
+                        "description": "Column sequence number within index; zero when TYPE is tableIndexStatistic",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "columnName": {
+                        "type": "string",
+                        "description": "Column name; null when TYPE is tableIndexStatistic",
+                        "example": "DIV_CODE"
+                    },
+                    "ascOrDesc": {
+                        "type": "string",
+                        "description": "Column sort sequence, \"A\" => ascending, \"D\" => descending, may be null if sort sequence is not supported; null when TYPE is tableIndexStatistic",
+                        "example": "A"
+                    },
+                    "cardinality": {
+                        "type": "integer",
+                        "description": "Number of unique values in the index. When TYPE is tableIndexStatistic, then this is the number of rows in the table",
+                        "format": "int32",
+                        "example": 4
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "Number of pages used for the current index. When TYPE is tableIndexStatisic, then this is the number of pages used for the table",
+                        "format": "int32",
+                        "example": 8
+                    },
+                    "filterCondition": {
+                        "type": "string",
+                        "description": "Filter condition, if any (may be null)",
+                        "example": "null"
+                    }
+                },
+                "description": "IndexInfo object",
+                "nullable": true
+            },
+            "IndexInfosResponse": {
+                "type": "object",
+                "properties": {
+                    "indexes": {
+                        "type": "array",
+                        "description": "List of index information",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/IndexInfo"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getIndexInfo call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "IndexInfosResponse object"
+            },
+            "PrimaryKey": {
+                "type": "object",
+                "properties": {
+                    "tableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "tableSchema": {
+                        "type": "string",
+                        "description": "Schema name",
+                        "nullable": true,
+                        "example": "REL"
+                    },
+                    "tableName": {
+                        "type": "string",
+                        "description": "Table name",
+                        "nullable": true,
+                        "example": "ORG"
+                    },
+                    "columnName": {
+                        "type": "string",
+                        "description": "Column name",
+                        "nullable": true,
+                        "example": "EMP_ID"
+                    },
+                    "keySequence": {
+                        "type": "integer",
+                        "description": "Column sequence within primary key",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 3
+                    },
+                    "primaryKeyName": {
+                        "type": "string",
+                        "description": "Name of the primary key",
+                        "nullable": true,
+                        "example": "ORG1"
+                    }
+                },
+                "description": "Primary Key object",
+                "nullable": true
+            },
+            "PrimaryKeysResponse": {
+                "type": "object",
+                "properties": {
+                    "primaryKeys": {
+                        "type": "array",
+                        "description": "List of primary key columns",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/PrimaryKey"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getPrimaryKeys call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "PrimaryKeys response object"
+            },
+            "Procedure": {
+                "type": "object",
+                "properties": {
+                    "procedureCatalog": {
+                        "type": "string",
+                        "description": "Procedure catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "procedureSchema": {
+                        "type": "string",
+                        "description": "Procedure schema name",
+                        "nullable": true,
+                        "example": "SYSCA"
+                    },
+                    "procedureName": {
+                        "type": "string",
+                        "description": "Procedure name",
+                        "nullable": true,
+                        "example": "GET_DIAGNOSTICS"
+                    },
+                    "reserved1": {
+                        "type": "integer",
+                        "description": "Reserved for future use. May return the number of input parameters in some databases",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 21
+                    },
+                    "reserved2": {
+                        "type": "integer",
+                        "description": "Reserved for future use. May return the number of output parameters in some databases",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 21
+                    },
+                    "reserved3": {
+                        "type": "integer",
+                        "description": "Reserved for future use. May return the maximum number of result sets that can be returned in some databases",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "remarks": {
+                        "type": "string",
+                        "description": "Description of the procedure",
+                        "nullable": true,
+                        "example": "Procedure that returns SQL statistics"
+                    },
+                    "procedureType": {
+                        "type": "integer",
+                        "description": "Type of procedure\nPossible values are:\n- 0 - procedureResultUnknown - Indicates that it is not known whether the procedure returns a result\n- 1 - procedureNoResult - Indicates that the procedure does not return a result\n- 2 - procedureReturnsResult - Indicates that the procedure returns a result",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    },
+                    "specificName": {
+                        "type": "string",
+                        "description": "Name that uniquely identifies this procedure within its schema",
+                        "nullable": true,
+                        "example": "GET_DIAGNOSTICS"
+                    }
+                },
+                "description": "Procedure object",
+                "nullable": true
+            },
+            "ProcedureColumn": {
+                "type": "object",
+                "properties": {
+                    "procedureCatalog": {
+                        "type": "string",
+                        "description": "Procedure catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "procedureSchema": {
+                        "type": "string",
+                        "description": "Procedure schema name",
+                        "nullable": true,
+                        "example": "REL"
+                    },
+                    "procedureName": {
+                        "type": "string",
+                        "description": "Procedure name",
+                        "nullable": true,
+                        "example": "GET_MGR"
+                    },
+                    "columnName": {
+                        "type": "string",
+                        "description": "Column name",
+                        "nullable": true,
+                        "example": "EMP_MGR_LNAME"
+                    },
+                    "columnType": {
+                        "type": "integer",
+                        "description": "Column type\nPossible values are:\n- 0 - procedureColumnUnknown - unknown column type\n- 1 - procedureColumnIn - input parameter\n- 2 - procedureColumnInOut - input/output parameter\n- 3 - procedureColumnResult - result column in result set\n- 4 - procedureColumnOut - output parameter\n- 5 - procedureColumnReturn - procedure return value",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 2
+                    },
+                    "dataType": {
+                        "type": "integer",
+                        "description": "SQL data type number",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    },
+                    "typeName": {
+                        "type": "string",
+                        "description": "SQL data type name",
+                        "nullable": true,
+                        "example": "CHARACTER"
+                    },
+                    "precision": {
+                        "type": "integer",
+                        "description": "Total number of digits in the number",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "length": {
+                        "type": "object",
+                        "description": "Length of the data in bytes",
+                        "nullable": true,
+                        "example": 25
+                    },
+                    "scale": {
+                        "type": "integer",
+                        "description": "Number of digits to the right of the decimal point",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "radix": {
+                        "type": "integer",
+                        "description": "Base for numeric types",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "nullable": {
+                        "type": "integer",
+                        "description": "Indicates if null values are allowed\nPossible values are:\n- 0 - procedureNoNulls - might not allow null values\n- 1 - procedureNullable - allows null values\n- 2 - procedureNullableUnknown - nullability unknown",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 1
+                    },
+                    "remarks": {
+                        "type": "string",
+                        "description": "Description of the procedure column",
+                        "nullable": true,
+                        "example": "Last name of employee's manager"
+                    },
+                    "columnDefault": {
+                        "type": "string",
+                        "description": "Default value of the column",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "sqlDataType": {
+                        "type": "integer",
+                        "description": "Unused",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "sqlDatetimeSubcode": {
+                        "type": "integer",
+                        "description": "Unused",
+                        "format": "int32",
+                        "nullable": true
+                    },
+                    "characterOctetLength": {
+                        "type": "object",
+                        "description": "Size of the column in bytes",
+                        "nullable": true,
+                        "example": 4
+                    },
+                    "ordinalPosition": {
+                        "type": "integer",
+                        "description": "Position of the column in the table",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": 0
+                    },
+                    "isNullable": {
+                        "type": "string",
+                        "description": "Indicates if the column may contain nulls\nPossible values are:\n- YES - the column may contain nulls\n- NO - the column may not contain nulls\n- empty string - column nullability unknown",
+                        "nullable": true,
+                        "example": "YES"
+                    },
+                    "specificName": {
+                        "type": "string",
+                        "description": "Name that uniquely identifies this procedure within its schema",
+                        "nullable": true,
+                        "example": "GET_MGR"
+                    }
+                },
+                "description": "ProcedureColumn object",
+                "nullable": true
+            },
+            "ProcedureColumnsResponse": {
+                "type": "object",
+                "properties": {
+                    "procedureColumns": {
+                        "type": "array",
+                        "description": "List of procedure columns",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/ProcedureColumn"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getProcedureColumns call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "ProcedureColumnsResponse object"
+            },
+            "ProceduresResponse": {
+                "type": "object",
+                "properties": {
+                    "procedures": {
+                        "type": "array",
+                        "description": "List of procedures",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/Procedure"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getProcedures call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "ProceduresResponse object"
+            },
+            "ResponseMessage": {
+                "title": "Message",
+                "required": [
+                    "messageContent",
+                    "messageNumber",
+                    "messageType"
+                ],
+                "type": "object",
+                "properties": {
+                    "messageType": {
+                        "type": "string",
+                        "description": "Severity of the problem described by a message.",
+                        "example": "WARNING",
+                        "enum": [
+                            "ERROR",
+                            "WARNING",
+                            "INFO",
+                            "DEBUG",
+                            "TRACE"
+                        ]
+                    },
+                    "messageNumber": {
+                        "type": "string",
+                        "description": "A message number (not including the message level one-letter code) that uniquely identifies the message and can be typically looked up in product documentation.",
+                        "example": "PFI0031"
+                    },
+                    "messageContent": {
+                        "type": "string",
+                        "description": "Readable message in US English. It should be a proper human-readable sentence."
+                    },
+                    "messageAction": {
+                        "type": "string",
+                        "description": "Recommendation of the actions to take in response to the message."
+                    },
+                    "messageReason": {
+                        "type": "string",
+                        "description": "Supplements the 'messageContent' field, supplying more information about why the message is present."
+                    },
+                    "messageKey": {
+                        "type": "string",
+                        "description": "Unique message key describing the reason for the message in a machine-readable format enabling localization. It should be a dot-delimited string tld.provider.service[.sub-service].detail.",
+                        "example": "org.acme.api.notAuthenticated"
+                    },
+                    "messageParameters": {
+                        "type": "array",
+                        "description": "Message parameters. Used for formatting of localized messages in conjunction with the 'messageKey' field.",
+                        "items": {
+                            "type": "object",
+                            "description": "Message parameter. Can be of any type."
+                        }
+                    },
+                    "messageInstanceId": {
+                        "type": "string",
+                        "description": "Unique ID of the message instance. Useful for locating the message in product logs. The same ID should be printed in the product log output.",
+                        "example": "123e4567-e89b-12d3-a456-426655440000"
+                    },
+                    "messageComponent": {
+                        "type": "string",
+                        "description": "(For support and developers) Identifies the component that generated the message. Can be a fully qualified Java package or class name.",
+                        "example": "org.acme.toolkit.hammers.Ballpeen"
+                    },
+                    "messageSource": {
+                        "type": "string",
+                        "description": "(For support and developers) Identifies the source service that generated the message.",
+                        "example": "production.org.acme:1234:weathersvc"
+                    }
+                },
+                "description": "User-facing API message and related metadata."
+            },
+            "SchemasResponse": {
+                "type": "object",
+                "properties": {
+                    "schemas": {
+                        "type": "array",
+                        "description": "List of schemas",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/SqlSchema"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getSchemas call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "SchemasResponse object"
+            },
+            "SqlExceptionResponse": {
+                "type": "object",
+                "properties": {
+                    "sqlState": {
+                        "type": "string",
+                        "description": "SQLState for the SQL exception",
+                        "nullable": true,
+                        "example": "42600"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "description": "Error code for the SQL exception\nPossible error codes are:\n- -4 - Statement failure\n- -5 - Transaction failure\n- -6 - Session failure\n- -7 - Internal error",
+                        "format": "int32",
+                        "nullable": true,
+                        "example": -4
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Description of the error for the SQL exception",
+                        "nullable": true,
+                        "example": "DB006001 T194 C-4M330: Unrecognizable token"
+                    }
+                },
+                "description": "SQL exception response object",
+                "nullable": true,
+                "example": []
+            },
+            "SqlSchema": {
+                "type": "object",
+                "properties": {
+                    "tableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "tableSchema": {
+                        "type": "string",
+                        "description": "Schema name",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    }
+                },
+                "description": "Schema object",
+                "nullable": true
+            },
+            "Table": {
+                "type": "object",
+                "properties": {
+                    "tableCatalog": {
+                        "type": "string",
+                        "description": "Catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "tableSchema": {
+                        "type": "string",
+                        "description": "Schema name",
+                        "nullable": true,
+                        "example": "DEMOEMPL"
+                    },
+                    "tableName": {
+                        "type": "string",
+                        "description": "Table name",
+                        "example": "EMPLOYEE"
+                    },
+                    "tableType": {
+                        "type": "string",
+                        "description": "Table type",
+                        "example": "TABLE"
+                    },
+                    "tableRemarks": {
+                        "type": "string",
+                        "description": "General comments about the table",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "typeCatalog": {
+                        "type": "string",
+                        "description": "Type catalog name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "typeSchema": {
+                        "type": "string",
+                        "description": "Type schema name",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "typeName": {
+                        "type": "string",
+                        "description": "Name of the type",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "referencingColumnName": {
+                        "type": "string",
+                        "description": "Name of the 'identifier' column of a typed table",
+                        "nullable": true,
+                        "example": "null"
+                    },
+                    "referencingGeneration": {
+                        "type": "string",
+                        "description": "Indicates how values in the 'referencingColumnName' are created\nPossible values are:\n- SYSTEM\n- USER\n- DERIVED\n- null",
+                        "nullable": true,
+                        "example": "null"
+                    }
+                },
+                "description": "Table object",
+                "nullable": true
+            },
+            "TablesResponse": {
+                "type": "object",
+                "properties": {
+                    "tables": {
+                        "type": "array",
+                        "description": "List of tables",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/Table"
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Error message(s) generated from the execution of the getTables call",
+                        "nullable": true,
+                        "example": [],
+                        "items": {
+                            "$ref": "#/components/schemas/SqlExceptionResponse"
+                        }
+                    }
+                },
+                "description": "TablesResponse object"
+            }
+        },
+        "securitySchemes": {
+            "basicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            }
+        }
+    }
+}

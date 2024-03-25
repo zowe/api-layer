@@ -1,0 +1,444 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Security Insights Application",
+        "description": "The Insights Service provides native services to the System-Critical Libraries, performs a catalog search, checks for pervasive encryption, and checks for data set existence.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/api/v1/si/messages": {
+            "get": {
+                "tags": [
+                    "insights-message-controller"
+                ],
+                "description": "Returns the details of all defined messages.",
+                "operationId": "getMessages",
+                "responses": {
+                    "200": {
+                        "description": "Success.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessagesJsonModel"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/messages/{id}": {
+            "get": {
+                "tags": [
+                    "insights-message-controller"
+                ],
+                "description": "Returns the details of the message id.",
+                "operationId": "getMessage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The SI message number or key.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SIZ1250E"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The SI message id type.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "KEY",
+                                "NUMBER"
+                            ]
+                        },
+                        "example": "KEY"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Requested relation is not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/catalog/datasources": {
+            "get": {
+                "tags": [
+                    "catalog-service-controller"
+                ],
+                "description": "Processes the  data source (such as \"DCD.TEST.PII.ALL\" or \"SI.QA.TEST\") and returns data source attributes as found in the catalog.  Examples of attributes are pervasive encryption status and its key label.  If a data source is not found in the catalog, the 'found' attribute is false.",
+                "operationId": "searchCatalogStream",
+                "parameters": [
+                    {
+                        "name": "dsnMask",
+                        "in": "query",
+                        "description": "The dataset mask used to search the catalog",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "DCD.TEST.PII.ALL"
+                        }
+                    },
+                    {
+                        "name": "Message-Details",
+                        "in": "header",
+                        "description": "The flag to specify the inclusion of text information in messages returned by this REST endpoint.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A streaming body response that contains a list of catalog result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SearchCatalogResult"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/apflists": {
+            "get": {
+                "tags": [
+                    "apf-list-controller"
+                ],
+                "description": "Returns APFLIST, LPALIST, LINKLIST  or PARMLIB",
+                "operationId": "getApfList",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "maxItems": 4,
+                            "minItems": 0,
+                            "uniqueItems": true,
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "APFLIST",
+                                    "LPALIST",
+                                    "LINKLIST",
+                                    "PARMLIB"
+                                ]
+                            }
+                        },
+                        "examples": {
+                            "LPALIST, PARMLIB": {
+                                "description": "LPALIST and PARMLIB",
+                                "value": "LPALIST, PARMLIB"
+                            },
+                            "APFLIST, PARMLIB": {
+                                "description": "APFLIST and PARMLIB",
+                                "value": "APFLIST, PARMLIB"
+                            },
+                            "APFLIST, LINKLIST, PARMLIB": {
+                                "description": "APFLIST, LINKLIST and PARMLIB",
+                                "value": "APFLIST, LINKLIST, PARMLIB"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ApfList response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ApfResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "EntityModelRestResponseCollectionMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyCollectionMessageInformation"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "Link": {
+                "type": "object",
+                "properties": {
+                    "rel": {
+                        "type": "string"
+                    },
+                    "href": {
+                        "type": "string"
+                    },
+                    "hreflang": {
+                        "type": "string"
+                    },
+                    "media": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "deprecation": {
+                        "type": "string"
+                    },
+                    "profile": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageBodyCollectionMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageType": {
+                        "type": "string",
+                        "enum": [
+                            "ERROR",
+                            "WARNING",
+                            "DEBUG",
+                            "TRACE",
+                            "INFO"
+                        ]
+                    },
+                    "messageNumber": {
+                        "type": "string"
+                    },
+                    "messageContent": {
+                        "type": "string"
+                    },
+                    "messageReason": {
+                        "type": "string"
+                    },
+                    "messageAction": {
+                        "type": "string"
+                    },
+                    "messageKey": {
+                        "type": "string"
+                    },
+                    "messageInstanceId": {
+                        "type": "string"
+                    },
+                    "messageSource": {
+                        "type": "string"
+                    },
+                    "messageParameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "description": "Object Messages"
+            },
+            "MessagesJsonModel": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "$ref": "#/components/schemas/EntityModelRestResponseCollectionMessageInformation"
+                    }
+                }
+            },
+            "EntityModelRestResponseMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyMessageInformation"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "MessageBodyMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/MessageInformation"
+                    }
+                }
+            },
+            "SearchCatalogResult": {
+                "type": "object",
+                "properties": {
+                    "encrypted": {
+                        "type": "string",
+                        "description": "dataset encryption"
+                    },
+                    "keyLabel": {
+                        "type": "string",
+                        "description": "key label"
+                    },
+                    "objectMessages": {
+                        "type": "array",
+                        "description": "list of messages",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "volume": {
+                        "type": "string",
+                        "description": "dataset volume"
+                    },
+                    "dsn": {
+                        "type": "string",
+                        "description": "dataset name"
+                    }
+                }
+            },
+            "ApfResponse": {
+                "type": "object",
+                "properties": {
+                    "dataset": {
+                        "type": "string",
+                        "description": "The dataset name",
+                        "example": "DCD.TEST.PII"
+                    },
+                    "volume": {
+                        "type": "string",
+                        "description": "The dataset volume",
+                        "example": "MVSCSI"
+                    },
+                    "libraryStatus": {
+                        "type": "string",
+                        "description": "The library Status",
+                        "example": "FOUND, NOT_FOUND, ERROR",
+                        "enum": [
+                            "FOUND",
+                            "NOT_FOUND",
+                            "ERROR"
+                        ]
+                    },
+                    "libraryType": {
+                        "type": "string",
+                        "description": "System Critical library type",
+                        "example": "APFLIST or PARMLIB or LPALIB or LINKLIST"
+                    },
+                    "objectMessages": {
+                        "type": "array",
+                        "description": "Object Messages",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "description": "Zowe JWT token",
+                "name": "apimlAuthenticationToken",
+                "in": "cookie"
+            }
+        }
+    }
+}

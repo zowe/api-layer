@@ -1,0 +1,38 @@
+{
+    "application": [
+        {
+            "name": "bcmesprestapiesahrest",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmesprestapiesahrest",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmesprestapiesahrest",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMESPRESTAPIESAHREST",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/swagger-ui/index.html",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.v1.apiId": "bcm.esp.restapi",
+                        "apiml.apiInfo.v1.swaggerUrl": "bcmesprestapiesahrest-_bcm.esp.restapi vv1_default.json",
+                        "apiml.apiInfo.v1.version": "1.0.0",
+                        "apiml.apiInfo.v2.apiId": "bcm.esp.restapi",
+                        "apiml.apiInfo.v2.swaggerUrl": "bcmesprestapiesahrest-_bcm.esp.restapi vv2_default.json",
+                        "apiml.apiInfo.v2.version": "2.0.0",
+                        "apiml.service.description": "Use the ESP Workload Automation RESTful Web Services to retrieve information about jobs and applications that are currently active and to execute commands at the WA ESP Workload Automation side.",
+                        "apiml.catalog.tile.description": "Use the ESP Workload Automation RESTful Web Services to retrieve information about jobs and applications that are currently active and to execute commands at the WA ESP Workload Automation side.",
+                        "apiml.catalog.tile.title": "ESP Workload Automation",
+                        "apiml.service.title": "ESP Workload Automation",
+                        "apiml.catalog.tile.version": "12.3.3",
+                        "apiml.catalog.tile.id": "esp.restapi"
+                    }
+                }
+            ]
+        }
+    ]
+}

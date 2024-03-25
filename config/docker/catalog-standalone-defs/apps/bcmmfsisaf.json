@@ -1,0 +1,45 @@
+{
+    "application": [
+        {
+            "name": "bcmmfsisaf",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmmfsisaf",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmmfsisaf",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMMFSISAF_PLEXC1.CA32",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/bcmmfsisaf/api/v1",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/bcmmfsisaf/api/v1/application/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/bcmmfsisaf/api/v1/application/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "com.broadcom.mfsi.saf",
+                        "apiml.routes.ui-v1.serviceUrl": "/bcmmfsisaf/api/v1",
+                        "apiml.routes.ui-v1.gatewayUrl": "ui/v1",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "bcmmfsisaf-_com.broadcom.mfsi.saf vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.routes.ws-v1.gatewayUrl": "ws/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.apiInfo.api-v1.documentationUrl": "https://www.zowe.org",
+                        "apiml.routes.api-v1.serviceUrl": "/bcmmfsisaf/api/v1",
+                        "apiml.routes.ws-v1.serviceUrl": "/bcmmfsisaf/api/v1/ws",
+                        "apiml.service.description": "The SAF Service provides Who Has Access information, ID/Group lookup, and real-time ESM lookup using RADMIN calls. This Service supports ACF2, Top Secret, and RACF.",
+                        "apiml.catalog.tile.description": "The SAF Service provides Who Has Access information, ID/Group lookup, and real-time ESM lookup using RADMIN calls. This Service supports ACF2, Top Secret, and RACF.",
+                        "apiml.catalog.tile.title": "Security Insights SAF",
+                        "apiml.service.title": "Security Insights SAF",
+                        "apiml.catalog.tile.version": "${apiml.service.apiInfo.version}",
+                        "apiml.catalog.tile.id": "bcmmfsisaf",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

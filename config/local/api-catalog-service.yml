@@ -1,56 +1,56 @@
 spring.profiles.include: diag
 
 eureka:
-    client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
-    instance:
-        leaseExpirationDurationInSeconds: 6
-        leaseRenewalIntervalInSeconds: 1
+  client:
+    initialInstanceInfoReplicationIntervalSeconds: 1
+    registryFetchIntervalSeconds: 1
+  instance:
+    leaseExpirationDurationInSeconds: 6
+    leaseRenewalIntervalInSeconds: 1
 
 server:
-    ssl:
-        enabled: true
-        keyAlias: localhost
-        keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
-        keyStorePassword: password
-        keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
-        trustStorePassword: password
-        trustStoreType: PKCS12
+  address: ${apiml.service.hostname}
+  servlet:
+    contextPath: /
+  ssl:
+    enabled: true
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: keystore/localhost/localhost.keystore.p12
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12
 
 apiml:
-    service:
-        hostname: localhost
-        ipAddress: 127.0.0.1
-        port: 10014
-        discoveryServiceUrls: https://localhost:10011/eureka/
-        dsIpAddress: 0.0.0.0
-        eurekaPassword: password
-        eurekaUserName: eureka
-        gatewayHostname: https://localhost:10010
-        preferIpAddress: false
-
-    service-registry:
-        cacheRefreshInitialDelayInMillis: 10000
-        cacheRefreshRetryDelayInMillis: 10000
-        cacheRefreshUpdateThresholdInMillis: 120000
-        serviceFetchDelayInMillis: 10000
-    banner: console
-    discovery:
-        staticApiDefinitionsDirectories: config/local/api-defs
-
-spring:
-    config:
-        useLegacyProcessing: true
-    output:
-        ansi:
-            enabled: always
-
----
-spring.profiles: standalone
-
-apiml.catalog.standalone:
+  security.ssl.sslEnabled: false
+  service:
+    hostname: 0.0.0.0
+    port: 10010
+    discoveryServiceUrls: https://discovery-service:10011/eureka/
+    eurekaPassword: password
+    eurekaUserName: eureka
+    gatewayHostname: https://gateway-service:10010
+    preferIpAddress: false
+  service-registry:
+    cacheRefreshInitialDelayInMillis: 10000
+    cacheRefreshRetryDelayInMillis: 10000
+    cacheRefreshUpdateThresholdInMillis: 120000
+    serviceFetchDelayInMillis: 10000
+  banner: console
+  discovery:
+    staticApiDefinitionsDirectories: /api-defs;config/docker/api-defs
+  metrics:
+    serviceId: metrics-service
     enabled: true
-    servicesDirectory: config/local/catalog-standalone-defs
+  catalog:
+    customStyle:
+      logo: config/docker/broadcom.svg
+    standalone:
+      enabled: true
+      servicesDirectory: config/docker/catalog-standalone-defs
+spring:
+  output:
+    ansi:
+      enabled: always

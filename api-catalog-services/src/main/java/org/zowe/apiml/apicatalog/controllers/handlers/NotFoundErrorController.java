@@ -11,16 +11,15 @@
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.apache.http.HttpStatus;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
-
 
 /**
  * Handles errors in REST API processing.
@@ -29,9 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ApimlErrorController {
 
-
     private static final String PATH = "/not_found";    // NOSONAR
-
 
     @GetMapping(value = "/not_found")
     @HystrixCommand
@@ -39,12 +36,13 @@ public class NotFoundErrorController implements ApimlErrorController {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 
         if (status != null) {
-            Integer statusCode = Integer.valueOf(status.toString());
-
-            if (statusCode == HttpStatus.NOT_FOUND.value()) {
-                return "error-404";
-            } else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            switch (Integer.valueOf(status.toString())) {
+            case HttpStatus.SC_NOT_FOUND:
+                return "redirect:/#/not_found";
+            case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                 return "error-500";
+            default:
+                return "error";
             }
         }
         return "error";
@@ -55,5 +53,3 @@ public class NotFoundErrorController implements ApimlErrorController {
         return PATH;
     }
 }
-
-

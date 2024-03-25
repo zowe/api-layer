@@ -1,0 +1,1489 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "The REST Application Programming Interface (API) for File Master Plus, file management and data manipulation tool.",
+        "version": "1",
+        "title": "File Master Plus"
+    },
+    "basePath": "/fileMasterPlus/api",
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic",
+            "description": "Mainframe Username and Password"
+        }
+    },
+    "tags": [
+        {
+            "name": "MVSdataSets",
+            "description": "File operations on z/OS data sets"
+        },
+        {
+            "name": "Ping",
+            "description": "Service availability checks"
+        }
+    ],
+    "paths": {
+        "/v1/mvs/dataSets/test/ping": {
+            "get": {
+                "tags": [
+                    "Ping"
+                ],
+                "summary": "Checks that a File Master Plus instance is present.",
+                "operationId": "PingUsingGET",
+                "produces": [
+                    "Text/*"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok, Pong File Master Plus instance found"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "File Master Plus instance Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/mvs/dataSets/{renameToDataSet}": {
+            "put": {
+                "tags": [
+                    "MVSdataSets"
+                ],
+                "summary": "Renames a data set.",
+                "operationId": "RenameUsingPUT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "renameToDataSet",
+                        "in": "path",
+                        "description": "New name of the data set. Example - FMMVS.DEMO.NEW.CUSTFILE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/renameRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/renameResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/mvs/dataSets/{copyToDataSet}": {
+            "put": {
+                "tags": [
+                    "MVSdataSets"
+                ],
+                "summary": "Copies data from one data set to another, and optionally filters the copied data using selection criteria.",
+                "operationId": "CopyUsingPUT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "copyToDataSet",
+                        "in": "path",
+                        "description": "Identifies the target data set name. Example - FMMVS.DEMO.COPY.CUSTFILE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/copyRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/copyResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/mvs/dataSets/{populateToDataSet}": {
+            "put": {
+                "tags": [
+                    "MVSdataSets"
+                ],
+                "summary": "Populates a data set with records according to the layout in a COBOL or PL/I copybook.",
+                "operationId": "PopulateUsingPUT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "populateToDataSet",
+                        "in": "path",
+                        "description": "Identifies the target data set name. Example - FMMVS.DEMO.POP.CUSTFILE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/populateRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/populateResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/mvs/dataSets/{createMVSDataSetName}": {
+            "post": {
+                "tags": [
+                    "MVSdataSets"
+                ],
+                "summary": "Creates a physical sequential, large format sequential, partitioned or extended partitioned data set.",
+                "operationId": "createMVSUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "createMVSDataSetName",
+                        "in": "path",
+                        "description": "Identifies the data set name. Example - FMMVS.DEMO.MVS.CUSTFILE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/createMVSRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/createMVSResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/mvs/dataSets/{createVSAMDataSetName}": {
+            "post": {
+                "tags": [
+                    "MVSdataSets"
+                ],
+                "summary": "Creates a VSAM data set: KSDS, ESDS, RRDS, VRRDS, LDS.",
+                "operationId": "createVSAMUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "createVSAMDataSetName",
+                        "in": "path",
+                        "description": "Identifies the data set name. Example - FMMVS.DEMO.VSAM.CUSTFILE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/createVSAMRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/createVSAMResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/mvs/dataSets/{dataSetName}": {
+            "delete": {
+                "tags": [
+                    "MVSdataSets"
+                ],
+                "summary": "Deletes a data set permanently.",
+                "operationId": "deleteDataSet",
+                "produces": [
+                    "application/json"
+                ],
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dataSetName",
+                        "in": "path",
+                        "description": "Identifies the data set name to delete. Example - FMMVS.DEMO.DEL.CUSTFILE",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/deleteResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "deleteResponseBody": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/metadata"
+                    },
+                    "example": [
+                        {
+                            "messageVersion": "1",
+                            "messageTime": "2018-03-26T06:56:14-04:00",
+                            "serviceName": "fileMasterPlus",
+                            "serviceId": "8e1e2f80-f00a-4814-9b33-4dd7a31d4780"
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "description": "additional details",
+                    "example": ""
+                },
+                "links": {
+                    "type": "string",
+                    "example": "/filemasterplus/api/v1/mvs/dataSets/FMMVS.DEMO.DEL.CUSTFILE",
+                    "description": "endpoint"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messages"
+                    },
+                    "example": [
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA815I",
+                            "messageContent": [
+                                "THE CLUSTER NAMED 'FMMVS.DEMO.DEL.CUSTFILE' HAS BEEN DELETED"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "createMVSRequestBody": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "type": "string",
+                    "description": "Identifies the function.",
+                    "example": "create"
+                },
+                "fileFormat": {
+                    "type": "string",
+                    "description": "Identifies the type of file to create.",
+                    "example": "MVS"
+                },
+                "model": {
+                    "type": "string",
+                    "description": "(Optional) Specifies the name of a model data set. All attributes from the model data set are copied except the attributes that you specify.",
+                    "example": "FMMVS.DEMO.MVS.CUSTFILE.MODEL"
+                },
+                "dsntype": {
+                    "type": "string",
+                    "description": "Specifies the data set type",
+                    "example": "SEQ",
+                    "enum": [
+                        "SEQ",
+                        "PDS",
+                        "PDSE",
+                        "LARGE"
+                    ]
+                },
+                "dcb": {
+                    "type": "object",
+                    "description": "Identifies Data Control Block (DCB) parameters.",
+                    "properties": {
+                        "lrecl": {
+                            "type": "number",
+                            "description": "Specifies the length of the logical record.Values: 1-32760",
+                            "example": 80
+                        },
+                        "blksize": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the size of the block of records.Values: 1-32760",
+                            "example": 32760
+                        },
+                        "recfm": {
+                            "type": "string",
+                            "description": "Specifies the record format.",
+                            "enum": [
+                                "F",
+                                "FA",
+                                "FM",
+                                "FB",
+                                "FBA",
+                                "FBM",
+                                "FS",
+                                "FSA",
+                                "FSM",
+                                "FT",
+                                "FTA",
+                                "FTM",
+                                "FBS",
+                                "FBT",
+                                "U",
+                                "UA",
+                                "UM",
+                                "UT",
+                                "UTA",
+                                "UTM",
+                                "V",
+                                "VA",
+                                "VM",
+                                "VB",
+                                "VBA",
+                                "VBM",
+                                "VS",
+                                "VSA",
+                                "VSM",
+                                "VT",
+                                "VTA",
+                                "VTM",
+                                "VBS",
+                                "VBT"
+                            ],
+                            "example": "VBA"
+                        }
+                    }
+                },
+                "space": {
+                    "type": "object",
+                    "description": "Identifies disk space requirements.",
+                    "properties": {
+                        "units": {
+                            "type": "string",
+                            "description": "Specifies the space allocation unit:",
+                            "enum": [
+                                "TRK",
+                                "CYL",
+                                "BLK"
+                            ],
+                            "example": "CYL"
+                        },
+                        "primary": {
+                            "type": "number",
+                            "description": "Specifies the primary space allocation unit.Values: 0-16777215",
+                            "example": 1
+                        },
+                        "secondary": {
+                            "type": "number",
+                            "description": "Specifies the secondary space allocation unit.Values: 0-16777215",
+                            "example": 2
+                        },
+                        "directory": {
+                            "type": "number",
+                            "description": "(PDS only) Specifies the number of directory blocks.Values: 0-16777215",
+                            "example": 5
+                        }
+                    }
+                },
+                "volume": {
+                    "type": "array",
+                    "description": "(Optional) An array that specifies one or more disk volumes or specific tapes.",
+                    "example": [
+                        "vol001",
+                        "vol002"
+                    ],
+                    "items": {
+                        "type": "string",
+                        "description": "list of volumes"
+                    }
+                },
+                "unitType": {
+                    "type": "string",
+                    "description": "(Optional) Specifies the DASD unit name.",
+                    "example": "sysda"
+                },
+                "dsVersion": {
+                    "type": "number",
+                    "description": "(PDSE only) Specifies the PDSE version number.",
+                    "example": 2,
+                    "enum": [
+                        1,
+                        2
+                    ]
+                },
+                "pdseGen": {
+                    "type": "number",
+                    "description": "(PDSE v2 only) Specifies the number of generations.",
+                    "example": 10
+                },
+                "expdt": {
+                    "type": "object",
+                    "description": "(Optional) Specifies the expiration parameter.",
+                    "properties": {
+                        "date": {
+                            "type": "string",
+                            "description": "Specifies the expiration date, in YYYY-MM-DD format.",
+                            "example": "2022-12-31"
+                        },
+                        "permanent": {
+                            "type": "string",
+                            "description": "Specifies that the data set is permanent and does not expire.",
+                            "example": "y"
+                        }
+                    }
+                },
+                "sms": {
+                    "type": "object",
+                    "description": "(Optional) Identifies storage management information.",
+                    "properties": {
+                        "storclas": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the storage class.",
+                            "example": "sto001"
+                        },
+                        "mgmtclas": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the management  class.",
+                            "example": "mgm001"
+                        },
+                        "dataclas": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the data class.",
+                            "example": "dat001"
+                        }
+                    }
+                }
+            }
+        },
+        "createMVSResponseBody": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/metadata"
+                    },
+                    "example": [
+                        {
+                            "messageVersion": "1",
+                            "messageTime": "2018-03-26T06:56:14-04:00",
+                            "serviceName": "fileMasterPlus",
+                            "serviceId": "8e1e2f80-f00a-4814-9b33-4dd7a31d4780"
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "description": "additional details",
+                    "example": ""
+                },
+                "links": {
+                    "type": "string",
+                    "example": "/filemasterplus/api/v1/mvs/dataSets/FMMVS.DEMO.MVS.CUSTFILE",
+                    "description": "endpoint"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messages"
+                    },
+                    "example": [
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA922I",
+                            "messageContent": [
+                                "THE SEQUENTIAL FILE NAMED 'FMMVS.DEMO.MVS.CUSTFILE' HAS BEEN ALLOCATED"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "createVSAMRequestBody": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "type": "string",
+                    "description": "Identifies the function.",
+                    "example": "create"
+                },
+                "fileFormat": {
+                    "type": "string",
+                    "description": "Identifies the type of file to create.",
+                    "example": "VSAM"
+                },
+                "model": {
+                    "type": "string",
+                    "description": "(Optional) Specifies the name of a model data set. All attributes from the model data set are copied except the attributes that you specify.",
+                    "example": "FMMVS.DEMO.VSAM.CUSTFILE.MODEL"
+                },
+                "cluster": {
+                    "type": "object",
+                    "description": "Identifies VSAM cluster information.",
+                    "properties": {
+                        "organization": {
+                            "type": "string",
+                            "description": "Specifies the data set type. K - KSDS, E - ESDS, L - LDS, R - RRDS",
+                            "example": "K",
+                            "enum": [
+                                "K",
+                                "E",
+                                "L",
+                                "R"
+                            ]
+                        },
+                        "bufferSpace": {
+                            "type": "number",
+                            "description": "(Optional) Specifies the minimum buffer space to be allocated when this VSAM file is accessed.",
+                            "example": 41472
+                        },
+                        "erase": {
+                            "type": "string",
+                            "description": "(Optional) Specify 'Y' to allocate the ERASE parameter, which overwrites all components of the file with binary zeros when the VSAM file is deleted from the catalog.",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "loadRestartable": {
+                            "type": "string",
+                            "description": "(Optional) Specify 'Y' to allocate the RECOVERY parameter, which pre-formats the data component prior to the initial load. Specify \ufffdN\ufffd to allocate the SPEED parameter, which disables pre-formatting of the data component prior to the initial load.",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "reuse": {
+                            "type": "string",
+                            "description": "(Optional) Specify 'Y' to allocate the REUSE parameter, which specifies that the cluster can be opened repeatedly as a reusable cluster.",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "spanned": {
+                            "type": "string",
+                            "description": "(Optional, KSDS and ESDS only) Specify 'Y' to allocate the SPANNED parameter, which allows data records larger than a control interval to span multiple control intervals.",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "writecheck": {
+                            "type": "string",
+                            "description": "(Optional) Specify 'Y' to allocate the WRITECHECK parameter, which validates each write to the VSAM file with a read-without-data transfer.",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "freespace": {
+                            "type": "object",
+                            "description": "(Optional) Identifies free space on cluster",
+                            "properties": {
+                                "capercent": {
+                                    "type": "number",
+                                    "description": "Specifies the percentage of control intervals to be left unused in each control area as the file is initially loaded. The use of control area free space lets some control interval splits occur before requiring a control area split. Values: 1-100",
+                                    "example": 10
+                                },
+                                "cipercent": {
+                                    "type": "number",
+                                    "description": "Specifies the percentage of empty space to be left in each control interval when the file is initially loaded. The free space lets records be inserted or expanded within a control interval before requiring a control interval split. Values: 1-100",
+                                    "example": 10
+                                }
+                            }
+                        },
+                        "keys": {
+                            "type": "object",
+                            "description": "(KSDSonly) Specifies key parameters.",
+                            "properties": {
+                                "length": {
+                                    "type": "number",
+                                    "description": "Specifies the length of the key within the base cluster.",
+                                    "example": 1
+                                },
+                                "offset": {
+                                    "type": "number",
+                                    "description": "Specifies the position of the key within the base cluster.",
+                                    "example": 7
+                                }
+                            }
+                        },
+                        "recordsize": {
+                            "type": "object",
+                            "description": "Specifies data record size parameters (not applicable for LDS).",
+                            "properties": {
+                                "average": {
+                                    "type": "number",
+                                    "description": "Specifies the average data record length.",
+                                    "example": 1
+                                },
+                                "maximum": {
+                                    "type": "number",
+                                    "description": "Specifies the maximum data record length.",
+                                    "example": 7
+                                }
+                            }
+                        },
+                        "shareOptions": {
+                            "type": "object",
+                            "description": "Specifies the sharing options",
+                            "properties": {
+                                "crossRegion": {
+                                    "type": "number",
+                                    "description": "Identifies how the file can be shared among regions within the same system or within multiple systems using GRS (Global Resource Serialization)",
+                                    "enum": [
+                                        1,
+                                        2,
+                                        3,
+                                        4
+                                    ],
+                                    "example": 3
+                                },
+                                "crossSystem": {
+                                    "type": "number",
+                                    "description": "Specifies how the file can be shared among systems",
+                                    "enum": [
+                                        3,
+                                        4
+                                    ],
+                                    "example": 4
+                                }
+                            }
+                        },
+                        "sms": {
+                            "type": "object",
+                            "description": "(Optional) Identifies storage management information.",
+                            "properties": {
+                                "storclas": {
+                                    "type": "string",
+                                    "description": "(Optional) Specifies the storage class.",
+                                    "example": "sto001"
+                                },
+                                "mgmtclas": {
+                                    "type": "string",
+                                    "description": "(Optional) Specifies the management  class.",
+                                    "example": "mgm001"
+                                },
+                                "dataclas": {
+                                    "type": "string",
+                                    "description": "(Optional) Specifies the data class.",
+                                    "example": "dat001"
+                                }
+                            }
+                        },
+                        "expdt": {
+                            "type": "object",
+                            "description": "(Optional) Specifies the expiration parameter.",
+                            "properties": {
+                                "date": {
+                                    "type": "string",
+                                    "description": "Specifies the expiration date, in YYYY-MM-DD format.",
+                                    "example": "2022-12-31"
+                                },
+                                "permanent": {
+                                    "type": "string",
+                                    "description": "Specifies that the data set is permanent and does not expire.",
+                                    "example": "y"
+                                }
+                            }
+                        },
+                        "rlsEnable": {
+                            "type": "string",
+                            "description": "(Optional) Specify 'N' to disable VSAM record-level sharing. The default value is 'Y'.",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "log": {
+                            "type": "string",
+                            "description": "(Optional) Specifies whether the sphere to be accessed with VSAM RLS is recoverable or non-recoverable and whether or not to perform forward recovery logging for this VSAM data set. The default value is NONE.",
+                            "enum": [
+                                "none",
+                                "undo",
+                                "all"
+                            ]
+                        },
+                        "frlog": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the type of VSAM batch logging to perform for this VSAM data set.",
+                            "enum": [
+                                "none",
+                                "undo",
+                                "all",
+                                "redo"
+                            ]
+                        },
+                        "logReplicate": {
+                            "type": "string",
+                            "description": "(Optional) Specify 'Y' to enable VSAM replication for this data set",
+                            "enum": [
+                                "y",
+                                "n"
+                            ]
+                        },
+                        "logStreamId": {
+                            "type": "string",
+                            "description": "Specifies the 1- to 26-character name of the forward recovery log stream.",
+                            "example": "LOGA"
+                        }
+                    }
+                },
+                "data": {
+                    "type": "object",
+                    "description": "Identifies data component attributes.",
+                    "properties": {
+                        "controlIntervalSize": {
+                            "type": "number",
+                            "description": "Specifies the size of the Control Interval for the data VSAM component. This parameter is mandatory for a KSDS, RRDS or VRRDS.Values: 0-16777215",
+                            "example": 20480
+                        },
+                        "dsname": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the data set name of the data VSAM component. If you do not specify a value, the data set name is set to the cluster name with '.DATA' appended.",
+                            "example": "FMMVS.DEMO.VSAM.CUSTFILE.DATA"
+                        },
+                        "volume": {
+                            "type": "array",
+                            "description": "(Optional) An array that specifies one or more disk volumes or specific tapes.",
+                            "example": [
+                                "vol001",
+                                "vol002"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "description": "list of volumes"
+                            }
+                        },
+                        "space": {
+                            "type": "object",
+                            "description": "Identifies disk space requirements.",
+                            "properties": {
+                                "units": {
+                                    "type": "string",
+                                    "description": "Specifies the space allocation unit:",
+                                    "enum": [
+                                        "TRK",
+                                        "CYL",
+                                        "REC",
+                                        "K",
+                                        "M"
+                                    ]
+                                },
+                                "primary": {
+                                    "type": "number",
+                                    "description": "Specifies the primary space allocation unit.Values: 0-16777215",
+                                    "example": 3
+                                },
+                                "secondary": {
+                                    "type": "number",
+                                    "description": "Specifies the secondary space allocation unit.Values: 0-16777215",
+                                    "example": 5
+                                }
+                            }
+                        }
+                    }
+                },
+                "index": {
+                    "type": "object",
+                    "description": "Identifies index component attributes.",
+                    "properties": {
+                        "controlIntervalSize": {
+                            "type": "number",
+                            "description": "Specifies the size of the Control Interval for the index VSAM component. This parameter is mandatory for a KSDS, RRDS or VRRDS.Values: 0-16777215",
+                            "example": 512
+                        },
+                        "dsname": {
+                            "type": "string",
+                            "description": "(Optional) Specifies the data set name of the index VSAM component. If you do not specify a value, the data set name is set to the cluster name with '.INDEX' appended.",
+                            "example": "FMMVS.DEMO.VSAM.CUSTFILE.INDEX"
+                        },
+                        "volume": {
+                            "type": "array",
+                            "description": "(Optional) An array that specifies one or more disk volumes or specific tapes.",
+                            "example": [
+                                "vol001",
+                                "vol002"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "description": "list of volumes"
+                            }
+                        },
+                        "space": {
+                            "type": "object",
+                            "description": "Identifies disk space requirements.",
+                            "properties": {
+                                "units": {
+                                    "type": "string",
+                                    "description": "Specifies the space allocation unit:",
+                                    "enum": [
+                                        "TRK",
+                                        "CYL",
+                                        "REC",
+                                        "K",
+                                        "M"
+                                    ]
+                                },
+                                "primary": {
+                                    "type": "number",
+                                    "description": "Specifies the primary space allocation unit.Values: 0-16777215",
+                                    "example": 1
+                                },
+                                "secondary": {
+                                    "type": "number",
+                                    "description": "Specifies the secondary space allocation unit.Values: 0-16777215",
+                                    "example": 2
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "createVSAMResponseBody": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/metadata"
+                    },
+                    "example": [
+                        {
+                            "messageVersion": "1",
+                            "messageTime": "2018-03-26T06:56:14-04:00",
+                            "serviceName": "fileMasterPlus",
+                            "serviceId": "8e1e2f80-f00a-4814-9b33-4dd7a31d4780"
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "description": "additional details",
+                    "example": ""
+                },
+                "links": {
+                    "type": "string",
+                    "example": "/filemasterplus/api/v1/mvs/dataSets/FMMVS.DEMO.MVS.CUSTFILE",
+                    "description": "endpoint"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messages"
+                    },
+                    "example": [
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA989I",
+                            "messageContent": [
+                                "THE 'VSAM' FILE 'FMMVS.DEMO.VSAM.CUSTFILE' HAS BEEN ALLOCATED SUCCESSFULLY"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "populateRequestBody": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "type": "string",
+                    "description": "Identifies the function.",
+                    "example": "populate"
+                },
+                "member": {
+                    "type": "string",
+                    "description": "(Optional) Identifies the member of the target data set to populate in PDS",
+                    "example": "testmem"
+                },
+                "layout": {
+                    "type": "array",
+                    "description": "(Optional) Identifies the layout PDS with member name. Used only if dynamic selection criteria refer to layout fields.",
+                    "items": {
+                        "type": "string",
+                        "description": "layout data set and member name"
+                    },
+                    "example": [
+                        "FMMVS.TEST.LAYOUT",
+                        "CAWACUST"
+                    ]
+                },
+                "data": {
+                    "type": "array",
+                    "description": "Identifies the data of the corresponding field to populate in JSON format.",
+                    "example": [
+                        {
+                            "field1": "data1a",
+                            "field2": "data2a"
+                        },
+                        {
+                            "field1": "data1b",
+                            "field2": "data2b"
+                        }
+                    ],
+                    "items": {}
+                }
+            }
+        },
+        "populateResponseBody": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/metadata"
+                    },
+                    "example": [
+                        {
+                            "messageVersion": "1",
+                            "messageTime": "2018-03-26T06:56:14-04:00",
+                            "serviceName": "fileMasterPlus",
+                            "serviceId": "8e1e2f80-f00a-4814-9b33-4dd7a31d4780"
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "description": "additional details",
+                    "example": ""
+                },
+                "links": {
+                    "type": "string",
+                    "example": "/filemasterplus/api/v1/mvs/dataSets/FMMVS.DEMO.POP.CUSTFILE",
+                    "description": "endpoint"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messages"
+                    },
+                    "example": [
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA406I",
+                            "messageContent": [
+                                "FMMVS.DEMO.POP.CUSTFILE has been saved."
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "copyRequestBody": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "type": "string",
+                    "description": "Identifies the function.",
+                    "example": "copy"
+                },
+                "from": {
+                    "type": "string",
+                    "description": "Defines the data set name of the source file",
+                    "example": "FMMVS.DEMO.BASE.CUSTFILE"
+                },
+                "members": {
+                    "type": "array",
+                    "description": "(Optional) Identifies the members to copy. This parameter is only used if the source data set is a PDS; by default, all members are copied",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "member": {
+                                "type": "string",
+                                "description": "member name to copy"
+                            },
+                            "newmember": {
+                                "type": "string",
+                                "description": "copy to new member name"
+                            }
+                        }
+                    },
+                    "example": [
+                        [
+                            "BCF71",
+                            "BCF71TRU"
+                        ],
+                        [
+                            "BCF72",
+                            "BCF72TRU"
+                        ]
+                    ]
+                },
+                "replace": {
+                    "type": "string",
+                    "description": "(Optional) Replaces resource-specific items in the target data set. This parameter is only used if the target data set is a PDS or a VSAM KSDS. Default value: Y",
+                    "enum": [
+                        "Y",
+                        "N"
+                    ],
+                    "example": "N"
+                },
+                "pdseGenValue": {
+                    "type": "string",
+                    "description": "(Optional) Specifies the PDSE V2 generation number of the data set that you want to copy. This parameter should only be specified if the from data set is a PDSE V2. If this parameter is not specified and the from data set is a PDSE V2 then the current level is copied. A negative number specifies a relative generation, a positive number specifies an absolute generation, * specifies all generations and 0 specifies the current level. Values: '-2000000000 to 2000000000', '*'.",
+                    "example": "*"
+                },
+                "staticSelectionCriteria": {
+                    "type": "string",
+                    "description": "(Optional) Identifies the member name of the selection criteria. Only a member name that exists in <PARMPRE>.SELECT PDS can be specified. PARMPRE is a parameter in the File Master CLIST. The File Master CLIST is identified in the Tomcat configuration by the sysproc and FMM_CLIST parameters",
+                    "example": "SMALLSEQ"
+                },
+                "dynamicSelectionCriteria": {
+                    "type": "array",
+                    "description": "(Optional) Identifies in-stream selection criteria",
+                    "example": "['SELRECIF(CUST-ZIP,EQ,N'6032')']",
+                    "items": {
+                        "type": "string",
+                        "description": "list of selection criterias"
+                    }
+                },
+                "layout": {
+                    "type": "array",
+                    "description": "(Optional) Identifies the layout PDS with member name. Used only if dynamic selection criteria refer to layout fields.",
+                    "example": [
+                        "FMMVS.TEST.LAYOUT",
+                        "CAWACUST"
+                    ],
+                    "items": {
+                        "type": "string",
+                        "description": "layout data set and member name"
+                    }
+                }
+            }
+        },
+        "copyResponseBody": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/metadata"
+                    },
+                    "example": [
+                        {
+                            "messageVersion": "1",
+                            "messageTime": "2018-03-26T06:56:14-04:00",
+                            "serviceName": "fileMasterPlus",
+                            "serviceId": "8e1e2f80-f00a-4814-9b33-4dd7a31d4780"
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "description": "additional details",
+                    "example": ""
+                },
+                "links": {
+                    "type": "string",
+                    "example": "/filemasterplus/api/v1/mvs/dataSets/FMMVS.DEMO.COPY.CUSTFILE",
+                    "description": "endpoint"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messages"
+                    },
+                    "example": [
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA2100I",
+                            "messageContent": [
+                                "DDNAME SYSUT1 opened for DSN=FMMVS.DEMO.BASE.CUSTFILE File is VSAM Type=KSDS, KeyLen=7,KeyPos=2"
+                            ]
+                        },
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA2100I",
+                            "messageContent": [
+                                "DDNAME SYSUT1O opened for DSN=FMMVS.DEMO.COPY.CUSTFILE,File is VSAM Type=KSDS,Mode=Replace,KeyLen=7,KeyPos=2"
+                            ]
+                        },
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA2100I",
+                            "messageContent": [
+                                "DDNAME SYSUT1 records read: 65, selected 24"
+                            ]
+                        },
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA2100I",
+                            "messageContent": [
+                                "DDNAME SYSUT1O records written: 24"
+                            ]
+                        },
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA2100I",
+                            "messageContent": [
+                                "COPY completed RC = 0 High RC = 0"
+                            ]
+                        },
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA2100I",
+                            "messageContent": [
+                                "Utility ending, Max CC=0"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "renameRequestBody": {
+            "type": "object",
+            "properties": {
+                "request": {
+                    "type": "string",
+                    "description": "Identifies the function.",
+                    "example": "rename"
+                },
+                "from": {
+                    "type": "string",
+                    "description": "Defines the data set name of the source file which you want to rename",
+                    "example": "FMMVS.DEMO.BASE.CUSTFILE"
+                },
+                "RenameVSAMComponents": {
+                    "description": "(Optional) If Y is specified, the data and index components of the target VSAM cluster which share the same cluster name are renamed. The default value is N",
+                    "type": "string",
+                    "example": "Y",
+                    "enum": [
+                        "Y",
+                        "N"
+                    ]
+                }
+            }
+        },
+        "renameResponseBody": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/metadata"
+                    },
+                    "example": [
+                        {
+                            "messageVersion": "1",
+                            "messageTime": "2018-03-26T06:56:14-04:00",
+                            "serviceName": "fileMasterPlus",
+                            "serviceId": "8e1e2f80-f00a-4814-9b33-4dd7a31d4780"
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "description": "additional details",
+                    "example": ""
+                },
+                "links": {
+                    "type": "string",
+                    "example": "/filemasterplus/api/v1/mvs/dataSets/FMMVS.DEMO.NEW.CUSTFILE",
+                    "description": "endpoint"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messages"
+                    },
+                    "example": [
+                        {
+                            "messageType": "INFORMATION",
+                            "messageNumber": "CAWA824I",
+                            "messageContent": "THE VSAM COMPONENT 'FMMVS.DEMO.BASE.CUSTFILE' HAS BEEN SUCCESSFULLY RENAMED TO  'FMMVS.DEMO.NEW.CUSTFILE'"
+                        }
+                    ]
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "messageVersion": {
+                    "type": "string",
+                    "description": "version number"
+                },
+                "messageTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "request date and time"
+                },
+                "serviceName": {
+                    "type": "string"
+                },
+                "serviceId": {
+                    "description": "unique session ID for each File Master Plus instance",
+                    "type": "string"
+                }
+            }
+        },
+        "messages": {
+            "type": "object",
+            "properties": {
+                "messageType": {
+                    "type": "string",
+                    "enum": [
+                        "INFORMATION",
+                        "WARNING",
+                        "ERROR"
+                    ],
+                    "description": "type of message"
+                },
+                "messageNumber": {
+                    "type": "string",
+                    "description": "message number"
+                },
+                "messageContent": {
+                    "type": "string",
+                    "description": "message content"
+                }
+            }
+        }
+    }
+}

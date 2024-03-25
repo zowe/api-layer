@@ -17,7 +17,8 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
-import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
+import { AsyncDashboardContainer, AsyncDetailPageContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
+import HomepageContainer from '../Dashboard/HomepageContainer';
 
 class App extends Component {
     componentDidMount() {
@@ -33,8 +34,9 @@ class App extends Component {
     render() {
         const { history } = this.props;
         const isLoading = true;
-        const headerPath = '/(dashboard|service/.*)/';
+        const headerPath = '/(dashboard|homepage|service/.*)/';
         const dashboardPath = '/dashboard';
+        const homepagePath = '/homepage';
         return (
             <div className="App">
                 <BigShield history={history}>
@@ -54,11 +56,15 @@ class App extends Component {
                                     )}
 
                                     <Switch>
-                                        <Route path="/" exact render={() => <Redirect replace to={dashboardPath} />} />
+                                        <Route path="/" exact render={() => <Redirect replace to={homepagePath} />} />
                                         <Route
-                                            path="/login"
                                             exact
-                                            render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
+                                            path={homepagePath}
+                                            render={(props, state) => (
+                                                <BigShield>
+                                                    <HomepageContainer {...props} {...state} />
+                                                </BigShield>
+                                            )}
                                         />
                                         <Route
                                             exact

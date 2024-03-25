@@ -1,0 +1,886 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "SYSVIEW REST API",
+        "description": "SYSVIEW REST API. Press **Authorize** and use your mainframe credentials",
+        "version": "1.4.2"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Login and return authentication token",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successful login"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Logout JWT token",
+                "operationId": "logout",
+                "responses": {
+                    "204": {
+                        "description": "Successful logout"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/query": {
+            "get": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Validate the token and return token details",
+                "operationId": "query",
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/SYSVIEW/Capture": {
+            "get": {
+                "tags": [
+                    "SYSVIEW REST API for z/OS "
+                ],
+                "summary": " Retrieves command display data from a SYSVIEW Capture Data set",
+                "operationId": "getCapture",
+                "parameters": [
+                    {
+                        "name": "capturedsn",
+                        "in": "query",
+                        "description": "Capture Dataset Name",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "capturecommand",
+                        "in": "query",
+                        "description": "Capture Command",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "capturescreen",
+                        "in": "query",
+                        "description": "Capture Screen",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "capturetitle",
+                        "in": "query",
+                        "description": "Capture Title",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "capturerow",
+                        "in": "query",
+                        "description": "Capture Row",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "ssid",
+                        "in": "query",
+                        "description": "SSID of the SYSVIEW",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "GSVX"
+                        }
+                    },
+                    {
+                        "name": "types",
+                        "in": "query",
+                        "description": "Types to be returned(separated by a semi-colon) - Valid parms are CONTEXT;OVERVIEW;INFOALL;INFOFLDS;INFOROWS;INFODATA;DATAALL;DATAFLDS;DATAROWS;STATUS",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "Fields to be returned(by name, separated by a semi-colon)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "rowstart",
+                        "in": "query",
+                        "description": "Starting row to be returned",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "rowend",
+                        "in": "query",
+                        "description": "Ending row to be returned",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "timeout",
+                        "in": "query",
+                        "description": "Timeout value - Valid values are between 1 and 60",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful JSON response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DisplayResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server side error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServerSideError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "SYSVIEW REST API for z/OS "
+                ],
+                "summary": " Schedule a SYSVIEW Capture",
+                "operationId": "postCapture",
+                "parameters": [
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Capture description",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "ssid",
+                        "in": "query",
+                        "description": "SSID of the SYSVIEW",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "GSVX"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The request body takes the same format as a regular CAPLIB member.",
+                    "content": {
+                        "text/plain": {
+                            "schema": {
+                                "type": "string",
+                                "example": "*=====================================================================*\n*        Event Capture                                                *\n*=====================================================================*\nCONTROL  NOFLUSH                                                       \nCAPPARMS DESCR c'CPU usage'                                            \n                                                                       \nACTIVITY &VLMC               ; CAPTURE                                 \nACTSUM    NOXSYSTEM          ; CAPTURE                                 \nBOOST     NOXSYSTEM          ; CAPTURE                                 \nCPU                          ; CAPTURE                                 \nCPUSUM    NOXSYSTEM          ; CAPTURE                                 \nCPCLPAR                      ; CAPTURE                                 \nPARTINFO                     ; CAPTURE                                 \nPRISM                        ; CAPTURE                                 \nWMSYSCAP                     ; CAPTURE                                 \nWMSYSSUM                     ; CAPTURE                                 \n                                                                       \nPLOT MVS MVS_CPU_Busy% ALL   ; CAPTURE                                 \nPLOT MVS MVS_CPU_Busy% CP    ; CAPTURE                                 \nPLOT MVS MVS_CPU_Busy% IIP   ; CAPTURE                                 \nPLOT MVS MVS_CPU_Busy% SP    ; CAPTURE                                 "
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "500": {
+                        "description": "Server side error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServerSideError"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Capture scheduled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DisplayResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/SYSVIEW/Command": {
+            "get": {
+                "tags": [
+                    "SYSVIEW REST API for z/OS "
+                ],
+                "summary": "Executes a SYSVIEW function command or series of commands",
+                "operationId": "getCommand",
+                "parameters": [
+                    {
+                        "name": "command",
+                        "in": "query",
+                        "description": "Action command to be issued or commands to be issued(separated by a semi-colon)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "timeout",
+                        "in": "query",
+                        "description": "Timeout value - Valid values are between 1 and 60",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "ssid",
+                        "in": "query",
+                        "description": "SSID of the SYSVIEW",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "GSVX"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful JSON response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DisplayResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server side error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServerSideError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/SYSVIEW/Display": {
+            "get": {
+                "tags": [
+                    "SYSVIEW REST API for z/OS "
+                ],
+                "summary": "Executes and retrieves display data from a SYSVIEW primary command or series of commands.",
+                "operationId": "getDisplay",
+                "parameters": [
+                    {
+                        "name": "command",
+                        "in": "query",
+                        "description": "Display command to be issued or commands to be issued(separated by a semi-colon)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "status"
+                        }
+                    },
+                    {
+                        "name": "ssid",
+                        "in": "query",
+                        "description": "SSID of the SYSVIEW",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "GSVX"
+                        }
+                    },
+                    {
+                        "name": "types",
+                        "in": "query",
+                        "description": "Types to be returned(separated by a semi-colon) - Valid parameters are CONTEXT;OVERVIEW;INFOALL;INFOFLDS;INFOROWS;INFODATA;DATAALL;DATAFLDS;DATAROWS;STATUS",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "Fields to be returned(by name, separated by a semi-colon)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "rowstart",
+                        "in": "query",
+                        "description": "Starting row to be returned",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "rowend",
+                        "in": "query",
+                        "description": "Ending row to be returned",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "timeout",
+                        "in": "query",
+                        "description": "Timeout value - Valid values are between 1 and 60.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful JSON response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DisplayResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server side error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServerSideError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiMessage": {
+                "title": "API Messages",
+                "type": "object",
+                "properties": {
+                    "messages": {
+                        "type": "array",
+                        "description": "Set of API messages.",
+                        "items": {
+                            "$ref": "#/components/schemas/ResponseMessage"
+                        }
+                    }
+                }
+            },
+            "Context": {
+                "type": "object",
+                "properties": {
+                    "hardwareName": {
+                        "type": "string"
+                    },
+                    "sysplexName": {
+                        "type": "string"
+                    },
+                    "lparName": {
+                        "type": "string"
+                    },
+                    "systemName": {
+                        "type": "string"
+                    },
+                    "smfId": {
+                        "type": "string"
+                    },
+                    "jesName": {
+                        "type": "string"
+                    },
+                    "jesNode": {
+                        "type": "string"
+                    },
+                    "vmUserId": {
+                        "type": "string"
+                    },
+                    "productName": {
+                        "type": "string"
+                    },
+                    "productRelease": {
+                        "type": "string"
+                    },
+                    "productBuild": {
+                        "type": "string"
+                    },
+                    "productSsId": {
+                        "type": "string"
+                    },
+                    "productInterface": {
+                        "type": "string"
+                    },
+                    "productUserId": {
+                        "type": "string"
+                    },
+                    "productJobName": {
+                        "type": "string"
+                    },
+                    "homeJobName": {
+                        "type": "string"
+                    },
+                    "homeJobId": {
+                        "type": "string"
+                    },
+                    "homeAsId": {
+                        "type": "string"
+                    },
+                    "currentJobName": {
+                        "type": "string"
+                    },
+                    "currentJobId": {
+                        "type": "string"
+                    },
+                    "currentAsId": {
+                        "type": "string"
+                    },
+                    "commandName": {
+                        "type": "string"
+                    },
+                    "commandFormat": {
+                        "type": "string"
+                    },
+                    "commandScreen": {
+                        "type": "string"
+                    },
+                    "commandDateTime": {
+                        "type": "string"
+                    },
+                    "screenTitle": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "messageReturnCode": {
+                        "type": "string"
+                    },
+                    "conditionNone": {
+                        "type": "string"
+                    },
+                    "conditionNormal": {
+                        "type": "string"
+                    },
+                    "conditionHigh": {
+                        "type": "string"
+                    },
+                    "conditionWarning": {
+                        "type": "string"
+                    },
+                    "conditionProblem": {
+                        "type": "string"
+                    },
+                    "infoFields": {
+                        "type": "string"
+                    },
+                    "infoRows": {
+                        "type": "string"
+                    },
+                    "dataFields": {
+                        "type": "string"
+                    },
+                    "dataRows": {
+                        "type": "string"
+                    },
+                    "dataRowsTruncated": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DataFlds": {
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "DataRows": {
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "fieldProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "DisplayResponse": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "time": {
+                        "type": "string"
+                    },
+                    "context": {
+                        "$ref": "#/components/schemas/Context"
+                    },
+                    "infoFlds": {
+                        "$ref": "#/components/schemas/InfoFlds"
+                    },
+                    "infoRows": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "infoData": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "dataFlds": {
+                        "$ref": "#/components/schemas/DataFlds"
+                    },
+                    "dataRows": {
+                        "$ref": "#/components/schemas/DataRows"
+                    }
+                }
+            },
+            "InfoFlds": {
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "LoginRequest": {
+                "title": "LoginRequest",
+                "required": [
+                    "password",
+                    "username"
+                ],
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "example": "user ID"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "strongpassword"
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "description": "When user define value newPassword password will change after successful login",
+                        "example": "newpassword"
+                    }
+                },
+                "description": "Structure for login and also for change password"
+            },
+            "ResponseMessage": {
+                "title": "Message",
+                "required": [
+                    "messageContent",
+                    "messageNumber",
+                    "messageType"
+                ],
+                "type": "object",
+                "properties": {
+                    "messageType": {
+                        "type": "string",
+                        "description": "Severity of the problem described by a message.",
+                        "example": "WARNING",
+                        "enum": [
+                            "ERROR",
+                            "WARNING",
+                            "INFO",
+                            "DEBUG",
+                            "TRACE"
+                        ]
+                    },
+                    "messageNumber": {
+                        "type": "string",
+                        "description": "A message number (not including the message level one-letter code) that uniquely identifies the message and can be typically looked up in product documentation.",
+                        "example": "PFI0031"
+                    },
+                    "messageContent": {
+                        "type": "string",
+                        "description": "Readable message in US English. It should be a proper human-readable sentence."
+                    },
+                    "messageAction": {
+                        "type": "string",
+                        "description": "Recommendation of the actions to take in response to the message."
+                    },
+                    "messageReason": {
+                        "type": "string",
+                        "description": "Supplements the 'messageContent' field, supplying more information about why the message is present."
+                    },
+                    "messageKey": {
+                        "type": "string",
+                        "description": "Unique message key describing the reason for the message in a machine-readable format enabling localization. It should be a dot-delimited string tld.provider.service[.sub-service].detail.",
+                        "example": "org.acme.api.notAuthenticated"
+                    },
+                    "messageParameters": {
+                        "type": "array",
+                        "description": "Message parameters. Used for formatting of localized messages in conjunction with the 'messageKey' field.",
+                        "items": {
+                            "type": "object",
+                            "description": "Message parameter. Can be of any type."
+                        }
+                    },
+                    "messageInstanceId": {
+                        "type": "string",
+                        "description": "Unique ID of the message instance. Useful for locating the message in product logs. The same ID should be printed in the product log output.",
+                        "example": "123e4567-e89b-12d3-a456-426655440000"
+                    },
+                    "messageComponent": {
+                        "type": "string",
+                        "description": "(For support and developers) Identifies the component that generated the message. Can be a fully qualified Java package or class name.",
+                        "example": "org.acme.toolkit.hammers.Ballpeen"
+                    },
+                    "messageSource": {
+                        "type": "string",
+                        "description": "(For support and developers) Identifies the source service that generated the message.",
+                        "example": "production.org.acme:1234:weathersvc"
+                    }
+                },
+                "description": "User-facing API message and related metadata."
+            },
+            "ServerSideError": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "function": {
+                        "type": "string"
+                    },
+                    "returnCode": {
+                        "type": "string"
+                    },
+                    "reasonCode": {
+                        "type": "string"
+                    },
+                    "returnCodeText": {
+                        "type": "string"
+                    },
+                    "reasonCodeText": {
+                        "type": "string"
+                    },
+                    "reasonDescription": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "TokenInfo": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "User who is logged in"
+                    },
+                    "creation": {
+                        "type": "string",
+                        "description": "Time when the token was generated",
+                        "format": "date-time"
+                    },
+                    "expiration": {
+                        "type": "string",
+                        "description": "Expiration time of the token",
+                        "format": "date-time"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "basicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            }
+        }
+    }
+}

@@ -1,0 +1,4096 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "org.zowe.zlux.agent",
+        "version": "1.0.1",
+        "license": "EPL-2.0"
+    },
+    "basePath": "/",
+    "host": "https://developer.mainframe.broadcom.com",
+    "schemes": [
+        "https"
+    ],
+    "paths": {
+        "/datasetMetadata/hlq": {
+            "get": {
+                "summary": "Returns JSON array of the system's high level qualifiers and metadata parameters",
+                "description": "HLQ and metadata parameters",
+                "tags": [
+                    "Dataset"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "updateCache",
+                        "in": "query",
+                        "description": "Cache results for future",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "types",
+                        "in": "query",
+                        "description": "Overrides defaults for CSI types to be scanned for",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "workAreaSize",
+                        "in": "query",
+                        "description": "Sets buffer size for CSI result",
+                        "required": false,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "resumeName",
+                        "in": "query",
+                        "description": "Resume from when response.hasMore != 0",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resumeCatalogName",
+                        "in": "query",
+                        "description": "Resume from when hasMore != 0",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "hasMore": {
+                                    "type": "integer"
+                                },
+                                "datasets": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "csiEntryType": {
+                                                "type": "string"
+                                            },
+                                            "volser": {
+                                                "type": "string"
+                                            },
+                                            "recfm": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "recordLength": {
+                                                        "type": "string"
+                                                    },
+                                                    "isBlocked": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "carriageControl": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "dsorg": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "organization": {
+                                                        "type": "string"
+                                                    },
+                                                    "isPDSDir": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "maxRecordLen": {
+                                                        "type": "integer"
+                                                    },
+                                                    "totalBlockSize": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "members": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid status value"
+                    }
+                }
+            }
+        },
+        "/datasetMetadata/name/{dataset}": {
+            "get": {
+                "summary": "Retrieves info about datasets",
+                "tags": [
+                    "Dataset"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "Cache results for future",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "detail",
+                        "in": "query",
+                        "description": "Used to provide the details of each dataset rather than a summary of which were found. Defaults to retrieve name, type, volser",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "types",
+                        "in": "query",
+                        "description": "csi entry type to search, Overrides defaults for the CSI types to be scanned for",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "listMembers",
+                        "in": "query",
+                        "description": "Omits or includes PDS member scanning",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "workAreaSize",
+                        "in": "query",
+                        "description": "Sets buffer size for CSI result",
+                        "required": false,
+                        "type": "integer"
+                    },
+                    {
+                        "name": "includeMigrated",
+                        "in": "query",
+                        "description": "Include migrated datasets",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "includeUnprintable",
+                        "in": "query",
+                        "description": "Include PDS member listing for PDS members with exceptional names",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "resumeName",
+                        "in": "query",
+                        "description": "Resume from when response.hasMore != 0",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resumeCatalogName",
+                        "in": "query",
+                        "description": "Resume from when hasMore != 0",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "hasMore": {
+                                    "type": "integer"
+                                },
+                                "datasets": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "csiEntryType": {
+                                                "type": "string"
+                                            },
+                                            "volser": {
+                                                "type": "string"
+                                            },
+                                            "recfm": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "recordLength": {
+                                                        "type": "string"
+                                                    },
+                                                    "isBlocked": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "carriageControl": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "dsorg": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "organization": {
+                                                        "type": "string"
+                                                    },
+                                                    "isPDSDir": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "maxRecordLen": {
+                                                        "type": "integer"
+                                                    },
+                                                    "totalBlockSize": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "members": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Have only one of resumename, resumecatalogname or if either longer than 44 or invalid dataset"
+                    }
+                }
+            }
+        },
+        "/datasetContents/{dataset}": {
+            "get": {
+                "summary": "Get contents of a dataset via QSAM as a series of records",
+                "tags": [
+                    "Dataset"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "Cache results for future",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "records": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be opened or does not exist"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Updates contents of dataset",
+                "tags": [
+                    "Dataset"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "Cache results for future",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "records": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be opened or does not exist"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Creates a dataset",
+                "tags": [
+                    "Dataset"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "Cache results for future",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "dsorg": {
+                                    "type": "string",
+                                    "enum": [
+                                        "PS",
+                                        "PO"
+                                    ]
+                                },
+                                "blksz": {
+                                    "type": "number"
+                                },
+                                "lrecl": {
+                                    "description": "Desired record length",
+                                    "type": "number"
+                                },
+                                "volser": {
+                                    "type": "string"
+                                },
+                                "recfm": {
+                                    "type": "string",
+                                    "enum": [
+                                        "A",
+                                        "B",
+                                        "F",
+                                        "U",
+                                        "V"
+                                    ]
+                                },
+                                "blkln": {
+                                    "description": "The average data block length",
+                                    "type": "number"
+                                },
+                                "ndisp": {
+                                    "type": "string",
+                                    "default": "CATLG",
+                                    "enum": [
+                                        "KEEP",
+                                        "CATLG"
+                                    ]
+                                },
+                                "strcls": {
+                                    "description": "Desired SMS storage class",
+                                    "type": "string"
+                                },
+                                "mngcls": {
+                                    "description": "Desired SMS management class",
+                                    "type": "string"
+                                },
+                                "datacls": {
+                                    "description": "Desired SMS data class",
+                                    "type": "string"
+                                },
+                                "space": {
+                                    "type": "string",
+                                    "enum": [
+                                        "CYL",
+                                        "TRK",
+                                        "BYTE",
+                                        "KB",
+                                        "MB"
+                                    ]
+                                },
+                                "dir": {
+                                    "type": "number"
+                                },
+                                "prime": {
+                                    "type": "number",
+                                    "description": "Desired primary space quantity"
+                                },
+                                "secnd": {
+                                    "type": "number",
+                                    "description": "Desired secondary space quantity"
+                                },
+                                "avgr": {
+                                    "type": "string",
+                                    "description": "Specifies which allocation unit to be used",
+                                    "enum": [
+                                        "M",
+                                        "K",
+                                        "U"
+                                    ]
+                                },
+                                "dsnt": {
+                                    "type": "string",
+                                    "description": "Specifies which data set type to create",
+                                    "enum": [
+                                        "PDSE",
+                                        "PDS",
+                                        "HFS",
+                                        "EXTREQ",
+                                        "EXTPPREF",
+                                        "BASIC",
+                                        "LARGE"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created dataset",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid JSON",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "No JSON": "Cannot update file without JSON formatted record request",
+                            "Invalid JSON": "Invalid JSON request body"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "DD Allocation Error": "Unable to allocate a DD for ACB",
+                            "Unalloc error": "error: ds unalloc dsn={dataset} dd=ddname, rc=rc sysRC=rc, sysRSN=rsn"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a dataset or member",
+                "tags": [
+                    "Dataset"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "The dataset (and optionally member name) to be deleted",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "Member deletion": {
+                                "msg": "Data set member membername was deleted successfully"
+                            },
+                            "Dataset deletion": {
+                                "msg": "Data set dataset was deleted successfully"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "VSAM dataset detected. Please use regular dataset route",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Dataset {dataset} busy (%s)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "Dataset not found": "Dataset or member does not exist {dataset}",
+                            "Member not found": "Data set member does not exist",
+                            "Device not available": "Device not available for dataset {dataset}",
+                            "Catalog not available": "Catalog not available for dataset {dataset}"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "Dataset could not be opened": "Dataset could not be opened",
+                            "Could not allocate member name": "Could not allocate member name",
+                            "Member could not be deleted": "Member membername could not be deleted",
+                            "DYNALLOC failure": "DYNALLOC failed with RC = rc, DYN RC = rc, RSN = rsn, dsn={dataset}, (site)"
+                        }
+                    }
+                }
+            }
+        },
+        "/VSAMdatasetContents/{dataset}": {
+            "get": {
+                "summary": "Get a VSAM dataset",
+                "tags": [
+                    "Dataset"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "Cache results for future",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "closeAfter",
+                        "in": "query",
+                        "description": "retain pointer for VSAM dataset",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "records": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be opened or does not exist"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Updates contents of dataset",
+                "tags": [
+                    "Dataset"
+                ],
+                "parameters": [
+                    {
+                        "name": "dataset",
+                        "in": "path",
+                        "description": "Cache results for future",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "closeAfter",
+                        "in": "query",
+                        "description": "retain pointer for VSAM dataset",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "records": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be opened or does not exist"
+                    }
+                }
+            }
+        },
+        "/unixfile/contents/{directory}": {
+            "get": {
+                "summary": "returns directory listing if exists",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the desired directory",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "entries": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "path": {
+                                                "type": "string"
+                                            },
+                                            "directory": {
+                                                "type": "boolean"
+                                            },
+                                            "size": {
+                                                "type": "integer"
+                                            },
+                                            "ccsid": {
+                                                "type": "integer"
+                                            },
+                                            "createdAt": {
+                                                "type": "integer"
+                                            },
+                                            "mode": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "deletes a directory",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory to be deleted",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully deleted a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to delete a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/contents/{directory}/{file}": {
+            "get": {
+                "summary": "returns file if exists",
+                "tags": [
+                    "Unix File"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "the file that should be returned",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "responseType",
+                        "in": "query",
+                        "description": "the file should be returned in \"base64\" or \"raw\"",
+                        "required": false,
+                        "default": "base64",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "writes contents to file or creates non-empty file",
+                "description": "When writing to a Unix File, the process must be done in chunks of 3MB or less. Please note that your first request will fail because you haven't been assigned a sessionID. If you don't have a sessionID in your request, then the server will assign you one and send it as a response. Please attach this sessionID to every subsequent request as a query parameter. This sessionID is linked to a particular file, so you must use it for the duration of the upload. If you lose it, then the file will be inaccessible via this API until your session timesout in five minutes. When you have specified lastChunk as true, then that signals the end of the upload session; thus, you have sent all the contents of the file.",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "the file that should be modified",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "the file contents encoded with BASE64",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "aW50IG1haW4oKSB7CiAgcmV0dXJuIDA7Cn0="
+                        }
+                    },
+                    {
+                        "name": "sessionID",
+                        "in": "query",
+                        "description": "the id for current upload session",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "sourceEncoding",
+                        "in": "query",
+                        "description": "the source encoding of the file (UTF-8 or ISO-8859-1 or IBM-1047)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "targetEncoding",
+                        "in": "query",
+                        "description": "the target encoding of the file (UTF-8 or ISO-8859-1 or IBM-1047)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "lastChunk",
+                        "in": "query",
+                        "description": "whether or not this is the last chunk of the file",
+                        "type": "boolean",
+                        "required": true
+                    },
+                    {
+                        "name": "forceOverwrite",
+                        "in": "query",
+                        "description": "whether or not to overwrite a currently existing file",
+                        "type": "boolean"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                },
+                                "sessionID": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "SessionID": {
+                                "msg": "Please attach the sessionID to subsequent requests",
+                                "sessionID": "int"
+                            },
+                            "File Already Exists": {
+                                "msg": "File already exists. Please choose a different file name or attach the forceOverwrite query parameter to your next request."
+                            },
+                            "Wrote Chunk": {
+                                "msg": "Successfully wrote chunk to file."
+                            },
+                            "Wrote File": {
+                                "msg": "Successfully wrote file."
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "Encoding Missing": {
+                                "error": "Source encoding or target encoding are missing."
+                            },
+                            "Invalid Encoding": {
+                                "error": "Unsupported encodings requested. Please review the swagger documentation."
+                            },
+                            "Invalid Session ID": {
+                                "error": "Session identifier is invalid."
+                            },
+                            "Last Chunk Missing": {
+                                "error": "Last chunk is missing."
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "Resource Busy (Duplicate)": {
+                                "error": "Duplicate in table. Requested resource is busy. Please try again later."
+                            },
+                            "Resource Busy (Could not open file)": {
+                                "error": "Could not open file. Requested resource is busy. Please try again later."
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "Failure To Assign Session ID": {
+                                "error": "Could not assign session id. Please try again later."
+                            },
+                            "Failed To Write Chunk": {
+                                "error": "Failed to write chunk to file. Aborting upload."
+                            },
+                            "Failed To Open File": {
+                                "error": "Could not open file."
+                            },
+                            "Failed To Close File": {
+                                "error": "Could not close file."
+                            },
+                            "Failed to Create File": {
+                                "error": "Could not create file."
+                            },
+                            "Failed to Get Metadata": {
+                                "error": "Could not get metadata for file."
+                            },
+                            "Failed to Get iNode": {
+                                "error": "Could not get iNode of file."
+                            },
+                            "Failed to Get deviceID": {
+                                "error": "Could not get deviceID of file."
+                            },
+                            "Failed to Tag": {
+                                "error": "Could not tag file."
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "deletes a file",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "the file that should be deleted",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully deleted a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to delete a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/copy/{directory}/{file}": {
+            "post": {
+                "summary": "copies contents of file",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "the file that should be modified",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "newName",
+                        "in": "query",
+                        "description": "the name of the new file (absolute path)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "forceOverwrite",
+                        "in": "query",
+                        "description": "whether or not to overwrite a currently existing file",
+                        "type": "boolean"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully copied a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to copy a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/copy/{directory}": {
+            "post": {
+                "summary": "copies contents of directory",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "newName",
+                        "in": "query",
+                        "description": "the name of the new directory (absolute path)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "forceOverwrite",
+                        "in": "query",
+                        "description": "whether or not to overwrite a currently existing file",
+                        "type": "boolean"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully copied a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to copy a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/rename/{directory}/{file}": {
+            "post": {
+                "summary": "renames a file",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "the file that should be modified",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "newName",
+                        "in": "query",
+                        "description": "the name of the new file (absolute path)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "forceOverwrite",
+                        "in": "query",
+                        "description": "whether or not to overwrite a currently existing file",
+                        "type": "boolean"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully renamed a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to rename a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/rename/{directory}": {
+            "post": {
+                "summary": "renames a directory",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "newName",
+                        "in": "query",
+                        "description": "the name of the new directory (absolute path)",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "forceOverwrite",
+                        "in": "query",
+                        "description": "whether or not to overwrite a currently existing file",
+                        "type": "boolean"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully renamed a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to rename a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/touch/{directory}/{file}": {
+            "post": {
+                "summary": "creates new file",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory where the desired file is located",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "the file that should be created",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully created a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to create a file",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/mkdir/{directory}": {
+            "post": {
+                "summary": "creates new directory",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the directory that should be created",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "forceOverwrite",
+                        "in": "query",
+                        "description": "whether or not to overwrite a currently existing file",
+                        "type": "boolean"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully created a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to create a directory",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/chmod/{directory}": {
+            "post": {
+                "summary": "change directory/file mode",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "the initial directory/file",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "recursive",
+                        "in": "query",
+                        "description": "whether or not to proceed down the directory path",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "mode",
+                        "in": "query",
+                        "description": "mode of file as 0oxxx or xxx, octal format",
+                        "type": "string"
+                    },
+                    {
+                        "name": "pattern",
+                        "in": "query",
+                        "description": "pattern to match to file/pattern",
+                        "type": "string"
+                    }
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successfully Modified Modes",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to change mode,  mode not octal",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to modify file modes",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/metadata/{directory}": {
+            "get": {
+                "summary": "retrieves metadata for directory",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "desired directory",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string"
+                                },
+                                "directory": {
+                                    "type": "boolean"
+                                },
+                                "size": {
+                                    "type": "integer"
+                                },
+                                "ccsid": {
+                                    "type": "integer"
+                                },
+                                "createdAt": {
+                                    "type": "string"
+                                },
+                                "mode": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unixfile/metadata/{directory}/{file}": {
+            "get": {
+                "summary": "retrieves metadata for file",
+                "tags": [
+                    "Unix File"
+                ],
+                "parameters": [
+                    {
+                        "name": "directory",
+                        "in": "path",
+                        "description": "desired directory",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "desired file",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string"
+                                },
+                                "directory": {
+                                    "type": "boolean"
+                                },
+                                "size": {
+                                    "type": "integer"
+                                },
+                                "ccsid": {
+                                    "type": "integer"
+                                },
+                                "createdAt": {
+                                    "type": "string"
+                                },
+                                "mode": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "file could not be opened or does not exist",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/security-mgmt/user-profiles": {
+            "get": {
+                "summary": "Retrieve a list of user profiles",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "description": "User ID of the first profile to retrieve",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "Number of user profiles to return",
+                        "required": false,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000,
+                        "default": 1000
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "resultMetaDataSchemaVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "resultType": {
+                                    "type": "string"
+                                },
+                                "metaData": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tableMetaData": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tableIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "shortTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "longTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "globalIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "minRows": {
+                                                    "type": "integer"
+                                                },
+                                                "maxRows": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "columnMetaData": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "columnIdentifier": {
+                                                        "type": "string"
+                                                    },
+                                                    "shortColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "longColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataType": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataTypeLength": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "start": {
+                                    "type": "string"
+                                },
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "countRequested": {
+                                    "type": "integer"
+                                },
+                                "hasMore": {
+                                    "type": "boolean"
+                                },
+                                "rows": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "profile": {
+                                                "type": "string"
+                                            },
+                                            "owner": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.doctype.tableResult",
+                                "resultMetaDataSchemaVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "resultType": "table",
+                                "metaData": {
+                                    "tableMetaData": {
+                                        "tableIdentifier": "user-profiles",
+                                        "shortTableLabel": "user-profiles",
+                                        "longTableLabel": "User Profiles",
+                                        "globalIdentifier": "org.zowe.zss.security-mgmt.user-profiles",
+                                        "minRows": 0,
+                                        "maxRows": 1000
+                                    },
+                                    "columnMetaData": [
+                                        {
+                                            "columnIdentifier": "userID",
+                                            "shortColumnLabel": "userID",
+                                            "longColumnLabel": "User ID",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        },
+                                        {
+                                            "columnIdentifier": "defaultGroup",
+                                            "shortColumnLabel": "defaultGroup",
+                                            "longColumnLabel": "Default Group",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        },
+                                        {
+                                            "columnIdentifier": "name",
+                                            "shortColumnLabel": "name",
+                                            "longColumnLabel": "User Name",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 20
+                                        }
+                                    ]
+                                },
+                                "start": "USAHR",
+                                "count": 10,
+                                "countRequested": 3,
+                                "hasMore": false,
+                                "rows": [
+                                    {
+                                        "userID": "USARH",
+                                        "defaultGroup": "PDUSER",
+                                        "name": "ALICE ROBERTSON"
+                                    },
+                                    {
+                                        "userID": "USBWH",
+                                        "defaultGroup": "PDUSER",
+                                        "name": "BOB WHITE"
+                                    },
+                                    {
+                                        "userID": "USXNB",
+                                        "defaultGroup": "PDUSER",
+                                        "name": "XENIA BERG"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    },
+                    "501": {
+                        "description": "Unsupported request"
+                    }
+                }
+            }
+        },
+        "/security-mgmt/classes/{className}/profiles": {
+            "get": {
+                "summary": "Retrieve a list of profiles in a class",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "className",
+                        "in": "path",
+                        "description": "Class containing the profiles to return (use default-class to choose the MXM defined class)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "description": "Profile name of the first profile to retrieve",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "Number of profiles to retrieve",
+                        "required": false,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000,
+                        "default": 1000
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "resultMetaDataSchemaVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "resultType": {
+                                    "type": "string"
+                                },
+                                "metaData": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tableMetaData": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tableIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "shortTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "longTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "globalIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "minRows": {
+                                                    "type": "integer"
+                                                },
+                                                "maxRows": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "columnMetaData": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "columnIdentifier": {
+                                                        "type": "string"
+                                                    },
+                                                    "shortColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "longColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataType": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataTypeLength": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "start": {
+                                    "type": "string"
+                                },
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "countRequested": {
+                                    "type": "integer"
+                                },
+                                "hasMore": {
+                                    "type": "boolean"
+                                },
+                                "rows": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "profile": {
+                                                "type": "string"
+                                            },
+                                            "owner": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.doctype.tableResult",
+                                "resultMetaDataSchemaVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "resultType": "table",
+                                "metaData": {
+                                    "tableMetaData": {
+                                        "tableIdentifier": "profiles",
+                                        "shortTableLabel": "profiles",
+                                        "longTableLabel": "Profiles",
+                                        "globalIdentifier": "org.zowe.zss.security-mgmt.profiles",
+                                        "minRows": 0,
+                                        "maxRows": 1000
+                                    },
+                                    "columnMetaData": [
+                                        {
+                                            "columnIdentifier": "profile",
+                                            "shortColumnLabel": "profile",
+                                            "longColumnLabel": "Profile Name",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 246
+                                        },
+                                        {
+                                            "columnIdentifier": "owner",
+                                            "shortColumnLabel": "owner",
+                                            "longColumnLabel": "Owner",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        }
+                                    ]
+                                },
+                                "start": "ZOWE",
+                                "count": 3,
+                                "countRequested": 3,
+                                "hasMore": true,
+                                "rows": [
+                                    {
+                                        "profile": "ZOWE.PLUGINA.RES01",
+                                        "owner": "USR01"
+                                    },
+                                    {
+                                        "profile": "ZOWE.TEST.PROFILE",
+                                        "owner": "USR01"
+                                    },
+                                    {
+                                        "profile": "ZOWE.TEST.PROFILE2",
+                                        "owner": "USR01"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    },
+                    "501": {
+                        "description": "Unsupported request"
+                    }
+                }
+            }
+        },
+        "/security-mgmt/classes/{className}/profiles/{profileName}": {
+            "post": {
+                "summary": "Add a new profile to a class",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "className",
+                        "in": "path",
+                        "description": "Class containing the profiles to return, only default-class is allowed",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profileName",
+                        "in": "path",
+                        "description": "Name of the new profile",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation (operator command)",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "RDEFINE XFACILIT             (ZOWE.TEST.PROFILE)  UACC        (READ)"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Successful operation (profile added)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, profile not provided"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Non standard class is used, only default-class is allowed"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a profile from a class",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "className",
+                        "in": "path",
+                        "description": "Class containing the profile to delete, only default-class is allowed",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profileName",
+                        "in": "path",
+                        "description": "Name of the profile to delete",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation (operator command)",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "RDELETE XFACILIT             (ZOWE.TEST.PROFILE)"
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successful operation (profile removed)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, profile not provided"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Non standard class is used, only default-class is allowed"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/security-mgmt/classes/{className}/profiles/{profileName}/access-list": {
+            "get": {
+                "summary": "Retrieve the access list of a profile in a specific class",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "className",
+                        "in": "path",
+                        "description": "Class containing the profile (use default-class to choose the MXM defined class)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profileName",
+                        "in": "path",
+                        "description": "Profile containing the access list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "resultMetaDataSchemaVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "resultType": {
+                                    "type": "string"
+                                },
+                                "metaData": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tableMetaData": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tableIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "shortTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "longTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "globalIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "minRows": {
+                                                    "type": "integer"
+                                                },
+                                                "maxRows": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "columnMetaData": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "columnIdentifier": {
+                                                        "type": "string"
+                                                    },
+                                                    "shortColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "longColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataType": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataTypeLength": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "rows": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "profile": {
+                                                "type": "string"
+                                            },
+                                            "owner": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.doctype.tableResult",
+                                "resultMetaDataSchemaVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "resultType": "table",
+                                "metaData": {
+                                    "tableMetaData": {
+                                        "tableIdentifier": "access-list",
+                                        "shortTableLabel": "access-list",
+                                        "longTableLabel": "Access List",
+                                        "globalIdentifier": "org.zowe.zss.security-mgmt.profile-access-list"
+                                    },
+                                    "columnMetaData": [
+                                        {
+                                            "columnIdentifier": "id",
+                                            "shortColumnLabel": "id",
+                                            "longColumnLabel": "ID",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        },
+                                        {
+                                            "columnIdentifier": "accessType",
+                                            "shortColumnLabel": "accessType",
+                                            "longColumnLabel": "Access Type",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        }
+                                    ]
+                                },
+                                "count": 2,
+                                "rows": [
+                                    {
+                                        "id": "USARH",
+                                        "accessType": "READ"
+                                    },
+                                    {
+                                        "id": "USBWH",
+                                        "accessType": "UPDATE"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM or service error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    },
+                    "501": {
+                        "description": "Unsupported request"
+                    }
+                }
+            }
+        },
+        "/security-mgmt/classes/{className}/profiles/{profileName}/access-list/{userId}": {
+            "put": {
+                "summary": "Add/update an access list entry (grant a user access to a profile)",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "className",
+                        "in": "path",
+                        "description": "Class containing the specified profiles",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profileName",
+                        "in": "path",
+                        "description": "Profile whose access list is to be updated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "User ID with which the access list entry is associated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "accessType",
+                        "in": "body",
+                        "description": "New access type value",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "accesType": {
+                                    "type": "string",
+                                    "enum": [
+                                        "READ",
+                                        "UPDATE",
+                                        "ALTER"
+                                    ],
+                                    "example": "UPDATE"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "PERMIT               ZOWE.TEST.PROFILE CLASS(XFACILIT)  ID          (USBWH) ACCESS      (READ)"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Successful operation (entry updated)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Non standard class is used, only default-class is allowed"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove an access list entry (revoke access to a profile)",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "className",
+                        "in": "path",
+                        "description": "Class containing the specified profile",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profileName",
+                        "in": "path",
+                        "description": "Profile whose access list is to be updated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "User ID with which the access list entry is associated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "PERMIT               ZOWE.TEST.PROFILE CLASS(XFACILIT)  ID          (USBWH) DELETE      "
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Successful operation (entry removed)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Non standard class is used, only default-class is allowed"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/security-mgmt/groups": {
+            "get": {
+                "summary": "Retrieve a list of groups",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "description": "Group name of the first profile to retrieve",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "Number of groups to retrieve",
+                        "required": false,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000,
+                        "default": 1000
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "resultMetaDataSchemaVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "resultType": {
+                                    "type": "string"
+                                },
+                                "metaData": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tableMetaData": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tableIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "shortTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "longTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "globalIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "minRows": {
+                                                    "type": "integer"
+                                                },
+                                                "maxRows": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "columnMetaData": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "columnIdentifier": {
+                                                        "type": "string"
+                                                    },
+                                                    "shortColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "longColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataType": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataTypeLength": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "start": {
+                                    "type": "string"
+                                },
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "countRequested": {
+                                    "type": "integer"
+                                },
+                                "hasMore": {
+                                    "type": "boolean"
+                                },
+                                "rows": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "profile": {
+                                                "type": "string"
+                                            },
+                                            "owner": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.doctype.tableResult",
+                                "resultMetaDataSchemaVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "resultType": "table",
+                                "metaData": {
+                                    "tableMetaData": {
+                                        "tableIdentifier": "groups",
+                                        "shortTableLabel": "groups",
+                                        "longTableLabel": "Groups",
+                                        "globalIdentifier": "org.zowe.zss.security-mgmt.groups",
+                                        "minRows": 0,
+                                        "maxRows": 1000
+                                    },
+                                    "columnMetaData": [
+                                        {
+                                            "columnIdentifier": "group",
+                                            "shortColumnLabel": "group",
+                                            "longColumnLabel": "Group Name",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        },
+                                        {
+                                            "columnIdentifier": "owner",
+                                            "shortColumnLabel": "owner",
+                                            "longColumnLabel": "Owner",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        },
+                                        {
+                                            "columnIdentifier": "superiorGroup",
+                                            "shortColumnLabel": "superiorGroup",
+                                            "longColumnLabel": "Superior Group",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        }
+                                    ]
+                                },
+                                "start": "ZOWE",
+                                "count": 2,
+                                "countRequested": 2,
+                                "hasMore": true,
+                                "rows": [
+                                    {
+                                        "profile": "ZOWEUSER",
+                                        "owner": "SYS1",
+                                        "superiorGroup": "SYS1"
+                                    },
+                                    {
+                                        "profile": "XGROUP",
+                                        "owner": "XUSER",
+                                        "superiorGroup": "SYS1"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    },
+                    "501": {
+                        "description": "Unsupported request"
+                    }
+                }
+            }
+        },
+        "/security-mgmt/groups/{groupName}": {
+            "post": {
+                "summary": "Add a new group",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "groupName",
+                        "in": "path",
+                        "description": "Name of the new group",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "superiorGroup",
+                        "in": "body",
+                        "description": "Superior group of the new group",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "superiorGroup"
+                            ],
+                            "properties": {
+                                "superiorGroup": {
+                                    "type": "string",
+                                    "example": "SYS1"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation (operator command)",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "ADDGROUP ZOWEUSER  SUPGROUP    (SYS1) UNIVERSAL"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Successful operation (group added)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a group",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "groupName",
+                        "in": "path",
+                        "description": "Name of the group to delete",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation (operator command)",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "DELGROUP ZOWETEST"
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successful operation (group removed)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/security-mgmt/groups/{groupName}/access-list": {
+            "get": {
+                "summary": "Retrieve the access list of a group",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "groupName",
+                        "in": "path",
+                        "description": "Group containing the access list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "resultMetaDataSchemaVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "resultType": {
+                                    "type": "string"
+                                },
+                                "metaData": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tableMetaData": {
+                                            "type": "object",
+                                            "properties": {
+                                                "tableIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "shortTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "longTableLabel": {
+                                                    "type": "string"
+                                                },
+                                                "globalIdentifier": {
+                                                    "type": "string"
+                                                },
+                                                "minRows": {
+                                                    "type": "integer"
+                                                },
+                                                "maxRows": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "columnMetaData": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "columnIdentifier": {
+                                                        "type": "string"
+                                                    },
+                                                    "shortColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "longColumnLabel": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataType": {
+                                                        "type": "string"
+                                                    },
+                                                    "rawDataTypeLength": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "rows": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "profile": {
+                                                "type": "string"
+                                            },
+                                            "owner": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.doctype.tableResult",
+                                "resultMetaDataSchemaVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "resultType": "table",
+                                "metaData": {
+                                    "tableMetaData": {
+                                        "tableIdentifier": "access-list",
+                                        "shortTableLabel": "access-list",
+                                        "longTableLabel": "Access List",
+                                        "globalIdentifier": "org.zowe.zss.security-mgmt.group-access-list"
+                                    },
+                                    "columnMetaData": [
+                                        {
+                                            "columnIdentifier": "id",
+                                            "shortColumnLabel": "id",
+                                            "longColumnLabel": "ID",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        },
+                                        {
+                                            "columnIdentifier": "accessType",
+                                            "shortColumnLabel": "accessType",
+                                            "longColumnLabel": "Access Type",
+                                            "rawDataType": "string",
+                                            "rawDataTypeLength": 8
+                                        }
+                                    ]
+                                },
+                                "count": 2,
+                                "rows": [
+                                    {
+                                        "id": "USARH",
+                                        "accessType": "USE"
+                                    },
+                                    {
+                                        "id": "USBWH",
+                                        "accessType": "CONNECT"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM or service error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    },
+                    "501": {
+                        "description": "Unsupported request"
+                    }
+                }
+            }
+        },
+        "/security-mgmt/groups/{groupName}/access-list/{userId}": {
+            "put": {
+                "summary": "Add/update an access list entry (connect a user to a group)",
+                "description": "",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "groupName",
+                        "in": "path",
+                        "description": "Group whose access list is to be updated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "User ID with which the access list entry is associated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "accessType",
+                        "in": "body",
+                        "description": "New access type value",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "accesType": {
+                                    "type": "string",
+                                    "enum": [
+                                        "USE",
+                                        "CREATE",
+                                        "CONNECT",
+                                        "JOIN"
+                                    ],
+                                    "example": "JOIN"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "CONNECT USR1  GROUP       (ZOWETEST) AUTHORITY   (JOIN)"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Successful operation (entry updated)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove an access list entry (remove a user from a group)",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "groupName",
+                        "in": "path",
+                        "description": "Group whose access list is to be updated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "User ID with which the access list entry is associated",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dryRun",
+                        "in": "query",
+                        "description": "If set to false the request will be executed, otherwise an equivalent TSO command will be returned",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "traceLevel",
+                        "in": "query",
+                        "description": "Trace level value passed to MXM",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "serviceVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.security-mgmt.operator-command",
+                                "_metaDataVersion": "1.0",
+                                "serviceVersion": "1.0",
+                                "operatorCommand": "REMOVE  USR1  GROUP       (ZOWETEST)"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Successful operation (entry removed)"
+                    },
+                    "400": {
+                        "description": "Bad input parameters, see details in the message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal MXM error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metaDataVersion": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "example": {
+                                "_objectType": "org.zowe.zss.error",
+                                "_metaDataVersion": "0.0.1",
+                                "message": "Cross-Memory server failure (RC = 30, RSN = 0) - Server is not running"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/server/agent": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the agent server (often ZSS server)",
+                "description": "Get the agent server (often ZSS server)",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/config": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the config of the agent",
+                "description": "Get the config of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "options": {
+                                    "type": "object",
+                                    "properties": {
+                                        "node": {
+                                            "type": "object",
+                                            "properties": {
+                                                "https": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        },
+                                                        "keys": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "certificates": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "certificateAuthorities": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "mediationLayer": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "server": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "hostname": {
+                                                                    "type": "string"
+                                                                },
+                                                                "port": {
+                                                                    "type": "number"
+                                                                },
+                                                                "isHttps": {
+                                                                    "type": "boolean"
+                                                                }
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "childProcesses": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "agent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "host": {
+                                                    "type": "string"
+                                                },
+                                                "http": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "rootDir": {
+                                            "type": "string"
+                                        },
+                                        "productDir": {
+                                            "type": "string"
+                                        },
+                                        "siteDir": {
+                                            "type": "string"
+                                        },
+                                        "instanceDir": {
+                                            "type": "string"
+                                        },
+                                        "groupsDir": {
+                                            "type": "string"
+                                        },
+                                        "usersDir": {
+                                            "type": "string"
+                                        },
+                                        "pluginsDir": {
+                                            "type": "string"
+                                        },
+                                        "dataserviceAuthentication": {
+                                            "type": "object",
+                                            "properties": {
+                                                "defaultAthentication": {
+                                                    "type": "string"
+                                                },
+                                                "rbac": {
+                                                    "type": "boolean"
+                                                },
+                                                "implementationDefaults": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "zssPort": {
+                                            "type": "number"
+                                        },
+                                        "logLanguage": {
+                                            "type": "string"
+                                        },
+                                        "logLevels": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/log": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log of the agent",
+                "description": "Get the log of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/logLevels": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log of the agent",
+                "description": "Get the log of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "logComponentName": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/environment": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log of the agent",
+                "description": "Get the log of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "timestamp": {
+                                    "type": "string"
+                                },
+                                "logDirectory": {
+                                    "type": "string"
+                                },
+                                "agentName": {
+                                    "type": "string"
+                                },
+                                "agentVersion": {
+                                    "type": "string"
+                                },
+                                "arch": {
+                                    "type": "string"
+                                },
+                                "osRelease": {
+                                    "type": "string"
+                                },
+                                "osVersion": {
+                                    "type": "string"
+                                },
+                                "hardwareIdentifier": {
+                                    "type": "string"
+                                },
+                                "hostname": {
+                                    "type": "string"
+                                },
+                                "nodename": {
+                                    "type": "string"
+                                },
+                                "userEnvironment": {
+                                    "type": "object"
+                                },
+                                "demandPagingRate": {
+                                    "type": "number"
+                                },
+                                "stdCP_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "stdCP_MVS_SRM_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "ZAAP_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "ZIIP_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "PID": {
+                                    "type": "number"
+                                },
+                                "PPID": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/plugins/": {
+            "get": {
+                "tags": [
+                    "plugins"
+                ],
+                "summary": "Gets list of plugins and their dataservices",
+                "description": "Gets list of plugins and their dataservices",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "plugin type",
+                        "description": "Type of plugins to query. Default is 'all'",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "identifier": {
+                                        "type": "string"
+                                    },
+                                    "pluginVersion": {
+                                        "type": "string"
+                                    },
+                                    "apiVersion": {
+                                        "type": "string"
+                                    },
+                                    "pluginType": {
+                                        "type": "string"
+                                    },
+                                    "copyright": {
+                                        "type": "string"
+                                    },
+                                    "webContent": {
+                                        "type": "object"
+                                    },
+                                    "configurationData": {
+                                        "type": "object",
+                                        "properties": {
+                                            "resources": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "dataServices": {
+                                        "type": "object",
+                                        "properties": {
+                                            "configuration": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "contents": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "sourceName": {
+                                                "type": "string"
+                                            },
+                                            "localName": {
+                                                "type": "string"
+                                            },
+                                            "sourcePlugin": {
+                                                "type": "string"
+                                            },
+                                            "versionRange": {
+                                                "type": "string"
+                                            },
+                                            "version": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "plugins"
+                ],
+                "summary": "(Cluster only) Add a plugin (or upgrade an existing one) to the server via 'location'",
+                "description": "(Cluster only) Add a plugin (or upgrade an existing one) to the server via 'location'",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "plugin location",
+                        "description": "Location in the local file system",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully installed '${installResponse.message}'. Reloading server, please wait a moment."
+                    },
+                    "400": {
+                        "description": "Failed to install plugin.  Error: ${installResponse.message}\n\nOR\n\nPath query must be a directory.\n\nOR\n\nName queries not yet supported.\n\nOR\n\n"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Could not complete new plugin scan."
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        }
+    }
+}

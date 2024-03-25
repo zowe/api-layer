@@ -1,0 +1,1545 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Security Insights Orchestration",
+        "description": "The Orchestration Service provides a workflow for report generation, server-side filtering, CSV export, and report storage and caching. This Service incorporates a user-configurable risk assessment and recommendations for risk mitigation.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Critical Access Reports",
+            "description": "APIs to create Who Has Access reports like System Critical Report or Business Critical Report reports."
+        },
+        {
+            "name": "Registered Services",
+            "description": "APIs to get registered services information."
+        },
+        {
+            "name": "Reports Management",
+            "description": "APIs to manage Insights saved reports."
+        },
+        {
+            "name": "Classifier Reports",
+            "description": "APIs to create Classifier reports."
+        },
+        {
+            "name": "Rules Configuration Management",
+            "description": "APIs to manage Insights rules engine parameters."
+        },
+        {
+            "name": "Metadata Information",
+            "description": "APIs to lookup object information and translation keys"
+        }
+    ],
+    "paths": {
+        "/api/v1/si/reports/rules/ruleset": {
+            "put": {
+                "tags": [
+                    "Rules Configuration Management"
+                ],
+                "description": "Creates a ruleset",
+                "operationId": "saveRuleset",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Ruleset"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseString"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/cancel": {
+            "put": {
+                "tags": [
+                    "Reports Management"
+                ],
+                "description": "Requests that a running report be cancelled",
+                "operationId": "cancelReport",
+                "requestBody": {
+                    "description": "List of report ids to be cancelled.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReportManagementParameters"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Report/s are not cancelled or not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListReportStatusInfo"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Report/s cancelled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ReportStatusInfo"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/who-has-access-to-sra-report": {
+            "post": {
+                "tags": [
+                    "Critical Access Reports"
+                ],
+                "description": "Create a new Specified Resource Access (SRA) report request",
+                "operationId": "createSraReport",
+                "requestBody": {
+                    "description": "Parameters needed to create a SRA report",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SraReportParameter"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "422": {
+                        "description": "The input parameter is invalid or has exceeded the threshold.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Required service needed by the orchestration is not available / the report was not created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "SRA Report has been created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/si/reports/who-has-access-to-apf-report": {
+            "post": {
+                "tags": [
+                    "Critical Access Reports"
+                ],
+                "description": "Create a new System Critical Report request that includes APF List, PARMLIB, LINKLIST and/or LPALIST",
+                "operationId": "createReport",
+                "requestBody": {
+                    "description": "Parameters needed to create an APF access report",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApfReportParameter"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "422": {
+                        "description": "The input parameter is invalid or has exceeded the threshold.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Required service needed by the orchestration is not available / the report was not created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "APF Access Report has been created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/si/reports/classifier-data-and-encryption-report": {
+            "post": {
+                "tags": [
+                    "Classifier Reports"
+                ],
+                "description": "Create a new Classifier report request",
+                "operationId": "createReport_1",
+                "requestBody": {
+                    "description": "Parameters needed to creaqte a Classifier report",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassificationReportParameter"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "422": {
+                        "description": "The input parameter is invalid or has exceeded the threshold.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Classifier Report has been created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Required service needed by the orchestration is not available / the report was not created.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseInteger"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/si/servicenames": {
+            "get": {
+                "tags": [
+                    "Registered Services"
+                ],
+                "description": "Returns the list of service names known to the orchestration service",
+                "operationId": "getServiceNames",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseMapStringString"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/{reportId}/ruleset": {
+            "get": {
+                "tags": [
+                    "Reports Management"
+                ],
+                "description": "Finds archived ruleset using report id",
+                "operationId": "getRuleset",
+                "parameters": [
+                    {
+                        "name": "reportId",
+                        "in": "path",
+                        "description": "The report id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseRuleset"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/rules/rulesets/{rulesetId}": {
+            "get": {
+                "tags": [
+                    "Rules Configuration Management"
+                ],
+                "description": "Retrieves a ruleset given a ruleset id",
+                "operationId": "getRuleset_1",
+                "parameters": [
+                    {
+                        "name": "rulesetId",
+                        "in": "path",
+                        "description": "The ruleset ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "00000000-0000-0000-0000-000000000001"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseRuleset"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/rules/rulesets/reportTypes/{reportType}": {
+            "get": {
+                "tags": [
+                    "Rules Configuration Management"
+                ],
+                "description": "Retrieves all rules for the given Report Type and (optionally an ESM)",
+                "operationId": "getRuleDefinitions",
+                "parameters": [
+                    {
+                        "name": "reportType",
+                        "in": "path",
+                        "description": "The report type",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "CLASSIFICATION OR SYSTEMCRITICAL"
+                    },
+                    {
+                        "name": "ruleOptions",
+                        "in": "query",
+                        "description": "Key=Value rule options that are optional for filtering.  ; is used for seperator",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "esmType=TSS;ruleOption2=something"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListRuleDefinition"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/metadata": {
+            "get": {
+                "tags": [
+                    "Metadata Information"
+                ],
+                "description": "Returns a list of objects, attributes and translation keys",
+                "operationId": "getMetadata",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListObjectInformation"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/domain": {
+            "get": {
+                "tags": [
+                    "Reports Management"
+                ],
+                "description": "Finds all the object domains ",
+                "operationId": "getDomain",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListObjectDomain"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/about": {
+            "get": {
+                "tags": [
+                    "Metadata Information"
+                ],
+                "description": "Returns product info including version, git commit id, etc.",
+                "operationId": "getAbout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseProductInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/lpars/services/{service-name}": {
+            "get": {
+                "tags": [
+                    "Registered Services"
+                ],
+                "description": "Returns a list of live servers (status = up) registered to a Discovery Service",
+                "operationId": "registeredLpars",
+                "parameters": [
+                    {
+                        "name": "service-name",
+                        "in": "path",
+                        "description": "The Discovery Service under which the host registered (such as \\\"INSIGHTS-SERVICE\\\").",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "camfsiinsights"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListString"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/lpars/services/security-product/{lpar}": {
+            "get": {
+                "tags": [
+                    "Registered Services"
+                ],
+                "description": "Returns a list of live LPARs registered to a Discovery Service",
+                "operationId": "safProduct",
+                "parameters": [
+                    {
+                        "name": "lpar",
+                        "in": "path",
+                        "description": "The LPAR that hosts the SAF product (such as \\\"localhost\\\").",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "localhost"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseString"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports": {
+            "delete": {
+                "tags": [
+                    "Reports Management"
+                ],
+                "description": "Deletes the report by report Id",
+                "operationId": "deleteReport",
+                "requestBody": {
+                    "description": "List of report ids to be deleted",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReportManagementParameters"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Report/s deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ReportStatusInfo"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Report/s not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListReportStatusInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/si/reports/rules/rulesets": {
+            "delete": {
+                "tags": [
+                    "Rules Configuration Management"
+                ],
+                "description": "Deletes the ruletset by ruleset Id",
+                "operationId": "deleteRuleset",
+                "requestBody": {
+                    "description": "List of ruleset ids to be deleted",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReportManagementParameters"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ruleset/s deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "integer",
+                                        "format": "int32"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ruleset/s not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestResponseListRuleStatusInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ImpactDefinition": {
+                "type": "object",
+                "properties": {
+                    "sequenceNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "rdfIri": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Recommendation": {
+                "type": "object",
+                "properties": {
+                    "recommendationRdfIri": {
+                        "type": "string"
+                    },
+                    "recommendations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RuleAttribute": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string"
+                    },
+                    "min": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "max": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "impact": {
+                        "$ref": "#/components/schemas/ImpactDefinition"
+                    },
+                    "severity": {
+                        "$ref": "#/components/schemas/SeverityDefinition"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "RuleDefinition": {
+                "type": "object",
+                "properties": {
+                    "rulesetId": {
+                        "type": "string"
+                    },
+                    "factoryDefault": {
+                        "type": "boolean"
+                    },
+                    "riskSettingName": {
+                        "type": "string"
+                    },
+                    "creator": {
+                        "type": "string"
+                    },
+                    "reportType": {
+                        "type": "string"
+                    },
+                    "hash": {
+                        "type": "string"
+                    },
+                    "reportOptions": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "esm": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RuleParameter": {
+                "type": "object",
+                "properties": {
+                    "ruleTemplateId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "ruleName": {
+                        "type": "string"
+                    },
+                    "ruleNameRdfIri": {
+                        "type": "string"
+                    },
+                    "objectKey": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "objectName": {
+                        "type": "string"
+                    },
+                    "objectNameRdfIri": {
+                        "type": "string"
+                    },
+                    "objectTitle": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "objectType": {
+                        "type": "string"
+                    },
+                    "inputType": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "allowedValues": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "attributes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RuleAttribute"
+                        }
+                    },
+                    "recommendation": {
+                        "$ref": "#/components/schemas/Recommendation"
+                    }
+                }
+            },
+            "Ruleset": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "domainId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "impactDefinitions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ImpactDefinition"
+                        }
+                    },
+                    "severityDefinitions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SeverityDefinition"
+                        }
+                    },
+                    "ruleDefinition": {
+                        "$ref": "#/components/schemas/RuleDefinition"
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RuleParameter"
+                        }
+                    },
+                    "creator": {
+                        "type": "string"
+                    },
+                    "updatedBy": {
+                        "type": "string"
+                    },
+                    "createTimeStamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updateTimestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "SeverityDefinition": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "sequenceNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "demerit": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "rdfIri": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageBodyString": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageType": {
+                        "type": "string",
+                        "enum": [
+                            "ERROR",
+                            "WARNING",
+                            "DEBUG",
+                            "TRACE",
+                            "INFO"
+                        ]
+                    },
+                    "messageNumber": {
+                        "type": "string"
+                    },
+                    "messageContent": {
+                        "type": "string"
+                    },
+                    "messageReason": {
+                        "type": "string"
+                    },
+                    "messageAction": {
+                        "type": "string"
+                    },
+                    "messageKey": {
+                        "type": "string"
+                    },
+                    "messageInstanceId": {
+                        "type": "string"
+                    },
+                    "messageSource": {
+                        "type": "string"
+                    },
+                    "messageParameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "description": "Messages related to corresponding action on reports"
+            },
+            "RestResponseString": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyString"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "ReportManagementParameters": {
+                "required": [
+                    "reportIds"
+                ],
+                "type": "object",
+                "properties": {
+                    "reportIds": {
+                        "type": "array",
+                        "description": "List of report ids to be deleted.",
+                        "example": [
+                            122,
+                            523
+                        ],
+                        "items": {
+                            "type": "integer",
+                            "description": "List of report ids to be deleted.",
+                            "format": "int32"
+                        }
+                    }
+                }
+            },
+            "ReportStatusInfo": {
+                "type": "object",
+                "properties": {
+                    "reportId": {
+                        "type": "integer",
+                        "description": "The Report Id processed",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The Report status succesfully updated",
+                        "enum": [
+                            "SUBMITTED",
+                            "RUNNING",
+                            "ERROR",
+                            "CANCELLED",
+                            "COMPLETED",
+                            "CANCELLING",
+                            "CANCEL_REQUESTED",
+                            "DELETE_REQUESTED"
+                        ]
+                    },
+                    "messages": {
+                        "type": "array",
+                        "description": "Messages related to corresponding action on reports",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyListReportStatusInfo": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReportStatusInfo"
+                        }
+                    }
+                }
+            },
+            "RestResponseListReportStatusInfo": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyListReportStatusInfo"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "SraReportParameter": {
+                "required": [
+                    "accessList",
+                    "esmType",
+                    "lpar",
+                    "reportName",
+                    "resourceList",
+                    "rulesetId"
+                ],
+                "type": "object",
+                "properties": {
+                    "accessList": {
+                        "type": "array",
+                        "description": "The List of Saf Access type based on the ESM running on the lpar",
+                        "example": [
+                            "READ",
+                            "WRITE"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "The List of Saf Access type based on the ESM running on the lpar",
+                            "example": "[\"READ\",\"WRITE\"]"
+                        }
+                    },
+                    "emailAddress": {
+                        "type": "string",
+                        "description": "Email address to which report status notifications will be sent.",
+                        "example": "john.doe@domain.com"
+                    },
+                    "esmType": {
+                        "type": "string",
+                        "description": "The type of External Security Manager available on the lpar.",
+                        "example": "TSS"
+                    },
+                    "lpar": {
+                        "type": "string",
+                        "description": "The lpar on which the insights service is running. Use localhost if you are running the mock services.",
+                        "example": "localhost"
+                    },
+                    "reportName": {
+                        "type": "string",
+                        "description": "The name of the report.",
+                        "example": "APF-Access-20200605-091011"
+                    },
+                    "rulesetId": {
+                        "type": "string",
+                        "description": "The ruleset id that will be used to run with rules engine.",
+                        "example": "1"
+                    },
+                    "resourceList": {
+                        "type": "array",
+                        "description": "The List of business critical resource type needed to be scanned on the lpar",
+                        "example": [
+                            "USER.DATASET.CRITICAL1",
+                            "OFFICE.DATASET.CRITICAL2"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "The List of business critical resource type needed to be scanned on the lpar",
+                            "example": "[\"USER.DATASET.CRITICAL1\",\"OFFICE.DATASET.CRITICAL2\"]"
+                        }
+                    }
+                }
+            },
+            "MessageBodyInteger": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "RestResponseInteger": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyInteger"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "ApfReportParameter": {
+                "required": [
+                    "accessList",
+                    "esmType",
+                    "libraryList",
+                    "lpar",
+                    "reportName",
+                    "rulesetId"
+                ],
+                "type": "object",
+                "properties": {
+                    "accessList": {
+                        "type": "array",
+                        "description": "The List of Saf Access type based on the ESM running on the lpar",
+                        "example": [
+                            "READ",
+                            "WRITE"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "The List of Saf Access type based on the ESM running on the lpar",
+                            "example": "[\"READ\",\"WRITE\"]"
+                        }
+                    },
+                    "emailAddress": {
+                        "type": "string",
+                        "description": "Email address to which report status notifications will be sent.",
+                        "example": "john.doe@domain.com"
+                    },
+                    "esmType": {
+                        "type": "string",
+                        "description": "The type of External Security Manager available on the lpar.",
+                        "example": "TSS"
+                    },
+                    "lpar": {
+                        "type": "string",
+                        "description": "The lpar on which the insights service is running. Use localhost if you are running the mock services.",
+                        "example": "localhost"
+                    },
+                    "reportName": {
+                        "type": "string",
+                        "description": "The name of the report.",
+                        "example": "APF-Access-20200605-091011"
+                    },
+                    "rulesetId": {
+                        "type": "string",
+                        "description": "The ruleset id that will be used to run with rules engine.",
+                        "example": "1"
+                    },
+                    "libraryList": {
+                        "type": "array",
+                        "description": "The List of system critical resource type neededd to be scanned on the lpar",
+                        "example": [
+                            "APFLIST",
+                            "LINKLIST",
+                            "LPALIST",
+                            "PARMLIB"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "The List of system critical resource type neededd to be scanned on the lpar",
+                            "example": "[\"APFLIST\",\"LINKLIST\",\"LPALIST\",\"PARMLIB\"]"
+                        }
+                    }
+                }
+            },
+            "ClassificationReportParameter": {
+                "required": [
+                    "lpar",
+                    "reportName",
+                    "rulesetId",
+                    "searchCriterionList"
+                ],
+                "type": "object",
+                "properties": {
+                    "searchCriterionList": {
+                        "type": "string",
+                        "description": "List of datasets to search for.",
+                        "example": "[\"DCD.TEST.PII.*\",\"PMF.PUBLIC.*\"]"
+                    },
+                    "lpar": {
+                        "type": "string",
+                        "description": "The lpar on which the Insights and DCD service is running.",
+                        "example": "localhost"
+                    },
+                    "reportName": {
+                        "type": "string",
+                        "description": "The name of the report.",
+                        "example": "Classifier_Data_20200605_091011"
+                    },
+                    "emailAddress": {
+                        "type": "string",
+                        "description": "Email address to which report status notifications will be sent.",
+                        "example": "john.doe@domain.com"
+                    },
+                    "rulesetId": {
+                        "type": "string",
+                        "description": "The ruleset id that will be used to run with rules engine.",
+                        "example": "1"
+                    }
+                }
+            },
+            "MessageBodyMapStringString": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RestResponseMapStringString": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyMapStringString"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyRuleset": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/Ruleset"
+                    }
+                }
+            },
+            "RestResponseRuleset": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyRuleset"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyListRuleDefinition": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RuleDefinition"
+                        }
+                    }
+                }
+            },
+            "RestResponseListRuleDefinition": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyListRuleDefinition"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "AttributeRecommendation": {
+                "type": "object",
+                "properties": {
+                    "recommendationRdfIri": {
+                        "type": "string"
+                    },
+                    "recommendations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "attributeRdfIri": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageBodyListObjectInformation": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ObjectInformation"
+                        }
+                    }
+                }
+            },
+            "ObjectAttributeInformation": {
+                "type": "object",
+                "properties": {
+                    "rdfIri": {
+                        "type": "string"
+                    },
+                    "displayText": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "alternateDisplayText": {
+                        "type": "string"
+                    },
+                    "attributeRecommendation": {
+                        "$ref": "#/components/schemas/AttributeRecommendation"
+                    }
+                }
+            },
+            "ObjectInformation": {
+                "type": "object",
+                "properties": {
+                    "domainId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "rdfIri": {
+                        "type": "string"
+                    },
+                    "fieldName": {
+                        "type": "string"
+                    },
+                    "displayText": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "displayDescription": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "functionalArea": {
+                        "type": "string",
+                        "enum": [
+                            "MESSAGES",
+                            "OBJECTS",
+                            "RECOMMENDATION",
+                            "RULE_SCORE",
+                            "RULE_TEMPLATE"
+                        ]
+                    },
+                    "objectType": {
+                        "type": "string"
+                    },
+                    "sequenceNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "fieldNameAlias": {
+                        "type": "string"
+                    },
+                    "objectAttributes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ObjectAttributeInformation"
+                        }
+                    },
+                    "messagePatterns": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RestResponseListObjectInformation": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyListObjectInformation"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyListObjectDomain": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ObjectDomain"
+                        }
+                    }
+                }
+            },
+            "ObjectDomain": {
+                "type": "object",
+                "properties": {
+                    "domainId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "domain": {
+                        "type": "string"
+                    },
+                    "rdfIri": {
+                        "type": "string"
+                    },
+                    "reportType": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RestResponseListObjectDomain": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyListObjectDomain"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyProductInfo": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/ProductInfo"
+                    }
+                }
+            },
+            "ProductInfo": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "commitId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RestResponseProductInfo": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyProductInfo"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyListString": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RestResponseListString": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyListString"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessageBodyListRuleStatusInfo": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RuleStatusInfo"
+                        }
+                    }
+                }
+            },
+            "RestResponseListRuleStatusInfo": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyListRuleStatusInfo"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "RuleStatusInfo": {
+                "type": "object",
+                "properties": {
+                    "rulesetId": {
+                        "type": "string",
+                        "description": "The ruleset id"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The Report status succesfully updated",
+                        "enum": [
+                            "DELETE_REQUESTED",
+                            "ERROR"
+                        ]
+                    },
+                    "messages": {
+                        "type": "array",
+                        "description": "Messages related to corresponding action on reports",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "description": "Zowe JWT token",
+                "name": "apimlAuthenticationToken",
+                "in": "cookie"
+            }
+        }
+    }
+}

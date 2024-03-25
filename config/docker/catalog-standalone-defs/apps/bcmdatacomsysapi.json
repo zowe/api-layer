@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "bcmdatacomsysapi",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmdatacomsysapi",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmdatacomsysapi",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMDATACOMSYSAPI",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "bcm.datacom.systems.api.11",
+                        "apiml.routes.ui-v1.serviceUrl": "/",
+                        "apiml.routes.ui-v1.gatewayUrl": "ui/v1",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "bcmdatacomsysapi-_bcm.datacom.systems.api.11 vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "2.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "true",
+                        "apiml.routes.api-v1.serviceUrl": "/api/v1",
+                        "apiml.service.description": "The Datacom Systems REST API 2.0 Service provides read-only access to a number of Datacom system tables that contain database metadata, environmental information and operational statistics. This service can be leveraged by customers to build off-platform applications to simplify, automate and modernize the monitoring of their Datacom systems. Additionally, a special system health endpoint is included that aggregates data from several underlying system tables. The Health Check Application is built on the data provided by this endpoint.",
+                        "apiml.catalog.tile.description": "The Datacom Systems REST API 2.0 Service provides read-only access to a number of Datacom system tables that contain database metadata, environmental information and operational statistics. This service can be leveraged by customers to build off-platform applications to simplify, automate and modernize the monitoring of their Datacom systems. Additionally, a special system health endpoint is included that aggregates data from several underlying system tables. The Health Check Application is built on the data provided by this endpoint.",
+                        "apiml.catalog.tile.title": "Datacom Systems",
+                        "apiml.service.title": "Datacom Systems",
+                        "apiml.catalog.tile.version": "2.0.0",
+                        "apiml.catalog.tile.id": "bcmdatacomsysapi",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

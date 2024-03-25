@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /apicatalog/api/v1/
+
+Sitemap: https:///sitemap.xml

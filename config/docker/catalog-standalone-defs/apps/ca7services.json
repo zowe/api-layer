@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "ca7services",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "ca7services",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "ca7services",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "CA7SERVICES",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/ca7services",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/ca7services/application/version",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/ca7services/application/health",
+                    "metadata": {
+                        "apiml.apiInfo.apiDocs.apiId": "com.broadcom.ca7services",
+                        "apiml.apiInfo.apiDocs.swaggerUrl": "ca7services-_com.broadcom.ca7services vv3_default.json",
+                        "apiml.apiInfo.api-v1.apiId": "com.broadcom.ca7services",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "ca7services-_com.broadcom.ca7services vv3_default.json",
+                        "apiml.apiInfo.api-v1.version": "12.1.05",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "true",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.routes.api-v1.serviceUrl": "ca7services/api/v1",
+                        "apiml.service.description": "Use CA 7 Workload Automation RESTful Web Services to monitor and control jobs and resources in the active workload, issue commonly used operator commands, and maintain workload definitions.",
+                        "apiml.catalog.tile.description": "Use CA 7 Workload Automation RESTful Web Services to monitor and control jobs and resources in the active workload, issue commonly used operator commands, and maintain workload definitions.",
+                        "apiml.catalog.tile.title": "CA7 Workload Automation\u2122",
+                        "apiml.service.title": "CA7 Workload Automation\u2122",
+                        "apiml.catalog.tile.version": "12.1.05",
+                        "apiml.catalog.tile.id": "ca7services",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

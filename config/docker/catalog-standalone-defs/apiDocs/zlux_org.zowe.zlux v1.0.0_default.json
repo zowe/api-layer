@@ -1,0 +1,2437 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "org.zowe.zlux",
+        "version": "1.0.1",
+        "license": "EPL-2.0"
+    },
+    "basePath": "/",
+    "host": "https://developer.mainframe.broadcom.com",
+    "schemes": [
+        "https"
+    ],
+    "paths": {
+        "/server/": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Retrieves list of accessible server endpoints",
+                "description": "Retrieves list of accessible server endpoints",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "links": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "href": {
+                                                "type": "string"
+                                            },
+                                            "rel": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the agent server (often ZSS server)",
+                "description": "Get the agent server (often ZSS server)",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/config": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the config of the agent",
+                "description": "Get the config of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "options": {
+                                    "type": "object",
+                                    "properties": {
+                                        "node": {
+                                            "type": "object",
+                                            "properties": {
+                                                "https": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        },
+                                                        "keys": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "certificates": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "certificateAuthorities": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "mediationLayer": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "server": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "hostname": {
+                                                                    "type": "string"
+                                                                },
+                                                                "port": {
+                                                                    "type": "number"
+                                                                },
+                                                                "isHttps": {
+                                                                    "type": "boolean"
+                                                                }
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "childProcesses": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "agent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "host": {
+                                                    "type": "string"
+                                                },
+                                                "http": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "rootDir": {
+                                            "type": "string"
+                                        },
+                                        "productDir": {
+                                            "type": "string"
+                                        },
+                                        "siteDir": {
+                                            "type": "string"
+                                        },
+                                        "instanceDir": {
+                                            "type": "string"
+                                        },
+                                        "groupsDir": {
+                                            "type": "string"
+                                        },
+                                        "usersDir": {
+                                            "type": "string"
+                                        },
+                                        "pluginsDir": {
+                                            "type": "string"
+                                        },
+                                        "dataserviceAuthentication": {
+                                            "type": "object",
+                                            "properties": {
+                                                "defaultAthentication": {
+                                                    "type": "string"
+                                                },
+                                                "rbac": {
+                                                    "type": "boolean"
+                                                },
+                                                "implementationDefaults": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "zssPort": {
+                                            "type": "number"
+                                        },
+                                        "logLanguage": {
+                                            "type": "string"
+                                        },
+                                        "logLevels": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/log": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log of the agent",
+                "description": "Get the log of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/logLevels": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log of the agent",
+                "description": "Get the log of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "logComponentName": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/agent/environment": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log of the agent",
+                "description": "Get the log of the agent",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "timestamp": {
+                                    "type": "string"
+                                },
+                                "logDirectory": {
+                                    "type": "string"
+                                },
+                                "agentName": {
+                                    "type": "string"
+                                },
+                                "agentVersion": {
+                                    "type": "string"
+                                },
+                                "arch": {
+                                    "type": "string"
+                                },
+                                "osRelease": {
+                                    "type": "string"
+                                },
+                                "osVersion": {
+                                    "type": "string"
+                                },
+                                "hardwareIdentifier": {
+                                    "type": "string"
+                                },
+                                "hostname": {
+                                    "type": "string"
+                                },
+                                "nodename": {
+                                    "type": "string"
+                                },
+                                "userEnvironment": {
+                                    "type": "object"
+                                },
+                                "demandPagingRate": {
+                                    "type": "number"
+                                },
+                                "stdCP_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "stdCP_MVS_SRM_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "ZAAP_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "ZIIP_CPU_Util": {
+                                    "type": "number"
+                                },
+                                "PID": {
+                                    "type": "number"
+                                },
+                                "PPID": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/config": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the config of the server",
+                "description": "Get the config of the server",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "options": {
+                                    "type": "object",
+                                    "properties": {
+                                        "rootDir": {
+                                            "type": "string"
+                                        },
+                                        "productDir": {
+                                            "type": "string"
+                                        },
+                                        "siteDir": {
+                                            "type": "string"
+                                        },
+                                        "instanceDir": {
+                                            "type": "string"
+                                        },
+                                        "groupsDir": {
+                                            "type": "string"
+                                        },
+                                        "usersDir": {
+                                            "type": "string"
+                                        },
+                                        "pluginsDir": {
+                                            "type": "string"
+                                        },
+                                        "node": {
+                                            "type": "object",
+                                            "properties": {
+                                                "https": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        },
+                                                        "keys": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "certificates": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "certificateAuthorities": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "mediationLayer": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "server": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "hostname": {
+                                                                    "type": "string"
+                                                                },
+                                                                "port": {
+                                                                    "type": "number"
+                                                                },
+                                                                "isHttps": {
+                                                                    "type": "boolean"
+                                                                }
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "childProcesses": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "dataserviceAuthentication": {
+                                            "type": "object",
+                                            "properties": {
+                                                "defaultAthentication": {
+                                                    "type": "string"
+                                                },
+                                                "rbac": {
+                                                    "type": "boolean"
+                                                },
+                                                "implementationDefaults": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "agent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "host": {
+                                                    "type": "string"
+                                                },
+                                                "http": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "zssPort": {
+                                            "type": "number"
+                                        },
+                                        "logLanguage": {
+                                            "type": "string"
+                                        },
+                                        "logLevels": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/config/attrib": {
+            "post": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Update the config of the server, within the bounds of allowed attributes, one attribute at a time (including whole attribute objects).",
+                "description": "Update the config of the server, within the bounds of allowed attributes, one attribute at a time (including whole attribute objects).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "attrib",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "options": {
+                                    "type": "object",
+                                    "properties": {
+                                        "node": {
+                                            "type": "object",
+                                            "properties": {
+                                                "allowInvalidTLSProxy": {
+                                                    "type": "object"
+                                                },
+                                                "noPrompt": {
+                                                    "type": "object"
+                                                },
+                                                "noChild": {
+                                                    "type": "object"
+                                                },
+                                                "https": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        }
+                                                    }
+                                                },
+                                                "mediationLayer": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "server": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "hostname": {
+                                                                    "type": "string"
+                                                                },
+                                                                "port": {
+                                                                    "type": "number"
+                                                                },
+                                                                "isHttps": {
+                                                                    "type": "boolean"
+                                                                }
+                                                            }
+                                                        },
+                                                        "enabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "childProcesses": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "dataserviceAuthentication": {
+                                            "type": "object",
+                                            "properties": {
+                                                "defaultAthentication": {
+                                                    "type": "string"
+                                                },
+                                                "rbac": {
+                                                    "type": "boolean"
+                                                },
+                                                "implementationDefaults": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "agent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "host": {
+                                                    "type": "string"
+                                                },
+                                                "http": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ipAddresses": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "port": {
+                                                            "type": "number"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "zssPort": {
+                                            "type": "number"
+                                        },
+                                        "logLanguage": {
+                                            "type": "string"
+                                        },
+                                        "logLevels": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Update allowed attributes of server config via JSON post body. Attribute must be '.' separated query and cannot contain an array index.",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Port remapped to ${req.params.port}"
+                    },
+                    "400": {
+                        "description": "Port query expected positive integer, received ${req.params.port}\n\nOR\n\nPort query expected positive integer, received ${req.params.port}\n\nOR\n\nServer must be running in cluster mode to remap http(s) port"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Unable to update server configuration file"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/environment": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get environment variables of the server",
+                "description": "Get environment variables of the server",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "timestamp": {
+                                    "type": "string"
+                                },
+                                "args": {
+                                    "type": "string"
+                                },
+                                "nodeArgs": {
+                                    "type": "string"
+                                },
+                                "platform": {
+                                    "type": "string"
+                                },
+                                "arch": {
+                                    "type": "string"
+                                },
+                                "osRelease": {
+                                    "type": "object"
+                                },
+                                "cpus": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                },
+                                "freeMemory": {
+                                    "type": "number"
+                                },
+                                "hostname": {
+                                    "type": "string"
+                                },
+                                "userEnvironment": {
+                                    "type": "object"
+                                },
+                                "PID": {
+                                    "type": "number"
+                                },
+                                "PPID": {
+                                    "type": "number"
+                                },
+                                "nodeVersion": {
+                                    "type": "string"
+                                },
+                                "nodeRelease": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/log": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Retrieve the server log",
+                "description": "Retrieve the server log",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "501": {
+                        "description": "Log not found"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/logLevels": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Get the log levels of the server and plugins",
+                "description": "Get the log levels of the server and plugins",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "logComponentName": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/logLevels/name/:componentName/level/:level": {
+            "post": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "Set the log 'level' using the component 'name' of a logger",
+                "description": "Set the log 'level' using the component 'name' of a logger",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "componentName",
+                        "description": "Logger component name",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "level",
+                        "description": "Logger level (default 0 - 5)",
+                        "type": "number",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Log level must be a number\n\nOR\n\nLog level must be within the accepted levels of 'MIN' and 'MAX'"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/server/reload": {
+            "get": {
+                "tags": [
+                    "server"
+                ],
+                "summary": "(Cluster only) Reloads the server",
+                "description": "(Cluster only) Reloads the server",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reloading server, please wait a moment."
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Cannot reload server unless cluster mode is in use."
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/plugins/": {
+            "get": {
+                "tags": [
+                    "plugins"
+                ],
+                "summary": "Gets list of plugins and their dataservices",
+                "description": "Gets list of plugins and their dataservices",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "plugin type",
+                        "description": "Type of plugins to query. Default is 'all'",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "identifier": {
+                                        "type": "string"
+                                    },
+                                    "pluginVersion": {
+                                        "type": "string"
+                                    },
+                                    "apiVersion": {
+                                        "type": "string"
+                                    },
+                                    "pluginType": {
+                                        "type": "string"
+                                    },
+                                    "copyright": {
+                                        "type": "string"
+                                    },
+                                    "webContent": {
+                                        "type": "object"
+                                    },
+                                    "configurationData": {
+                                        "type": "object",
+                                        "properties": {
+                                            "resources": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "dataServices": {
+                                        "type": "object",
+                                        "properties": {
+                                            "configuration": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "contents": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "sourceName": {
+                                                "type": "string"
+                                            },
+                                            "localName": {
+                                                "type": "string"
+                                            },
+                                            "sourcePlugin": {
+                                                "type": "string"
+                                            },
+                                            "versionRange": {
+                                                "type": "string"
+                                            },
+                                            "version": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "plugins"
+                ],
+                "summary": "(Cluster only) Add a plugin (or upgrade an existing one) to the server via 'location'",
+                "description": "(Cluster only) Add a plugin (or upgrade an existing one) to the server via 'location'",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "plugin location",
+                        "description": "Location in the local file system",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully installed '${installResponse.message}'. Reloading server, please wait a moment."
+                    },
+                    "400": {
+                        "description": "Failed to install plugin.  Error: ${installResponse.message}\n\nOR\n\nPath query must be a directory.\n\nOR\n\nName queries not yet supported.\n\nOR\n\n"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Could not complete new plugin scan."
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/plugins/:id": {
+            "delete": {
+                "tags": [
+                    "plugins"
+                ],
+                "summary": "(Cluster only) Deletes a plugin 'identifier' and reloads the server",
+                "description": "(Cluster only) Deletes a plugin 'identifier' and reloads the server",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Plugin identifier",
+                        "in": "query",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleting plugin 'identifier'. Reloading server, please wait a moment."
+                    },
+                    "400": {
+                        "description": "${fullPath} does not exist.\n\nOR\n\nImproper access permissions for path '${fullPath}'\n\nOR\n\n${err}"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Cannot reload server unless cluster mode is in use."
+                    },
+                    "506": {
+                        "description": "Set dataserviceAuthentication.rbac to true in server configuration"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.terminal.vt/services/terminalstream/1.0.0/": {
+            "get": {
+                "summary": "import of org.zowe.terminal.proxy:vtdata",
+                "responses": {
+                    "200": {
+                        "description": "This is a placeholder because the plugin did not supply a swagger document"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.zlux.ng2desktop/services/browser-preferences/1.0.0/": {
+            "get": {
+                "summary": "browser-preferences node service",
+                "responses": {
+                    "200": {
+                        "description": "This is a placeholder because the plugin did not supply a swagger document"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.zlux.bootstrap/services/adminnotificationdata/1.0.0/": {
+            "get": {
+                "summary": "adminnotificationdata node service",
+                "responses": {
+                    "200": {
+                        "description": "This is a placeholder because the plugin did not supply a swagger document"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.terminal.tn3270/services/terminalstream/1.0.0/": {
+            "get": {
+                "summary": "import of org.zowe.terminal.proxy:tn3270data",
+                "responses": {
+                    "200": {
+                        "description": "This is a placeholder because the plugin did not supply a swagger document"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.explorer-ip/services/ipExplorer/1.0.0/": {
+            "get": {
+                "summary": "ipExplorer data service",
+                "responses": {
+                    "200": {
+                        "description": "This is a placeholder because the plugin did not supply a swagger document"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.terminal.proxy/services/tn3270data/1.0.0/": {
+            "get": {
+                "summary": "tn3270data node service",
+                "responses": {
+                    "200": {
+                        "description": "This is a placeholder because the plugin did not supply a swagger document"
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.configjs/services/data/1.0.1/{plugin}/plugin/{resource}": {
+            "get": {
+                "tags": [
+                    "Read",
+                    "Plugin"
+                ],
+                "summary": "Get a JSON resource, listing, or binary file from the plugin scope",
+                "description": "Returns a binary or JSON resource or a collection of JSON subresources. JSON resources are aggregated with broader scopes according to plugin definition. Whether the resource is JSON or binary also is according to the plugin definition. Can return a listing rather than content by use of query parameter.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Retrieves a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "query",
+                        "description": "Returns a list of subresources, rather than their contents",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieval success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "contents": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Resource can exist but has not yet been made",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.configjs/services/data/1.0.1/{plugin}/product/{resource}": {
+            "get": {
+                "tags": [
+                    "Read",
+                    "Product"
+                ],
+                "summary": "Get a JSON resource, listing, or binary file from the plugin scope or higher",
+                "description": "Returns a binary or JSON resource or a collection of JSON subresources. JSON resources are aggregated with broader scopes according to plugin definition. Whether the resource is JSON or binary also is according to the plugin definition. Can return a listing rather than content by use of query parameter.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Retrieves a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "query",
+                        "description": "Returns a list of subresources, rather than their contents",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieval success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "contents": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Resource can exist but has not yet been made",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.configjs/services/data/1.0.1/{plugin}/site/{resource}": {
+            "get": {
+                "tags": [
+                    "Read",
+                    "Site"
+                ],
+                "summary": "Get a JSON resource, listing, or binary file from the site scope or higher",
+                "description": "Returns a binary or JSON resource or a collection of JSON subresources. JSON resources are aggregated with broader scopes according to plugin definition. Whether the resource is JSON or binary also is according to the plugin definition. Can return a listing rather than content by use of query parameter.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Retrieves a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "query",
+                        "description": "Returns a list of subresources, rather than their contents",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieval success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "contents": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Resource can exist but has not yet been made",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Write",
+                    "Site"
+                ],
+                "summary": "Writes a JSON or binary resource to the multi-server instance storage area",
+                "description": "Writes either a binary or JSON resource according to the plugin definition.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Writes a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Write success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "result": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Write error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Delete",
+                    "Site"
+                ],
+                "summary": "Deletes a resource from the multi-server instance storage area",
+                "description": "Deletes a resource, and optionally its subresources.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "description": "Deletes a named subresource when resource given is not a leaf",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "recursive",
+                        "in": "query",
+                        "description": "Whether or not to delete subresources recursively",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "result": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Write error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.configjs/services/data/1.0.1/{plugin}/instance/{resource}": {
+            "get": {
+                "tags": [
+                    "Read",
+                    "Instance"
+                ],
+                "summary": "Get a JSON resource, listing, or binary file from the instance scope or higher",
+                "description": "Returns a binary or JSON resource or a collection of JSON subresources. JSON resources are aggregated with broader scopes according to plugin definition. Whether the resource is JSON or binary also is according to the plugin definition. Can return a listing rather than content by use of query parameter.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Retrieves a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "query",
+                        "description": "Returns a list of subresources, rather than their contents",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieval success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "contents": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Resource can exist but has not yet been made",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Write",
+                    "Instance"
+                ],
+                "summary": "Writes a JSON or binary resource to the server instance storage area",
+                "description": "Writes either a binary or JSON resource according to the plugin definition.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Writes a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Write success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "result": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Write error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Delete",
+                    "Instance"
+                ],
+                "summary": "Deletes a resource from the multi-server instance storage area",
+                "description": "Deletes a resource, and optionally its subresources.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Deletes a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "recursive",
+                        "in": "query",
+                        "description": "Whether or not to delete subresources recursively",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "result": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Write error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ZLUX/plugins/org.zowe.configjs/services/data/1.0.1/{plugin}/user/{resource}": {
+            "get": {
+                "tags": [
+                    "Read",
+                    "User"
+                ],
+                "summary": "Get a JSON resource, listing, or binary file from the user scope or higher",
+                "description": "Returns a binary or JSON resource or a collection of JSON subresources. JSON resources are aggregated with broader scopes according to plugin definition. Whether the resource is JSON or binary also is according to the plugin definition. Can return a listing rather than content by use of query parameter. The user scope determines which user's data to lookup via the session info.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Retrieves a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "query",
+                        "description": "Returns a list of subresources, rather than their contents",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieval success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "contents": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Resource can exist but has not yet been made",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Write",
+                    "User"
+                ],
+                "summary": "Writes a JSON or binary resource to the user's storage area",
+                "description": "Writes either a binary or JSON resource according to the plugin definition. The user scope determines which user's data to lookup via the session info.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Writes a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "consumes": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Write success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "result": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Write error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Delete",
+                    "User"
+                ],
+                "summary": "Deletes a resource from the multi-server instance storage area",
+                "description": "Deletes a resource, and optionally its subresources.",
+                "parameters": [
+                    {
+                        "name": "plugin",
+                        "in": "path",
+                        "description": "Plugin ID for plugin installed on App server",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of a JSON or binary storage item, possibly containing subresources. Each resource's details are defined in the plugin definition.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Deletes a named subresource when resource given is not a leaf",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "recursive",
+                        "in": "query",
+                        "description": "Whether or not to delete subresources recursively",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "resourceID": {
+                                    "type": "string"
+                                },
+                                "maccessms": {
+                                    "type": "number"
+                                },
+                                "result": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Resource, plugin, or scope, or plugin definition not valid",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not defined for plugin",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Write error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_objectType": {
+                                    "type": "string"
+                                },
+                                "_metadataVersion": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

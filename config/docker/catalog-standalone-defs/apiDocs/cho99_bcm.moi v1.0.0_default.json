@@ -1,0 +1,64 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "ML Insights - REST API",
+        "description": "API to query ML Insights data",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/ml-insights-api/api/v1/info": {
+            "get": {
+                "tags": [
+                    "API Documentation"
+                ],
+                "summary": "Use this REST API to retrieve the Green Highways(GH) API endpoint details and documentation.\n\n",
+                "description": "##### The response will include\n\n- apiUrl (GraphQL URL): Use the GH API endpoint to retrieve the time-series, alerts, and all related Green Highway data.\n\n- documentationUrl (GraphiQL Documentation URL): GraphiQL is an in-browser IDE for exploring GraphQL. Use the GraphiQL URL to learn about the GraphQL schema and try out the Green Highway API.\n\n",
+                "operationId": "getGreenHighwayDoc",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Graphql": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "apiUrl": {
+                        "type": "string"
+                    },
+                    "documentationUrl": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Info": {
+                "type": "object",
+                "properties": {
+                    "graphql": {
+                        "$ref": "#/components/schemas/Graphql"
+                    }
+                }
+            }
+        }
+    }
+}

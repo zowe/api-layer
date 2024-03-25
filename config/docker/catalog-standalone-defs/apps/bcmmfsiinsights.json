@@ -1,0 +1,45 @@
+{
+    "application": [
+        {
+            "name": "bcmmfsiinsights",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmmfsiinsights",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmmfsiinsights",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMMFSIINSIGHTS_PLEXC1.CA32",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/bcmmfsiinsights",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/bcmmfsiinsights/application/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/bcmmfsiinsights/application/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "com.broadcom.mfsi.insights",
+                        "apiml.routes.ui-v1.serviceUrl": "/bcmmfsiinsights",
+                        "apiml.routes.ui-v1.gatewayUrl": "ui/v1",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "bcmmfsiinsights-_com.broadcom.mfsi.insights vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.routes.ws-v1.gatewayUrl": "ws/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.apiInfo.api-v1.documentationUrl": "https://www.zowe.org",
+                        "apiml.routes.api-v1.serviceUrl": "/bcmmfsiinsights/api/v1",
+                        "apiml.routes.ws-v1.serviceUrl": "/bcmmfsiinsights/ws",
+                        "apiml.service.description": "The Insights Service provides native services to the System-Critical Libraries, performs a catalog search, checks for pervasive encryption, and checks for data set existence.",
+                        "apiml.catalog.tile.description": "The Insights Service provides native services to the System-Critical Libraries, performs a catalog search, checks for pervasive encryption, and checks for data set existence.",
+                        "apiml.catalog.tile.title": "Security Insights Application",
+                        "apiml.service.title": "Security Insights Application",
+                        "apiml.catalog.tile.version": "${apiml.service.apiInfo.version}",
+                        "apiml.catalog.tile.id": "bcmmfsiinsights",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

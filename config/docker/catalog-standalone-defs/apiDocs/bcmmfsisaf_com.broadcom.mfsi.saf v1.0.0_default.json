@@ -1,0 +1,1258 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Security Insights SAF",
+        "description": "The SAF Service provides Who Has Access information, ID/Group lookup, and real-time ESM lookup using RADMIN calls. This Service supports ACF2, Top Secret, and RACF.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/saf/batch/ids": {
+            "post": {
+                "tags": [
+                    "saf-id-controller"
+                ],
+                "summary": "Returns information about security ids.",
+                "operationId": "batchIds",
+                "parameters": [
+                    {
+                        "name": "Message-Details",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "IDs batch request body.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchRequest"
+                            },
+                            "example": {
+                                "method": "GET",
+                                "headers": [
+                                    {
+                                        "name": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "batch": [
+                                    {
+                                        "id": 1,
+                                        "relativeUrl": "/api/v1/saf/ids?id=USER01&type=USER"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Request not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved the requested security ids.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/batch/entities": {
+            "post": {
+                "tags": [
+                    "saf-entity-controller"
+                ],
+                "summary": "Returns information about entities.",
+                "operationId": "batchEntities",
+                "parameters": [
+                    {
+                        "name": "Message-Details",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Entities batch request body.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchRequest"
+                            },
+                            "example": {
+                                "method": "GET",
+                                "headers": [
+                                    {
+                                        "name": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "batch": [
+                                    {
+                                        "id": 1,
+                                        "relativeUrl": "/api/v1/saf/entities?entityName=SYS1.PROCLIB&safClass=DATASET"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Request not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved the userIds that have access to the entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadBatchResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/rels/{rel}": {
+            "get": {
+                "tags": [
+                    "saf-relation-controller"
+                ],
+                "description": "Returns information about the requested relation.",
+                "operationId": "getRelation",
+                "parameters": [
+                    {
+                        "name": "rel",
+                        "in": "path",
+                        "description": "The relation name.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "id:relation-name"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Relation"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Relation"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The relation is not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Relation"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Relation"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/messages": {
+            "get": {
+                "tags": [
+                    "saf-message-controller"
+                ],
+                "description": "Returns the details of all defined messages.",
+                "operationId": "getMessages",
+                "responses": {
+                    "200": {
+                        "description": "Success.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessagesJsonModel"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/messages/{id}": {
+            "get": {
+                "tags": [
+                    "saf-message-controller"
+                ],
+                "description": "Returns the details of the message id.",
+                "operationId": "getMessage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The SI message number or key.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "SIZ1250E"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The SI message id type.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "KEY",
+                                "NUMBER"
+                            ]
+                        },
+                        "example": "KEY"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Requested relation is not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseMessageInformation"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/ids": {
+            "get": {
+                "tags": [
+                    "saf-id-controller"
+                ],
+                "summary": "Returns the User IDs defined within a group.",
+                "operationId": "getId",
+                "parameters": [
+                    {
+                        "name": "Message-Details",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "USER01"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "USER",
+                                "GROUP"
+                            ]
+                        },
+                        "example": "USER"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Request not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "301": {
+                        "description": "This resource may only be accessed in batch.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved the User ID information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadListSafIdResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/esm": {
+            "get": {
+                "tags": [
+                    "esm-product-controller"
+                ],
+                "summary": "Returns the active ESM product.",
+                "operationId": "getEsmProduct",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the ESM product name.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadEsmProductResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Request not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadEsmProductResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadEsmProductResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadEsmProductResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/saf/entities": {
+            "get": {
+                "tags": [
+                    "saf-entity-controller"
+                ],
+                "summary": "Returns information about an entity.",
+                "operationId": "entities",
+                "parameters": [
+                    {
+                        "name": "Message-Details",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    },
+                    {
+                        "name": "entityName",
+                        "in": "query",
+                        "description": "The entity name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "USER01.JCL"
+                    },
+                    {
+                        "name": "safClass",
+                        "in": "query",
+                        "description": "The entity class",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "DATASET"
+                            ]
+                        },
+                        "example": "DATASET"
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "The request can only be made in batch.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Request not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully retrieved the userIds that have access to the entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request format is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntityModelRestResponseSafPayloadSafEntityAccessResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BatchRequest": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "type": "string",
+                        "enum": [
+                            "GET",
+                            "HEAD",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "TRACE"
+                        ]
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Header"
+                        }
+                    },
+                    "batch": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RequestObject"
+                        }
+                    }
+                }
+            },
+            "Header": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RequestObject": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "relativeUrl": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "object"
+                    }
+                }
+            },
+            "BatchResponseSafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "type": "string",
+                        "enum": [
+                            "GET",
+                            "HEAD",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "TRACE"
+                        ]
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Header"
+                        }
+                    },
+                    "batch": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ResponseSafPayloadListSafIdResponse"
+                        }
+                    }
+                }
+            },
+            "EntityModelRestResponseSafPayloadBatchResponseSafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodySafPayloadBatchResponseSafPayloadListSafIdResponse"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "Link": {
+                "type": "object",
+                "properties": {
+                    "rel": {
+                        "type": "string"
+                    },
+                    "href": {
+                        "type": "string"
+                    },
+                    "hreflang": {
+                        "type": "string"
+                    },
+                    "media": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "deprecation": {
+                        "type": "string"
+                    },
+                    "profile": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageBodySafPayloadBatchResponseSafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/SafPayloadBatchResponseSafPayloadListSafIdResponse"
+                    }
+                }
+            },
+            "MessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageType": {
+                        "type": "string",
+                        "enum": [
+                            "ERROR",
+                            "WARNING",
+                            "DEBUG",
+                            "TRACE",
+                            "INFO"
+                        ]
+                    },
+                    "messageNumber": {
+                        "type": "string"
+                    },
+                    "messageContent": {
+                        "type": "string"
+                    },
+                    "messageReason": {
+                        "type": "string"
+                    },
+                    "messageAction": {
+                        "type": "string"
+                    },
+                    "messageKey": {
+                        "type": "string"
+                    },
+                    "messageInstanceId": {
+                        "type": "string"
+                    },
+                    "messageSource": {
+                        "type": "string"
+                    },
+                    "messageParameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ResponseSafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "code": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "body": {
+                        "$ref": "#/components/schemas/SafPayloadListSafIdResponse"
+                    }
+                }
+            },
+            "SafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "idName": {
+                        "type": "string"
+                    },
+                    "safIdType": {
+                        "$ref": "#/components/schemas/SafIdType"
+                    },
+                    "childIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "excludeIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "msg": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "SafIdType": {
+                "type": "object",
+                "properties": {
+                    "safType": {
+                        "type": "string",
+                        "enum": [
+                            "USER",
+                            "GROUP",
+                            "UNKNOWN"
+                        ]
+                    },
+                    "esmType": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SafPayloadBatchResponseSafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "safResponse": {
+                        "$ref": "#/components/schemas/BatchResponseSafPayloadListSafIdResponse"
+                    }
+                }
+            },
+            "SafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "safResponse": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SafIdResponse"
+                        }
+                    }
+                }
+            },
+            "BatchResponseSafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "type": "string",
+                        "enum": [
+                            "GET",
+                            "HEAD",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "TRACE"
+                        ]
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Header"
+                        }
+                    },
+                    "batch": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ResponseSafPayloadSafEntityAccessResponse"
+                        }
+                    }
+                }
+            },
+            "EntityModelRestResponseSafPayloadBatchResponseSafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodySafPayloadBatchResponseSafPayloadSafEntityAccessResponse"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "MessageBodySafPayloadBatchResponseSafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/SafPayloadBatchResponseSafPayloadSafEntityAccessResponse"
+                    }
+                }
+            },
+            "ResponseSafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "code": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "body": {
+                        "$ref": "#/components/schemas/SafPayloadSafEntityAccessResponse"
+                    }
+                }
+            },
+            "SafEntity": {
+                "type": "object",
+                "properties": {
+                    "entityName": {
+                        "type": "string"
+                    },
+                    "safClass": {
+                        "type": "string",
+                        "enum": [
+                            "DATASET",
+                            "UNKNOWN"
+                        ]
+                    }
+                }
+            },
+            "SafEntityAccess": {
+                "type": "object",
+                "properties": {
+                    "entity": {
+                        "$ref": "#/components/schemas/SafEntity"
+                    },
+                    "ids": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SafUserIdAccess"
+                        }
+                    },
+                    "msg": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "SafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "entities": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SafEntityAccess"
+                        }
+                    }
+                }
+            },
+            "SafPayloadBatchResponseSafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "safResponse": {
+                        "$ref": "#/components/schemas/BatchResponseSafPayloadSafEntityAccessResponse"
+                    }
+                }
+            },
+            "SafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "safResponse": {
+                        "$ref": "#/components/schemas/SafEntityAccessResponse"
+                    }
+                }
+            },
+            "SafUserIdAccess": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/SafIdType"
+                    },
+                    "access": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "Action": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "type": "string",
+                        "enum": [
+                            "GET",
+                            "HEAD",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "TRACE"
+                        ]
+                    },
+                    "requestSchema": {
+                        "$ref": "#/components/schemas/JsonNode"
+                    },
+                    "responseSchema": {
+                        "$ref": "#/components/schemas/JsonNode"
+                    }
+                }
+            },
+            "JsonNode": {
+                "type": "object"
+            },
+            "Relation": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "actions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Action"
+                        }
+                    }
+                }
+            },
+            "EntityModelRestResponseCollectionMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyCollectionMessageInformation"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "MessageBodyCollectionMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    }
+                }
+            },
+            "MessagesJsonModel": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "$ref": "#/components/schemas/EntityModelRestResponseCollectionMessageInformation"
+                    }
+                }
+            },
+            "EntityModelRestResponseMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodyMessageInformation"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "MessageBodyMessageInformation": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/MessageInformation"
+                    }
+                }
+            },
+            "EntityModelRestResponseSafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodySafPayloadListSafIdResponse"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "MessageBodySafPayloadListSafIdResponse": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/SafPayloadListSafIdResponse"
+                    }
+                }
+            },
+            "EntityModelRestResponseSafPayloadEsmProductResponse": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodySafPayloadEsmProductResponse"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "EsmProductResponse": {
+                "type": "object",
+                "properties": {
+                    "product": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageBodySafPayloadEsmProductResponse": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/SafPayloadEsmProductResponse"
+                    }
+                }
+            },
+            "SafPayloadEsmProductResponse": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "safResponse": {
+                        "$ref": "#/components/schemas/EsmProductResponse"
+                    }
+                }
+            },
+            "EntityModelRestResponseSafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "messageBody": {
+                        "$ref": "#/components/schemas/MessageBodySafPayloadSafEntityAccessResponse"
+                    },
+                    "messageInformation": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MessageInformation"
+                        }
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "MessageBodySafPayloadSafEntityAccessResponse": {
+                "type": "object",
+                "properties": {
+                    "payload": {
+                        "$ref": "#/components/schemas/SafPayloadSafEntityAccessResponse"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "description": "Zowe JWT token",
+                "name": "apimlAuthenticationToken",
+                "in": "cookie"
+            }
+        }
+    }
+}

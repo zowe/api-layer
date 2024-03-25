@@ -7,10 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import PropTypes from 'prop-types';
+import HeaderContainer from '../Header/HeaderContainer';
+import Footer from '../Footer/Footer';
+import './PageNotFound.css';
 
 export default class PageNotFound extends Component {
     handleGoToHome = () => {
@@ -19,31 +20,34 @@ export default class PageNotFound extends Component {
     };
 
     render() {
-        const iconBack = <ChevronLeftIcon />;
+        const backButtonText = '<< Back to Homepage';
         return (
-            <div>
+            <div className="page-not-found-container">
+                <HeaderContainer />
                 <br />
-                <Typography id="label" variant="h5">
-                    Page Not Found
+                <div>
+                    <div className="api-heading" />
+                    <h1 id="primary-label" className="api-heading">
+                        {' '}
+                        404 - Page Not Found{' '}
+                    </h1>
+                </div>
+                <Typography id="secondary-label" variant="h5">
+                    There's nothing way out here. Best to go back.
                 </Typography>
                 <div>
                     <IconButton
+                        className="button-cta"
                         id="go-back-button"
                         data-testid="go-home-button"
                         onClick={this.handleGoToHome}
                         size="medium"
                     >
-                        {iconBack}
-                        Go to Dashboard
+                        {backButtonText}
                     </IconButton>
                 </div>
+                <Footer />
             </div>
         );
     }
 }
-
-PageNotFound.propTypes = {
-    history: PropTypes.shape({
-        push: PropTypes.func.isRequired,
-    }).isRequired,
-};

@@ -1,0 +1,4775 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "The Representational State Transfer Application Programming Interface (RESTful API) for Mainframe Application Tuner.\r\n",
+        "title": "MAT REST API DOCUMENTATION"
+    },
+    "host": "https://developer.mainframe.broadcom.com",
+    "tags": [
+        {
+            "name": " ",
+            "description": "Over View Panel Controller"
+        },
+        {
+            "name": "Authentication",
+            "description": "Auth Controller"
+        },
+        {
+            "name": "CallerID Details",
+            "description": "Caller ID Controller"
+        },
+        {
+            "name": "CodeView Csect Mode",
+            "description": "Code View Controller"
+        },
+        {
+            "name": "CodeView Csect Mode Detail",
+            "description": "Code View Csect Detail Controller"
+        },
+        {
+            "name": "CodeView Module Mode",
+            "description": "Code View Module Controller"
+        },
+        {
+            "name": "CodeView Module Mode Detail",
+            "description": "Code View Module Detail Controller"
+        },
+        {
+            "name": "DB2 SQL Statement Details",
+            "description": "DB 2 SQL View Controller"
+        },
+        {
+            "name": "DB2View",
+            "description": "DB 2 View Controller"
+        },
+        {
+            "name": "Delay Location",
+            "description": "Delay View Location Controller"
+        },
+        {
+            "name": "DelayDetail",
+            "description": "Delay Detail Controller"
+        },
+        {
+            "name": "DelayView",
+            "description": "Delay View Controller"
+        },
+        {
+            "name": "Histogram",
+            "description": "Histogram Controller"
+        },
+        {
+            "name": "IDMS View Details",
+            "description": "IDMS Controller"
+        },
+        {
+            "name": "IMS DBDname VIEW",
+            "description": "IMSDBD Name Controller"
+        },
+        {
+            "name": "IMS PSB VIEW",
+            "description": "IMSPSB Controller"
+        },
+        {
+            "name": "IMS REGION VIEW",
+            "description": "IMS Region Controller"
+        },
+        {
+            "name": "IMS Statements",
+            "description": "IMS Statements Controller"
+        },
+        {
+            "name": "IMS VIEW",
+            "description": "IMS Controller"
+        },
+        {
+            "name": "Manage Monitor Profiles",
+            "description": "Profile Controller"
+        },
+        {
+            "name": "Monitor History",
+            "description": "Monitor History Controller"
+        },
+        {
+            "name": "Monitor List",
+            "description": "Monitor List Controller"
+        },
+        {
+            "name": "Monitor Profiles List",
+            "description": " "
+        },
+        {
+            "name": "Overview",
+            "description": "Over View Controller"
+        },
+        {
+            "name": "TranView Call Stack",
+            "description": "Tran View Call Stack Controller"
+        },
+        {
+            "name": "TranView Caller ID",
+            "description": "Tran View Caller ID Controller"
+        },
+        {
+            "name": "TranView Details",
+            "description": "Tran View Controller"
+        },
+        {
+            "name": "TranView Line Commands",
+            "description": "Tran View Line Command Controller"
+        }
+    ],
+    "paths": {
+        "/matapi/api/v2/analysis/codeview/callerid/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "CallerID Details"
+                ],
+                "summary": "Get the CallerID details",
+                "description": "Use this call to get the CallerID details for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "callerIDUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "csect",
+                        "in": "path",
+                        "description": "The name of the CSECT that you request the CallerID details for. You get the \"csect\" value from the CodeView CSECT Mode call response. The CSECT name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "module",
+                        "in": "path",
+                        "description": "The name of the module that you request the CallerID details for. You get the \"module\" value from the CodeView CSECT Mode or from the CodeView Module Mode call response. The module name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Callerid"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/callerid/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "CallerID Details"
+                ],
+                "summary": "Get the CallerID details",
+                "description": "Use this call to get the CallerID details for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "callerIDUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "csect",
+                        "in": "path",
+                        "description": "The name of the CSECT that you request the CallerID details for. You get the \"csect\" value from the CodeView CSECT Mode call response. The CSECT name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "module",
+                        "in": "path",
+                        "description": "The name of the module that you request the CallerID details for. You get the \"module\" value from the CodeView CSECT Mode or from the CodeView Module Mode call response. The module name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Callerid"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/csect/detail/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "CodeView Csect Mode Detail"
+                ],
+                "summary": "Get CodeView data detail",
+                "description": "Use this call to get the CodeView analysis data in the Csect mode for the specific measurement and transaction",
+                "operationId": "codeviewcsectdetailUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CodeView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/csect/detail/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "CodeView Csect Mode Detail"
+                ],
+                "summary": "Get CodeView data detail",
+                "description": "Use this call to get the CodeView analysis data in the Csect mode for the specific measurement and transaction",
+                "operationId": "codeviewcsectdetailUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CodeView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/csect/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "CodeView Csect Mode"
+                ],
+                "summary": "Get CodeView data in Csect mode",
+                "description": "Use this call to get the CodeView analysis data in the Csect mode for the specific measurement",
+                "operationId": "codeviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CodeView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/csect/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "CodeView Csect Mode"
+                ],
+                "summary": "Get CodeView data in Csect mode",
+                "description": "Use this call to get the CodeView analysis data in the Csect mode for the specific measurement",
+                "operationId": "codeviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CodeView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/histogram/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "Histogram"
+                ],
+                "summary": "Get Histogram data",
+                "description": "Use this call to get the Histogram analysis data for the specific measurement. If the source program listing is not registered with MAT, this call returns the CSECT activity locations on the offsets level, with the group size value of 4 bytes. If the source program listing is registered with MAT, this call returns the CSECT activity locations on the statement level and specifies the verb associated with the statement number. If you register a listing using Endevor\u00ae footprints,you can also retrieve the specific Endevor\u00ae listing details. The example in the responses section below shows the model with offsets. For a complete description of all response models, refer to the REST API Histogram article in the documentation.",
+                "operationId": "histogramUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "csect",
+                        "in": "path",
+                        "description": "The name of the CSECT that you request the Histogram data for. You get the \"csect\" value from the CodeView CSECT Mode call response. The CSECT name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Specifies the histogram group size parameter that defines the resolution of the histogram. If you do not specify the group parameter, the group size defaults to 4 bytes. If program listing is registered with MAT, the group parameter is ignored.Values: numbers between 2 and 999999",
+                        "required": true,
+                        "type": "integer",
+                        "default": 4,
+                        "format": "int32"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "path",
+                        "description": "Enables the listing retrieval option through Endevor\u00ae footprints",
+                        "required": true,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "module",
+                        "in": "path",
+                        "description": "The name of the module that you request the Histogram data for. You get the \"module\" value from the CodeView CSECT Mode call response. The module name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "path",
+                        "description": "Monitor number",
+                        "required": true,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "Monitor profile name",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "top",
+                        "in": "path",
+                        "description": "The maximum number of the top consuming CSECT activity locations that you want to obtain in the response. If you specify 0, you get the list of all CSECT activity locations that MAT has detected during the measurement. Values: numbers between 0 and 300",
+                        "required": true,
+                        "type": "integer",
+                        "default": 0,
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Histogram"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/histogram/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "Histogram"
+                ],
+                "summary": "Get Histogram data",
+                "description": "Use this call to get the Histogram analysis data for the specific measurement. If the source program listing is not registered with MAT, this call returns the CSECT activity locations on the offsets level, with the group size value of 4 bytes. If the source program listing is registered with MAT, this call returns the CSECT activity locations on the statement level and specifies the verb associated with the statement number. If you register a listing using Endevor\u00ae footprints,you can also retrieve the specific Endevor\u00ae listing details. The example in the responses section below shows the model with offsets. For a complete description of all response models, refer to the REST API Histogram article in the documentation.",
+                "operationId": "histogramUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "csect",
+                        "in": "path",
+                        "description": "The name of the CSECT that you request the Histogram data for. You get the \"csect\" value from the CodeView CSECT Mode call response. The CSECT name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Specifies the histogram group size parameter that defines the resolution of the histogram. If you do not specify the group parameter, the group size defaults to 4 bytes. If program listing is registered with MAT, the group parameter is ignored.Values: numbers between 2 and 999999",
+                        "required": true,
+                        "type": "integer",
+                        "default": 4,
+                        "format": "int32"
+                    },
+                    {
+                        "name": "listing",
+                        "in": "path",
+                        "description": "Enables the listing retrieval option through Endevor\u00ae footprints",
+                        "required": true,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "module",
+                        "in": "path",
+                        "description": "The name of the module that you request the Histogram data for. You get the \"module\" value from the CodeView CSECT Mode call response. The module name can be empty",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "path",
+                        "description": "Monitor number",
+                        "required": true,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "Monitor profile name",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "top",
+                        "in": "path",
+                        "description": "The maximum number of the top consuming CSECT activity locations that you want to obtain in the response. If you specify 0, you get the list of all CSECT activity locations that MAT has detected during the measurement. Values: numbers between 0 and 300",
+                        "required": true,
+                        "type": "integer",
+                        "default": 0,
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Histogram"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/module/detail/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "CodeView Module Mode Detail"
+                ],
+                "summary": "Get CodeView data detail",
+                "description": "Use this call to get the CodeView analysis data in the module mode for the specific measurement and transaction",
+                "operationId": "codeviewmoduledetailUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CodeView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/module/detail/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "CodeView Module Mode Detail"
+                ],
+                "summary": "Get CodeView data detail",
+                "description": "Use this call to get the CodeView analysis data in the module mode for the specific measurement and transaction",
+                "operationId": "codeviewmoduledetailUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CodeView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/module/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "CodeView Module Mode"
+                ],
+                "summary": "Get CodeView data in Module mode",
+                "description": "Use this call to get the CodeView analysis data in the Module mode for the specific measurement",
+                "operationId": "codeViewModuleUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/ModuleView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/codeview/module/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "CodeView Module Mode"
+                ],
+                "summary": "Get CodeView data in Module mode",
+                "description": "Use this call to get the CodeView analysis data in the Module mode for the specific measurement",
+                "operationId": "codeViewModuleUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/ModuleView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/db2/db2view/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "DB2View"
+                ],
+                "summary": "Get DB2View data",
+                "description": "Use this call to get the DB2View analysis data for the specific measurement",
+                "operationId": "db2viewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "top",
+                        "in": "path",
+                        "description": "The maximum number of the top consuming DB2 statements that you want to obtain in the response. If you specify 0, you get the list of all DB2 statements that MAT has detected during the measurement. Values: numbers between 0 and 300",
+                        "required": true,
+                        "type": "integer",
+                        "default": 0,
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DB2Base"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/db2/db2view/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "DB2View"
+                ],
+                "summary": "Get DB2View data",
+                "description": "Use this call to get the DB2View analysis data for the specific measurement",
+                "operationId": "db2viewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "top",
+                        "in": "path",
+                        "description": "The maximum number of the top consuming DB2 statements that you want to obtain in the response. If you specify 0, you get the list of all DB2 statements that MAT has detected during the measurement. Values: numbers between 0 and 300",
+                        "required": true,
+                        "type": "integer",
+                        "default": 0,
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DB2Base"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/db2/sqlstmt/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "DB2 SQL Statement Details"
+                ],
+                "summary": "Get DB2 SQL statement details",
+                "description": "Use this call to get the details of a selected DB2 SQL statement for the specific measurement",
+                "operationId": "db2SQLviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "dbrm",
+                        "in": "path",
+                        "description": "The name of the package (DBRM) that the requested DB2 statement belongs to. You get the \"dbrm\" value from the DB2View call response",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "stmtnum",
+                        "in": "path",
+                        "description": "The number of the unique SQL statement that you request the details for. You get the \"stmt_num\" value from the DB2View call response",
+                        "required": true,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 0,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "totalsamps",
+                        "in": "path",
+                        "description": "The total number of samples taken for the requested statement. You get the \"total_samps\" value from the DB2View call response",
+                        "required": true,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 0,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DB2SQL"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/db2/sqlstmt/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "DB2 SQL Statement Details"
+                ],
+                "summary": "Get DB2 SQL statement details",
+                "description": "Use this call to get the details of a selected DB2 SQL statement for the specific measurement",
+                "operationId": "db2SQLviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "dbrm",
+                        "in": "path",
+                        "description": "The name of the package (DBRM) that the requested DB2 statement belongs to. You get the \"dbrm\" value from the DB2View call response",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "stmtnum",
+                        "in": "path",
+                        "description": "The number of the unique SQL statement that you request the details for. You get the \"stmt_num\" value from the DB2View call response",
+                        "required": true,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 0,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "totalsamps",
+                        "in": "path",
+                        "description": "The total number of samples taken for the requested statement. You get the \"total_samps\" value from the DB2View call response",
+                        "required": true,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 0,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DB2SQL"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/delayview/detail/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "DelayDetail"
+                ],
+                "summary": "Get DelayView detail data",
+                "description": "Use this call to get the DelayView detail analysis data for the specific measurement",
+                "operationId": "delayviewdetailUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DelayView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/delayview/detail/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "DelayDetail"
+                ],
+                "summary": "Get DelayView detail data",
+                "description": "Use this call to get the DelayView detail analysis data for the specific measurement",
+                "operationId": "delayviewdetailUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DelayView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/delayview/location/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "Delay Location"
+                ],
+                "summary": "Get Delay Location data",
+                "description": "Use this call to get the DelayView Locations analysis data for the selected delay categories of the specific measurement",
+                "operationId": "delaylocationsUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "majorcategory",
+                        "in": "path",
+                        "description": "The major delay category name identified for the analysis item. You get the \"majorcategory\" value from the DelayView call response.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "minorcategory",
+                        "in": "path",
+                        "description": "The minor delay category name identified for the analysis item. You get the \"minorcategory\" value from the DelayView call response.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DelayLocation"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/delayview/location/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "Delay Location"
+                ],
+                "summary": "Get Delay Location data",
+                "description": "Use this call to get the DelayView Locations analysis data for the selected delay categories of the specific measurement",
+                "operationId": "delaylocationsUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "majorcategory",
+                        "in": "path",
+                        "description": "The major delay category name identified for the analysis item. You get the \"majorcategory\" value from the DelayView call response.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "minorcategory",
+                        "in": "path",
+                        "description": "The minor delay category name identified for the analysis item. You get the \"minorcategory\" value from the DelayView call response.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DelayLocation"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/delayview/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "DelayView"
+                ],
+                "summary": "Get DelayView data",
+                "description": "Use this call to get the DelayView analysis data for the specific measurement",
+                "operationId": "delayviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DelayView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/delayview/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "DelayView"
+                ],
+                "summary": "Get DelayView data",
+                "description": "Use this call to get the DelayView analysis data for the specific measurement",
+                "operationId": "delayviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DelayView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/idmsview/{pcommand}/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IDMS View Details"
+                ],
+                "summary": "Get the IDMS details",
+                "description": "Use this call to get the IDMS details for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "getIDMSViewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "lineCMD",
+                        "in": "query",
+                        "description": "lineCMD",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "module",
+                        "in": "query",
+                        "description": "module",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "offset",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "pcommand",
+                        "in": "path",
+                        "description": "pcommand",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "rid",
+                        "in": "query",
+                        "description": "rid",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "taskcode",
+                        "in": "query",
+                        "description": "taskcode",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "taskid",
+                        "in": "query",
+                        "description": "taskid",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IdmsPCModule"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/idmsview/{pcommand}/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IDMS View Details"
+                ],
+                "summary": "Get the IDMS details",
+                "description": "Use this call to get the IDMS details for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "getIDMSViewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "lineCMD",
+                        "in": "query",
+                        "description": "lineCMD",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "module",
+                        "in": "query",
+                        "description": "module",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "offset",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "pcommand",
+                        "in": "path",
+                        "description": "pcommand",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "rid",
+                        "in": "query",
+                        "description": "rid",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "taskcode",
+                        "in": "query",
+                        "description": "taskcode",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "taskid",
+                        "in": "query",
+                        "description": "taskid",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IdmsPCModule"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/dbdname/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IMS DBDname VIEW"
+                ],
+                "summary": "Get IMSVIEW DBDname command data ",
+                "description": "Use this call to get the IMSVIEW DBDname command analysis data for the specific measurement",
+                "operationId": "imsDBDnameCommandUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSDBDname"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/dbdname/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IMS DBDname VIEW"
+                ],
+                "summary": "Get IMSVIEW DBDname command data ",
+                "description": "Use this call to get the IMSVIEW DBDname command analysis data for the specific measurement",
+                "operationId": "imsDBDnameCommandUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSDBDname"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IMS VIEW"
+                ],
+                "summary": "Get IMSVIEW data ",
+                "description": "Use this call to get the IMSVIEW analysis data for the specific measurement",
+                "operationId": "imsviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IMS VIEW"
+                ],
+                "summary": "Get IMSVIEW data ",
+                "description": "Use this call to get the IMSVIEW analysis data for the specific measurement",
+                "operationId": "imsviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSView"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/psbname/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IMS PSB VIEW"
+                ],
+                "summary": "Get IMS PSBName VIEW data ",
+                "description": "Use this call to get the IMS PSBName VIEW analysis data for the specific measurement",
+                "operationId": "psbviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/PSBName"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/psbname/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IMS PSB VIEW"
+                ],
+                "summary": "Get IMS PSBName VIEW data ",
+                "description": "Use this call to get the IMS PSBName VIEW analysis data for the specific measurement",
+                "operationId": "psbviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/PSBName"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/psbname/ssa/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IMS VIEW"
+                ],
+                "summary": "Get IMSVIEW data ",
+                "description": "Use this call to get the IMSSSAVIEW analysis data for the specific measurement",
+                "operationId": "imsviewssaUsingGET_2",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "call",
+                        "in": "query",
+                        "description": "call",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dbdname",
+                        "in": "query",
+                        "description": "dbdname",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "psbname",
+                        "in": "query",
+                        "description": "psbname",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSViewSSA"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/psbname/ssa/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IMS VIEW"
+                ],
+                "summary": "Get IMSVIEW data ",
+                "description": "Use this call to get the IMSSSAVIEW analysis data for the specific measurement",
+                "operationId": "imsviewssaUsingGET_3",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "call",
+                        "in": "query",
+                        "description": "call",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dbdname",
+                        "in": "query",
+                        "description": "dbdname",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "psbname",
+                        "in": "query",
+                        "description": "psbname",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSViewSSA"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/region/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IMS REGION VIEW"
+                ],
+                "summary": "Get IMSREGIONVIEW data ",
+                "description": "Use this call to get the IMSREGIONVIEW analysis data for the specific measurement",
+                "operationId": "imsviewssaUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSViewRegion"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/region/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IMS REGION VIEW"
+                ],
+                "summary": "Get IMSREGIONVIEW data ",
+                "description": "Use this call to get the IMSREGIONVIEW analysis data for the specific measurement",
+                "operationId": "imsviewssaUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSViewRegion"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/statements/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "IMS Statements"
+                ],
+                "summary": "Get IMS STATEMENTS VIEW data ",
+                "description": "Use this call to get the IMS STATEMENTS VIEW analysis data for the specific measurement",
+                "operationId": "statementsviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "trancode",
+                        "in": "query",
+                        "description": "trancode",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSStatement"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/imsview/statements/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "IMS Statements"
+                ],
+                "summary": "Get IMS STATEMENTS VIEW data ",
+                "description": "Use this call to get the IMS STATEMENTS VIEW analysis data for the specific measurement",
+                "operationId": "statementsviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "trancode",
+                        "in": "query",
+                        "description": "trancode",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/IMSStatement"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/overview/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "Overview"
+                ],
+                "summary": "Get OverView data",
+                "description": "Use this call to get the OverView analysis data for the specific measurement.",
+                "operationId": "overViewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Tunmeta"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/overview/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "Overview"
+                ],
+                "summary": "Get OverView data",
+                "description": "Use this call to get the OverView analysis data for the specific measurement.",
+                "operationId": "overViewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Tunmeta"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/callerid/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "TranView Caller ID"
+                ],
+                "summary": "Get the TranView Caller id details",
+                "description": "Use this call to get the details of caller id for the specific measurement / transaction USING PROFILE OR MONITOR ",
+                "operationId": "callerIdUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/TranViewCallerID"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/callerid/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "TranView Caller ID"
+                ],
+                "summary": "Get the TranView Caller id details",
+                "description": "Use this call to get the details of caller id for the specific measurement / transaction USING PROFILE OR MONITOR ",
+                "operationId": "callerIdUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/TranViewCallerID"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/callstack/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "TranView Call Stack"
+                ],
+                "summary": "Get the TranView line command CS details",
+                "description": "Use this call to get the details of CICS and IMS transactions activity for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "callStackUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CallStack"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/callstack/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "TranView Call Stack"
+                ],
+                "summary": "Get the TranView line command CS details",
+                "description": "Use this call to get the details of CICS and IMS transactions activity for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "callStackUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/CallStack"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "TranView Details"
+                ],
+                "summary": "Get the TranView details",
+                "description": "Use this call to get the details of CICS and IMS transactions activity for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "tranviewUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Tranview"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "TranView Details"
+                ],
+                "summary": "Get the TranView details",
+                "description": "Use this call to get the details of CICS and IMS transactions activity for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "tranviewUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/Tranview"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/stat/monitor/{monnum}": {
+            "get": {
+                "tags": [
+                    "TranView Line Commands"
+                ],
+                "summary": "Get the TranView line command S details",
+                "description": "Use this call to get the details of CICS and IMS transactions activity for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "lineCommandSUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "type",
+                        "required": false,
+                        "type": "string",
+                        "default": "DISP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DISP"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/analysis/tranview/stat/profile/{profile}": {
+            "get": {
+                "tags": [
+                    "TranView Line Commands"
+                ],
+                "summary": "Get the TranView line command S details",
+                "description": "Use this call to get the details of CICS and IMS transactions activity for the specific measurement USING PROFILE OR MONITOR ",
+                "operationId": "lineCommandSUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "monnum",
+                        "in": "query",
+                        "description": "Monitor number",
+                        "required": false,
+                        "type": "integer",
+                        "maximum": 999999999,
+                        "exclusiveMaximum": false,
+                        "minimum": 1,
+                        "exclusiveMinimum": false,
+                        "format": "int64"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "query",
+                        "description": "Monitor profile name",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tran",
+                        "in": "query",
+                        "description": "tran",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "type",
+                        "required": false,
+                        "type": "string",
+                        "default": "DISP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/DISP"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/auth": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authentication for Rest API",
+                "description": "Use this call to get an authentication token for the current session using your mainframe credentials.",
+                "operationId": "loginUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Your mainframe username and password",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully authenticated, token generated",
+                        "schema": {
+                            "$ref": "#/definitions/ResponseAuth"
+                        }
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/history/profile/{profilename}": {
+            "get": {
+                "tags": [
+                    "Monitor History"
+                ],
+                "summary": "Get Monitor History for a Profile",
+                "description": "Use this call to get the list of all available measurements that are stored in the history of the specific monitor profile.",
+                "operationId": "getMonitroHistoryUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "profilename",
+                        "in": "path",
+                        "description": "The profile name",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/MonitorHistory"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/monitors": {
+            "get": {
+                "tags": [
+                    "Monitor List"
+                ],
+                "summary": "Get the List of Available Monitors",
+                "description": "Use this call to get the list of all available measurements that are currently stored in the MAT database.",
+                "operationId": "getMonitorListUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/MonitorList"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/profiles": {
+            "get": {
+                "tags": [
+                    "Monitor Profiles List"
+                ],
+                "summary": "Get the List of Monitor Profiles",
+                "description": "Use this call to get the list of all available monitor profiles that are stored in MAT Global Information File.",
+                "operationId": "monitorsListUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/ProfileList"
+                        }
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        },
+        "/matapi/api/v2/profiles/{profile}": {
+            "post": {
+                "tags": [
+                    "Manage Monitor Profiles"
+                ],
+                "summary": "Create and Invoke Monitors",
+                "description": "You can use this API call to create and invoke monitor profiles. Use the \"create\" or \"invoke\" values for the \"action\" parameter in the request body to trigger the respective action. With the \"invoke\" action, you can use the optional \"listing\" URL parameter that enables the automated listing retrieval and registration through Endevor\u00ae footprints. For a complete description of all request models and parameters, refer to the REST API Manage Monitor Profiles section in the documentation.",
+                "operationId": "postProfileUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "listing",
+                        "in": "path",
+                        "description": "Enables the automated listing registration through Endevor footprints",
+                        "required": true,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "The profile name that you want to create or invoke. The profile name can contain 1 to 8 characters, a combination of alphanumeric and national characters (A-Z, 0-9, and @), the first character must be an alphabetic or @. The profile name must not contain characters # and $.",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/ResponseProfile"
+                        }
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "You are not authorized to view the resource"
+                    },
+                    "403": {
+                        "description": "Access to the requested resource is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested resource is not found"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "CallStack": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "count"
+                },
+                "elapsed": {
+                    "type": "number",
+                    "format": "double",
+                    "description": "elapsed time"
+                },
+                "elapsedAvg": {
+                    "type": "number",
+                    "format": "double",
+                    "description": "average elapsed time"
+                },
+                "module": {
+                    "type": "string",
+                    "description": "module"
+                },
+                "seq": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "seq"
+                }
+            },
+            "title": "CallStack",
+            "description": "CallStack details."
+        },
+        "Callerid": {
+            "type": "object",
+            "properties": {
+                "csect": {
+                    "type": "string",
+                    "example": "TUNCOB01",
+                    "description": "The CSECT name of the calling program"
+                },
+                "csectdescription": {
+                    "type": "string",
+                    "example": "COBOL test program distributed with MAT",
+                    "description": "Description of the calling CSECT"
+                },
+                "module": {
+                    "type": "string",
+                    "example": "TUNCOB",
+                    "description": "The module name that contains the CSECT of the calling program"
+                },
+                "offset": {
+                    "type": "string",
+                    "example": "0000006EE0",
+                    "description": "Hexadecimal offset from the start of the CSECT of the calling program"
+                },
+                "pct": {
+                    "type": "string",
+                    "example": 22.57,
+                    "description": "Percentage of the monitored period when the program was calling the CSECT"
+                },
+                "stmt": {
+                    "type": "string",
+                    "example": 161,
+                    "description": "The statement number"
+                }
+            },
+            "title": "Callerid",
+            "description": "The CallerID details. "
+        },
+        "CodeView": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "string",
+                    "example": 25.31,
+                    "description": "Percentage of the monitored period when the CSECT was using CPU"
+                },
+                "c": {
+                    "type": "string",
+                    "example": "Y",
+                    "description": "Availability of the CallerID information (Y or blank)"
+                },
+                "csect": {
+                    "type": "string",
+                    "example": ".COMMON",
+                    "description": "The CSECT name"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "In common space",
+                    "description": "Module description"
+                },
+                "l": {
+                    "type": "string",
+                    "example": "A",
+                    "description": "Location of the module in virtual memory (A, B, G, or blank)"
+                },
+                "module": {
+                    "type": "string",
+                    "example": ".COMMON",
+                    "description": "The name of program module"
+                },
+                "overLap": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Percentage of the monitored period when both the CPU was active and file access was occurring"
+                },
+                "total": {
+                    "type": "string",
+                    "example": 31.42,
+                    "description": "The total of Active and Wait times for the CSECT"
+                },
+                "wait": {
+                    "type": "string",
+                    "example": 6.11,
+                    "description": "Percentage of the monitored period when the CSECT was not using CPU"
+                },
+                "x": {
+                    "type": "string",
+                    "example": "Y",
+                    "description": "Availability of the Extended CallerID information (Y or blank)"
+                }
+            },
+            "title": "CodeView",
+            "description": "The CodeView measurement details in Csect Mode. "
+        },
+        "DB2Base": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 4.51,
+                    "description": "Percentage of the monitored period when CPU usage was detected for this statement"
+                },
+                "averageresptime": {
+                    "type": "number",
+                    "example": 0.000298,
+                    "description": "The the average response time (in seconds) for the SQL statement to be completed"
+                },
+                "callcount": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1,
+                    "description": "The number of times during the monitoring session that MAT detected this SQL statement being called from the target address space"
+                },
+                "cpupcall": {
+                    "type": "number",
+                    "example": 0.000278,
+                    "description": "The amount of CPU time (in seconds) needed by DB2 to process each DB2 call for this SQL statement"
+                },
+                "datafrom": {
+                    "type": "string",
+                    "example": "D",
+                    "description": "The method used to collect the SQL data: H (DB2 Harvester), S (DB2 sampling), or B (both)"
+                },
+                "dbrm": {
+                    "type": "string",
+                    "example": "CUPBTSDY",
+                    "description": "The name of a package (DBRM) that describes the SQL statement"
+                },
+                "declarestmt": {
+                    "type": "string",
+                    "example": "NA",
+                    "description": "The statement number of the DECLARE that is associated with the statement, or NA if no DECLARE is associated with the statement"
+                },
+                "ds": {
+                    "type": "string",
+                    "example": "D",
+                    "description": "The type of SQL being executed: D (Dynamic) or S (Static)"
+                },
+                "length": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 32,
+                    "description": "The length of the SQL statement"
+                },
+                "stmtnum": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 375,
+                    "description": "The number of the unique SQL statement"
+                },
+                "total": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 6.44,
+                    "description": "The total of Active and Wait times for this statement"
+                },
+                "totalcpu": {
+                    "type": "number",
+                    "example": 0.000278,
+                    "description": "The total amount of CPU time (in seconds) needed by DB2 to process all DB2 calls for this SQL statement"
+                },
+                "totalresptime": {
+                    "type": "number",
+                    "example": 0.000298,
+                    "description": "The total time (in seconds) for the SQL statement to be completed"
+                },
+                "totalsamps": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 3,
+                    "description": "The total number of taken samples"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "EXECUTE",
+                    "description": "The type of operation that is being performed with the statement"
+                },
+                "wait": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 1.92,
+                    "description": "Percentage of the monitored period when the program was in a wait state for this statement"
+                }
+            },
+            "title": "DB2Base"
+        },
+        "DB2SQL": {
+            "type": "object",
+            "properties": {
+                "dbrm": {
+                    "type": "string",
+                    "example": "CUPBTSDY",
+                    "description": "The name of the package (DBRM) that the SQL statement belongs to"
+                },
+                "sqltext": {
+                    "type": "string",
+                    "example": "SELECT ENTRY, CUSTOMER, DOW, CUPS, TYPE, UPDIND FROM CUPOFJOE4DATA FORUPDATE",
+                    "description": "SQL text for the statement"
+                },
+                "stmtnum": {
+                    "type": "string",
+                    "example": 375,
+                    "description": "The number of the requested SQL statement"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "EXECUTE",
+                    "description": "The type of operation that is being performed with the statement"
+                }
+            },
+            "title": "DB2SQL"
+        },
+        "DISP": {
+            "type": "object",
+            "properties": {
+                "trnabnd": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Abend count"
+                },
+                "trncmdly": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Change mode delay time"
+                },
+                "trndist": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "User dispatch time"
+                },
+                "trndscnt": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Transaction count"
+                },
+                "trndsmwt": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "TCB mismatch wait time"
+                },
+                "trndsthw": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "HWM TCBs"
+                },
+                "trndwt": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Waiting for dispatch time"
+                },
+                "trnfddly": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "1st dispatch delay time"
+                },
+                "trnfdmxt": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "1st dispatch delay MAXTASK"
+                },
+                "trnfdtcl": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "1st dispatch delay TCLASS"
+                },
+                "trngvpwt": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Give up control wait time"
+                },
+                "trnj8cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "J8 CPU time"
+                },
+                "trnj9cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "J9 CPU time"
+                },
+                "trnky8cp": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Key 8 CPU time"
+                },
+                "trnky8ds": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Key 8 dispatch time"
+                },
+                "trnky9cp": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Key 9 CPU time"
+                },
+                "trnky9ds": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Key 9 dispatch time"
+                },
+                "trnl8cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "L8 CPU time"
+                },
+                "trnl9cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "L9 CPU time"
+                },
+                "trnmscpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "MS CPU time"
+                },
+                "trnmsdsp": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "MS dispatch time"
+                },
+                "trnotdly": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Max Open TCB delay time"
+                },
+                "trnqrcpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "QR CPU time"
+                },
+                "trnqrdly": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "QR mode delay time"
+                },
+                "trnqrdsp": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "QR dispatch time"
+                },
+                "trnrocpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "RO CPU time"
+                },
+                "trnrodsp": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "RO dispatch time"
+                },
+                "trns8cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "S8 CPU time"
+                },
+                "trnsust": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Suspend time"
+                },
+                "trntcbac": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "TCB attaches"
+                },
+                "trnx8cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "X8 CPU time"
+                },
+                "trnx9cpu": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "X9 CPU time"
+                },
+                "trnxtdly": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Max XPLINK TCB delay time>"
+                }
+            },
+            "title": "DISP",
+            "description": "The TranView details for DISP. "
+        },
+        "DelayLocation": {
+            "type": "object",
+            "properties": {
+                "c": {
+                    "type": "string",
+                    "example": "Y",
+                    "description": "Availability of the CallerID information (Y or blank)"
+                },
+                "csect": {
+                    "type": "string",
+                    "example": ".COMMON",
+                    "description": "The module Csect name"
+                },
+                "csectdescription": {
+                    "type": "string",
+                    "example": "CSECT Desc",
+                    "description": "Description of the CSECT (if available)"
+                },
+                "d": {
+                    "type": "string",
+                    "example": "Y",
+                    "description": "Availability of additional details about the module (Y or blank)"
+                },
+                "module": {
+                    "type": "string",
+                    "example": ".COMMON",
+                    "description": "The name of program module"
+                },
+                "offset": {
+                    "type": "string",
+                    "example": "00B50C92",
+                    "description": "Hexadecimal offset within the Csect, or the module (if Csect name is not known)"
+                },
+                "pct": {
+                    "type": "string",
+                    "example": 2.01,
+                    "description": "Percentage of the monitored period that a delay for this offset is detected"
+                },
+                "stmt": {
+                    "type": "string",
+                    "example": 148,
+                    "description": "Number of the high-level language statement (returns only if the program listing was registered)"
+                },
+                "x": {
+                    "type": "string",
+                    "example": "Y",
+                    "description": "Availability of the Extended CallerID information (Y or blank)"
+                }
+            },
+            "title": "DelayLocation",
+            "description": "The DelayView Locations details for the measurement. "
+        },
+        "DelayView": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "string",
+                    "example": 12.04,
+                    "description": "Percentage of the monitored period when CPU usage was detected for this delay category"
+                },
+                "majorCategory": {
+                    "type": "string",
+                    "example": "Data Delay",
+                    "description": "The name of the major delay category"
+                },
+                "minorCategory": {
+                    "type": "string",
+                    "example": "Excpvr SVC",
+                    "description": "The name of the minor delay category"
+                },
+                "total": {
+                    "type": "string",
+                    "example": 12.34,
+                    "description": "The total of Active and Wait times for this delay category"
+                },
+                "wait": {
+                    "type": "string"
+                }
+            },
+            "title": "DelayView",
+            "description": "The DelayView measurement details. "
+        },
+        "Histogram": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "string",
+                    "example": 25.31,
+                    "description": "Percentage of the monitored period when the CSECT was using CPU"
+                },
+                "csect": {
+                    "type": "string",
+                    "example": "TUNCOB01",
+                    "description": "The CSECT name"
+                },
+                "offset": {
+                    "type": "string",
+                    "example": "0000006EE0",
+                    "description": "Hexadecimal offset of the CSECT activity"
+                },
+                "total": {
+                    "type": "string",
+                    "example": 31.42,
+                    "description": "The total of Active and Wait times for the CSECT"
+                },
+                "wait": {
+                    "type": "string",
+                    "example": 6.11,
+                    "description": "Percentage of the monitored period when the CSECT was not using CPU"
+                }
+            },
+            "title": "Histogram",
+            "description": "The Histogram analysis details. "
+        },
+        "IMSDBDname": {
+            "type": "object",
+            "properties": {
+                "actv": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.06,
+                    "description": "Active CPU usage"
+                },
+                "dbdname": {
+                    "type": "string"
+                },
+                "totl": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 79.01,
+                    "description": "Total CPU usage"
+                },
+                "wait": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 78.96,
+                    "description": "Wait CPU usage"
+                }
+            },
+            "title": "IMSDBDname",
+            "description": "The IMS DBDname measurement details. "
+        },
+        "IMSStatement": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.06,
+                    "description": "Displays the percentage of the monitored period that the processing of an IMS statement used CPU"
+                },
+                "call": {
+                    "type": "string",
+                    "example": "GU",
+                    "description": "Displays the type of call the application issued with the associated IMS statement"
+                },
+                "dbdname": {
+                    "type": "string",
+                    "example": "IVPDB1",
+                    "description": "Displays the name of the IMS database"
+                },
+                "popts": {
+                    "type": "string",
+                    "description": "Displays the processing options generated in the PCB during the PSBGEN"
+                },
+                "psbname": {
+                    "type": "string",
+                    "example": "TFSIVP1",
+                    "description": "Displays the name of the PSB generated to support this application"
+                },
+                "psbno": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 1,
+                    "description": "Displays the relative offset of this PCB from the start of the PSB"
+                },
+                "segment": {
+                    "type": "string",
+                    "example": "A1111111",
+                    "description": "Displays the name of a segment within the IMS database"
+                },
+                "total": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 79.09,
+                    "description": "The sum of both the Actv% and the Wait% columns"
+                },
+                "wait": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 78.96,
+                    "description": "Displays the percentage of the monitored period that the program waited for IMS data to be returned"
+                }
+            },
+            "title": "IMSStatement",
+            "description": "IMS Statements - Line Command S."
+        },
+        "IMSView": {
+            "type": "object",
+            "properties": {
+                "averageCPU": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.000757,
+                    "description": "The total of Active and Wait times for the CSECT"
+                },
+                "averageElapsedTime": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.002016,
+                    "description": "Average Elapsed Time"
+                },
+                "callInterface": {
+                    "type": "string",
+                    "example": "ASM",
+                    "description": "DL/I Call Interface  "
+                },
+                "cpuTime": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.090121,
+                    "description": "Percentage of the monitored period when the CSECT was using CPU"
+                },
+                "pgmName": {
+                    "type": "string",
+                    "example": "DFSIVP1",
+                    "description": "The PGM  name"
+                },
+                "totalElapsedTime": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.241472,
+                    "description": "Total Elapsed Time"
+                },
+                "trancode": {
+                    "type": "string",
+                    "example": "IVTNO",
+                    "description": "The name of transaction code"
+                },
+                "trancount": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 119,
+                    "description": "Transaction count"
+                }
+            },
+            "title": "IMSView",
+            "description": "The IMS measurement details."
+        },
+        "IMSViewRegion": {
+            "type": "object",
+            "properties": {
+                "averageElapsed": {
+                    "type": "string",
+                    "example": "00:01:11.350677",
+                    "description": "The average elapsed time (in seconds) for all transactions detected."
+                },
+                "ctlRegion": {
+                    "type": "string",
+                    "example": "IMSFCTLR",
+                    "description": "The CTL Region."
+                },
+                "imsId": {
+                    "type": "string",
+                    "example": "IMSF",
+                    "description": "The IMS Id."
+                },
+                "region": {
+                    "type": "string",
+                    "example": "IMSFM15",
+                    "description": "The Region."
+                },
+                "regionActive": {
+                    "type": "string",
+                    "example": "00:01:11.350677",
+                    "description": "The time that the IMS Region was active during the monitor session."
+                },
+                "regionActivePct": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 100.0,
+                    "description": "The percentage of time that the IMS Region was active during the monitor session."
+                },
+                "regionIdle": {
+                    "type": "string",
+                    "example": "00:00:00.000000",
+                    "description": "The time that the IMS Region was idle (not actively processing transactions) during the monitor session."
+                },
+                "regionIdlePct": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.0,
+                    "description": "The percentage of time that the IMS Region was idle (not actively processing transactions) during the monitor session."
+                },
+                "regionTotal": {
+                    "type": "string",
+                    "example": "00:01:11.350677",
+                    "description": "The total time that the IMS Region was operating during the monitor session."
+                },
+                "regionTotalPct": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 100.0,
+                    "description": "The percentage of total time that the IMS Region was operating during the monitor session."
+                },
+                "regionType": {
+                    "type": "string",
+                    "example": "MPP",
+                    "description": "The Type of Region."
+                }
+            },
+            "title": "IMSViewRegion",
+            "description": "The IMS Region measurement details. "
+        },
+        "IMSViewSSA": {
+            "type": "object",
+            "properties": {
+                "cmd": {
+                    "type": "string",
+                    "example": "C",
+                    "description": "The optional command code."
+                },
+                "field": {
+                    "type": "string",
+                    "example": "A1111111",
+                    "description": "The name of the field within the segment."
+                },
+                "operator": {
+                    "type": "string",
+                    "example": ">=",
+                    "description": "The relational operator."
+                },
+                "segment": {
+                    "type": "string",
+                    "example": "A1111111",
+                    "description": "The name of the IMS data base segment that is searched."
+                },
+                "ssa": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 1,
+                    "description": "The relative segment search argument in the search list."
+                }
+            },
+            "title": "IMSViewSSA",
+            "description": "The SSA measurement details. "
+        },
+        "IdmsPCModule": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "number",
+                    "format": "double",
+                    "example": "33.65%",
+                    "description": "Active time"
+                },
+                "module": {
+                    "type": "string",
+                    "example": "SUEWBTD1",
+                    "description": "Module name"
+                },
+                "offset": {
+                    "type": "string",
+                    "example": "0000097C",
+                    "description": "Offset value"
+                },
+                "proccessName": {
+                    "type": "string",
+                    "example": "ADSWBTD1-PF7",
+                    "description": "Process name "
+                },
+                "ruid": {
+                    "type": "string",
+                    "example": "0000811531",
+                    "description": "IDMS Run-unit ID"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "TASK IS EXECUTING",
+                    "description": "Status"
+                },
+                "taskcode": {
+                    "type": "string",
+                    "example": "SUEWBTD1",
+                    "description": "Task code"
+                },
+                "taskid": {
+                    "type": "string",
+                    "example": "00015383",
+                    "description": "IDMS Task ID"
+                },
+                "total": {
+                    "type": "number",
+                    "format": "double",
+                    "example": "100%",
+                    "description": "Total"
+                },
+                "wait": {
+                    "type": "number",
+                    "format": "double",
+                    "example": "33.65%",
+                    "description": "Wait time"
+                },
+                "waitStatus": {
+                    "type": "string",
+                    "example": "DBIO READ ECB",
+                    "description": "Wait Task ID"
+                }
+            },
+            "title": "IdmsPCModule",
+            "description": "IDMS Primary Command Module details."
+        },
+        "ModuleView": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "string",
+                    "example": 25.31,
+                    "description": "Percentage of the monitored period when the module was using CPU"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "In common space",
+                    "description": "Module description"
+                },
+                "group": {
+                    "type": "string",
+                    "example": "ModGroup",
+                    "description": "Pseudo group name defined for the module"
+                },
+                "module": {
+                    "type": "string",
+                    "example": ".COMMON",
+                    "description": "The name of program module"
+                },
+                "overLap": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "Percentage of the monitored period when both the CPU was active and file access was occurring"
+                },
+                "total": {
+                    "type": "string",
+                    "example": 31.42,
+                    "description": "The total of Active and Wait times for the module"
+                },
+                "wait": {
+                    "type": "string",
+                    "example": 6.11,
+                    "description": "Percentage of the monitored period when module was not using CPU"
+                }
+            },
+            "title": "ModuleView",
+            "description": "The CodeView measurement details in Module Mode. "
+        },
+        "MonitorHistory": {
+            "type": "object",
+            "properties": {
+                "monnum": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 5,
+                    "description": "The unique monitor number of the measurment"
+                },
+                "profile": {
+                    "type": "string",
+                    "example": "T1016207",
+                    "description": "The profile name"
+                },
+                "stardate": {
+                    "type": "string",
+                    "example": "2018/08/03",
+                    "description": "Monitor start date (YYYY/MM/DD)"
+                },
+                "startime": {
+                    "type": "string",
+                    "example": "10:16:20",
+                    "description": "Monitor start time (HH:MM:SS)"
+                }
+            },
+            "title": "MonitorHistory",
+            "description": "The details of available measurements that are stored in the history of the specific monitor profile. "
+        },
+        "MonitorHistoryContent": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "errorlevel": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Error level"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Monitor profile created",
+                    "description": "Message text"
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "MonitorHistoryContent"
+        },
+        "MonitorList": {
+            "type": "object",
+            "properties": {
+                "mds": {
+                    "type": "string",
+                    "example": "DEMO.MAT.D2019087.T1016207",
+                    "description": "The name of the original monitor data set (MDS) with the measurment"
+                },
+                "monnum": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 5,
+                    "description": "The unique monitor number of the measurment"
+                },
+                "profileName": {
+                    "type": "string",
+                    "example": "T1016207",
+                    "description": "The profile name that the measurement belongs to"
+                }
+            },
+            "title": "MonitorList",
+            "description": "The details of available measurements that are currently stored in the MAT database. "
+        },
+        "OverviewPanelContent": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "errorlevel": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Error level"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Monitor profile created",
+                    "description": "Message text"
+                },
+                "overviewpanel": {
+                    "$ref": "#/definitions/Overviewpanel"
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "OverviewPanelContent"
+        },
+        "Overviewpanel": {
+            "type": "object",
+            "properties": {
+                "jobInformation": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "jobStatistics": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "monitorInfo": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "monitorStatistics": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "regioninfo": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "Overviewpanel"
+        },
+        "PSBName": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.06,
+                    "description": "Actv%"
+                },
+                "call": {
+                    "type": "string",
+                    "example": "GU",
+                    "description": "Call"
+                },
+                "dbdname": {
+                    "type": "string",
+                    "example": "IVPDB1",
+                    "description": "DBD Name"
+                },
+                "popts": {
+                    "type": "string",
+                    "description": "P-Opts"
+                },
+                "psbname": {
+                    "type": "string",
+                    "example": "TFSIVP1",
+                    "description": "PSB Name"
+                },
+                "psbno": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 1,
+                    "description": "PSB #"
+                },
+                "segment": {
+                    "type": "string",
+                    "description": "Segment"
+                },
+                "total": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 79.09,
+                    "description": "Totl%"
+                },
+                "wait": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 78.96,
+                    "description": "Wait%"
+                }
+            },
+            "title": "PSBName",
+            "description": "The PSBName detail for IMS."
+        },
+        "ProfileList": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "errorlevel": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Error level"
+                },
+                "profileList": {
+                    "type": "array",
+                    "example": "PROFILE1,PROFILE2",
+                    "description": "The list of profile names",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "ProfileList",
+            "description": "The list of all available monitor profiles that are stored in MAT Global Information File. "
+        },
+        "ResponseAuth": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "ResponseAuth"
+        },
+        "ResponseContent": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "errorlevel": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Error level"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Monitor profile created",
+                    "description": "Message text"
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "ResponseContent"
+        },
+        "ResponseProfile": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "errorlevel": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Error level"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Monitor profile created",
+                    "description": "Message text"
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "ResponseProfile"
+        },
+        "ResponseProfiles": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "xxxxx",
+                    "description": "Your authentication token"
+                },
+                "errorlevel": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 0,
+                    "description": "Error level"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Monitor profile created",
+                    "description": "Message text"
+                },
+                "profileList": {
+                    "type": "array",
+                    "example": "PROFILE1,PROFILE2",
+                    "description": "The list of profile names",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tokenType": {
+                    "type": "string",
+                    "example": "Bearer",
+                    "description": "Token type"
+                }
+            },
+            "title": "ResponseProfiles",
+            "description": "The list of all available monitor profiles that are stored in MAT Global Information File. "
+        },
+        "TranViewCallerID": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 22.57,
+                    "description": "Count of the monitored period when the program was calling the CSECT"
+                },
+                "csect": {
+                    "type": "string",
+                    "example": "TUNCOB01",
+                    "description": "The CSECT name of the calling program"
+                },
+                "csectdescription": {
+                    "type": "string",
+                    "example": "COBOL test program distributed with CA MAT",
+                    "description": "Description of the calling CSECT"
+                },
+                "module": {
+                    "type": "string",
+                    "example": "TUNCOB",
+                    "description": "The module name that contains the CSECT of the calling program"
+                },
+                "offset": {
+                    "type": "string",
+                    "example": "0000006EE0",
+                    "description": "Hexadecimal offset from the start of the CSECT of the calling program"
+                },
+                "pct": {
+                    "type": "string",
+                    "example": 22.57,
+                    "description": "Percentage of the monitored period when the program was calling the CSECT"
+                },
+                "stmt": {
+                    "type": "string",
+                    "example": 161,
+                    "description": "The statement number"
+                }
+            },
+            "title": "TranViewCallerID",
+            "description": "The Tranview CallerID details. "
+        },
+        "Tranview": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 30.57,
+                    "description": "The percentage of time when the CPU was actively processing the transaction"
+                },
+                "averageResp": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.10573,
+                    "description": "The average transaction time (in seconds)"
+                },
+                "averageSUs": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 1486.559,
+                    "description": "the average number of CPU service units that were required to process the transaction"
+                },
+                "avgCPU": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.02109,
+                    "description": "The average CPU time that was required for the transaction"
+                },
+                "d": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 12.18,
+                    "description": "The percentage of time when the transaction was delayed because of an I/O request"
+                },
+                "noTrans": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "other": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 0.0,
+                    "description": "The percentage of time when delays other than CPU or data-related were detected"
+                },
+                "total": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 46.76,
+                    "description": "The summation of all delay categories"
+                },
+                "totalCPU": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 1.05453,
+                    "description": "The cumulative CPU time for the transaction (in seconds)"
+                },
+                "totalSUs": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 74327.965,
+                    "description": "The total amount of CPU time in service units that were used by the transaction"
+                },
+                "tran": {
+                    "type": "string"
+                }
+            },
+            "title": "Tranview",
+            "description": "The TranView details for the measurement. "
+        },
+        "Tunmeta": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "string",
+                    "example": 0.51,
+                    "description": "The percentage of samples used that were recorded when the application was actively using CPU"
+                },
+                "asid": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 998,
+                    "description": "The address space identifier of the job that was monitored"
+                },
+                "ciclvl": {
+                    "type": "string",
+                    "example": "6.9.0",
+                    "description": "The release level of the CICS system that was used by the job"
+                },
+                "cpumodel": {
+                    "type": "string",
+                    "example": "3906-608",
+                    "description": "The CPU model number of the system where the monitor was executed"
+                },
+                "cpurtadj": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 312,
+                    "description": "The processor-specific adjustment rate used in the calculation of CPU service units"
+                },
+                "cpuserie": {
+                    "type": "string",
+                    "example": "C3C78",
+                    "description": "The serial number of the processor where the monitor was executed"
+                },
+                "cpusvcunits": {
+                    "type": "string",
+                    "example": 13333,
+                    "description": "The CPU Service units, which are an interval of CPU time normalized by a CPU processor-specific adjustment rate"
+                },
+                "cputime": {
+                    "type": "string",
+                    "example": "00:00:02.68",
+                    "description": "The CPU time value for the measurement"
+                },
+                "cpuver": {
+                    "type": "string",
+                    "example": "00",
+                    "description": "The CPU version of the system where the monitor was executed"
+                },
+                "db2lvl": {
+                    "type": "string",
+                    "example": "12.1.5",
+                    "description": "The release level of the DB2 system that was used by the job"
+                },
+                "dcmlvl": {
+                    "type": "string",
+                    "example": "15.1.0",
+                    "description": "The release level of the Datacom system that was used by the job "
+                },
+                "duration": {
+                    "type": "string",
+                    "example": "00:01:03",
+                    "description": "The period of time, during which the address space was measured for this monitor (HH:MM:SS)"
+                },
+                "dynalink": {
+                    "type": "string",
+                    "example": "LNKLST00",
+                    "description": "User-specified dynamic linklist (if using differ from a linklist specified during IPL)"
+                },
+                "ecputime": {
+                    "type": "string",
+                    "example": "00:00:02.68",
+                    "description": "The ECPU time value for the measurement"
+                },
+                "excpcnt": {
+                    "type": "string",
+                    "example": 799,
+                    "description": "The number of EXCPs or I/Os issued by the address space during the duration of the measurement"
+                },
+                "excprate": {
+                    "type": "string",
+                    "example": 12.63,
+                    "description": "The number of EXCPs or I/Os per second being issued by the address space during the duration of the measurement"
+                },
+                "ezaptime": {
+                    "type": "string",
+                    "example": "**N/A**",
+                    "description": "The Elig zAAP time value for the measurement"
+                },
+                "eziptime": {
+                    "type": "string",
+                    "example": "00:00:00.00",
+                    "description": "The Elig zIIP time value for the measurement"
+                },
+                "finlrate": {
+                    "type": "string",
+                    "example": 10,
+                    "description": "The final rate, at which MAT observed the activity of the address space"
+                },
+                "gl4lvl": {
+                    "type": "string",
+                    "example": "08.02.07",
+                    "description": "The release level of the Natural system that was used by the job"
+                },
+                "idmslvl": {
+                    "type": "string",
+                    "example": "18.0.0",
+                    "description": "The release level of the IDMS system that was used by the job"
+                },
+                "imslvl": {
+                    "type": "string",
+                    "example": "15.1.0",
+                    "description": "The release level of the IMS system that was used by the job"
+                },
+                "jobid": {
+                    "type": "string",
+                    "example": "JOB48541",
+                    "description": "JES job identifier of the job that was monitored"
+                },
+                "jobname": {
+                    "type": "string",
+                    "example": "CATTEST1",
+                    "description": "The name of the job that was monitored"
+                },
+                "lpardisdelay": {
+                    "type": "string",
+                    "example": "00:00:00.38",
+                    "description": "The time when the address space was observed to be delayed because of either LPAR delay or other disabled work on the processor during the measurement"
+                },
+                "mdsn": {
+                    "type": "string",
+                    "example": "DEMO.MAT.D2018215.T1016207",
+                    "description": "The monitor data set name where the measurement is stored"
+                },
+                "monnum": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 5,
+                    "description": "The unique monitor number of the measurement"
+                },
+                "mqlvl": {
+                    "type": "string",
+                    "example": "7.1.0",
+                    "description": "The release level of the MQ Series (MQS) system that was used by the job"
+                },
+                "mvslvl": {
+                    "type": "string",
+                    "example": "SP7.2.3",
+                    "description": "The release level of the MVS system where the target job executed"
+                },
+                "nondisp": {
+                    "type": "string",
+                    "example": "00:00:01.22",
+                    "description": "The time when the address space was observed to be nondispatchable during the measurement"
+                },
+                "obsvused": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 5514,
+                    "description": "The actual number of observations made for the monitor"
+                },
+                "osfmid": {
+                    "type": "string",
+                    "example": "HBB77B0",
+                    "description": "The function modification identifier of the operating system where the target job executed"
+                },
+                "osname": {
+                    "type": "string",
+                    "example": "z/OS 02.03.00",
+                    "description": "The name and level of the operating system"
+                },
+                "osowner": {
+                    "type": "string",
+                    "example": "IBM CORP",
+                    "description": "The name of the operating system owner"
+                },
+                "pageins": {
+                    "type": "string",
+                    "example": 0,
+                    "description": "The number of page-in operations for the job"
+                },
+                "pagerate": {
+                    "type": "string",
+                    "example": 0.0,
+                    "description": "The number of page-in operations per second"
+                },
+                "percentwait": {
+                    "type": "string",
+                    "example": 99.49,
+                    "description": "The percentage of samples used that were recorded when the application was not using CPU and was waiting on a resource"
+                },
+                "procstep": {
+                    "type": "string",
+                    "example": "PROC1",
+                    "description": "The procedure step name"
+                },
+                "profile": {
+                    "type": "string",
+                    "example": "T1016207",
+                    "description": "The profile name that the measurement belongs to"
+                },
+                "program": {
+                    "type": "string",
+                    "example": "NAT827BA",
+                    "description": "The name of the program that was monitored"
+                },
+                "requestd": {
+                    "type": "string",
+                    "example": 6000,
+                    "description": "The number of requested observations in the monitor profile as requested by the user"
+                },
+                "rgnlimh": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 1107296256.0,
+                    "description": "The amount of private storage (region) available above 16 MB"
+                },
+                "rgnliml": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 8364032.1,
+                    "description": "The amount of private storage (region) available below 16 MB"
+                },
+                "rgnusedh": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 349790208.0,
+                    "description": "The high-water-mark value for the used region size above the 16-MB line"
+                },
+                "rgnusedl": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 364544.1,
+                    "description": "The high-water-mark value for the used region size below the 16-MB line"
+                },
+                "saplvl": {
+                    "type": "string",
+                    "example": "**N/A**",
+                    "description": "The release level of the SAP system that was used by the job"
+                },
+                "srbtime": {
+                    "type": "string",
+                    "example": "00:00:02.42",
+                    "description": "The SRB time value for the measurement"
+                },
+                "stardate": {
+                    "type": "string",
+                    "example": "2018/08/03",
+                    "description": "Monitor start date (YYYY/MM/DD)"
+                },
+                "startime": {
+                    "type": "string",
+                    "example": "10:16:20",
+                    "description": "Monitor start time"
+                },
+                "stepname": {
+                    "type": "string",
+                    "example": "NATBTCH",
+                    "description": "The job step name"
+                },
+                "swappedout": {
+                    "type": "string",
+                    "example": "00:00:03.87",
+                    "description": "The time when the address space was observed to be swapped out during the measurement"
+                },
+                "sysname": {
+                    "type": "string",
+                    "example": "AA31",
+                    "description": "An eight-character system name identifier for the z/OS image where the monitor was executed"
+                },
+                "tcbact": {
+                    "type": "string",
+                    "example": 1.0,
+                    "description": "The average number of TCBs that were actively using the CPU during an observation"
+                },
+                "tcbtime": {
+                    "type": "string",
+                    "example": "00:00:00.26",
+                    "description": "The TCB time value for the measurement"
+                },
+                "totsampl": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 6037,
+                    "description": "The number of samples used from the measurement"
+                },
+                "userid": {
+                    "type": "string",
+                    "example": "USER01",
+                    "description": "Identifier of the user who requested the monitor"
+                },
+                "usslvl": {
+                    "type": "string",
+                    "example": "2.3.0",
+                    "description": "The release level of the UNIX System Services (USS) system that was used by the job"
+                },
+                "wait": {
+                    "type": "string",
+                    "example": "00:01:02.67",
+                    "description": "The elapsed time that the monitor spent waiting"
+                },
+                "zaptime": {
+                    "type": "string",
+                    "example": "**N/A**",
+                    "description": "The zAAP time value for the measurement"
+                },
+                "ziptime": {
+                    "type": "string",
+                    "example": "00:00:00.00",
+                    "description": "The zIIP time value for the measurement"
+                }
+            },
+            "title": "Tunmeta",
+            "description": "The OverView details for the measurement. "
+        }
+    }
+}

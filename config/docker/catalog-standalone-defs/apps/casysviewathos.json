@@ -1,0 +1,39 @@
+{
+    "application": [
+        {
+            "name": "casysviewathos",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "casysviewathos",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "casysviewAthos",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "version": "2.2.0",
+                        "apiml.apiInfo.api-v1.apiId": "bcm.sysview",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "casysviewathos-_bcm.sysview vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.3.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/api/v1",
+                        "apiml.service.description": "The SYSVIEW REST API provides endpoints that access data and actions provided through SYSVIEW commands. You can display real-time or historical data, execute commands, or create and view event captures. Operations Managers can have their development support staff use the REST API to build various dashboard widgets that display on an operations dashboard. DevOps and CI/CD Administrators can use the REST API with client applications to help the mainframe development staff build CI/CD pipelines for their mainframe application development process.",
+                        "apiml.catalog.tile.description": "The SYSVIEW REST API provides endpoints that access data and actions provided through SYSVIEW commands. You can display real-time or historical data, execute commands, or create and view event captures. Operations Managers can have their development support staff use the REST API to build various dashboard widgets that display on an operations dashboard. DevOps and CI/CD Administrators can use the REST API with client applications to help the mainframe development staff build CI/CD pipelines for their mainframe application development process.",
+                        "apiml.catalog.tile.title": "SYSVIEW Application Server",
+                        "apiml.service.title": "SYSVIEW Application Server",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.catalog.tile.id": "SYSVIEW"
+                    }
+                }
+            ]
+        }
+    ]
+}

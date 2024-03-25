@@ -1,0 +1,46 @@
+{
+    "application": [
+        {
+            "name": "caendevorapi",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "caendevorapi",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "caendevorapi",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/EndevorService/rest",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/EndevorService/rest/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/EndevorService/rest/health",
+                    "metadata": {
+                        "version": "2.2.0",
+                        "apiml.apiInfo.-api-v1.apiId": "bcm.endevor",
+                        "apiml.apiInfo.-api-v1.swaggerUrl": "caendevorapi-_bcm.endevor vv1_default.json",
+                        "apiml.apiInfo.-api-v1.version": "1.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.-api-v1.gatewayUrl": "/api/v1",
+                        "apiml.apiInfo.-api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/EndevorService/api/v1",
+                        "apiml.apiInfo.-api-v2.apiId": "bcm.endevor",
+                        "apiml.apiInfo.-api-v2.swaggerUrl": "caendevorapi-_bcm.endevor vv2_default.json",
+                        "apiml.apiInfo.-api-v2.version": "2.0.0",
+                        "apiml.routes.api-v2.gatewayUrl": "api/v2",
+                        "apiml.apiInfo.-api-v2.gatewayUrl": "/api/v2",
+                        "apiml.apiInfo.-api-v2.defaultApi": "false",
+                        "apiml.routes.api-v2.serviceUrl": "/EndevorService/api/v2",
+                        "apiml.service.description": "Use the Endevor RESTful API services to perform a wide range of actions. You can use the REST API services for example to process various element actions. You can also list inventory and work with packages.",
+                        "apiml.catalog.tile.description": "Use the Endevor RESTful API services to perform a wide range of actions. You can use the REST API services for example to process various element actions. You can also list inventory and work with packages.",
+                        "apiml.catalog.tile.title": "Endevor",
+                        "apiml.service.title": "Endevor",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.catalog.tile.id": "caendevorapi"
+                    }
+                }
+            ]
+        }
+    ]
+}

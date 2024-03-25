@@ -7,15 +7,41 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+import { Fab } from '@material-ui/core';
 import { Component } from 'react';
+import { ReactComponent as FeedbackImage } from '../../assets/images/square-envelope.svg';
 
-// Component provided as placeholder
-// NOSONAR
 export default class FeedbackButton extends Component {
     render() {
+        const { noFloat, rightPlacement = '8px', bottomPlacement = '8px' } = this.props;
+
         return (
-            <div id="feedbackButton" className="feedback-button">
-                Feedback Button
+            <div>
+                <div className={noFloat ? '' : 'floating-button'}>
+                    <Fab
+                        variant="extended"
+                        href="/feedback"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        className="button-cta feedback-button"
+                        style={
+                            noFloat
+                                ? {}
+                                : {
+                                      position: 'fixed',
+                                      bottom: bottomPlacement,
+                                      right: rightPlacement,
+                                      whiteSpace: 'nowrap',
+                                  }
+                        }
+                        onClick={() => {
+                            document.body.classList.remove('mobile-menu-open');
+                        }}
+                    >
+                        <FeedbackImage className="icon-img" alt="" />
+                        Give us Feedback
+                    </Fab>
+                </div>
             </div>
         );
     }

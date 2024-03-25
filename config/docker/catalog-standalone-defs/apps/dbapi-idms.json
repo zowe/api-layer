@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "dbapi-idms",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "dbapi-idms",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "dbapi-idms",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "DBAPI-IDMS",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "DBAPIMetadata-Databases",
+                        "apiml.routes.ui-v1.serviceUrl": "/",
+                        "apiml.routes.ui-v1.gatewayUrl": "ui/v1",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "dbapi-idms-_DBAPIMetadata-Databases vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "true",
+                        "apiml.routes.api-v1.serviceUrl": "/api/v1",
+                        "apiml.service.description": "Use the IDMS Database Metadata Service to discover the structure of IDMS databases accessible with SQL. You can get the descriptions of network records and sets, visible as referential constraints, as well as tables, views and procedures defined with SQL. You can use the metadata to create SQL commands to query and update the database.",
+                        "apiml.catalog.tile.description": "Use the IDMS Database Metadata Service to discover the structure of IDMS databases accessible with SQL. You can get the descriptions of network records and sets, visible as referential constraints, as well as tables, views and procedures defined with SQL. You can use the metadata to create SQL commands to query and update the database.",
+                        "apiml.catalog.tile.title": "Database Metadata Service",
+                        "apiml.service.title": "IDMS Database Metadata",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.catalog.tile.id": "Database-Metadata-Service",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

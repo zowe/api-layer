@@ -7,16 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Card, CardActionArea, CardContent, Typography } from '@material-ui/core';
+import { Card, CardActionArea, CardContent, Link, Typography, Button } from '@material-ui/core';
 import React, { Component } from 'react';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import videosImg from '../../assets/images/videos.png';
-import tutorialsImg from '../../assets/images/tutorials.png';
-import swaggerImg from '../../assets/images/swagger.png';
-
-import utilFunctions, { isAPIPortal } from '../../utils/utilFunctions';
+import { ReactComponent as SwaggerIcon } from '../../assets/images/swagger.svg';
+import { ReactComponent as VideoIcon } from '../../assets/images/videos.svg';
+import { ReactComponent as TutorialIcon } from '../../assets/images/tutorials.svg';
+import utilFunctions, { isAPIPortal, findAndFormatZowe } from '../../utils/utilFunctions';
 
 export default class Tile extends Component {
     getTileStatus = (tile) => {
@@ -61,13 +60,25 @@ export default class Tile extends Component {
         localStorage.setItem('serviceId', service.serviceId);
     };
 
+    showDesc = (e) => {
+        e.target.closest('.grid-item')?.classList.toggle('expanded');
+    };
+
+    goToExtraContents = (id, flag) => {
+        if (!flag) {
+            const { storeContentAnchor } = this.props;
+            storeContentAnchor(id);
+            this.handleClick();
+        }
+    };
+
     render() {
         const { tile, service } = this.props;
         const apiPortalEnabled = isAPIPortal();
         const { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger } = utilFunctions(service);
 
         return (
-            <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
+            <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.showDesc} data-testid="tile">
                 <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
                         <div className="tile-ctn">
@@ -77,7 +88,7 @@ export default class Tile extends Component {
                                     {!apiPortalEnabled && this.getTileStatusText(tile)}
                                 </Typography>
                                 <Typography id="tiles-service-title" variant="subtitle1">
-                                    {service.title}
+                                    {findAndFormatZowe(service.title)}
                                 </Typography>
                                 {!apiPortalEnabled && service.sso && (
                                     <Typography variant="h6" id="grid-tile-sso">
@@ -86,46 +97,102 @@ export default class Tile extends Component {
                                 )}
                             </div>
 
+                            <div className="tile-desc">{service.description}</div>
+
                             {apiPortalEnabled && (
-                                <>
-                                    <div id="swagger" className="desktop-view">
-                                        {hasSwagger ? (
-                                            <img data-testid="swagger-img" alt="Swagger" src={swaggerImg} />
-                                        ) : (
-                                            <div style={{ height: '24px', width: '24px' }} />
-                                        )}
-                                    </div>
-                                    <Typography
-                                        className="media-labels desktop-view"
-                                        id="use-cases-counter"
-                                        size="medium"
-                                        variant="outlined"
+                                <div className="icon-ctn">
+                                    <div className="expanded-spacer" />
+                                    <div
+                                        id="swagger"
+                                        title="Swagger"
+                                        className={hasSwagger ? 'link-counter' : 'disabled-counter'}
                                     >
-                                        {useCasesCounter}
-                                    </Typography>
-                                    <div className="imageCounter desktop-view">
-                                        <Typography
-                                            className="media-labels desktop-view"
-                                            id="tutorials-counter"
-                                            size="medium"
-                                            variant="outlined"
-                                        >
-                                            {tutorialsCounter}
-                                        </Typography>
-                                        <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
+                                        <Button className="icon-img-ctn" onClick={this.handleClick}>
+                                            <SwaggerIcon className="icon-img" alt="" />
+                                        </Button>
+                                        <Link to="" onClick={this.handleClick} className="expanded-icon-title">
+                                            Swagger
+                                        </Link>
                                     </div>
-                                    <div className="imageCounter desktop-view">
-                                        <Typography
-                                            className="media-labels"
-                                            id="videos-counter"
-                                            size="medium"
-                                            variant="outlined"
-                                        >
-                                            {videosCounter}
-                                        </Typography>
-                                        <img id="videos" alt="Videos" src={videosImg} />
+                                    <div
+                                        className={
+                                            useCasesCounter === 0 ? 'disabled-counter desktop-view' : 'desktop-view'
+                                        }
+                                        title="Use Cases"
+                                    >
+                                        <div className="icon-img-ctn">
+                                            <Typography
+                                                className="media-labels"
+                                                id="use-cases-counter"
+                                                size="medium"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    this.goToExtraContents('#use-cases-label', useCasesCounter === 0)
+                                                }
+                                            >
+                                                {useCasesCounter}
+                                            </Typography>
+                                        </div>
+                                        <span className="expanded-icon-title">Use Cases</span>
                                     </div>
-                                </>
+                                    <div
+                                        className={
+                                            videosCounter === 0 ? 'disabled-counter desktop-view' : 'desktop-view'
+                                        }
+                                        title="Videos"
+                                    >
+                                        <div className="icon-img-ctn">
+                                            <Typography
+                                                className="media-labels"
+                                                id="videos-counter"
+                                                size="medium"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    this.goToExtraContents('#videos-label', videosCounter === 0)
+                                                }
+                                            >
+                                                {videosCounter}
+                                            </Typography>
+                                            <VideoIcon
+                                                onClick={() =>
+                                                    this.goToExtraContents('#videos-label', videosCounter === 0)
+                                                }
+                                                className="video-icon"
+                                                alt=""
+                                            />
+                                        </div>
+
+                                        <span className="expanded-icon-title">Videos</span>
+                                    </div>
+                                    <div
+                                        className={
+                                            tutorialsCounter === 0 ? 'disabled-counter desktop-view' : 'desktop-view'
+                                        }
+                                        title="Getting Started"
+                                    >
+                                        <div className="icon-img-ctn">
+                                            <Typography
+                                                className="media-labels"
+                                                id="tutorials-counter"
+                                                size="medium"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    this.goToExtraContents('#tutorials-label', tutorialsCounter === 0)
+                                                }
+                                            >
+                                                {tutorialsCounter}
+                                            </Typography>
+                                            <TutorialIcon
+                                                onClick={() =>
+                                                    this.goToExtraContents('#tutorials-label', tutorialsCounter === 0)
+                                                }
+                                                className="tutorial-icon"
+                                                alt=""
+                                            />
+                                        </div>
+                                        <span className="expanded-icon-title">Getting Started</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </CardContent>

@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "bcmopsrestapiga",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmopsrestapiga",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmopsrestapiga",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMOPSRESTAPIGA",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/index.html",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "bcm.opsmvs",
+                        "apiml.routes.ui-v1.serviceUrl": "/",
+                        "apiml.routes.ui-v1.gatewayUrl": "ui/v1",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "bcmopsrestapiga-_bcm.opsmvs vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/api/v1",
+                        "apiml.service.description": "The OPS/MVS REST API is a collection of web service endpoints that provides                                                                                                                                                                                                                          access to data elements managed by OPS/MVS. These elements include data from                                                                                                                                                                                                                         OPSLOG records, AOF rules and SSM resources.               \n",
+                        "apiml.catalog.tile.description": "The OPS/MVS REST API is a collection of web service endpoints that provides                                                                                                                                                                                                                          access to data elements managed by OPS/MVS. These elements include data from                                                                                                                                                                                                                         OPSLOG records, AOF rules and SSM resources.               \n",
+                        "apiml.catalog.tile.title": "OPS/MVS",
+                        "apiml.service.title": "OPS/MVS",
+                        "apiml.catalog.tile.version": "14.0.07",
+                        "apiml.catalog.tile.id": "bcm.opsmvs",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

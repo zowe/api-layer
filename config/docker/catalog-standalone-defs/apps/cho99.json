@@ -1,0 +1,41 @@
+{
+    "application": [
+        {
+            "name": "cho99",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "cho99",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "cho99",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "CHO99",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/ml-insights-api/api/doc",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/ml-insights-api/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/ml-insights-api/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "bcm.moi",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "cho99-_bcm.moi vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.0.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.apiInfo.api-v1.documentationUrl": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/intelligent-operations/ca-mainframe-operational-intelligence/2-1.html",
+                        "apiml.routes.api-v1.serviceUrl": "/ml-insights-api/api/v1",
+                        "apiml.service.description": "Mainframe Operational Intelligence (MOI) GraphQL API to query time-series data, Green Highway data, statistical data, and alerts.",
+                        "apiml.catalog.tile.description": "Mainframe Operational Intelligence (MOI) GraphQL API to query time-series data, Green Highway data, statistical data, and alerts.",
+                        "apiml.catalog.tile.title": "Mainframe Operational Intelligence",
+                        "apiml.service.title": "Mainframe Operational Intelligence",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.catalog.tile.id": "com.broadcom.moi",
+                        "os.name": "Linux"
+                    }
+                }
+            ]
+        }
+    ]
+}

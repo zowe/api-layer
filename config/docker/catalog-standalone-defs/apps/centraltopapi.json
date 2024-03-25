@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "centraltopapi",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "centraltopapi",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "centraltopapi",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "CENTRALTOPAPI",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/index.html",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "bcm.alertcentral.rest",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "centraltopapi-_bcm.alertcentral.rest vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.3.0.1",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.routes.ws-v1.gatewayUrl": "ws/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/api/v1",
+                        "apiml.routes.ws-v1.serviceUrl": "/ws/v1",
+                        "apiml.service.description": "Alert Central API service for creating and consuming alert data.",
+                        "apiml.catalog.tile.description": "Alert Central API service for creating and consuming alert data.",
+                        "apiml.catalog.tile.title": "Alert Central",
+                        "apiml.service.title": "Alert Central",
+                        "apiml.catalog.tile.version": "1.3.0.1",
+                        "apiml.catalog.tile.id": "bcm.alertcentral",
+                        "os.name": "Linux"
+                    }
+                }
+            ]
+        }
+    ]
+}

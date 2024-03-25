@@ -1,0 +1,2645 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OPS/MVS",
+        "description": "The OPS/MVS REST API is a collection of web service endpoints that provides                                                                                                                                                                                                                               access to data elements managed by OPS/MVS. These elements include data from                                                                                                                                                                                                                              OPSLOG records, AOF rules and SSM resources.                    \n",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "API Endpoints for Rules",
+            "description": "List, view, and update data structures associated with AOF rules."
+        },
+        {
+            "name": "OPSLOG API Endpoints",
+            "description": "- Execute z/OS commands.\n- Query OPSLOG names for an OPS/MVS subsystem.\n- Filter, search, and retrieve OPSLOG records."
+        },
+        {
+            "name": "Status API Endpoint",
+            "description": "Display status and version information."
+        },
+        {
+            "name": "Subsystems API Endpoint",
+            "description": "Retrieves the list of active OPS/MVS subsystems."
+        },
+        {
+            "name": "System State Manager (SSM) API Endpoints",
+            "description": "List, view, and update data structures associated with System State Manager resources."
+        }
+    ],
+    "paths": {
+        "/api/v1/aof/rules": {
+            "get": {
+                "tags": [
+                    "API Endpoints for Rules"
+                ],
+                "summary": "Retrieve a list of rules that match the specified query parameters.",
+                "operationId": "getRules",
+                "parameters": [
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    },
+                    {
+                        "name": "ruleset",
+                        "in": "query",
+                        "description": "The name of the ruleset containing the rules to query, or `*` to query rules from all rulesets. If no value is specified, the value `*` will be used. A ruleset name of `*` can only be used if the specified rule name is also `*`.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "QA"
+                    },
+                    {
+                        "name": "rulename",
+                        "in": "query",
+                        "description": "The name of the rule to query, or `*` to query for a list of all rules from the requested ruleset. If no value is specified, the value `*` will be used. ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "TEST"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content could be returned for the requested ruleset name and rule name combination"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to view the requested ruleset name and rule name combination",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access to the requested ruleset name and rule name combination is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested ruleset name and rule name combination was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AofRule"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/aof/rules/{ruleset}.{rulename}": {
+            "get": {
+                "tags": [
+                    "API Endpoints for Rules"
+                ],
+                "summary": "Retrieve the definition of a rule.",
+                "operationId": "getRuleWithRuleSetAndRuleName",
+                "parameters": [
+                    {
+                        "name": "ruleset",
+                        "in": "path",
+                        "description": "The ruleset name used to identify which rule to query.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "QA"
+                    },
+                    {
+                        "name": "rulename",
+                        "in": "path",
+                        "description": "The name of the rule to query.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "FINDSYS"
+                    },
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AofRule"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No content could be returned for the requested ruleset name and rule name combination"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to view the requested ruleset name and rule name combination",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access to the requested ruleset name and rule name combination is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested ruleset name and rule name combination was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "API Endpoints for Rules"
+                ],
+                "summary": "Update the enabled status of a rule.",
+                "operationId": "updateRule",
+                "parameters": [
+                    {
+                        "name": "ruleset",
+                        "in": "path",
+                        "description": "The ruleset name used to identify which rule to update.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "QA"
+                    },
+                    {
+                        "name": "rulename",
+                        "in": "path",
+                        "description": "The name of the rule to update.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "FINDSYS"
+                    },
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AofRulePayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content could be returned for the requested ruleset name and rule name combination"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access to the requested ruleset name and rule name combination is forbidden"
+                    },
+                    "404": {
+                        "description": "The requested ruleset name and rule name combination was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AofRuleUpdate"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to update the requested ruleset name and rule name combination",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/aof/rulesets": {
+            "get": {
+                "tags": [
+                    "API Endpoints for Rules"
+                ],
+                "summary": "Retrieve a list of rulesets that match the specified query parameters.",
+                "operationId": "getRulesets",
+                "parameters": [
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    },
+                    {
+                        "name": "ruleset",
+                        "in": "query",
+                        "description": "The ruleset name to query. If no value is specified, the value `*` will be used. ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "QA"
+                    }
+                ],
+                "responses": {
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AofRuleset"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No content could be returned for the requested rulesets"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to view the requested rulesets",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The requested rulesets were not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access to the requested rulesets is forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/aof/rulesets/{rulesetName}": {
+            "get": {
+                "tags": [
+                    "API Endpoints for Rules"
+                ],
+                "summary": "Retrieve the details for a ruleset.",
+                "operationId": "getRulesetByName",
+                "parameters": [
+                    {
+                        "name": "rulesetName",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Access to the requested ruleset is forbidden"
+                    },
+                    "401": {
+                        "description": "Authentication is required to view the ruleset",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The requested ruleset was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AofRuleset"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No content could be returned for the requested ruleset"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Login and return authentication token",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successful login"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Logout JWT token",
+                "operationId": "logout",
+                "responses": {
+                    "204": {
+                        "description": "Successful logout"
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/query": {
+            "get": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Validate the token and return token details",
+                "operationId": "query",
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/opslog/commands": {
+            "put": {
+                "tags": [
+                    "OPSLOG API Endpoints"
+                ],
+                "summary": "Issue a z/OS console command through an OPS/MVS subsystem.",
+                "description": "### Overview\n\nExecutes a z/OS console command using the specified OPS/MVS subsystem.\n\nExample: https://example.net:12345/api/v1/opslog/commands?sub=OPSC\n\n",
+                "operationId": "commands",
+                "parameters": [
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will execute the command. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpslogCommandPayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Submitted the console command to OPS/MVS",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpslogCommandResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/opslog/lognames": {
+            "get": {
+                "tags": [
+                    "OPSLOG API Endpoints"
+                ],
+                "summary": "Retrieve a list of OPSLOG names for an OPS/MVS subsystem.",
+                "description": "### Overview\n\nRetrieves the list of OPSLOG names from the specified OPS/MVS subsystem.\n\nExample: https://example.net:12345/api/v1/opslog/lognames?checkAccess=true&sub=OPSC\n\n",
+                "operationId": "opslogNames",
+                "parameters": [
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will execute the command. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    },
+                    {
+                        "name": "checkAccess",
+                        "in": "query",
+                        "description": "Determines if the API filters on the user's permission to view records from the OPSLOG.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": true
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful retrieval of OPSLOG names",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpslogNamesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/opslog/records/search": {
+            "post": {
+                "tags": [
+                    "OPSLOG API Endpoints"
+                ],
+                "summary": "Retrieve OPSLOG records that match the specified query parameters.",
+                "description": "### Overview\n\nRetrieves records from an OPSLOG that match the search criteria specified on the following parameters.\n\nThe records that are searched and returned are first filtered using the JSON object in the request body, if any, that is mapped by the OpslogRecordFilter schema.\n\nExample: https://example.net:12345/api/v1/opslog/records/search?sub=OPSC&findString=HASP\n\n",
+                "operationId": "search",
+                "parameters": [
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    },
+                    {
+                        "name": "logName",
+                        "in": "query",
+                        "description": "The name of the OPSLOG to search. If 'logName' is not specified, the current live OPSLOG is used. The value 'LIVE' is also valid to select the currently live OPSLOG.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "DD_OPSLOG"
+                    },
+                    {
+                        "name": "findString",
+                        "in": "query",
+                        "description": "A text string to search for in the OPSLOG column specified by 'findColumnName' (defaults to TEXT). The records that are returned are the next or previous records in OPSLOG that match your 'findString', in the direction specified by 'findDirection'. The maximum length of the text string is 80.\n\nWhen 'findString' is not specified, the request returns the next or previous (filtered) records in OPSLOG, as controlled by the 'direction' parameter (defaults to FORWARD). ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "HASP"
+                    },
+                    {
+                        "name": "findDirection",
+                        "in": "query",
+                        "description": "When 'findString' is specified, controls the direction in which OPSLOG is searched. Valid values are FIRST, LAST, NEXT, PREV. For NEXT and PREV, the search starts from the record specified by the 'msgNoStart' or 'utcStartTime' parameters. For FIRST and LAST, the search starts from the first or last record in OPSLOG. Default is NEXT.\n\nIf 'findString' is not specified, this parameter is ignored and the direction of the search is controlled by the 'direction' parameter (defaults to FORWARD).",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "PREV"
+                    },
+                    {
+                        "name": "findColumnName",
+                        "in": "query",
+                        "description": "When 'findString' is specified, the OPSLOG column to search for the specified 'findString'. Valid values are COLOR, EVENT, JOBNAME, MSGID, SYSNAME, TEXT and USER.  The default is TEXT.\n\nIf 'findString' is not specified, this parameter is ignored.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "TEXT"
+                    },
+                    {
+                        "name": "findRangeStart",
+                        "in": "query",
+                        "description": "When 'findString' is specified and 'findColumnName' is TEXT, specifies the start of a range of text columns within the OPSLOG TEXT column that is specified by 'findColumnName'. Must be less than or equal to the value of 'findRangeEnd'. The search for the string that is specified by 'findString' is restricted to this range of text columns. Valid ranges are within columns 1 to 128.\n\nIf 'findString' is not specified, this parameter is ignored.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 10
+                    },
+                    {
+                        "name": "findRangeEnd",
+                        "in": "query",
+                        "description": "When 'findString' is specified and 'findColumnName' is TEXT and 'findColumnName' is TEXT, specifies the end of a range of text columns within the OPSLOG TEXT column that is specified by 'findColumnName'. Must be greater than or equal to the value of 'findRangeStart'. The search for the string that is specified by 'findString' is restricted to this range of text columns. Valid ranges are within columns 1 to 128.\n\nIf 'findString' is not specified, this parameter is ignored.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 100
+                    },
+                    {
+                        "name": "findStringIsPrefix",
+                        "in": "query",
+                        "description": "When 'findString' is specified, specifies whether or not 'findString' is used as a prefix when searching one of these OPSLOG columns, specified by 'findColumnName': JOBNAME, MSGID, SYSNAME, and USER. To search for the prefix specified by 'findString' in text column one of the specified OPSLOG column, specify 'true'. To search for an exact match between 'findString' and the entire contents of the specified OPSLOG column, specify 'false'.\n\nIf 'findString' is not specified, this parameter is ignored.\n\nNote: This parameter is also ignored when searching these OPSLOG columns: COLOR, EVENT, and TEXT. When searching the COLOR or EVENT columns, the specified 'findString' must match the entire contents of the column. When searching the TEXT column, the presence of 'findString' anywhere within column is considered a match.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "maxRecords",
+                        "in": "query",
+                        "description": "Specifies the maximum number of OPSLOG records to return for this request. Valid range is 1 to 100. The default is 100.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 100
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "When 'findString' is not specified, controls the direction in which OPSLOG is searched. Valid values are FORWARD and BACKWARD. Default is FORWARD. The search starts from the record specified by 'msgNoStart' or 'utcStartTime'.\n\nTo search FORWARD starting from the first record in OPSLOG, specify zero for 'msgNoStart'.\n\nTo search BACKWARD starting from the last record in OPSLOG, specify zero for 'msgNoStart'.\n\nIf 'findString' is specified, this parameter is ignored and the direction of the search is controlled by the 'findDirection' parameter (defaults to NEXT).",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "BACKWARD"
+                    },
+                    {
+                        "name": "msgNoStart",
+                        "in": "query",
+                        "description": "Indicates the location in OPSLOG from which to start this search request. This is the absolute message sequence number of a record in OPSLOG that is assigned by OPS/MVS and appears in the MSGNO column of an OPSLOG display. This number is not a relative position in the log. Valid range is 0 to 4294967295. (The next record in OPSLOG after the record with the sequence number 4294967295 is assigned the sequence number 1.) This parameter is mutually exclusive with the 'utcStartTime' parameter.\n\nNote: For special use cases of the value 0, see the 'direction' parameter.\n\nIf no record in OPSLOG has the specified message number, the search starts from the message with the message number closest to the specified number. When searching FORWARD, NEXT, or FIRST, the closest record going forward in time is used. When searching BACKWARD, PREV, or LAST, the closest record going backward in time is used. ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 748304455
+                    },
+                    {
+                        "name": "utcStartTime",
+                        "in": "query",
+                        "description": "Indicates the location in OPSLOG from which to start this search request. This is a date and time specified as Universal Coordinated Time (UTC) in the format \"yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ\". This parameter is mutually exclusive with the 'msgNoStart' parameter.\n\nIf no record in OPSLOG has the specified timestamp, the search starts from the message with the timestamp clostest to the specified timestamp. When searching FORWARD, NEXT, or FIRST, the closest record going forward in time is used. When searching BACKWARD, PREV, or LAST, the closest record going backward in time is used. ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "2021-06-18T15:24:31.440542Z"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpslogRecordFilter"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid filter or query parameters specified",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful search of OPSLOG records",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpslogRecordsSearchResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/status": {
+            "get": {
+                "tags": [
+                    "Status API Endpoint"
+                ],
+                "summary": "Retrieve the status and version of the API.",
+                "description": "### Overview\n\nRetrieves product status and version information.\n\nExample: https://example.net:12345/api/v1/status\n\n",
+                "operationId": "getStatus",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StatusResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/subsystems": {
+            "get": {
+                "tags": [
+                    "Subsystems API Endpoint"
+                ],
+                "summary": "Retrieve a list of the SSIDs of the OPS/MVS subsystems running on the LPAR.",
+                "description": "### Overview\n\nRetrieves a list of OPS/MVS subsystems.\n\nExample: https://example.net:12345/api/v1/subsystems\n\n",
+                "operationId": "getSubsystems",
+                "responses": {
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful retrieval of OPS/MVS subsystems",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SubsystemsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/ssm/resources": {
+            "get": {
+                "tags": [
+                    "System State Manager (SSM) API Endpoints"
+                ],
+                "summary": "Retrieve a list of resources that match the specified query parameters.",
+                "operationId": "getResources",
+                "parameters": [
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    },
+                    {
+                        "name": "table",
+                        "in": "query",
+                        "description": "The name of the SSM table containing the SSM resources to query, or `*` to query SSM resources from all tables. If no value is specified, the value `*` will be used. ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "STCTBL"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "query",
+                        "description": "The name of the SSM resource to query, or `*` to query for a list of all SSM resources from the requested table. If no value is specified, the value `*` will be used. ",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "APPC"
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Access to the requested SSM resource is forbidden"
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SsmResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to view the SSM resource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No content could be returned for the requested SSM resource"
+                    },
+                    "404": {
+                        "description": "The requested SSM resource was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/ssm/resources/{table}.{resource}": {
+            "get": {
+                "tags": [
+                    "System State Manager (SSM) API Endpoints"
+                ],
+                "summary": "Retrieve the definition of a resource.",
+                "operationId": "getResourceWithTableAndResourceName",
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "description": "The name of the SSM table to query.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "STCTBL"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of the SSM resource to query.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "APPC"
+                    },
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Access to the requested SSM resource is forbidden"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to view the SSM resource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SsmResource"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No content could be returned for the requested SSM resource"
+                    },
+                    "404": {
+                        "description": "The requested SSM resource was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "System State Manager (SSM) API Endpoints"
+                ],
+                "summary": "Update the desired state of a resource.",
+                "operationId": "updateResource",
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "description": "The table name used to identify which SSM resource to update.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "STCTBL"
+                    },
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "description": "The name of the SSM resource to update.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "APPC"
+                    },
+                    {
+                        "name": "sub",
+                        "in": "query",
+                        "description": "The name of the OPS/MVS subsystem that will process the request. The default subsystem is set by the opsmvs:sub property in the server's application.yml file. Default is OPSS.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OPSS"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SsmResourcePayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "403": {
+                        "description": "Access to the requested SSM resource is forbidden"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SsmResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication is required to update the SSM resource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No content could be found for the requested SSM resource"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The requested SSM resource was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiMessage"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AofRule": {
+                "required": [
+                    "rule",
+                    "ruleset",
+                    "status",
+                    "subsystem",
+                    "sysplex",
+                    "system"
+                ],
+                "type": "object",
+                "properties": {
+                    "sysplex": {
+                        "type": "string",
+                        "description": "The name of the z/OS sysplex to which the system owning this rule belongs.",
+                        "example": "PLEXNA"
+                    },
+                    "system": {
+                        "type": "string",
+                        "description": "The system where the rule is located.",
+                        "example": "SYS1"
+                    },
+                    "subsystem": {
+                        "type": "string",
+                        "description": "The name of the OPS/MVS subsystem that owns this rule.",
+                        "example": "OPSS"
+                    },
+                    "ruleset": {
+                        "type": "string",
+                        "description": "The AOF ruleset name.",
+                        "example": "SAMPLE"
+                    },
+                    "rule": {
+                        "type": "string",
+                        "description": "The AOF rule name.",
+                        "example": "FINDRULE"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The status of the rule (ENABLED or DISABLED).",
+                        "example": "ENABLED"
+                    }
+                }
+            },
+            "AofRulePayload": {
+                "required": [
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "description": "The status you would like to set for the associated rule.",
+                        "example": "ENABLED"
+                    }
+                }
+            },
+            "AofRuleUpdate": {
+                "required": [
+                    "rule",
+                    "ruleset",
+                    "status",
+                    "subsystem",
+                    "sysplex",
+                    "system"
+                ],
+                "type": "object",
+                "properties": {
+                    "sysplex": {
+                        "type": "string",
+                        "description": "The name of the z/OS sysplex to which the system owning this rule belongs.",
+                        "example": "PLEXNA"
+                    },
+                    "system": {
+                        "type": "string",
+                        "description": "The system where the rule is located.",
+                        "example": "SYS1"
+                    },
+                    "subsystem": {
+                        "type": "string",
+                        "description": "The name of the OPS/MVS subsystem that owns this rule.",
+                        "example": "OPSS"
+                    },
+                    "ruleset": {
+                        "type": "string",
+                        "description": "The AOF ruleset name.",
+                        "example": "SAMPLE"
+                    },
+                    "rule": {
+                        "type": "string",
+                        "description": "The AOF rule name.",
+                        "example": "FINDRULE"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The status of the rule (ENABLED or DISABLED).",
+                        "example": "ENABLED"
+                    },
+                    "oldStatus": {
+                        "type": "string",
+                        "description": "The previous status of the rule (ENABLED or DISABLED).",
+                        "example": "DISABLED"
+                    }
+                }
+            },
+            "AofRuleset": {
+                "required": [
+                    "autoEnabled",
+                    "ruleset",
+                    "status",
+                    "subsystem",
+                    "sysplex",
+                    "system"
+                ],
+                "type": "object",
+                "properties": {
+                    "sysplex": {
+                        "type": "string",
+                        "description": "The name of the z/OS sysplex to which the system owning this ruleset belongs.",
+                        "example": "PLEXNA"
+                    },
+                    "system": {
+                        "type": "string",
+                        "description": "The system where the ruleset is located.",
+                        "example": "SYS1"
+                    },
+                    "subsystem": {
+                        "title": "The name of the OPS/MVS subsystem that owns this ruleset.",
+                        "type": "string",
+                        "example": "OPSS"
+                    },
+                    "ruleset": {
+                        "type": "string",
+                        "description": "The AOF ruleset name.",
+                        "example": "SAMPLE"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The status of the ruleset (ENABLED or DISABLED).",
+                        "example": "ENABLED"
+                    },
+                    "autoEnabled": {
+                        "type": "string",
+                        "description": "Whether the ruleset is enabled when the owning OPS/MVS subsystem is started.",
+                        "example": "YES"
+                    }
+                }
+            },
+            "ApiMessage": {
+                "title": "API Messages",
+                "type": "object",
+                "properties": {
+                    "messages": {
+                        "type": "array",
+                        "description": "Set of API messages.",
+                        "items": {
+                            "$ref": "#/components/schemas/ResponseMessage"
+                        }
+                    }
+                }
+            },
+            "LoginRequest": {
+                "title": "LoginRequest",
+                "required": [
+                    "password",
+                    "username"
+                ],
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "example": "user ID"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "strongpassword"
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "description": "When user define value newPassword password will change after successful login",
+                        "example": "newpassword"
+                    }
+                },
+                "description": "Structure for login and also for change password"
+            },
+            "OpslogCommandPayload": {
+                "required": [
+                    "command"
+                ],
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "example": "d a,l"
+                    }
+                }
+            },
+            "OpslogCommandResponse": {
+                "required": [
+                    "command",
+                    "returnCode",
+                    "sub"
+                ],
+                "type": "object",
+                "properties": {
+                    "returnCode": {
+                        "type": "integer",
+                        "description": "The return code from the submission of the command.\n\n0   - Request completed OK\n\n      Command was executed on your LPAR.\n\n8   - Authorization failed\n\n      An AOF rule or SAF call denied authorization for the security\n\n      event OPSCMD that is required by this request.\n\n12  - No MVS/JES/VM command entered\n       Command Request had a blank or empty command string.\n\n16  - MVS/JES/VM cmd length exceeds maximum\n\n20  - Subsystem not found or unusable or not active\n\n      Specified or defaulted subsystem OPSx was not active on\n\n      this APAR, start the OPS/MVS subsystem needed or specify a\n\n      subsystem that is active on this APAR.\n\n28  - Subsystem does not support this call\n\n      Specified or defaulted subsystem OPSx on this LPAR is\n\n      running an older version of OPS/MVS that does not support\n\n      your request.  Start an OPS/MVS subsystem that does support\n\n      your call or upgrade to a newer version.\n\n64  - Product must be active to use command\n\n      Specified or defaulted subsystem OPSx on this LPAR was\n\n      active at some point in the past but it is not active now.\n\n      Start the OPS/MVS instance or specify a different subsystem on a\n\n      new request.\n\n184 - Abend failure in user exit\n\n      The OPS/MVS instance requested is running a user exit that encountered\n\n      an abend on z/OS.  Check the syslog to diagnose the abend.\n\n186 - Abend failure in function routine\n\n      The OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.\n\n188 - SVC 34 failure - see OPSLOG for actual error messages from the command\n\n189 - SVC 34 failure - see OPSLOG for actual error messages from the command\n\n999 - Abend in system list routine\n\n      OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.",
+                        "format": "int64",
+                        "example": 0
+                    },
+                    "sub": {
+                        "type": "string",
+                        "description": "The OPS/MVS subsystem where the command was submitted.",
+                        "example": "OPSS"
+                    },
+                    "command": {
+                        "type": "string",
+                        "description": "The command submitted.",
+                        "example": "d iplinfo"
+                    }
+                }
+            },
+            "OpslogName": {
+                "required": [
+                    "hostName",
+                    "live",
+                    "logName",
+                    "sysplexName",
+                    "systemName"
+                ],
+                "type": "object",
+                "properties": {
+                    "logName": {
+                        "type": "string",
+                        "description": "The log name.",
+                        "example": "DD_OPSLOG"
+                    },
+                    "live": {
+                        "type": "boolean",
+                        "description": "Indicates if the log is active (true or false).",
+                        "example": true
+                    },
+                    "hostName": {
+                        "type": "string",
+                        "description": "The host name where the log is located.",
+                        "example": "host.example.net"
+                    },
+                    "systemName": {
+                        "type": "string",
+                        "description": "The system where the log is located.",
+                        "example": "SYS1"
+                    },
+                    "sysplexName": {
+                        "type": "string",
+                        "description": "The sysplex where the log is located.",
+                        "example": "PLEX1"
+                    }
+                },
+                "description": "List of log file names with additional information."
+            },
+            "OpslogNamesResponse": {
+                "required": [
+                    "count",
+                    "logNames",
+                    "returnCode",
+                    "sub"
+                ],
+                "type": "object",
+                "properties": {
+                    "returnCode": {
+                        "type": "integer",
+                        "description": "Return code from the request for the log names.\n\n0   - Request completed OK\n\n      Command was executed on your LPAR.\n\n8   - Authorization failed\n\n      An AOF rule or SAF call denied authorization for the security\n\n      event OPSCTL.OPSLOG that is required by this request.\n\n20  - Subsystem not found or unusable or not active\n\n      Specified or defaulted subsystem OPSx was not active on\n\n      this APAR, start the OPS/MVS subsystem needed or specify a\n\n      subsystem that is active on this APAR.\n\n28  - Subsystem does not support this call\n\n      Specified or defaulted subsystem OPSx on this LPAR is\n\n      running an older version of OPS/MVS that does not support\n\n      your request.  Start an OPS/MVS subsystem that does support\n\n      your call or upgrade to a newer version.\n\n184 - Abend failure in user exit\n\n      The OPS/MVS instance requested is running a user exit that encountered\n\n      an abend on z/OS.  Check the syslog to diagnose the abend.\n\n186 - Abend failure in function routine\n\n      The OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.\n\n999 - Abend in system list routine\n\n      OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.",
+                        "format": "int64",
+                        "example": 0
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "The number of log file names returned.",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "sub": {
+                        "type": "string",
+                        "description": "OPS/MVS subsystem where the request was made.",
+                        "example": "OPSS"
+                    },
+                    "logNames": {
+                        "type": "array",
+                        "description": "List of log file names with additional information.",
+                        "items": {
+                            "$ref": "#/components/schemas/OpslogName"
+                        }
+                    }
+                }
+            },
+            "OpslogRecord": {
+                "required": [
+                    "aFlags",
+                    "address",
+                    "aofDisposition",
+                    "asid",
+                    "autoToken",
+                    "autoTokenHex",
+                    "color",
+                    "conId",
+                    "consName",
+                    "count",
+                    "descCodes",
+                    "elapsed",
+                    "event",
+                    "exitType",
+                    "extConId",
+                    "flags",
+                    "imsId",
+                    "imsType",
+                    "jes3Class",
+                    "jes3Dsp",
+                    "jobId",
+                    "jobName",
+                    "jobNm",
+                    "length",
+                    "msfDest",
+                    "msfId",
+                    "msgId",
+                    "msgNo",
+                    "opsFlags",
+                    "originalJobName",
+                    "release",
+                    "routeCodes",
+                    "ruleset",
+                    "ruleset1",
+                    "special",
+                    "sysId",
+                    "sysName",
+                    "termName",
+                    "text",
+                    "textAttrib",
+                    "timestamp",
+                    "token",
+                    "user",
+                    "userHex",
+                    "userId",
+                    "utcTime",
+                    "wtoId"
+                ],
+                "type": "object",
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "The address of the control block in the main address space.",
+                        "example": "03FC1F00"
+                    },
+                    "aFlags": {
+                        "type": "string",
+                        "description": "The MVS automation flags.",
+                        "example": "88"
+                    },
+                    "aofDisposition": {
+                        "type": "string",
+                        "description": "The final AOF disposition of the event.",
+                        "example": "NOR"
+                    },
+                    "asid": {
+                        "type": "string",
+                        "description": "The ASID of the generator of the event.",
+                        "example": "000C"
+                    },
+                    "autoToken": {
+                        "type": "string",
+                        "description": "The automation token passed to NETVIEW."
+                    },
+                    "autoTokenHex": {
+                        "type": "string",
+                        "description": "The automation token passed to NETVIEW in hex."
+                    },
+                    "cart": {
+                        "type": "string",
+                        "description": "The command and response token.  Cart is mutually exclusive from termName."
+                    },
+                    "cartHex": {
+                        "type": "string",
+                        "description": "The command and response token in hex."
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "The color of the message when displayed.  If the color is NONE, textAttrib will have a value.",
+                        "example": "RED"
+                    },
+                    "conId": {
+                        "type": "string",
+                        "description": "The console ID associated with the event. If there is no conId, an empty string will be specified.",
+                        "example": "0000"
+                    },
+                    "consName": {
+                        "type": "string",
+                        "description": "The console name associated with the event.",
+                        "example": "NONE"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "The number of AOF rules that processed the event.",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "descCodes": {
+                        "type": "string",
+                        "description": "The OPS/MVS flag bytes associated with the event.",
+                        "example": "0000"
+                    },
+                    "elapsed": {
+                        "type": "integer",
+                        "description": "The elapsed time needed to process the event (microseconds).",
+                        "format": "int64",
+                        "example": 32
+                    },
+                    "event": {
+                        "type": "string",
+                        "description": "The type of event.",
+                        "example": "MSG"
+                    },
+                    "exitType": {
+                        "type": "string",
+                        "description": "The type of exit that captured the event.",
+                        "example": "MVS"
+                    },
+                    "extConId": {
+                        "type": "string",
+                        "description": "The four byte console ID associated with the event.",
+                        "example": "49AB4DD0"
+                    },
+                    "flags": {
+                        "type": "string",
+                        "description": "The IMS, MCS, or JES3 message flags.",
+                        "example": "020000"
+                    },
+                    "imsId": {
+                        "type": "string",
+                        "description": "The IMS id of the IMS that generated the event.",
+                        "example": "NONE"
+                    },
+                    "imsType": {
+                        "type": "string",
+                        "description": "The IMS region type that generated the event.",
+                        "example": "NON"
+                    },
+                    "jes3Class": {
+                        "type": "string",
+                        "description": "The JES3 message class of the message.",
+                        "example": "NON"
+                    },
+                    "jes3Dsp": {
+                        "type": "string",
+                        "description": "The name of the JES3 DSP (Dynamice Support Program) that issued the message."
+                    },
+                    "jobId": {
+                        "type": "string",
+                        "description": "The JOBID of the job that generated the event.",
+                        "example": "INIT"
+                    },
+                    "jobName": {
+                        "type": "string",
+                        "description": "The name of the job that generated the event.",
+                        "example": "INIT"
+                    },
+                    "jobNm": {
+                        "type": "string",
+                        "description": "The subsystem jobname/number that generated the event.",
+                        "example": "JOB52580"
+                    },
+                    "length": {
+                        "type": "integer",
+                        "description": "The length of the text portion of the event.",
+                        "format": "int64",
+                        "example": 68
+                    },
+                    "msfDest": {
+                        "type": "string",
+                        "description": "The MSF ID of the system where the event was sent.",
+                        "example": "OPS31C"
+                    },
+                    "msfId": {
+                        "type": "string",
+                        "description": "The MSF ID of the system that produced the event.",
+                        "example": "OPS31C"
+                    },
+                    "msgId": {
+                        "type": "string",
+                        "description": "The event identifier.",
+                        "example": "$HASP373"
+                    },
+                    "msgNo": {
+                        "type": "integer",
+                        "description": "The number of the event.",
+                        "format": "int64",
+                        "example": 751366544
+                    },
+                    "originalJobName": {
+                        "type": "string",
+                        "description": "Differs from jobname on a branch entered WTO.",
+                        "example": "QA@#VCF3"
+                    },
+                    "opsFlags": {
+                        "type": "string",
+                        "description": "The OPS/MVS flag bytes associated with the event.",
+                        "example": "80"
+                    },
+                    "release": {
+                        "type": "string",
+                        "description": "The OPS/MVS release that captured the event.",
+                        "example": "14.00.00"
+                    },
+                    "routeCodes": {
+                        "type": "string",
+                        "description": "The OPS/MVS flag bytes associated with the event.",
+                        "example": "40000000000000000000000000000000"
+                    },
+                    "ruleset": {
+                        "type": "string",
+                        "description": "The first rule fired or the last rule fired if RULETRACE=ON.",
+                        "example": "QA.MSGRTEST"
+                    },
+                    "ruleset1": {
+                        "type": "string",
+                        "description": "The first ruleset and rule that processed the event.",
+                        "example": "QA.MSGRTEST"
+                    },
+                    "ruleset2": {
+                        "type": "string",
+                        "description": "The second ruleset and rule that processed the event."
+                    },
+                    "ruleset3": {
+                        "type": "string",
+                        "description": "The third ruleset and rule that processed the event."
+                    },
+                    "ruleset4": {
+                        "type": "string",
+                        "description": "The fourth ruleset and rule that processed the event."
+                    },
+                    "ruleset5": {
+                        "type": "string",
+                        "description": "The fifth ruleset and rule that processed the event."
+                    },
+                    "special": {
+                        "type": "string",
+                        "description": "The special screen characters for a message.  special\nThe special screen characters for a message\n\n&\nNo action required\n*\nInformation only, no action\n| message has been deleted\n\n\n\n\n"
+                    },
+                    "sysId": {
+                        "type": "string",
+                        "description": "The system ID where the event occurred.",
+                        "example": "CA"
+                    },
+                    "sysName": {
+                        "type": "string",
+                        "description": "The name of the system that generated the event.",
+                        "example": "CA31"
+                    },
+                    "termName": {
+                        "type": "string",
+                        "description": "The terminal name associated with an event.",
+                        "example": "INTRDR"
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The text of the event message. ."
+                    },
+                    "textAttrib": {
+                        "type": "string",
+                        "description": "Based on the value of Color.",
+                        "example": "NORMAL"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "description": "The time stamp of the event.",
+                        "example": "07.39.11"
+                    },
+                    "token": {
+                        "type": "string",
+                        "description": "The cross system WTOID.",
+                        "example": "0000"
+                    },
+                    "user": {
+                        "type": "string",
+                        "description": "The event user data area after AOF processing."
+                    },
+                    "userHex": {
+                        "type": "string",
+                        "description": "The event user data area after AOF processing in hex."
+                    },
+                    "userId": {
+                        "type": "string",
+                        "description": "The userid associated with the event.",
+                        "example": "USER001"
+                    },
+                    "utcTime": {
+                        "type": "string",
+                        "description": "The full date and time of the timestamp of the record.  If the request specifies only the date and no specific time of day, the time of day will be specified as 00:00:00.",
+                        "format": "date-time",
+                        "example": "2022-02-04T12:39:14.570551Z"
+                    },
+                    "wtoId": {
+                        "type": "string",
+                        "description": "The WTO sequence number of the message.",
+                        "example": "1011"
+                    }
+                },
+                "description": "A record that represents an OPSLOG entry."
+            },
+            "OpslogRecordFilter": {
+                "type": "object",
+                "properties": {
+                    "aofDispositionIncludes": {
+                        "title": "NOT CURRENTLY SUPPORTED. Dispositions that records returned to you should match. Maximum of four can be specified.",
+                        "maxItems": 4,
+                        "type": "array",
+                        "example": [
+                            "CAN",
+                            "NOR"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "enum": [
+                            "ACC",
+                            "CAN",
+                            "DEL",
+                            "DIS",
+                            "EXT",
+                            "NOA",
+                            "NOR",
+                            "REJ",
+                            "SUP"
+                        ]
+                    },
+                    "asidIncludes": {
+                        "title": "Address space ID (ASID) patterns that records returned to you should match. Maximum of four can be specified. The maximum length of the value is four.",
+                        "maxLength": 4,
+                        "type": "array",
+                        "example": [
+                            "000C"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "colorExcludes": {
+                        "title": "Color patterns that records returned to you should not match. NONE is acceptable - it just means that no other color was assigned to the record. The total of colorIncludes + colorExcludes is four.",
+                        "maxLength": 6,
+                        "maxItems": 4,
+                        "type": "array",
+                        "example": [
+                            "RED",
+                            "GREEN"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "enum": [
+                            "BLUE",
+                            "GREEN",
+                            "NONE",
+                            "PINK",
+                            "RED",
+                            "TURQ",
+                            "WHITE",
+                            "YELLOW"
+                        ]
+                    },
+                    "colorIncludes": {
+                        "title": "Color patterns that records returned to you should match. NONE is acceptable - it just means that no other color was assigned to the record.  The total of colorIncludes + colorExcludes is four.",
+                        "maxLength": 6,
+                        "maxItems": 4,
+                        "type": "array",
+                        "example": [
+                            "BLUE",
+                            "PINK"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "enum": [
+                            "BLUE",
+                            "GREEN",
+                            "NONE",
+                            "PINK",
+                            "RED",
+                            "TURQ",
+                            "WHITE",
+                            "YELLOW"
+                        ]
+                    },
+                    "descriptorIncludes": {
+                        "title": "NOT CURRENTLY SUPPORTED. Descriptor codes that records returned to you should match. List of strings where each entry is a descriptor code or range of descriptor codes.",
+                        "type": "array",
+                        "example": [
+                            "1"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "eventExcludes": {
+                        "title": "Message event patterns that records returned to you should NOT match. ",
+                        "type": "array",
+                        "example": [
+                            "MSG",
+                            "DIS"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "enum": [
+                            "API",
+                            "ARM",
+                            "CMD",
+                            "DIS",
+                            "DOM",
+                            "ENA",
+                            "EOJ",
+                            "EOS",
+                            "GLV",
+                            "MSG",
+                            "OMG",
+                            "REQ",
+                            "SCR",
+                            "SEC",
+                            "TOD",
+                            "TLM",
+                            "USS",
+                            "RULETRACE"
+                        ]
+                    },
+                    "exitTypeIncludes": {
+                        "title": "Exit type patterns that records returned to you should match. A maximum of three can be specified.",
+                        "maxItems": 3,
+                        "type": "array",
+                        "example": [
+                            "MVS",
+                            "IMS"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "enum": [
+                            "CA7",
+                            "CICS",
+                            "CNSV",
+                            "DSN",
+                            "IMS",
+                            "JES3",
+                            "MVS",
+                            "NIP",
+                            "NONE",
+                            "OMG",
+                            "TRAC"
+                        ]
+                    },
+                    "jobNameExcludes": {
+                        "title": "Job name patterns that records returned to you should not match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a job name is eight. The total of jobNameIncludes + jobNameExcludes is eight.",
+                        "maxLength": 8,
+                        "maxItems": 8,
+                        "type": "array",
+                        "example": [
+                            "IMS*",
+                            "CICS"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "jobNameIncludes": {
+                        "title": "Job name patterns that records returned to you should match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a job name is eight. The total of jobNameIncludes + jobNameExcludes is eight.",
+                        "maxLength": 8,
+                        "maxItems": 8,
+                        "type": "array",
+                        "example": [
+                            "JES2",
+                            "OPS*"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "msgIdExcludes": {
+                        "title": "Message ID patterns that records returned to you should not match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a message ID is ten. The total of msgIdIncludes + msgIdExcludes is eight.",
+                        "maxLength": 10,
+                        "maxItems": 8,
+                        "type": "array",
+                        "example": [
+                            "IEF*",
+                            "HZS0001I"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "msgIdIncludes": {
+                        "title": "Message ID patterns that records returned to you should match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a message ID is ten. The total of msgIdIncludes + msgIdExcludes is eight.",
+                        "maxLength": 10,
+                        "maxItems": 8,
+                        "type": "array",
+                        "example": [
+                            "IKJ*"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "routeIncludes": {
+                        "title": "NOT CURRENTLY SUPPORTED. Route codes that records returned to you should match. List of strings where each entry is a route code or range of route codes.  The range is 1 to 128.",
+                        "type": "array",
+                        "example": [
+                            "1"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "rulesetIncludes": {
+                        "title": "Allows you to filter on one or two rulesets. Rulename criteria for any of the RULESET display column records.",
+                        "maxLength": 17,
+                        "maxItems": 2,
+                        "type": "array",
+                        "example": [
+                            "TES*.MSGRUL*"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "sysNameExcludes": {
+                        "title": "z/OS system names that records returned to you should NOT match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a system name is eight. The total of sysNameIncludes + sysNameExcludes is four.",
+                        "type": "array",
+                        "example": [
+                            "SYS*",
+                            "TEST1"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "sysNameIncludes": {
+                        "title": "z/OS system names that records returned to you should match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a system name is eight. The total of sysNameIncludes + sysNameExcludes is four.",
+                        "maxLength": 8,
+                        "maxItems": 4,
+                        "type": "array",
+                        "example": [
+                            "SYS1"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "textIncludes": {
+                        "title": "Text that the records returned to you should include in the main text of the record. The maximum length of text is limited to 55 characters. Three is the maximum number of search text allowed to be specified.\nSpecify textFromIncludes and textToIncludes to limit the columns to scan. The length of the text must be less than or equal to the width of the From/To values specified.",
+                        "maxLength": 55,
+                        "maxItems": 3,
+                        "type": "array",
+                        "example": [
+                            "OPSLOG"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "textFromIncludes": {
+                        "title": "Starting column number to limit the text scan area. The number must be lower then the value specified for textToIncludes. Valid values from 1 to 127.",
+                        "maxLength": 3,
+                        "maxItems": 3,
+                        "type": "array",
+                        "example": [
+                            "80"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "textToIncludes": {
+                        "title": "Ending column number to limit the text scan area. The number must be greater then the value specified for textFromIncludes. Valid values from 2 to 128.",
+                        "maxLength": 3,
+                        "maxItems": 3,
+                        "type": "array",
+                        "example": [
+                            "120"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "userExcludes": {
+                        "title": "z/OS user patterns that records returned to you should NOT match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a user is eight. The total of userIncludes + userExcludes is four.",
+                        "maxLength": 8,
+                        "maxItems": 4,
+                        "type": "array",
+                        "example": [
+                            "SYS*",
+                            "OMVS"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "userIncludes": {
+                        "title": "z/OS user patterns that records returned to you should match. Specified values can end with a single \u201c*\u201d to indicate the pattern is a wildcard. The maximum length of a user is eight. The total of userIncludes + userExcludes is four.",
+                        "maxLength": 8,
+                        "maxItems": 4,
+                        "type": "array",
+                        "example": [
+                            "D*",
+                            "CATALOG"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "OpslogRecordsSearchResponse": {
+                "required": [
+                    "count",
+                    "isFiltered",
+                    "logName",
+                    "records",
+                    "returnCode",
+                    "sub"
+                ],
+                "type": "object",
+                "properties": {
+                    "returnCode": {
+                        "type": "integer",
+                        "description": "Return code from the request for records.\n\n0   - Request completed OK\n\n      Command was executed on your LPAR.\n\n8   - Authorization failed\n\n      An AOF rule or SAF call denied authorization for the security\n\n      event OPSBRW that is required by this request.\n\n16  - Invalid function code\n\n20  - Subsystem not found or unusable or not active\n\n      Specified or defaulted subsystem OPSx was not active on\n\n      this APAR. Start the OPS/MVS subsystem needed or specify a\n\n      subsystem that is active on this APAR.\n\n24  - Expected non-zero OPMS address\n\n      The OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.\n\n28  - Subsystem does not support this call\n\n      Specified or defaulted subsystem OPSx on this LPAR is\n\n      running an older version of OPS/MVS that does not support\n\n      your request.  Start an OPS/MVS subsystem that does support\n\n      your call or upgrade to a newer version.\n\n96  - OPS/MVS system service error\n\n      OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.\n\n104 - String not found - on a FIND request only\n\n999 - Abend in system list routine\n\n      OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.",
+                        "format": "int64",
+                        "example": 0
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "The number of records returned.",
+                        "format": "int64",
+                        "example": 100
+                    },
+                    "sub": {
+                        "type": "string",
+                        "description": "OPS/MVS subsystem where the request was made.",
+                        "example": "OPSS"
+                    },
+                    "logName": {
+                        "type": "string",
+                        "description": "The name of the log.",
+                        "example": "DD_OPSLOG"
+                    },
+                    "isFiltered": {
+                        "type": "boolean",
+                        "description": "Indicates if a filter was applied to the search.",
+                        "example": false
+                    },
+                    "records": {
+                        "type": "array",
+                        "description": "A returned list of OPSLOG records.",
+                        "items": {
+                            "$ref": "#/components/schemas/OpslogRecord"
+                        }
+                    }
+                }
+            },
+            "ResponseMessage": {
+                "title": "Message",
+                "required": [
+                    "messageContent",
+                    "messageNumber",
+                    "messageType"
+                ],
+                "type": "object",
+                "properties": {
+                    "messageType": {
+                        "type": "string",
+                        "description": "Severity of the problem described by a message.",
+                        "example": "WARNING",
+                        "enum": [
+                            "ERROR",
+                            "WARNING",
+                            "INFO",
+                            "DEBUG",
+                            "TRACE"
+                        ]
+                    },
+                    "messageNumber": {
+                        "type": "string",
+                        "description": "A message number (not including the message level one-letter code) that uniquely identifies the message and can be typically looked up in product documentation.",
+                        "example": "PFI0031"
+                    },
+                    "messageContent": {
+                        "type": "string",
+                        "description": "Readable message in US English. It should be a proper human-readable sentence."
+                    },
+                    "messageAction": {
+                        "type": "string",
+                        "description": "Recommendation of the actions to take in response to the message."
+                    },
+                    "messageReason": {
+                        "type": "string",
+                        "description": "Supplements the 'messageContent' field, supplying more information about why the message is present."
+                    },
+                    "messageKey": {
+                        "type": "string",
+                        "description": "Unique message key describing the reason for the message in a machine-readable format enabling localization. It should be a dot-delimited string tld.provider.service[.sub-service].detail.",
+                        "example": "org.acme.api.notAuthenticated"
+                    },
+                    "messageParameters": {
+                        "type": "array",
+                        "description": "Message parameters. Used for formatting of localized messages in conjunction with the 'messageKey' field.",
+                        "items": {
+                            "type": "object",
+                            "description": "Message parameter. Can be of any type."
+                        }
+                    },
+                    "messageInstanceId": {
+                        "type": "string",
+                        "description": "Unique ID of the message instance. Useful for locating the message in product logs. The same ID should be printed in the product log output.",
+                        "example": "123e4567-e89b-12d3-a456-426655440000"
+                    },
+                    "messageComponent": {
+                        "type": "string",
+                        "description": "(For support and developers) Identifies the component that generated the message. Can be a fully qualified Java package or class name.",
+                        "example": "org.acme.toolkit.hammers.Ballpeen"
+                    },
+                    "messageSource": {
+                        "type": "string",
+                        "description": "(For support and developers) Identifies the source service that generated the message.",
+                        "example": "production.org.acme:1234:weathersvc"
+                    }
+                },
+                "description": "User-facing API message and related metadata."
+            },
+            "SsmResource": {
+                "required": [
+                    "actionMode",
+                    "chkpointState",
+                    "currentState",
+                    "desiredState",
+                    "iplState",
+                    "jobName",
+                    "missingPrereqs",
+                    "prereqMode",
+                    "prereqs",
+                    "referenceMode",
+                    "resource",
+                    "resourceMode",
+                    "scheduleMode",
+                    "subsystem",
+                    "sysplex",
+                    "system",
+                    "table",
+                    "type"
+                ],
+                "type": "object",
+                "properties": {
+                    "sysplex": {
+                        "type": "string",
+                        "description": "The name of the z/OS sysplex to which the system owning this resource belongs.",
+                        "example": "PLEXNA"
+                    },
+                    "system": {
+                        "type": "string",
+                        "description": "The system where the SSM resource is located.",
+                        "example": "SYS1"
+                    },
+                    "subsystem": {
+                        "type": "string",
+                        "description": "The name of the OPS/MVS subsystem that owns this SSM resource.",
+                        "example": "OPSS"
+                    },
+                    "table": {
+                        "type": "string",
+                        "description": "The name of the resource table in which this SSM resource is defined.",
+                        "example": "STCTBL"
+                    },
+                    "resource": {
+                        "type": "string",
+                        "description": "The name of this SSM resource.",
+                        "example": "APPC"
+                    },
+                    "jobName": {
+                        "type": "string",
+                        "description": "The job name of the STC associated with this SSM resource (if available).",
+                        "example": "TCPIP"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "The resource type for this SSM resource.",
+                        "example": "STC"
+                    },
+                    "currentState": {
+                        "type": "string",
+                        "description": "The current state determined for this SSM resource.",
+                        "example": "UP"
+                    },
+                    "desiredState": {
+                        "type": "string",
+                        "description": "The desired state configured for this SSM resource.",
+                        "example": "UP"
+                    },
+                    "prereqs": {
+                        "type": "string",
+                        "description": "Prerequisite resources defined for this SSM resource.",
+                        "example": "CICS,DB2"
+                    },
+                    "missingPrereqs": {
+                        "type": "string",
+                        "description": "The list of prerequisite resources not in their proper states that are preventing action processing for this SSM resource.",
+                        "example": "CICS,DB2"
+                    },
+                    "resourceMode": {
+                        "type": "string",
+                        "description": "The processing mode assigned to this SSM resource.",
+                        "example": "INACTIVE"
+                    },
+                    "prereqMode": {
+                        "type": "string",
+                        "description": "The processing mode assigned to this SSM resource when SSM processes this resource as a prerequisite.",
+                        "example": "INACTIVE"
+                    },
+                    "referenceMode": {
+                        "type": "string",
+                        "description": "The processing mode assigned to this SSM resource when SSM references this resource.",
+                        "example": "NOPREREQ"
+                    },
+                    "actionMode": {
+                        "type": "string",
+                        "description": "The user-defined mode value for this SSM resource that can be used to select alternate SSM actions.",
+                        "example": "ACTIVE"
+                    },
+                    "scheduleMode": {
+                        "type": "string",
+                        "description": "The Schedule Manager mode value for this SSM resource used to determine whether the Desired State field is updated during Schedule Manager RESET processing.",
+                        "example": "INACTIVE"
+                    },
+                    "chkpointState": {
+                        "type": "string",
+                        "description": "The checkpoint state used to determine the last value SSM recognized for the Desired State field.",
+                        "example": "DOWN"
+                    },
+                    "iplState": {
+                        "type": "string",
+                        "description": "The IPL state used to determine how SSM should manage this SSM resource after an IPL.",
+                        "example": "IPL"
+                    }
+                }
+            },
+            "SsmResourcePayload": {
+                "required": [
+                    "desiredState"
+                ],
+                "type": "object",
+                "properties": {
+                    "desiredState": {
+                        "type": "string",
+                        "description": "The desired state you would like to set for the associated SSM resource.",
+                        "example": "UP"
+                    }
+                }
+            },
+            "StatusResponse": {
+                "required": [
+                    "javaVM",
+                    "jobName",
+                    "jobNumber",
+                    "lpar",
+                    "security",
+                    "stepName",
+                    "userId",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string"
+                    },
+                    "jobNumber": {
+                        "type": "string"
+                    },
+                    "jobName": {
+                        "type": "string"
+                    },
+                    "stepName": {
+                        "type": "string"
+                    },
+                    "lpar": {
+                        "type": "string"
+                    },
+                    "security": {
+                        "type": "string"
+                    },
+                    "javaVM": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Subsystem": {
+                "required": [
+                    "hostName",
+                    "level",
+                    "name",
+                    "sysplexName",
+                    "systemName"
+                ],
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "description": "The version of OPS/MVS for the subsystem.",
+                        "example": "14.0.01"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the subsystem.",
+                        "example": "OPSA"
+                    },
+                    "hostName": {
+                        "type": "string",
+                        "description": "The host name of the subsystem.",
+                        "example": "host.example.net"
+                    },
+                    "systemName": {
+                        "type": "string",
+                        "description": "The system name of the subsystem.",
+                        "example": "SYS1"
+                    },
+                    "sysplexName": {
+                        "type": "string",
+                        "description": "The sysplex name of the subsystem.",
+                        "example": "PLEX1"
+                    }
+                },
+                "description": "A list of subsystems returned."
+            },
+            "SubsystemsResponse": {
+                "required": [
+                    "count",
+                    "returnCode",
+                    "subsystems"
+                ],
+                "type": "object",
+                "properties": {
+                    "returnCode": {
+                        "type": "integer",
+                        "description": "Return code from the request for the subsystem names.\n\n0   - Request completed OK\n\n      Command was executed on your LPAR.\n\n16  - Invalid function code\n\n20  - Subsystem not found or unusable or not active\n\n      Specified or defaulted subsystem OPSx was not active on\n\n      this APAR. Start the OPS/MVS subsystem needed or specify a\n\n      subsystem that is active on this APAR.\n\n24  - Expected non-zero OPMS address\n\n      The OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.\n\n28  - Subsystem does not support this call\n\n      Specified or defaulted subsystem OPSx on this LPAR is\n\n      running an older version of OPS/MVS that does not support\n\n      your request.  Start an OPS/MVS subsystem that does support\n\n      your call or upgrade to a newer version.\n\n96  - OPS/MVS system service error\n\n      OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.\n\n999 - Abend in system list routine\n\n      OPS/MVS instance requested encountered an abend on z/OS.\n\n      Check the syslog to diagnose the abend.",
+                        "format": "int64",
+                        "example": 0
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "The number of subsystems returned.",
+                        "format": "int64",
+                        "example": 3
+                    },
+                    "subsystems": {
+                        "type": "array",
+                        "description": "A list of subsystems returned.",
+                        "items": {
+                            "$ref": "#/components/schemas/Subsystem"
+                        }
+                    }
+                }
+            },
+            "TokenInfo": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "User who is logged in"
+                    },
+                    "creation": {
+                        "type": "string",
+                        "description": "Time when the token was generated",
+                        "format": "date-time"
+                    },
+                    "expiration": {
+                        "type": "string",
+                        "description": "Expiration time of the token",
+                        "format": "date-time"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "basicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            },
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}

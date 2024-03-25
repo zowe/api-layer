@@ -1,0 +1,1010 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "CA Workload Automation ESP Edition RESTful Web Services",
+        "description": "## ESP scheduler engine public rest APIs\n\n # __Model ID Information__\nUse these IDs only as an opaque unique identifier for individual models. The IDs are subject to change in later versions of the API.\n\n# __General HTTP Error code information:__\nThe following error codes apply to all endpoints. However, these codes are not defined in the following specification, because they are enforced at a higher level of implementation than the individual endpoints.\n\nThe codes are:\n- __401 - Unauthorized__\n- Similar to 403 Forbidden, but used when authentication is required and has either failed or has not yet been provided.\n- __408 - Request Timeout__\n- The client did not produce a request within the time that the server was prepared to wait. The client may repeat the request without modification later.\n- __429 - Too Many Requests__\n- Indicates that the server cannot handle the current level of concurrent API calls. The concurrent API calls can include either the total number of API calls, or the total number of calls to a specific API.\n- __500 - Internal Server Error__\n- A generic error message given when an unexpected condition was encountered and no other specific message is suitable.",
+        "version": "12.3.3"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/api/v2/commands/job/resubmit": {
+            "post": {
+                "tags": [
+                    "Job commands"
+                ],
+                "summary": "Send the job 'resubmit' command to the scheduler",
+                "description": "Specifies that the job is to be resubmitted.",
+                "operationId": "resubmit",
+                "requestBody": {
+                    "description": "Input parameters for the \u2018resubmit\u2019 command. For more details about command arguments, refer to \u2018Schema\u2019 tab.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CommandPayloadJobResubmitV2"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommandResponseJobResubmit"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api": {
+            "get": {
+                "tags": [
+                    "Others"
+                ],
+                "summary": "Returns a list of supported endpoints",
+                "description": "This will return a list of endpoints which are supported by this server. \nIf the endpoint is supported in the multiple versions, the list will contain all supported versions of the endpoint.",
+                "operationId": "versionInfo",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ApiEntry"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/events": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Retrieves a list of events",
+                "description": "The LIST command retrieves a list of events.",
+                "operationId": "getAll",
+                "parameters": [
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The maximum number of records to be returned. The default is 100. The minimum is 1, and the maximum is 200.",
+                        "schema": {
+                            "maximum": 200,
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "The offset of the result used by paging. The default is 0.",
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "description = Search criteria in [RSQL](https://github.com/jirutka/rsql-parser) syntax, for example name==\"event1\";prefix==\"ESP\". Refer to the EspEvent schema for searchable fields.\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "The result sort criteria, for example, name, prefix:desc.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of events.",
+                        "content": {
+                            "application/prs.hal-forms+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedModelEntityModelEventV2"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/events/{eventId}": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Retrieves a single event detail.",
+                "description": "Retrieves a single event detail.",
+                "operationId": "one",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "The id of the event whose detail is being retrieved.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An event detail.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EventV2"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/jobs": {
+            "get": {
+                "tags": [
+                    "Monitoring"
+                ],
+                "summary": "Retrieves a list of jobs.",
+                "description": "Retrieve a list of Job records. By default, only \"Active Jobs\" are returned. Active jobs are jobs that have data records available.",
+                "operationId": "getAll_1",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Search criteria in [RSQL](https://github.com/jirutka/rsql-parser) syntax, for example applicationName==\"abc\";generation==5. Refer to the Job schema for searchable fields.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The maximum number of records to be returned. The default is 100. The minimum is 1, and the maximum is 200.",
+                        "required": false,
+                        "schema": {
+                            "maximum": 200,
+                            "minimum": 1,
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "The offset of the result used by paging. The default is 0.",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "The result sort criteria, for example, name, generation:desc.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of running jobs.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponsePageJob"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CommandPayloadCommandArgsResubmitJobV2": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "example": "My reason"
+                    },
+                    "ca11BypGDG": {
+                        "type": "string",
+                        "description": "The Bypass Generation Data Group (BYPGDG) operand is applicable to R processing only.\nOverrides the logic of Bypass Input Generation Data Group Processing for this rerun only. This allows the use of additional or different generation data groups as input.",
+                        "example": "CAT",
+                        "enum": [
+                            "NO",
+                            "YES",
+                            "VER",
+                            "CAT"
+                        ]
+                    },
+                    "ca11Cc": {
+                        "type": "integer",
+                        "description": "The Condition Code (CC) operand is applicable to R processing only.\nSpecifies an integer in the range of zero to 4095.\nOverrides the default condition code (RETCODE=) in the CA Workload Automation Restart Option for z/OS Schedulers Option Table. By setting the condition code in the PARM value to another value, the operating system executes or skips steps as you have specified.",
+                        "format": "int32",
+                        "example": 8
+                    },
+                    "ca11End": {
+                        "type": "string",
+                        "description": "The END operand is applicable to R processing only.\nSpecifies endstep or endstep.endprocstep; endstep by itself is the stepname or step number in the JCL that executes the step where the rerun is to end. The default is the last step of the job.\nIn endstep.endprocstep, endprocstep is the stepname that executes the PROC containing the step where the rerun is to stop. endstep is the stepname in the PROC where the rerun is to stop.",
+                        "example": "STEP20.PSTEP03"
+                    },
+                    "ca11HonorCc": {
+                        "type": "string",
+                        "description": "The HONORCC operand is applicable to R processing only.\nSpecifies whether to honor all or none of the condition codes from steps that precede the starting step of a rerun. The HONORCC parameter of the U11RMS step is applicable for CA Workload Automation Restart Option for z/OS Schedulers r11 and higher.",
+                        "example": "ALL",
+                        "enum": [
+                            "ALL",
+                            "NONE"
+                        ]
+                    },
+                    "ca11Ltrcd": {
+                        "type": "string",
+                        "description": "The CA11_LRTCD operand is applicable to R processing only.\nOverrides the last return code for the specified step, in the format: 'step' or 'procstep.step'.",
+                        "example": "procstep.step"
+                    },
+                    "ca11LtrcdCc": {
+                        "type": "integer",
+                        "description": "The CA11_LRTCD_CC operand is applicable to R processing only.\nSpecifies an integer in the range of zero to 4095, for example:",
+                        "format": "int32",
+                        "example": 8
+                    },
+                    "ca11Parm": {
+                        "type": "string",
+                        "description": "Specifies a string that appears verbatim as the PARM of the RMS step\u2019s EXEC statement.\nLimits: Up to 100 characters long.\nThis operand overrides the other AJ operands that affect the U11RMS step\u2019s EXEC parameters.",
+                        "example": "R,STEP9,,BYPGDG(YES),RE=/10/"
+                    },
+                    "ca11Parm1": {
+                        "type": "string",
+                        "description": "Specifies an operand of the CA11PARM command.\nThe only operand currently supported is ABENDPGM.\nYou can specify up to 60 characters of information for each operand. The CA11PARM command is available only for jobs whose restart manager is CA WA Restart Option for z/OS Schedulers.",
+                        "example": "ABENDPGM=GLAB1"
+                    },
+                    "ca11Parm2": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB2"
+                    },
+                    "ca11Parm3": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB3"
+                    },
+                    "ca11Parm4": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB4"
+                    },
+                    "ca11Parm5": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB5"
+                    },
+                    "ca11Parm6": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB6"
+                    },
+                    "ca11Parm7": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB7"
+                    },
+                    "ca11Parm8": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB8"
+                    },
+                    "ca11Parm9": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLAB9"
+                    },
+                    "ca11ParmA": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLABA"
+                    },
+                    "ca11ParmB": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLABB"
+                    },
+                    "ca11ParmC": {
+                        "type": "string",
+                        "example": "ABENDPGM=GLABC"
+                    },
+                    "ca11Process": {
+                        "type": "string",
+                        "description": "Specifies the processing code used by the Run Handler program, U11RMS. U11RMS is parameter (PARM) driven. It uses processing codes and other PARMs to designate the type of processing to be performed.",
+                        "example": "P",
+                        "enum": [
+                            "P",
+                            "R",
+                            "F",
+                            "N",
+                            "O"
+                        ]
+                    },
+                    "ca11Pseudo": {
+                        "type": "string",
+                        "description": "Specifies to execute pseudo production processing. Pseudo processing tests a job on its first run to verify the actions CA Workload Automation Restart Option for z/OS Schedulers takes. A pseudo production run performs all of the same processing actions as a production run except that uncataloging and scratching of data sets does not occur.",
+                        "example": "YES",
+                        "enum": [
+                            "YES",
+                            "NO"
+                        ]
+                    },
+                    "ca11Reason": {
+                        "type": "string",
+                        "description": "The REASON operand is applicable to R processing only.\nIndicates a reason for the rerun of a production job. The reason can be any word, phrase, code, or number for a maximum of 40 characters, which must be enclosed in single quotes if the string contains a blank. Do not use enclosing slashes in the CA11_REASON operand because the reason string is enclosed in slashes at job-submission time.",
+                        "example": "myca11reason"
+                    },
+                    "ca11Resetp": {
+                        "type": "string",
+                        "description": "Reset-for-production indicator for CA11_PROCESS(F).\nIf you want to reset an existing CMT job record to production status, specify CA11 _PROCESS(F) and CA11_RESETP(YES) to let the AJ command decide how CMT job records are reset for production. AJ presently resets CMT records to production by setting the CA Workload Automation Restart Option for z/OS Schedulers step processing code to F at resubmission time.",
+                        "example": "NO",
+                        "enum": [
+                            "YES",
+                            "NO"
+                        ]
+                    },
+                    "ca11Start": {
+                        "type": "string",
+                        "description": "The START operand is applicable to R processing only.\nSpecifies startstep or startstep.startprocstep; startstep by itself is the stepname or step number in the JCL that executes the program where the rerun is to start. The default is the first step of the job.\nIn startstep.startprocstep, startprocstep is the stepname that executes the PROC containing the step where the rerun is to start. startstep is the stepname in the PROC where the rerun is to start.",
+                        "example": "STEP20.PSTEP03"
+                    },
+                    "ca11Sup11stp": {
+                        "type": "string",
+                        "description": "Suppresses the insertion of the U11RMS step when CA WA ESP Edition submits the job. This operand overrides the other AJ operands that affect the U11RMS step.",
+                        "example": "NO",
+                        "enum": [
+                            "NO",
+                            "YES"
+                        ]
+                    },
+                    "ca11Usage": {
+                        "type": "string",
+                        "description": "Specifies a one-character alphanumeric usage code. This code is used in the parameter of the U11RMS step in the initial run of a job.",
+                        "example": "A"
+                    },
+                    "casesensitive": {
+                        "type": "boolean",
+                        "description": "Disables case translation. Without this option, CA WA ESP Edition converts the values of all operands to uppercase. Use this option if the user parameters USER1-USER4 must be in lowercase or mixed case.",
+                        "example": false,
+                        "enum": [
+                            true,
+                            false
+                        ]
+                    },
+                    "dataset": {
+                        "type": "string",
+                        "description": "Specifies an explicit JCL library name from which a job is to be resubmitted. You can include the member name in dsname.",
+                        "example": "test.data.set"
+                    },
+                    "encParm1": {
+                        "type": "string",
+                        "description": "Specifies an operand of the ENCPARM command. You can specify up to 60 characters of information for each operand. The ENCPARM command is available only for jobs whose restart manager is CA WA Restart Option ESP Edition.",
+                        "example": "myencparm1"
+                    },
+                    "encParm2": {
+                        "type": "string",
+                        "example": "myencparm2"
+                    },
+                    "encParm3": {
+                        "type": "string",
+                        "example": "myencparm3"
+                    },
+                    "encParm4": {
+                        "type": "string",
+                        "example": "myencparm4"
+                    },
+                    "encParm5": {
+                        "type": "string",
+                        "example": "myencparm5"
+                    },
+                    "encParm6": {
+                        "type": "string",
+                        "example": "myencparm6"
+                    },
+                    "encParm7": {
+                        "type": "string",
+                        "example": "myencparm7"
+                    },
+                    "encParm8": {
+                        "type": "string",
+                        "example": "myencparm8"
+                    },
+                    "encParm9": {
+                        "type": "string",
+                        "example": "myencparm9"
+                    },
+                    "encParmA": {
+                        "type": "string",
+                        "example": "myencparma"
+                    },
+                    "encParmB": {
+                        "type": "string",
+                        "example": "myencparmb"
+                    },
+                    "encParmC": {
+                        "type": "string",
+                        "example": "myencparmc"
+                    },
+                    "exclStep": {
+                        "type": "string",
+                        "description": "Excludes a specific step or a list of specific steps from the list specified with FROMSTEP and TOSTEP. You can exclude a maximum of 100 steps.",
+                        "example": "stepname"
+                    },
+                    "fromStep": {
+                        "type": "string",
+                        "description": "Specifies the first step of the job to be rerun. Use (stepname.procstepname) for steps in a CA WA ESP Edition procedure. You can use FROMSTEP only with CA WA Restart Option ESP Edition.",
+                        "example": "stepname"
+                    },
+                    "jobName": {
+                        "type": "string",
+                        "description": "Specifies the job name for the rerun, if the name is different from the original name.",
+                        "example": "name"
+                    },
+                    "member": {
+                        "type": "string",
+                        "description": "Specifies a member name of the JCL data set for the job to be resubmitted.",
+                        "example": "mymember"
+                    },
+                    "restart": {
+                        "type": "boolean",
+                        "description": "Restarts the job using CA WA Restart Option ESP Edition.",
+                        "example": false,
+                        "enum": [
+                            true,
+                            false
+                        ]
+                    },
+                    "rrJobId": {
+                        "type": "integer",
+                        "description": "Specifies the JES job number of the job being rerun. You can use RRJOBID only for jobs being restarted using CA WA Restart Option ESP Edition. By default, RRJOBID corresponds to the previous run of the job.",
+                        "format": "int32",
+                        "example": 1234
+                    },
+                    "toStep": {
+                        "type": "string",
+                        "description": "Specifies the last step of the job to be rerun. Use (stepname.procstepname) for steps in a CA WA ESP Edition procedure. The default is the last step. You can use TOSTEP only with CA WA Restart Option ESP Edition.",
+                        "example": "stepname"
+                    },
+                    "user1": {
+                        "type": "string",
+                        "description": "Specifies user data for resubmitted jobs. This data passes to the USER1-USER4 symbolic variables. Initially, these variables are set to a null string (' ').\nYou can specify up to 68 characters of information for each value.\nIf the user data must be in lower or mixed case, specify the CASESENSITIVE option.",
+                        "example": "myuser1"
+                    },
+                    "user2": {
+                        "type": "string",
+                        "example": "myuser2"
+                    },
+                    "user3": {
+                        "type": "string",
+                        "example": "myuser3"
+                    },
+                    "user4": {
+                        "type": "string",
+                        "example": "myuser4"
+                    },
+                    "verify": {
+                        "type": "string",
+                        "description": "VERIFY: Verifies that a data set and a member exist by opening and closing the member.\nNOVERIFY: Does not verify that a data set and a member exist.\nNONE: Does not include VERIFY and NOVERIFY in the AJ command.",
+                        "example": "NONE",
+                        "enum": [
+                            "NONE",
+                            "VERIFY",
+                            "NOVERIFY"
+                        ]
+                    }
+                }
+            },
+            "CommandPayloadJobResubmitV2": {
+                "required": [
+                    "target"
+                ],
+                "type": "object",
+                "properties": {
+                    "target": {
+                        "$ref": "#/components/schemas/CommandPayloadTargetJob"
+                    },
+                    "commandArgs": {
+                        "$ref": "#/components/schemas/CommandPayloadCommandArgsResubmitJobV2"
+                    }
+                }
+            },
+            "CommandPayloadTargetJob": {
+                "required": [
+                    "applName",
+                    "generation",
+                    "jobName"
+                ],
+                "type": "object",
+                "properties": {
+                    "applName": {
+                        "type": "string",
+                        "description": "The name of the application that is targeted by the command.",
+                        "example": "PAYROLL"
+                    },
+                    "generation": {
+                        "type": "integer",
+                        "description": "The generation of the application that is targeted by the command.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "jobName": {
+                        "type": "string",
+                        "description": "The name of the job that is targeted by the command.",
+                        "example": "JOB_A"
+                    }
+                }
+            },
+            "CommandResponseJobResubmit": {
+                "type": "object",
+                "properties": {
+                    "returnCode": {
+                        "type": "integer",
+                        "description": "Return code of the operation.",
+                        "format": "int32"
+                    },
+                    "messages": {
+                        "type": "array",
+                        "description": "List of messages from CA WA ESP Edition.",
+                        "items": {
+                            "$ref": "#/components/schemas/CommandResponseMessageJobResubmit"
+                        }
+                    }
+                }
+            },
+            "CommandResponseMessageJobResubmit": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "The response that you receive after CA WA ESP Edition issues the job command.",
+                        "example": "JOB PAYROLL RESUBMISSION REQUESTED"
+                    },
+                    "severity": {
+                        "type": "integer",
+                        "description": "Severity of the message.",
+                        "format": "int32",
+                        "example": 1
+                    }
+                },
+                "description": "List of messages from CA WA ESP Edition."
+            },
+            "ApiEntry": {
+                "type": "object",
+                "properties": {
+                    "contextPath": {
+                        "type": "string",
+                        "example": "api"
+                    },
+                    "path": {
+                        "type": "string",
+                        "example": "/applications"
+                    },
+                    "method": {
+                        "type": "string",
+                        "example": "GET",
+                        "enum": [
+                            "GET",
+                            "HEAD",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "TRACE"
+                        ]
+                    },
+                    "version": {
+                        "type": "string",
+                        "example": "v1"
+                    }
+                }
+            },
+            "EntityModelEventV2": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier that represents this specific event. (prefix.name) (not sortable or searchable)"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the event."
+                    },
+                    "prefix": {
+                        "type": "string",
+                        "description": "Prefix of the event."
+                    },
+                    "nextDueAt": {
+                        "type": "string",
+                        "description": "The time of next action scheduled for the event. If the event does not have any schedule the value is null.\n The time is presented in UTC.",
+                        "format": "date-time"
+                    },
+                    "lastRun": {
+                        "type": "string",
+                        "description": "The time of last execution of the event. The time is presented in UTC.",
+                        "format": "date-time"
+                    },
+                    "system": {
+                        "type": "string",
+                        "description": "Displays the ID of the system that is to execute the event."
+                    },
+                    "holdCount": {
+                        "type": "integer",
+                        "description": "Current hold count of the event.",
+                        "format": "int32"
+                    },
+                    "suspendCount": {
+                        "type": "integer",
+                        "description": "Current suspend count of the event.",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Current status of the event. For example: \"REQUIRES TRIGGER\", \"NEXT DUE AT 03:43:48 ON Sat Apr 30, 2022\". (not searchable or sortable)"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "EventV2": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier that represents this specific event. (prefix.name) (not sortable or searchable)"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the event."
+                    },
+                    "prefix": {
+                        "type": "string",
+                        "description": "Prefix of the event."
+                    },
+                    "nextDueAt": {
+                        "type": "string",
+                        "description": "The time of next action scheduled for the event. If the event does not have any schedule the value is null.\n The time is presented in UTC.",
+                        "format": "date-time"
+                    },
+                    "lastRun": {
+                        "type": "string",
+                        "description": "The time of last execution of the event. The time is presented in UTC.",
+                        "format": "date-time"
+                    },
+                    "system": {
+                        "type": "string",
+                        "description": "Displays the ID of the system that is to execute the event."
+                    },
+                    "holdCount": {
+                        "type": "integer",
+                        "description": "Current hold count of the event.",
+                        "format": "int32"
+                    },
+                    "suspendCount": {
+                        "type": "integer",
+                        "description": "Current suspend count of the event.",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Current status of the event. For example: \"REQUIRES TRIGGER\", \"NEXT DUE AT 03:43:48 ON Sat Apr 30, 2022\". (not searchable or sortable)"
+                    }
+                }
+            },
+            "Link": {
+                "type": "object",
+                "properties": {
+                    "rel": {
+                        "type": "string"
+                    },
+                    "href": {
+                        "type": "string"
+                    },
+                    "hreflang": {
+                        "type": "string"
+                    },
+                    "media": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "deprecation": {
+                        "type": "string"
+                    },
+                    "profile": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PageMetadata": {
+                "type": "object",
+                "properties": {
+                    "size": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "PagedModelEntityModelEventV2": {
+                "type": "object",
+                "properties": {
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EntityModelEventV2"
+                        }
+                    },
+                    "page": {
+                        "$ref": "#/components/schemas/PageMetadata"
+                    }
+                }
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The unique identifier that represents this specific job. (not searchable)"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "The type of the job (for example, NT_JOB, JOB). For more information, see https://docops.ca.com/ca-workload-automation-esp-edition/12-0/en/reference/initialization-parameters/wobdef-define-workload-objects ",
+                        "enum": [
+                            "AGENT_MONITOR",
+                            "AIX_JOB",
+                            "APPLEND",
+                            "APPLSTART",
+                            "AS400_JOB",
+                            "BDC_JOB",
+                            "BWIP_JOB",
+                            "BWPC_JOB",
+                            "CPU_MON",
+                            "DATA_OBJECT",
+                            "DB_JOB",
+                            "DB_MON",
+                            "DBSP_JOB",
+                            "DB_TRIG",
+                            "DISK_MON",
+                            "DSTRIG",
+                            "EJB_JOB",
+                            "EJBE_JOB",
+                            "EVENTLOG_MON",
+                            "EXTMON",
+                            "EXTSCH",
+                            "FILE_TRIGGER",
+                            "FTP_JOB",
+                            "HDFS_JOB",
+                            "HIVE_JOB",
+                            "HP3K_JOB",
+                            "HPUX_JOB",
+                            "HTTP_JOB",
+                            "INFORMATICA_JOB",
+                            "IP_MON",
+                            "IRIX_JOB",
+                            "JMSP_JOB",
+                            "JMSS_JOB",
+                            "JMXA_JOB",
+                            "JMXB_JOB",
+                            "JMXN_JOB",
+                            "JMXO_JOB",
+                            "JMXR_JOB",
+                            "JMXS_JOB",
+                            "LINUX_JOB",
+                            "MF_JOB",
+                            "MPEIX_JOB",
+                            "MSSQL_JOB",
+                            "NCR_JOB",
+                            "NT_JOB",
+                            "OA_JOB",
+                            "OAC_JOB",
+                            "OPENVMS_JOB",
+                            "OS2_JOB",
+                            "OOZIE_JOB",
+                            "POJO_JOB",
+                            "PROCESS_MON",
+                            "PROXY_JOB",
+                            "PS_JOB",
+                            "PYRAMID_JOB",
+                            "RMI_JOB",
+                            "SAP_JOB",
+                            "SAPA_JOB",
+                            "SAPE_JOB",
+                            "SAPM_JOB",
+                            "SCP_JOB",
+                            "SEQUENT_JOB",
+                            "SERVICE_MON",
+                            "SFTP_JOB",
+                            "SPARK_JOB",
+                            "SNPC_JOB",
+                            "SNPE_JOB",
+                            "SNPG_JOB",
+                            "SNPS_JOB",
+                            "SQL_JOB",
+                            "SQOOP_JOB",
+                            "SUN_JOB",
+                            "TANDEM_JOB",
+                            "TEXT_MON",
+                            "UNIX_JOB",
+                            "WEB_SERV",
+                            "WEB_DOCLIT",
+                            "WOL_JOB",
+                            "JOB",
+                            "TASK",
+                            "LINK",
+                            "UNKNOWN"
+                        ]
+                    },
+                    "applicationName": {
+                        "type": "string",
+                        "description": "The name of the application."
+                    },
+                    "generation": {
+                        "type": "integer",
+                        "description": "The generation of the application.",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the job."
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "The category of the job. State is mapped to category."
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "The state of the job."
+                    },
+                    "statusDetail": {
+                        "type": "string",
+                        "description": "Extended status of the job (for example, 'Completed at 3:30 TODAY'). (not searchable)"
+                    },
+                    "qualifier": {
+                        "type": "string",
+                        "description": "The job qualifier that further identifies the job. The qualifier provides more meaningful or descriptive names to help distinguish duplicate jobs, for example."
+                    },
+                    "subApplicationName": {
+                        "type": "string",
+                        "description": "The name of the sub-application."
+                    },
+                    "agent": {
+                        "type": "string",
+                        "description": "The name of the agent associated with this job."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "The reason that an action such as bypass, complete, hold, or re-submit was taken on the job."
+                    },
+                    "startDateTime": {
+                        "type": "string",
+                        "description": "The job start time.",
+                        "format": "date-time"
+                    },
+                    "endDateTime": {
+                        "type": "string",
+                        "description": "The job end time.",
+                        "format": "date-time"
+                    },
+                    "definedAsCritical": {
+                        "type": "boolean",
+                        "description": "True if the job is defined as critical."
+                    },
+                    "onCriticalPath": {
+                        "type": "boolean",
+                        "description": "True if the job is on a critical path."
+                    },
+                    "links": {
+                        "type": "array",
+                        "description": "The provided link points to this record.",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            },
+            "ResponsePageJob": {
+                "type": "object",
+                "properties": {
+                    "records": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Job"
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Link"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "basicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            }
+        }
+    }
+}

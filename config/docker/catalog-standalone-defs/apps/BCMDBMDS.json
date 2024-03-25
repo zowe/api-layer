@@ -1,0 +1,40 @@
+{
+    "application": [
+        {
+            "name": "bcmdbmds",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmdbmds",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmdbmds",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMDBMDS",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/dbm/v1/docs",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/dbm/v1/about",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "bcm.dbmds",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "bcmdbmds-_bcm.dbmds vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "1.13.0",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/dbm/api/v1",
+                        "apiml.service.description": "Db2 for z/OS management data services for administration, performance monitoring, schema provisioning, and other Db2 generic purposes.",
+                        "apiml.catalog.tile.description": "Db2 for z/OS management data services for administration, performance monitoring, schema provisioning, and other Db2 generic purposes.",
+                        "apiml.catalog.tile.title": "Database Management Solutions for Db2 for z/OS",
+                        "apiml.service.title": "Database Management Solutions for Db2 for z/OS",
+                        "apiml.catalog.tile.version": "1.13.0",
+                        "apiml.catalog.tile.id": "bcm.dbmds",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

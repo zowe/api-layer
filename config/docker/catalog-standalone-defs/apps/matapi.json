@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "matapi",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "matapi",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "matapi",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "MATAPI",
+                    "homePageUrl": "http://developer.mainframe.broadcom.com/matapi/swagger-ui/",
+                    "statusPageUrl": "http://developer.mainframe.broadcom.com/matapi/swagger-ui/",
+                    "metadata": {
+                        "apiml.apiInfo.api-v2.apiId": "org.zowe.discoverableclient",
+                        "apiml.routes.ui-v2.serviceUrl": "/matapi",
+                        "apiml.routes.ui-v2.gatewayUrl": "ui/v2",
+                        "apiml.apiInfo.api-v2.swaggerUrl": "matapi-_org.zowe.discoverableclient vv2_default.json",
+                        "apiml.apiInfo.api-v2.version": "1.0.0",
+                        "apiml.routes.api-v2.gatewayUrl": "api/v2",
+                        "apiml.apiInfo.api-v2.gatewayUrl": "api/v2",
+                        "apiml.apiInfo.api-v2.defaultApi": "false",
+                        "apiml.apiInfo.api-v2.documentationUrl": "https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-mainframe-software/devops/ca-mainframe-application-tuner/12-0/using-the-rest-api.html",
+                        "apiml.routes.api-v2.serviceUrl": "/matapi/api/v2",
+                        "apiml.service.description": "Use the Mainframe Application Tuner (MAT)rest api's to measure your mainframe applications performance and obtain the measurement results for detailed performance analysis.",
+                        "apiml.catalog.tile.description": "Use the Mainframe Application Tuner (MAT)rest api's to measure your mainframe applications performance and obtain the measurement results for detailed performance analysis.",
+                        "apiml.catalog.tile.title": "Mainframe Application Tuner (MAT)",
+                        "apiml.service.title": "Mainframe Application Tuner (MAT)",
+                        "apiml.catalog.tile.version": "1.0.1",
+                        "apiml.catalog.tile.id": "MAT-REST-API",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

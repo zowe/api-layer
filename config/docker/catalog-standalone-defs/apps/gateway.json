@@ -1,0 +1,39 @@
+{
+    "application": [
+        {
+            "name": "gateway",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "gateway",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "gateway",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/application/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/application/health",
+                    "metadata": {
+                        "apiml.apiInfo.0.apiId": "zowe.apiml.gateway",
+                        "apiml.apiInfo.0.swaggerUrl": "gateway-_zowe.apiml.gateway vv0_default.json",
+                        "apiml.apiInfo.0.version": "1.0.0",
+                        "apiml.apiInfo.0.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.0.documentationUrl": "https://zowe.github.io/docs-site/",
+                        "apiml.routes.api_v1.gatewayUrl": "/api/v1",
+                        "apiml.routes.api_v1.serviceUrl": "/gateway",
+                        "apiml.service.description": "The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.",
+                        "apiml.catalog.tile.description": "The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.",
+                        "apiml.catalog.tile.title": "Zowe API Mediation Layer API",
+                        "apiml.service.title": "Zowe API Gateway",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.catalog.tile.id": "apimediationlayer",
+                        "apiml.authentication.sso": "true"
+                    }
+                }
+            ]
+        }
+    ]
+}

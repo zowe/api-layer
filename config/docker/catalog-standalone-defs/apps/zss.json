@@ -1,0 +1,37 @@
+{
+    "application": [
+        {
+            "name": "zss",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "zss",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "zss",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "metadata": {
+                        "version": "2.2.0",
+                        "apiml.apiInfo.api-v1.apiId": "zowe.zss",
+                        "apiml.apiInfo.api-v1.version": "1.0.0",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "https://usilca32.lvn.broadcom.net:60156/api-docs/agent",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/",
+                        "apiml.service.description": "Zowe System Services is an HTTPS and Websocket server that makes it easy to have secure, powerful web APIs backed by low-level z/OS constructs. It contains services for essential z/OS abilities such as working with files, datasets, and ESMs, but is also extensible by REST and Websocket \"Dataservices\" which are optionally present in App Framework \"Plugins\".",
+                        "apiml.catalog.tile.description": "Zowe System Services is an HTTPS and Websocket server that makes it easy to have secure, powerful web APIs backed by low-level z/OS constructs.",
+                        "apiml.catalog.tile.title": "Zowe System Services (ZSS)",
+                        "apiml.service.title": "Zowe System Services (ZSS)",
+                        "apiml.catalog.tile.version": "1.0.0",
+                        "apiml.catalog.tile.id": "zss"
+                    }
+                }
+            ]
+        }
+    ]
+}

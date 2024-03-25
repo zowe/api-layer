@@ -1,32 +1,50 @@
-.not-found-heading {
+.page-not-found-container .not-found-heading {
     color: #58606e ;
-    text-align: left;
 }
-
+.page-not-found-container .api-heading {
+    margin-top: 120px;
+}
+.page-not-found-container h1 {
+    margin: var(--spaceMedium) 0 var(--spaceLarger);
+    padding-bottom: var(--spaceLarger);
+    position: relative;
+    font-weight: var(--fontWeightMedium);
+}
 #go-back-button {
-    font-weight: bold;
-    font-size: 14px;
-    width: fit-content;
-    padding-left: .6rem;
-    padding-right: .6rem;
-    height: 32px;
-    margin-left: 56px;
-    border-radius: 3px;
-    background-color: #fff;
-    cursor: pointer;
-    color: #0c7bb3;
-    transition: .3s background-color;
+    position: relative;
+    text-align: center;
+    height: 40px;
+    margin: 0 auto;
+    display: flex;
 }
-
-#go-back-button:hover {
-    background-color: #f5f7fa;
+#go-back-button, #go-back-button > span, #go-back-button > a, #go-back-button > span > a {
+    text-decoration: none;
+    font-size: var(--fontMedium);
 }
-
-#go-back-button > span > svg {
-    margin: 0;
+#go-back-button:hover, #go-back-button:focus {
+    background: var( --surface05 );
 }
-
-#label {
-    margin-left: 20px;
-    margin-bottom: 20px;
+#go-back-button> span:hover, #go-back-button> span:focus {
+    color: var(--criticalShade10);
+}
+.page-not-found-container h1::before {
+    --headerLineWidth: 120px;
+    content: "";
+    background: var(--criticalShade10);
+    width: var(--headerLineWidth);
+    height: 5px;
+    position: absolute;
+    bottom: 0;
+    left: calc(50% - calc(var( --headerLineWidth ) / 2));
+}
+.page-not-found-container #go-back-button > span > svg {
+    margin: -7px;
+}
+.page-not-found-container #secondary-label {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 80px;
+}
+.page-not-found-container #primary-label {
+    text-align: center;
 }

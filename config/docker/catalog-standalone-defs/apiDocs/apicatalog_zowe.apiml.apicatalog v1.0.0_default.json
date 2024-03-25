@@ -1,0 +1,720 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "API Catalog",
+        "description": "REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://developer.mainframe.broadcom.com",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/custom-logo": {
+            "get": {
+                "tags": [
+                    "image-controller"
+                ],
+                "operationId": "downloadImage",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/containers": {
+            "get": {
+                "tags": [
+                    "API Catalog"
+                ],
+                "summary": "Lists catalog dashboard tiles",
+                "description": "Returns a list of tiles including status and tile description",
+                "operationId": "getAllAPIContainers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unexpected condition occurred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "URI not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Basic authorization": []
+                    },
+                    {
+                        "CookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/containers/{id}": {
+            "get": {
+                "tags": [
+                    "API Catalog"
+                ],
+                "summary": "Retrieves a specific dashboard tile information",
+                "description": "Returns information for a specific tile {id} including status and tile description",
+                "operationId": "getAPIContainerById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unexpected condition occurred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "URI not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/APIContainer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Basic authorization": []
+                    },
+                    {
+                        "CookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/apidoc/{serviceId}": {
+            "get": {
+                "tags": [
+                    "API Documentation"
+                ],
+                "summary": "Retrieves the API documentation for the default service version",
+                "description": "Returns the API documentation for a specific service {serviceId} and its default version.",
+                "operationId": "getDefaultApiDocInfo",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "description": "The unique identifier of the registered service",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "apicatalog"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unexpected condition occurred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "URI not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Basic authorization": []
+                    },
+                    {
+                        "CookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/apidoc/{serviceId}/{apiId}": {
+            "get": {
+                "tags": [
+                    "API Documentation"
+                ],
+                "summary": "Retrieves the API documentation for a specific service version",
+                "description": "Returns the API documentation for a specific service {serviceId} and version {apiId}. When  the API documentation for the specified version is not found, the first discovered version will be used.",
+                "operationId": "getApiDocInfo",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "description": "The unique identifier of the registered service",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "apicatalog"
+                    },
+                    {
+                        "name": "apiId",
+                        "in": "path",
+                        "description": "The API ID and version, separated by a space, of the API documentation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "zowe.apiml.apicatalog v1.0.0"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unexpected condition occurred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "URI not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Basic authorization": []
+                    },
+                    {
+                        "CookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/apidoc/{serviceId}/{apiId1}/{apiId2}": {
+            "get": {
+                "tags": [
+                    "API Documentation"
+                ],
+                "summary": "Retrieve diff of two api versions for a specific service",
+                "description": "Returns an HTML document which details the difference between two versions of a API service",
+                "operationId": "getApiDiff",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "description": "The unique identifier of the registered service",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "apicatalog"
+                    },
+                    {
+                        "name": "apiId1",
+                        "in": "path",
+                        "description": "The API ID and version, separated by a space, of the API documentation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "zowe.apiml.apicatalog v1.0.0"
+                    },
+                    {
+                        "name": "apiId2",
+                        "in": "path",
+                        "description": "The API ID and version, separated by a space, of the API documentation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "zowe.apiml.apicatalog v2.0.0"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An unexpected condition occurred",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "URI not found",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Basic authorization": []
+                    },
+                    {
+                        "CookieAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "APIContainer": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string",
+                        "description": "The version of the API container"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "The API Container Id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "The API Container title"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The Status of the container"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The description of the API"
+                    },
+                    "services": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "description": "A collection of services which are registered with this API",
+                        "items": {
+                            "$ref": "#/components/schemas/APIService"
+                        }
+                    },
+                    "totalServices": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "activeServices": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "lastUpdatedTimestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "createdTimestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "sso": {
+                        "type": "boolean",
+                        "description": "The SSO support of all services and instances in the container"
+                    },
+                    "hideServiceInfo": {
+                        "type": "boolean",
+                        "description": "Control whether the service's information should be shown"
+                    },
+                    "customStyleConfig": {
+                        "$ref": "#/components/schemas/CustomStyleConfig"
+                    }
+                }
+            },
+            "APIService": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string",
+                        "description": "The service id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "The API service name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The description of the API service"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The status of the API service"
+                    },
+                    "secured": {
+                        "type": "boolean",
+                        "description": "The security status of the API service"
+                    },
+                    "baseUrl": {
+                        "type": "string",
+                        "description": "The instance home URL"
+                    },
+                    "homePageUrl": {
+                        "type": "string",
+                        "description": "The service home page of the API service"
+                    },
+                    "basePath": {
+                        "type": "string",
+                        "description": "The service API base path of the API service"
+                    },
+                    "apiDoc": {
+                        "type": "string",
+                        "description": "The API documentation for this service"
+                    },
+                    "defaultApiVersion": {
+                        "type": "string",
+                        "description": "The default API version for this service"
+                    },
+                    "apiVersions": {
+                        "type": "array",
+                        "description": "The available API versions for this service",
+                        "items": {
+                            "type": "string",
+                            "description": "The available API versions for this service"
+                        }
+                    },
+                    "sso": {
+                        "type": "boolean",
+                        "description": "The SSO support for this instance"
+                    },
+                    "ssoAllInstances": {
+                        "type": "boolean",
+                        "description": "The SSO support for all instances"
+                    },
+                    "apis": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ApiInfo"
+                        },
+                        "description": "The API information for each API ID for this service"
+                    },
+                    "instances": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "description": "A collection of services which are registered with this API"
+            },
+            "ApiInfo": {
+                "required": [
+                    "apiId"
+                ],
+                "type": "object",
+                "properties": {
+                    "apiId": {
+                        "type": "string"
+                    },
+                    "gatewayUrl": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "swaggerUrl": {
+                        "type": "string"
+                    },
+                    "documentationUrl": {
+                        "type": "string"
+                    },
+                    "codeSnippet": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CodeSnippet"
+                        }
+                    },
+                    "defaultApi": {
+                        "type": "boolean"
+                    }
+                },
+                "description": "The API information for each API ID for this service"
+            },
+            "CodeSnippet": {
+                "required": [
+                    "endpoint"
+                ],
+                "type": "object",
+                "properties": {
+                    "endpoint": {
+                        "type": "string"
+                    },
+                    "codeBlock": {
+                        "type": "string"
+                    },
+                    "language": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CustomStyleConfig": {
+                "type": "object",
+                "properties": {
+                    "logo": {
+                        "type": "string"
+                    },
+                    "fontFamily": {
+                        "type": "string"
+                    },
+                    "titlesColor": {
+                        "type": "string"
+                    },
+                    "headerColor": {
+                        "type": "string"
+                    },
+                    "backgroundColor": {
+                        "type": "string"
+                    },
+                    "textColor": {
+                        "type": "string"
+                    },
+                    "docLink": {
+                        "type": "string"
+                    }
+                },
+                "description": "Control selected style properties"
+            }
+        },
+        "securitySchemes": {
+            "Basic authorization": {
+                "type": "http",
+                "scheme": "basic"
+            },
+            "CookieAuth": {
+                "type": "apiKey",
+                "name": "apimlAuthenticationToken",
+                "in": "header"
+            }
+        }
+    }
+}

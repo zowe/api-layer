@@ -1,0 +1,35 @@
+{
+    "application": [
+        {
+            "name": "zlux",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "zlux",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "zlux",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/server/eureka/info",
+                    "metadata": {
+                        "apiml.apiInfo.0.apiId": "org.zowe.zlux",
+                        "apiml.apiInfo.0.swaggerUrl": "zlux-_org.zowe.zlux vv0_default.json",
+                        "apiml.apiInfo.0.version": "1.0.0",
+                        "apiml.apiInfo.0.gatewayUrl": "api/v1",
+                        "apiml.service.description": "Zowe's App Server is the component of Zowe which serves the Zowe Desktop. It is an extensible webserver for HTTPS and Websocket APIs written using ExpressJS. Extensions are delivered as 'App Framework Plugins', and several are included by default.",
+                        "apiml.catalog.tile.description": "Zowe's App Server is the component of Zowe which serves the Zowe Desktop. It is an extensible webserver for HTTPS and Websocket APIs written using ExpressJS. Extensions are delivered as 'App Framework Plugins', and several are included by default.",
+                        "apiml.catalog.tile.title": "Zowe App Server",
+                        "apiml.service.title": "Zowe App Server",
+                        "apiml.catalog.tile.version": "0.0.0",
+                        "apiml.catalog.tile.id": "zlux",
+                        "apiml.authentication.sso": "true"
+                    }
+                }
+            ]
+        }
+    ]
+}

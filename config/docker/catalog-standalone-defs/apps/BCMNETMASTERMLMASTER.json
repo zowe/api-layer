@@ -1,0 +1,42 @@
+{
+    "application": [
+        {
+            "name": "bcmnetmastermlmaster",
+            "instance": [
+                {
+                    "hostName": "developer.mainframe.broadcom.com",
+                    "app": "bcmnetmastermlmaster",
+                    "ipAddr": "127.0.0.1",
+                    "status": "UP",
+                    "vipAddress": "bcmnetmasterMLmaster",
+                    "securePort": {
+                        "$": "443",
+                        "@enabled": "true"
+                    },
+                    "appGroupName": "BCMNETMASTERMLMASTER",
+                    "homePageUrl": "https://developer.mainframe.broadcom.com/",
+                    "statusPageUrl": "https://developer.mainframe.broadcom.com/actuator/info",
+                    "secureHealthCheckUrl": "https://developer.mainframe.broadcom.com/actuator/health",
+                    "metadata": {
+                        "apiml.apiInfo.api-v1.apiId": "bcm.netmaster",
+                        "apiml.apiInfo.api-v1.swaggerUrl": "bcmnetmastermlmaster-_bcm.netmaster vv1_default.json",
+                        "apiml.apiInfo.api-v1.version": "2023.5.2",
+                        "apiml.routes.api-v1.gatewayUrl": "api/v1",
+                        "apiml.routes.ws-v1.gatewayUrl": "ws/v1",
+                        "apiml.apiInfo.api-v1.gatewayUrl": "api/v1",
+                        "apiml.apiInfo.api-v1.defaultApi": "false",
+                        "apiml.routes.api-v1.serviceUrl": "/api/v1",
+                        "apiml.routes.ws-v1.serviceUrl": "ws",
+                        "apiml.service.description": "The NetMaster API service helps you quickly glean network information that can be used by network security personnel and network administrators to manage and analyze your network. The NetMaster API service also allows you to setup the NetMaster Web Portal, so you can manage and analyze your network with an intuitive and simple UI. The NetMaster API service can also be used to compile large amounts of network data that can be offloaded into web dashboards, CI/CD pipelines, databases, and much more.",
+                        "apiml.catalog.tile.description": "The NetMaster API service helps you quickly glean network information that can be used by network security personnel and network administrators to manage and analyze your network. The NetMaster API service also allows you to setup the NetMaster Web Portal, so you can manage and analyze your network with an intuitive and simple UI. The NetMaster API service can also be used to compile large amounts of network data that can be offloaded into web dashboards, CI/CD pipelines, databases, and much more.",
+                        "apiml.catalog.tile.title": "NetMaster",
+                        "apiml.service.title": "NetMaster",
+                        "apiml.catalog.tile.version": "2023.5.2",
+                        "apiml.catalog.tile.id": "bcmnetmaster",
+                        "os.name": "z/OS"
+                    }
+                }
+            ]
+        }
+    ]
+}

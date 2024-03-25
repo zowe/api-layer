@@ -1,3 +1,380 @@
 {
-    "text": "just a json placeholder for the portal"
+    "products": [
+        {
+            "name": "centraltopapi",
+            "documentation": {},
+            "videos": [],
+            "useCases": [],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/intelligent-operations/alert-central/1-4/installing/prepare-for-installation/installation-checklist.html"
+                }
+            ]
+        },
+        {
+            "name": "apicatalog",
+            "documentation": {
+                "url": "",
+                "label": ""
+            },
+            "videos": [],
+            "useCases": [
+                {
+                    "title": "Viewing Service Information and API Documentation in the API Catalog",
+                    "url": "https://docs.zowe.org/stable/user-guide/api-mediation-view-service-information-and-api-doc/"
+                },
+                {
+                    "user":  "andrea.tabone",
+                    "url": "https://medium.com/zowe/introducing-try-it-out-functionality-in-the-zowe-api-mediation-layer-930aa9e947bd"
+                },
+                {
+                    "user":  "andrea.tabone",
+                    "url": "https://medium.com/zowe/the-yaml-onboarding-wizard-an-easy-way-to-onboard-your-rest-api-service-to-the-zowe-api-mediation-66ba22c9617a"
+                },
+                {
+                    "user":  "janda.david",
+                    "url": "https://medium.com/zowe/exposing-partial-api-documentation-in-the-zowe-api-catalog-e3aa2ef30616"
+                },
+                {
+                    "user":  "andrea.tabone",
+                    "url": "https://medium.com/zowe/zowe-enhances-the-api-consumer-experience-with-code-snippets-ecc9dfa3938e"
+                }
+            ],
+            "tutorials": []
+        },
+        {
+            "name": "gateway",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "title": "API Gateway REST APIs",
+                    "url": "https://docs.zowe.org/stable/user-guide/api-mediation/api-gateway-rest-apis-documentation"
+                },
+                {
+                    "user": "andrea.tabone",
+                    "url": "https://medium.com/zowe/the-zaas-client-a-library-for-the-api-mediation-layer-822ea2994388"
+                }
+            ],
+            "tutorials": []
+        },
+        {
+            "name": "ca7services",
+            "documentation": {},
+            "videos": [
+                "https://www.youtube.com/embed/sQhTZZCPFi0?si=laPU7ZvZcwERKh0a"
+            ],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-workload-automation-ca-7-edition/12-1/configuring/interfaces/ca-7-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-workload-automation-ca-7-edition/12-1/configuring/interfaces/ca-7-rest-api/ca-7-rest-api-implementation/install-and-configure-the-ca-7-rest-api-12-1-01-server.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-workload-automation-ca-7-edition/12-1/configuring/interfaces/ca-7-rest-api/integrate-ca-7-rest-api-12-1-01-with-zowe-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmdbmds",
+            "documentation": {},
+            "videos": [
+                "https://www.youtube.com/embed/aTq_lm-cs7A?si=tgWh_wXb72lxIzib"
+            ],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-database-management-solutions-for-db2-for-z-os/20/using/use-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-database-management-solutions-for-db2-for-z-os/20/integrating/integrate-with-zowe-api-mediation-layer.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-sysview-performance-management-option-for-db2/20-0/configuring/integrate-rest-api-with-the-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmdatacomsysapi",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-datacom/15-1/using/using-the-datacom-systems-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-datacom/15-1/installing/install-the-datacom-systems-rest-api.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-datacom/15-1/installing/install-the-datacom-systems-rest-api/integrate-the-systems-rest-api-with-the-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "caendevorapi",
+            "documentation": {},
+            "videos": [
+                "https://www.youtube.com/embed/1eSHstLBdQo?si=3HVFJokMdj2sH6uX"
+            ],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-endevor-software-change-manager/19-0/using/using-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-endevor-software-change-manager/19-0/installing/install-web-services/prepare-for-web-services-installation/optional-integrate-rest-api-with-the-zowe-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmesprestapiesahrest",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-workload-automation-esp-edition/12-0/using/using-the-rest.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-workload-automation-esp-edition/12-0/installing/install-and-configure-the-rest-api.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-workload-automation-esp-edition/12-0/installing/install-and-configure-the-rest-api/integrate-the-esp-rest-api-with-the-zowe-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmfilemasterplus",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-filemaster-plus/12-0/using/using-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-filemaster-plus/12-0/installing/install-testing-tools-server-and-rest-api.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-filemaster-plus/12-0/installing/install-testing-tools-server-and-rest-api/integrate-rest-api-with-the-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "dbapi-idms",
+            "documentation": {},
+            "videos": [
+                "https://www.youtube.com/embed/MqrusSw8Eoo?si=4Vj3mpqwIDUDRN9k"
+            ],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-idms/19-0/using/using-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-idms/19-0/installing/install-the-ca-idms-rest-api.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/database-management/ca-idms/19-0/installing/install-the-ca-idms-rest-api/integrate-the-rest-api-with-the-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "matapi",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-mainframe-application-tuner/12-0/using/using-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-mainframe-application-tuner/12-0/installing/complete-configuration-tasks/customize-mat/configure-ca-mat-database-and-enable-rest-api/configure-the-rest-api.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-mainframe-application-tuner/12-0/integrating/integrate-with-the-zowe-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "cho99",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/intelligent-operations/ca-mainframe-operational-intelligence/2-1/use-the-moi-ml-insights-api2.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/intelligent-operations/ca-mainframe-operational-intelligence/2-1/administrating/set-up-an-api-mediation-layer--apiml--connection.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmnetmastermlmaster",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/performance-and-storage/ca-netmaster-network-management-for-tcp-ip/12-2/Using-NetMaster-APIs.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/performance-and-storage/ca-netmaster-network-management-for-tcp-ip/12-2/installing/deploy-and-configure-the-netmaster-api-service/configure-the-security-environment/integrate-the-ca-netmaster-api-service-with-the-zowe-api-ml.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmopsrestapiga",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-ops-mvs-event-management-and-automation/14-0/using/use-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/automation/ca-ops-mvs-event-management-and-automation/14-0/integrating/integrate-the-ops-mvs-rest-api-with-the-zowe-api-ml.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmmfsiinsights",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/using.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/installing.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/installing/prepare-for-installation/address-software-requirements.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmmfsi",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/using.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/installing.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/installing/prepare-for-installation/address-software-requirements.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmmfsisaf",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/using.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/installing.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/security/ca-mainframe-security-insights-platform/1-0/installing/prepare-for-installation/address-software-requirements.html"
+                }
+            ]
+        },
+        {
+            "name": "bcmsymdump01",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-intertest-and-ca-symdump/11-0/using/using-batch-tools/using-the-batch-rest-api.html\n"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-intertest-and-ca-symdump/11-0/using/using-cics-tools/using-the-cics-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-intertest-and-ca-symdump/11-0/installing/install-testing-tools-server-and-rest-api.html"
+                },
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/devops/ca-intertest-and-ca-symdump/11-0/installing/install-testing-tools-server-and-rest-api/Integrate-testing-tools-server-with-the-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "casysviewathos",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/performance-and-storage/ca-sysview-performance-management/17-0/integrating/using-ca-sysview-apis/getting-started-with-the-ca-sysview-rest-api/using-the-rest-api.html"
+                }
+            ],
+            "tutorials": [
+                {
+                    "url": "https://techdocs.broadcom.com/us/en/ca-mainframe-software/performance-and-storage/ca-sysview-performance-management/17-0/integrating/using-ca-sysview-apis/getting-started-with-the-ca-sysview-rest-api/integrate-the-rest-api-with-api-mediation-layer.html"
+                }
+            ]
+        },
+        {
+            "name": "zlux",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "title": "Using Zowe Desktop",
+                    "url": "https://docs.zowe.org/stable/user-guide/mvd-using/"
+                }
+            ],
+            "tutorials": [
+                {
+                    "title": "Accessing the Desktop",
+                    "url": "https://docs.zowe.org/stable/user-guide/mvd-configuration/#accessing-the-desktop"
+                }
+            ]
+        },
+        {
+            "name": "zss",
+            "documentation": {},
+            "videos": [],
+            "useCases": [
+                {
+                    "title": "Using ZSS",
+                    "url": "https://docs.zowe.org/stable/getting-started/zowe-architecture/#zss"
+                }
+            ],
+            "tutorials": [
+                {
+                    "title": "Accessing ZSS",
+                    "url": "https://docs.zowe.org/stable/user-guide/mvd-configuration/#accessing-zss"
+                }
+            ]
+        }
+    ]
 }

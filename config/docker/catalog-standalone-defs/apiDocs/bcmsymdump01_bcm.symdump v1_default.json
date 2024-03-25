@@ -1,0 +1,1383 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "The SymDump REST API ABEND diagnostics tool.",
+        "version": "1",
+        "title": "SymDump Rest API"
+    },
+    "host": "https://developer.mainframe.broadcom.com",
+    "tags": [
+        {
+            "name": "SymDumpBatch",
+            "description": "SymDump Batch Rest API Endpoints"
+        },
+        {
+            "name": "SymDumpCics",
+            "description": "SymDump CICS Rest API Endpoints"
+        }
+    ],
+    "paths": {
+        "/symdump/api/v1/batch/options": {
+            "get": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Display installation options",
+                "description": "Display the current product installation options.",
+                "operationId": "doOptionsUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/OptionsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/batch/prtlib/{prtlib}/reports": {
+            "get": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Display report list",
+                "description": "Display a list of ABEND reports.",
+                "operationId": "doReportUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ReportsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/batch/prtlib/{prtlib}/reports/{key}": {
+            "delete": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Delete a report",
+                "description": "Delete an ABEND report.",
+                "operationId": "doDeleteDumpUsingDELETE",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete request successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UtilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/batch/prtlib/{prtlib}/reports/{key}/full-dump-with-index": {
+            "get": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Retrieve a report",
+                "description": "Retrieve an ABEND analysis report with an index.",
+                "operationId": "doDumpIndexUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "dumpIndexRequest",
+                        "description": "Request body",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/DumpIndexRequest"
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/DumpIndexResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found.\nWhen you populate a non LE-enabled ASSEMBLER option, the ndvrDSSdsn option data set name of a PROTSYM file is required.\nValues to populate a non LE-enabled ASSEMBLER option are 'Y' or 'N'."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/batch/prtlib/{prtlib}/reports/{key}/lock": {
+            "post": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Lock a report",
+                "description": "Lock an ABEND report to prevent accidental deletion.",
+                "operationId": "doLockDumpUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lock request successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UtilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found.\nReport is already locked."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/batch/prtlib/{prtlib}/reports/{key}/options": {
+            "get": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Display report options",
+                "description": "View formatting options for a report.",
+                "operationId": "getReportOptionsUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ReportOptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Update report options",
+                "description": "Update options for a report.",
+                "operationId": "updateReportOptionsUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    },
+                    {
+                        "in": "body",
+                        "name": "reportOptionsRequest",
+                        "description": "Request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ReportOptionsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update report option is successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UpdateReportOptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found.\nLocked report options cannot be updated.\n<option_name> value exceeds the maximum size <size>."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/batch/prtlib/{prtlib}/reports/{key}/unlock": {
+            "post": {
+                "tags": [
+                    "SymDumpBatch"
+                ],
+                "summary": "Unlock a report",
+                "description": "Unlock an ABEND report to allow deletion.",
+                "operationId": "doUnlockDumpUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "prtlib",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PRTLIB"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unlock request successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UtilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found.\nReport is not locked."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/cics/protdmp/{protdmp}/options": {
+            "get": {
+                "tags": [
+                    "SymDumpCics"
+                ],
+                "summary": "Display PROTDMP  installation options",
+                "description": "Display the PROTDMP installation options.",
+                "operationId": "getReportOptionsUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "protdmp",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PROTDMP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/OptionsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/cics/protdmp/{protdmp}/reports": {
+            "get": {
+                "tags": [
+                    "SymDumpCics"
+                ],
+                "summary": "Display report list",
+                "description": "Display a list of ABEND reports.",
+                "operationId": "doReportUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "protdmp",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PROTDMP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ReportsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/cics/protdmp/{protdmp}/reports/{key}": {
+            "delete": {
+                "tags": [
+                    "SymDumpCics"
+                ],
+                "summary": "Delete a report",
+                "description": "Delete an ABEND report.",
+                "operationId": "doDeleteDumpUsingDELETE_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "protdmp",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PROTDMP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete request successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UtilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/cics/protdmp/{protdmp}/reports/{key}/full-dump-with-index": {
+            "get": {
+                "tags": [
+                    "SymDumpCics"
+                ],
+                "summary": "Retrieve a report",
+                "description": "Retrieve an ABEND analysis report with an index.",
+                "operationId": "doDumpIndexUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "protdmp",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PROTDMP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/DumpIndexResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/cics/protdmp/{protdmp}/reports/{key}/lock": {
+            "post": {
+                "tags": [
+                    "SymDumpCics"
+                ],
+                "summary": "Lock a report",
+                "description": "Lock an ABEND report to prevent accidental deletion.",
+                "operationId": "doLockDumpUsingPOST_1",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "protdmp",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PROTDMP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lock request successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UtilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found.\nReport is already locked."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        },
+        "/symdump/api/v1/cics/protdmp/{protdmp}/reports/{key}/unlock": {
+            "post": {
+                "tags": [
+                    "SymDumpCics"
+                ],
+                "summary": "Unlock a report",
+                "description": "Unlock an ABEND report to allow deletion.",
+                "operationId": "doUnlockDumpUsingPOST_1",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Basic Auth (with mainframe username and password)",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Report key is used to locate a specific report from the report list",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "protdmp",
+                        "in": "path",
+                        "description": "Dump repository data set name",
+                        "required": true,
+                        "type": "string",
+                        "x-example": "CAI.PROTDMP"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unlock request successful.",
+                        "schema": {
+                            "$ref": "#/definitions/UtilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid key, no corresponding report found.\nReport is not locked."
+                    },
+                    "401": {
+                        "description": "Invalid mainframe user credentials."
+                    },
+                    "404": {
+                        "description": "<dataset_name> data set not found."
+                    },
+                    "422": {
+                        "description": "Checked Exception with recoverable condition."
+                    },
+                    "500": {
+                        "description": "Internal Error."
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "DisplayOptions": {
+            "type": "object",
+            "properties": {
+                "asminst": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the abending assembler instruction.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "files": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the Open Files report.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "first128": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display only the first 128 bytes of each record.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "linecnt": {
+                    "type": "string",
+                    "example": 60,
+                    "description": "The number of lines per formatted page.",
+                    "enum": [
+                        "nnn"
+                    ]
+                },
+                "linkage": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the Linkage Section for COBOL programs.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "listline": {
+                    "type": "string",
+                    "example": 10,
+                    "description": "The number of additional source lines to display before and after the abending (or snap) statement.",
+                    "enum": [
+                        "nn"
+                    ]
+                },
+                "localstor": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display Local Storage for COBOL programs.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "memmap": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the TGT, DSA and PGT memory maps.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "rptsz80": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Format when possible using 80-byte output.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "savearea": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the Save Area Trace report.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "showheap": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display LE or PL/I heap storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "workstor": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the Working Storage for COBOL programs.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                }
+            },
+            "title": "DisplayOptions"
+        },
+        "DumpIndexRequest": {
+            "type": "object",
+            "properties": {
+                "options": {
+                    "$ref": "#/definitions/Options"
+                },
+                "protsymList": {
+                    "type": "array",
+                    "example": [
+                        "CAI.D1.PROTSYM",
+                        "CAI.D2.PROTSYM"
+                    ],
+                    "description": "list of PROTSYM data set names.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "DumpIndexRequest"
+        },
+        "DumpIndexResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "dump": {
+                    "$ref": "#/definitions/DumpInfo"
+                },
+                "index": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexItem"
+                    }
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Metadata"
+                    }
+                }
+            },
+            "title": "DumpIndexResponse"
+        },
+        "DumpInfo": {
+            "type": "object",
+            "properties": {
+                "abend": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "jobName": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "lock": {
+                    "type": "string"
+                },
+                "offset": {
+                    "type": "string"
+                },
+                "program": {
+                    "type": "string"
+                },
+                "stepName": {
+                    "type": "string"
+                },
+                "system": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            },
+            "title": "DumpInfo"
+        },
+        "IndexItem": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IndexItem"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "lineNo": {
+                    "type": "string"
+                }
+            },
+            "title": "IndexItem"
+        },
+        "MergingOptions": {
+            "type": "object",
+            "properties": {
+                "binfrmt": {
+                    "type": "string",
+                    "example": "HEX",
+                    "description": "Display binary values as decimal or hexadecimal.",
+                    "enum": [
+                        "DEC",
+                        "HEX"
+                    ]
+                },
+                "grpaddr": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display the group address for 01-items.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mergedb": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto Database reports.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgauto": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto PL/I automatic storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgbased": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto PL/I based variable storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgcntld": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto PL/I controlled storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgdsect": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto Assembler DSECT storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgfiles": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto File Section for COBOL.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrglink": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto Linkage Section for COBOL.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrglocal": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto Local Storage for COBOL.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgparms": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto PL/I parameter storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgstat": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto PL/I static storage.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "mrgwork": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Merge symbolic names onto Working Storage for COBOL.",
+                    "enum": [
+                        "OFF",
+                        "ON"
+                    ]
+                },
+                "occurs": {
+                    "type": "string",
+                    "example": "MAX",
+                    "description": "Number of table elements to display for each array.",
+                    "enum": [
+                        "MAX",
+                        "nnn"
+                    ]
+                },
+                "showunmrg": {
+                    "type": "string",
+                    "example": "ON",
+                    "description": "Display storage for unmerged data.",
+                    "enum": [
+                        "OFF",
+                        "ON",
+                        "TBLS"
+                    ]
+                }
+            },
+            "title": "MergingOptions"
+        },
+        "Message": {
+            "type": "object",
+            "properties": {
+                "messageContent": {
+                    "type": "string"
+                },
+                "messageNumber": {
+                    "type": "string"
+                },
+                "messageType": {
+                    "type": "string"
+                }
+            },
+            "title": "Message"
+        },
+        "Metadata": {
+            "type": "object",
+            "properties": {
+                "messageTime": {
+                    "type": "string"
+                },
+                "messageVersion": {
+                    "type": "string"
+                },
+                "serviceName": {
+                    "type": "string"
+                },
+                "sessionID": {
+                    "type": "string"
+                }
+            },
+            "title": "Metadata"
+        },
+        "Options": {
+            "type": "object",
+            "properties": {
+                "ndvrDSSasm": {
+                    "type": "string",
+                    "example": "Y",
+                    "description": "Activates or deactivates auto population for non-LE enabled ASSEMBLER programs.",
+                    "enum": [
+                        "N",
+                        "Y"
+                    ]
+                },
+                "ndvrDSSdsn": {
+                    "type": "string",
+                    "example": "CAI.ENDV.PROTSYM",
+                    "description": "The data set name of a PROTSYM file designated as the receiver of Dynamic Symbolic Support auto population. Specify this option to activate Dynamic Symbolic Support for CA Endevor SCM."
+                }
+            },
+            "title": "Options"
+        },
+        "OptionsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Metadata"
+                    }
+                }
+            },
+            "title": "OptionsResponse"
+        },
+        "ReportOptionsRequest": {
+            "type": "object",
+            "properties": {
+                "displayOptions": {
+                    "$ref": "#/definitions/DisplayOptions"
+                },
+                "mergingOptions": {
+                    "$ref": "#/definitions/MergingOptions"
+                }
+            },
+            "title": "ReportOptionsRequest"
+        },
+        "ReportOptionsResponse": {
+            "type": "object",
+            "properties": {
+                "displayOptions": {
+                    "$ref": "#/definitions/DisplayOptions"
+                },
+                "dump": {
+                    "$ref": "#/definitions/DumpInfo"
+                },
+                "mergingOptions": {
+                    "$ref": "#/definitions/MergingOptions"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Metadata"
+                    }
+                }
+            },
+            "title": "ReportOptionsResponse"
+        },
+        "ReportsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DumpInfo"
+                    }
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Metadata"
+                    }
+                }
+            },
+            "title": "ReportsResponse"
+        },
+        "UpdateReportOptionsResponse": {
+            "type": "object",
+            "properties": {
+                "dump": {
+                    "$ref": "#/definitions/DumpInfo"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Metadata"
+                    }
+                }
+            },
+            "title": "UpdateReportOptionsResponse"
+        },
+        "UtilityResponse": {
+            "type": "object",
+            "properties": {
+                "dump": {
+                    "$ref": "#/definitions/DumpInfo"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                },
+                "metadata": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Metadata"
+                    }
+                }
+            },
+            "title": "UtilityResponse"
+        }
+    }
+}

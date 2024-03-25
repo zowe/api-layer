@@ -10,7 +10,10 @@ eureka:
 
 server:
     address: ${apiml.service.hostname}
+    servlet:
+        contextPath: /
     ssl:
+        enabled: false
         keyAlias: localhost
         keyPassword: password
         keyStore: /docker/all-services.keystore.p12
@@ -22,9 +25,10 @@ server:
         trustStoreType: PKCS12
 
 apiml:
+    security.ssl.sslEnabled: false
     service:
-        hostname: api-catalog-services
-        port: 10014
+        hostname: 0.0.0.0
+        port: 8080
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         eurekaPassword: password
         eurekaUserName: eureka
@@ -41,6 +45,12 @@ apiml:
     metrics:
         serviceId: metrics-service
         enabled: true
+    catalog:
+        customStyle:
+            logo: /docker/broadcom.svg
+        standalone:
+            enabled: true
+            servicesDirectory: /docker/catalog-standalone-defs
 spring:
     output:
         ansi:
