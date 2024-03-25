@@ -55,7 +55,7 @@ function setFilterBarStyle() {
     }
 }
 
-export default class SwaggerUI extends Component {
+export default class SwaggerUIApiml extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -222,6 +222,6 @@ export default class SwaggerUI extends Component {
     }
 }
 
-SwaggerUI.defaultProps = {
+SwaggerUIApiml.defaultProps = {
     url: `${getBaseUrl()}/apidoc`,
 };
