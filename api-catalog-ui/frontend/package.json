@@ -27,7 +27,7 @@
         "install": "0.13.0",
         "lodash": "4.17.21",
         "loglevel": "1.9.1",
-        "openapi-snippet": "0.13.0",
+        "openapi-snippet": "0.14.0",
         "react": "18.2.0",
         "react-app-polyfill": "3.0.0",
         "react-dom": "18.2.0",
