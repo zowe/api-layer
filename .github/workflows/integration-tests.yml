@@ -1414,7 +1414,6 @@ jobs:
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
-                    npx update-browserslist-db@latest
                     npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
                 uses: actions/upload-artifact@v4
