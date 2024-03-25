@@ -61,7 +61,7 @@ ext {
     reactorTestVersion = '3.5.0'
     restAssuredVersion = '4.4.0'
     rhinoVersion = '1.7.14'
-    slf4jVersion = '2.0.12'
+    slf4jVersion = '2.0.13'
     snakeyamlVersion = '2.2'
     springFoxVersion = '2.9.2'
     springDocVersion = '1.6.15'
