@@ -24,6 +24,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
+import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.lang.reflect.Field;
@@ -85,7 +86,13 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
                 throw new AttlsHandlerException("Different implementation expected.", e);
             } finally {
-                InboundAttls.dispose();
+                try {
+                    InboundAttls.clean();
+                } catch (ContextIsNotInitializedException e) {
+                    log.debug("Cannot clean AT-TLS context: {}", e.getMessage());
+                } finally {
+                    InboundAttls.dispose();
+                }
             }
 
         }
