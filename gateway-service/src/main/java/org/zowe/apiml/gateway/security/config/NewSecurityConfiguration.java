@@ -66,12 +66,7 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
-import org.zowe.apiml.security.common.login.BasicAuthFilter;
-import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
-import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
-import org.zowe.apiml.security.common.login.X509AuthAwareFilter;
-import org.zowe.apiml.security.common.login.X509AuthenticationFilter;
+import org.zowe.apiml.security.common.login.*;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.util.Collections;
@@ -116,9 +111,6 @@ public class NewSecurityConfiguration {
 
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
-
-    @Value("${apiml.metrics.enabled:false}")
-    private boolean isMetricsEnabled;
 
     /**
      * Login and Logout endpoints
@@ -616,10 +608,6 @@ public class NewSecurityConfiguration {
                             "/application/health", "/application/info", "/application/version",
                             AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                             AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
-
-                    if (isMetricsEnabled) {
-                        web.ignoring().antMatchers("/application/hystrixstream");
-                    }
                 };
             }
         }

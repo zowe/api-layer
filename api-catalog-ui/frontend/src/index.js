@@ -24,7 +24,7 @@ import { createBlacklistFilter } from 'redux-persist-transform-filter';
 import reduxCatch from 'redux-catch';
 import storageSession from 'redux-persist/lib/storage/session';
 import { persistReducer, persistStore } from 'redux-persist';
-import thunk from 'redux-thunk';
+import { thunk } from 'redux-thunk';
 import { rootReducer } from './reducers/index';
 import { rootEpic } from './epics';
 import { sendError } from './actions/error-actions';

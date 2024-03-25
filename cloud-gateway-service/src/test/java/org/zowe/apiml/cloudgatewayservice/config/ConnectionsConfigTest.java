@@ -35,8 +35,6 @@ class ConnectionsConfigTest {
 
     @Autowired
     private ConnectionsConfig connectionsConfig;
-    @Autowired
-    private RoutingConfig routingConfig;
 
     @Nested
     class WhenCreateEurekaJerseyClientBuilder {

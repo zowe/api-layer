@@ -187,7 +187,7 @@ body {
     }//end homepage/dashboard
   
     .homepage-content {
-      max-width: 1086px;
+      max-width: 1250px;
       padding-bottom: var( --spaceHuge );
       max-height: calc(100vh - #{var( --headerHeight )});
       scrollbar-width: none;
@@ -331,39 +331,13 @@ body {
           }
           &.homepage-header-images {
             width: 100%;
-            padding-left: 175px;
-            margin-top: 20px;
+            padding-left: 80px;
     
             .homepage-main-img {
               width: 501px;
             }
             .homepage-header-img {
               position: absolute;
-            }
-            .homepage-security-img {
-              height: 45px;
-              left: 290px;
-              bottom: 45px;
-            }
-            .homepage-payment-img {
-              height: 67px;
-              left: 118px;
-              top: 105px;
-            }
-            .homepage-mainframe-img {
-              height: 89px;
-              left: var( --spaceSmall );
-              top: -10px;
-            }
-            .homepage-enterprise-img {
-              height: 45px;
-              left: 295px;
-              top: 55px;
-            }
-            .homepage-storage-img {
-              height: 67px;
-              left: 264px;
-              top: -42px;
             }
           }
         }

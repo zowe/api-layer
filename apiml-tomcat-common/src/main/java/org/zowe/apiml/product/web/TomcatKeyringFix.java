@@ -10,27 +10,24 @@
 
 package org.zowe.apiml.product.web;
 
-import org.apache.catalina.connector.Connector;
-import org.apache.tomcat.util.net.SSLHostConfig;
-import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.Ssl;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class TomcatKeyringFix implements TomcatConnectorCustomizer {
+public class TomcatKeyringFix implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/(.+)$");
     private static final String KEYRING_PASSWORD = "password";
 
     @Value("${server.ssl.keyStore:#{null}}")
     protected String keyStore;
+
     @Value("${server.ssl.keyAlias:localhost}")
     protected String keyAlias;
 
@@ -45,21 +42,6 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
     protected char[] trustStorePassword;
-
-    void fixDefaultCertificate(SSLHostConfig sslHostConfig) {
-        Set<SSLHostConfigCertificate> originalSet = sslHostConfig.getCertificates();
-        if (originalSet.isEmpty()) return;
-
-        try {
-            Field defaultCertificateField = sslHostConfig.getClass().getDeclaredField("defaultCertificate");
-            defaultCertificateField.setAccessible(true); // NOSONAR
-            if (defaultCertificateField.get(sslHostConfig) == null) {
-                defaultCertificateField.set(sslHostConfig, originalSet.iterator().next()); // NOSONAR
-            }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new IllegalStateException("Cannot update Tomcat SSL context", e);
-        }
-    }
 
     boolean isKeyring(String input) {
         if (input == null) return false;
@@ -77,25 +59,19 @@ public class TomcatKeyringFix implements TomcatConnectorCustomizer {
     }
 
     @Override
-    public void customize(Connector connector) {
-        Arrays.stream(connector.findSslHostConfigs()).forEach(sslConfig -> {
-            fixDefaultCertificate(sslConfig);
+    public void customize(TomcatServletWebServerFactory factory) {
+        Ssl ssl = factory.getSsl();
+        if (isKeyring(keyStore)) {
+            ssl.setKeyStore(formatKeyringUrl(keyStore));
+            ssl.setKeyAlias(keyAlias);
+            ssl.setKeyStorePassword(keyStorePassword == null ? KEYRING_PASSWORD : String.valueOf(keyStorePassword));
+            ssl.setKeyPassword(keyPassword == null ? KEYRING_PASSWORD : String.valueOf(keyPassword));
+        }
 
-            if (isKeyring(keyStore)) {
-                SSLHostConfigCertificate certificate = new SSLHostConfigCertificate(sslConfig, SSLHostConfigCertificate.Type.RSA);
-                certificate.setCertificateKeystoreFile(formatKeyringUrl(keyStore));
-                certificate.setCertificateKeyAlias(keyAlias);
-
-                if (keyStorePassword == null) certificate.setCertificateKeystorePassword(KEYRING_PASSWORD);
-                if (keyPassword == null) certificate.setCertificateKeyPassword(KEYRING_PASSWORD);
-                sslConfig.addCertificate(certificate);
-            }
-
-            if (isKeyring(trustStore)) {
-                sslConfig.setTruststoreFile(formatKeyringUrl(trustStore));
-                if (trustStorePassword == null) sslConfig.setTruststorePassword(KEYRING_PASSWORD);
-            }
-        });
+        if (isKeyring(trustStore)) {
+            ssl.setTrustStore(formatKeyringUrl(trustStore));
+            ssl.setTrustStorePassword(trustStorePassword == null ? KEYRING_PASSWORD : String.valueOf(trustStorePassword));
+        }
     }
 
 }

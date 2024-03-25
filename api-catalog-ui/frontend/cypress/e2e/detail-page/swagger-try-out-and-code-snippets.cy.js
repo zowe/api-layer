@@ -25,17 +25,11 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
 
     [
         {
-            tile: 'zOSMF',
-            id: 'mockzosmf',
-            selectOp: '#operations-pets-listPets', // Using swagger v2 pet store example for this
-            auth: false, // z/OSMF does not have integrated authentication in swagger
-        },
-        {
             tile: 'API Gateway',
             id: 'gateway',
             selectOp: '#operations-Security-RefreshTokenUsingPOST',
             auth: true,
-        },
+        }
     ].forEach((test) => {
         it('Should contain try-out button', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
@@ -49,7 +43,6 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             if (test.auth) {
                 cy.log(`Visiting ${test.tile}, ${test.id}`);
                 cy.contains(test.tile).click();
-                cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
                 cy.get('.authorization__btn').should('exist');
 
                 cy.get('.authorization__btn').eq(0).click();
@@ -74,8 +67,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         it('Should execute request and display basic code snippets', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
             cy.contains(test.tile).click();
-            cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
-            cy.get('.opblock-summary').eq(1).click();
+            cy.get('.opblock-control-arrow').eq(1).click();
             cy.get('.try-out').should('exist');
             cy.get('.try-out').click();
 
