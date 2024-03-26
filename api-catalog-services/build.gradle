@@ -74,7 +74,6 @@ dependencies {
     implementation libs.apache.velocity
     implementation libs.openapidiff
     implementation libs.swagger.inflector
-    implementation libs.jaxb.api
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc
