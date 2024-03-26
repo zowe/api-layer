@@ -27,7 +27,8 @@ ext {
     hamcrestVersion = '1.3'
     httpClientVersion = '4.5.14'
     httpCoreVersion = '4.4.16'
-    infinispanVersion = '13.0.18.Final'
+    infinispanVersion = '13.0.21.Final'
+    istackVersion = '3.0.12'
     jacksonCoreVersion = '2.15.1'
     jacksonDatabindVersion = '2.15.2'
     jacksonDataformatYamlVersion = '2.15.2'
@@ -36,7 +37,7 @@ ext {
     javaxInjectVersion = '1'
     javaxServletApiVersion = '4.0.1'
     jaxbApiVersion = '2.3.1'
-    jerseyVersion = '2.26'
+    jerseyVersion = '2.42'
     jettyWebSocketClientVersion = '9.4.54.v20240208'
     jettisonVersion = '1.5.4'
     jjwtVersion = '0.11.5'
@@ -148,6 +149,7 @@ ext {
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
         infinispan_core                    : "org.infinispan:infinispan-core:${infinispanVersion}",
         infinispan_jboss_marshalling       : "org.infinispan:infinispan-jboss-marshalling:${infinispanVersion}",
+        istack_commons_runtime             : "com.sun.istack:istack-commons-runtime:${istackVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
         jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}",
