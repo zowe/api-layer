@@ -48,6 +48,7 @@ ext {
     jsonVersion = '20230227'
     jsoupVersion = '1.8.3'
     jsr305Version = '3.0.2'
+    annotations = '3.0.1'
     junitJupiterVersion = '5.9.2'
     junitPlatformVersion = '1.9.2'
     jqueryVersion = '3.6.4'
@@ -178,6 +179,7 @@ ext {
         json_unit_fluent                   : "net.javacrumbs.json-unit:json-unit-fluent:${jsonUnitVersion}",
         jsoup                              : "org.jsoup:jsoup:${jsoupVersion}",
         jsr305                             : "com.google.code.findbugs:jsr305:${jsr305Version}",
+        annotations                        : "com.google.code.findbugs:annotations:${annotations}",
         junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
         junit_platform_launcher            : "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}",
         junit_platform_commons             : "org.junit.platform:junit-platform-commons:${junitPlatformVersion}",
@@ -275,6 +277,7 @@ ext {
         byte_buddy                         : "net.bytebuddy:byte-buddy:1.12.9",
         byte_buddy_agent                   : "net.bytebuddy:byte-buddy-agent:1.12.9",
         stax2_api                          : "org.codehaus.woodstox:stax2-api:4.2.1",
+        stax_ex                            : "org.jvnet.staxex:stax-ex:2.1.0",
         hamcrest                           : "org.hamcrest:hamcrest:2.2",
         aopalliance_repackaged             : "org.glassfish.hk2.external:aopalliance-repackaged:3.0.3",
         javassist                          : "org.javassist:javassist:3.22.0-CR2",
