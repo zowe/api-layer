@@ -221,4 +221,3 @@ If your editor of choice happens to be Idea and you want to use its 'Run Dashboa
 |  Mock Services         | 10013 |
 |  API Catalog           | 10014 |
 |  EnablerJavaSampleApp  | 10016 |
-|  Metrics Service       | 10019 |

@@ -177,7 +177,7 @@ public class PageRedirectionFilter extends PostZuulFilter implements RoutedServi
             String host = instance.getHost() + ":" + instance.getPort();
             if (location.contains(host)) {
                 try {
-                    String transformedUrl = transformService.transformURL(ServiceType.ALL, serviceId, location, routedServicesMap.get(serviceId));
+                    String transformedUrl = transformService.transformURL(ServiceType.ALL, serviceId, location, routedServicesMap.get(serviceId), false);
                     return Optional.of(transformedUrl);
                 } catch (URLTransformationException e) {
                     //do nothing if no matched url is found

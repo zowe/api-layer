@@ -2,6 +2,7 @@ credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
     user: USER
     password: validPassword
+    clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
     host: localhost
@@ -49,6 +50,7 @@ tlsConfiguration:
     keyStoreType: PKCS12
     keyStore: ../keystore/localhost/localhost.keystore.p12
     clientKeystore: ../keystore/client_cert/client-certs.p12
+    clientCN: APIMTST
     keyStorePassword: password
     trustStoreType: PKCS12
     trustStore: ../keystore/localhost/localhost.truststore.p12
@@ -62,6 +64,10 @@ auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 idpConfiguration:
     host: https://dev-95727686.okta.com
+safIdtConfiguration:
+    enabled: true
+oidcConfiguration:
+    clientId:
 instanceEnv:
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZWE_haInstance_hostname: localhost

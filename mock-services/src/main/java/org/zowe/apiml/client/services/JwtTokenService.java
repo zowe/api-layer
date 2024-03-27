@@ -15,7 +15,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -41,11 +40,12 @@ public class JwtTokenService {
     }
 
     public String generateJwt(String user) throws NoSuchAlgorithmException, InvalidKeySpecException {
+
         return Jwts.builder()
             .setHeaderParam("kid", "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg")
             .setHeaderParam("typ", "JWT")
             .setHeaderParam("alg", "RS256")
-            .signWith(readPemPrivateKey(), SignatureAlgorithm.RS256)
+            .signWith(readPemPrivateKey())
             .setSubject(user)
             .setIssuer("zOSMF")
             .setIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
@@ -57,12 +57,11 @@ public class JwtTokenService {
         if (invalidatedTokens.contains(token)) {
             return false;
         }
-
         try {
-            JwtParser parser = Jwts.parserBuilder()
-                .setSigningKey(readPemPrivateKey())
+            JwtParser parser = Jwts.parser()
+                .verifyWith(readPemPublicKey())
                 .build();
-            parser.parseClaimsJws(token).getBody();
+            parser.parseClaimsJws(token).getPayload();
             return true;
         } catch (Exception e) {
             return false;

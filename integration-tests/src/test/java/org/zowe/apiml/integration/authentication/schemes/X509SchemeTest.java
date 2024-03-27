@@ -38,8 +38,12 @@ import static org.zowe.apiml.util.requests.Endpoints.X509_ENDPOINT;
 @X509Test
 @DiscoverableClientDependentTest
 class X509SchemeTest implements TestWithStartedInstances {
+
+    private static final String CLIENT_CN = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientCN();
+
     private static URI URL;
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+
 
     @BeforeAll
     static void init() throws Exception {
@@ -55,8 +59,8 @@ class X509SchemeTest implements TestWithStartedInstances {
             .when()
             .get(scgUrl)
             .then()
-            .body("dn", startsWith("CN=APIMTST"))
-            .body("cn", is("APIMTST")).statusCode(200);
+            .body("dn", startsWith("CN=" + CLIENT_CN))
+            .body("cn", is(CLIENT_CN)).statusCode(200);
     }
 
     @Test
@@ -81,8 +85,8 @@ class X509SchemeTest implements TestWithStartedInstances {
                     .when()
                     .get(X509SchemeTest.URL)
                     .then()
-                    .body("dn", startsWith("CN=APIMTST"))
-                    .body("cn", is("APIMTST")).statusCode(200);
+                    .body("dn", startsWith("CN=" + CLIENT_CN))
+                    .body("cn", is(CLIENT_CN)).statusCode(200);
             }
 
             @Test
