@@ -24,6 +24,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
+import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.lang.reflect.Field;
@@ -66,9 +67,17 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
     public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
         private final AbstractEndpoint.Handler<S> handler;
+        private final Field fdField;
 
         public ApimlAttlsHandler(AbstractEndpoint.Handler<S> handler) {
             this.handler = handler;
+            try {
+                Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
+                fdField = socketChannelImpl.getDeclaredField("fdVal");
+                fdField.setAccessible(true);
+            } catch (ClassNotFoundException | NoSuchFieldException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
         @Override
@@ -76,16 +85,19 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             NioChannel secureChannel = (NioChannel) socket.getSocket();
             SocketChannel socketChannel = secureChannel.getIOChannel();
             try {
-                Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
-                Field fdField = socketChannelImpl.getDeclaredField("fdVal");
-                fdField.setAccessible(true);
                 int fileDescriptor = fdField.getInt(socketChannel);
                 InboundAttls.init(fileDescriptor);
                 return handler.process(socket, status);
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 throw new AttlsHandlerException("Different implementation expected.", e);
             } finally {
-                InboundAttls.dispose();
+                try {
+                    InboundAttls.clean();
+                } catch (ContextIsNotInitializedException e) {
+                    log.debug("Cannot clean AT-TLS context");
+                } finally {
+                    InboundAttls.dispose();
+                }
             }
 
         }

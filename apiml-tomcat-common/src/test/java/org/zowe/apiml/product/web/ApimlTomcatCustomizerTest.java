@@ -15,6 +15,7 @@ import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.commons.attls.AttlsContext;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
@@ -30,6 +31,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -67,14 +69,34 @@ class ApimlTomcatCustomizerTest {
         SocketWrapperBase socketWrapper = getSocketWrapper(socket);
         doAnswer(answer -> {
             int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
-            int port = getPort(socketChannel);
-            assertEquals(port, fdNumber);
+            int port = getFd(socketChannel);
+            assertEquals(port, fdNumber);;
             return AbstractEndpoint.Handler.SocketState.OPEN;
         }).when(handler).process(socketWrapper, SocketEvent.OPEN_READ);
-        assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, apimlAttlsHandler.process(socketWrapper, SocketEvent.OPEN_READ));
+
+        try {
+            ThreadLocal<AttlsContext> mockThreadLocal = mock(ThreadLocal.class);
+            AtomicReference<AttlsContext> attlsContextHolder = new AtomicReference<>();
+            doAnswer(answer -> {
+                AttlsContext attlsContext = answer.getArgument(0);
+                int fd = (int) ReflectionTestUtils.getField(attlsContext, "id");
+                attlsContextHolder.set(spy(new AttlsContext(fd, false) {
+                    @Override
+                    public void clean() {}
+                }));
+                return null;
+            }).when(mockThreadLocal).set(any());
+            doAnswer(answer -> attlsContextHolder.get()).when(mockThreadLocal).get();
+            ReflectionTestUtils.setField(InboundAttls.class, "contexts", mockThreadLocal);
+
+            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, apimlAttlsHandler.process(socketWrapper, SocketEvent.OPEN_READ));
+            verify(attlsContextHolder.get()).clean();
+        } finally {
+            ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal());
+        }
     }
 
-    private int getPort(SocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+    private int getFd(SocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         Method getFDMethod = socketChannel.getClass().getDeclaredMethod("getFD");
         getFDMethod.setAccessible(true);
         FileDescriptor fd = (FileDescriptor) getFDMethod.invoke(socketChannel);
