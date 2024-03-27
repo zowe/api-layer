@@ -57,7 +57,7 @@ ext {
     lombokVersion = '1.18.28'
     mockitoCoreVersion = '4.9.0'
     netflixServoVersion = '0.13.2'
-    nettyVersion = '4.1.99.Final'
+    nettyVersion = '4.1.108.Final'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.1'
     reactorTestVersion = '3.5.0'
