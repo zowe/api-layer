@@ -4,7 +4,7 @@
     "private": true,
     "homepage": ".",
     "dependencies": {
-        "axios": "1.6.8",
+        "@babel/core": "7.22.10",
         "@emotion/core": "10.1.1",
         "@emotion/styled": "10.0.27",
         "agentkeepalive": "4.1.4",
