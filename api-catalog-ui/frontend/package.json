@@ -6,7 +6,7 @@
     "dependencies": {
         "@babel/core": "7.24.3",
         "@emotion/core": "10.1.1",
-        "@emotion/styled": "11.11.0",
+        "@emotion/styled": "10.0.27",
         "agentkeepalive": "4.1.4",
         "buffer": "6.0.3",
         "emotion-theming": "10.0.27",
