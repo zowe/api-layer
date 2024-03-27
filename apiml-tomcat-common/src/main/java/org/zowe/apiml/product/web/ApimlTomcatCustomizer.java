@@ -67,9 +67,17 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
     public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
         private final AbstractEndpoint.Handler<S> handler;
+        private final Field fdField;
 
         public ApimlAttlsHandler(AbstractEndpoint.Handler<S> handler) {
             this.handler = handler;
+            try {
+                Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
+                fdField = socketChannelImpl.getDeclaredField("fdVal");
+                fdField.setAccessible(true);
+            } catch (ClassNotFoundException | NoSuchFieldException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
         @Override
@@ -77,19 +85,16 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             NioChannel secureChannel = (NioChannel) socket.getSocket();
             SocketChannel socketChannel = secureChannel.getIOChannel();
             try {
-                Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
-                Field fdField = socketChannelImpl.getDeclaredField("fdVal");
-                fdField.setAccessible(true);
                 int fileDescriptor = fdField.getInt(socketChannel);
                 InboundAttls.init(fileDescriptor);
                 return handler.process(socket, status);
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 throw new AttlsHandlerException("Different implementation expected.", e);
             } finally {
                 try {
                     InboundAttls.clean();
                 } catch (ContextIsNotInitializedException e) {
-                    log.debug("Cannot clean AT-TLS context: {}", e.getMessage());
+                    log.debug("Cannot clean AT-TLS context");
                 } finally {
                     InboundAttls.dispose();
                 }
