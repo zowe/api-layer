@@ -22,6 +22,9 @@ dependencies {
         exclude group: "com.thoughtworks.xstream", module: "xstream"
         exclude group: "org.codehaus.jettison", module: "jettison"
     }
+
+    implementation libraries.istack_commons_runtime
+
     implementation libraries.xstream
     implementation libraries.jettison
     implementation libraries.spring_boot_starter_validation
