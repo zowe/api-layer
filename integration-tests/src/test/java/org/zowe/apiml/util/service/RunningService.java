@@ -13,7 +13,11 @@ package org.zowe.apiml.util.service;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.commons.util.StringUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -58,7 +62,7 @@ public class RunningService {
     }
 
     public void startWithScript(String bashScript, Map<String, String> env) {
-        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
+        log.info("Starting new Service using script with JAR file {} and ID {}", jarFile, id);
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
         Map<String, String> envVariables = builder1.environment();
@@ -90,7 +94,7 @@ public class RunningService {
                 log.info(line);
             }
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("Error during service startup", e);
         }
     }
 

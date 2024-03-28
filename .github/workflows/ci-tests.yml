@@ -24,7 +24,10 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew build runStartUpCheck --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew build --info -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --info --scan
             -   name: Store results
                 uses: actions/upload-artifact@v2
                 if: always()
