@@ -40,6 +40,17 @@ else
     COMMON_LIB=${CMMN_LB}
 fi
 
+if [ -f "$CMMN_LB" ]; then
+    echo "File exists. $CMMN_LB"
+    contents=$(ls -la "$CMMN_LB")
+
+    # Print the contents
+    echo "Contents of $CMMN_LB:"
+    echo "$contents"
+else
+    echo "File does not exist. $CMMN_LB"
+fi
+
 if [[ -z ${LIBRARY_PATH} ]]
 then
     LIBRARY_PATH="../common-java-lib/bin/"
