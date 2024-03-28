@@ -86,7 +86,9 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
-
+java_v=$(java -version 2>&1)
+echo "$java_v"
+echo ${JAVA_HOME}
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START} \
     -Dibm.serversocket.recover=true \
@@ -118,7 +120,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
-    -jar "${JAR_FILE}" &
+    -jar "${JAR_FILE}" 2>&1 &
 pid=$!
 echo "pid=${pid}"
 
