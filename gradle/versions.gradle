@@ -1,5 +1,5 @@
 ext {
-    springBootVersion = '2.7.16'
+    springBootVersion = '2.7.18'
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE'
     springCloudLoadBalancerVersion = '2.2.9.RELEASE'
@@ -11,7 +11,7 @@ ext {
 
     attlsVersion = '1.21.3'
     awaitilityVersion = '3.0.0'
-    awsSdkVersion = '1.12.565'
+    awsSdkVersion = '1.12.686'
     bouncyCastleVersion = '1.76'
     bootstrapVersion = '4.3.1'
     commonsCodecVersion = '1.15'
@@ -27,7 +27,8 @@ ext {
     hamcrestVersion = '1.3'
     httpClientVersion = '4.5.14'
     httpCoreVersion = '4.4.16'
-    infinispanVersion = '13.0.18.Final'
+    infinispanVersion = '13.0.21.Final'
+    istackVersion = '3.0.12'
     jacksonCoreVersion = '2.15.1'
     jacksonDatabindVersion = '2.15.2'
     jacksonDataformatYamlVersion = '2.15.2'
@@ -36,8 +37,8 @@ ext {
     javaxInjectVersion = '1'
     javaxServletApiVersion = '4.0.1'
     jaxbApiVersion = '2.3.1'
-    jerseyVersion = '2.26'
-    jettyWebSocketClientVersion = '9.4.52.v20230823'
+    jerseyVersion = '2.42'
+    jettyWebSocketClientVersion = '9.4.54.v20240208'
     jettisonVersion = '1.5.4'
     jjwtVersion = '0.11.5'
     jjwtFullVersion = '0.9.1'
@@ -51,11 +52,11 @@ ext {
     junitPlatformVersion = '1.9.2'
     jqueryVersion = '3.6.4'
     lettuceVersion = '6.0.6.RELEASE'
-    logbackVersion = '1.2.12'
+    logbackVersion = '1.2.13'
     lombokVersion = '1.18.28'
     mockitoCoreVersion = '4.9.0'
     netflixServoVersion = '0.13.2'
-    nettyVersion = '4.1.99.Final'
+    nettyVersion = '4.1.108.Final'
     nimbusJoseJwtVersion = '8.21.1'
     openApiDiffVersion = '2.0.1'
     reactorTestVersion = '3.5.0'
@@ -70,7 +71,7 @@ ext {
     swagger3ParserVersion = '2.1.15'
     swaggerCoreVersion = '1.6.11'
     thymeleafVersion = '3.1.2.RELEASE'
-    tomcatVersion = '9.0.81'
+    tomcatVersion = '9.0.87'
     velocityVersion = '2.3'
     woodstoxVersion = '6.5.1'
     xstreamVersion = '1.4.20'
@@ -148,6 +149,7 @@ ext {
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
         infinispan_core                    : "org.infinispan:infinispan-core:${infinispanVersion}",
         infinispan_jboss_marshalling       : "org.infinispan:infinispan-jboss-marshalling:${infinispanVersion}",
+        istack_commons_runtime             : "com.sun.istack:istack-commons-runtime:${istackVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
         jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}",
