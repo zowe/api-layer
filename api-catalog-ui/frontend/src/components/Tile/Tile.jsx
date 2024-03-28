@@ -13,6 +13,7 @@ import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import { ReactComponent as SwaggerIcon } from '../../assets/images/swagger.svg';
+import { ReactComponent as UseCasesIcon } from '../../assets/images/usecases.svg';
 import { ReactComponent as VideoIcon } from '../../assets/images/videos.svg';
 import { ReactComponent as TutorialIcon } from '../../assets/images/tutorials.svg';
 import utilFunctions, { isAPIPortal, findAndFormatZowe } from '../../utils/utilFunctions';
@@ -129,9 +130,14 @@ export default class Tile extends Component {
                                                 onClick={() =>
                                                     this.goToExtraContents('#use-cases-label', useCasesCounter === 0)
                                                 }
-                                            >
-                                                {useCasesCounter}
-                                            </Typography>
+                                            />
+                                            <UseCasesIcon
+                                                onClick={() =>
+                                                    this.goToExtraContents('#use-cases-label', useCasesCounter === 0)
+                                                }
+                                                className="usecases-icon"
+                                                alt=""
+                                            />
                                         </div>
                                         <span className="expanded-icon-title">Use Cases</span>
                                     </div>

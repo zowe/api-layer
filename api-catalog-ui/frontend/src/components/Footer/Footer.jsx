@@ -128,12 +128,22 @@ export default class Footer extends Component {
                             >
                                 <img id="flix" style={{ height: 'auto', width: '29px' }} alt="flix" src={youtubeImg2} />
                             </Link>
-                            <Link className="footer-links" href="/feedback">
+                            <Link
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                href="https://mainframe.broadcom.com/developer-site-feedback"
+                                className="footer-links"
+                            >
                                 <img id="email" alt="email" src={mailImg} />
                             </Link>
                         </div>
                         <div>
-                            <Link className="footer-links">
+                            <Link
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                href="https://mainframe.broadcom.com/developer-site-feedback"
+                                className="footer-links"
+                            >
                                 <img id="subscribe" alt="subscribe" src={subscribeImg} />
                             </Link>
                         </div>
@@ -165,9 +175,11 @@ export default class Footer extends Component {
                                     href="https://www.zowe.org/"
                                     className="footerZoweLinks"
                                 >
-                                    <u>Zowe</u>
+                                    <u>
+                                        Zowe<sup className="registered">&reg;</sup>
+                                    </u>
                                 </Link>
-                                <sup>&reg;</sup>, the Zowe logo and the&nbsp;
+                                , the Zowe logo and the&nbsp;
                                 <Link
                                     rel="noopener noreferrer"
                                     target="_blank"

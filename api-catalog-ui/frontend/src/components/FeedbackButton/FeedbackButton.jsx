@@ -20,7 +20,7 @@ export default class FeedbackButton extends Component {
                 <div className={noFloat ? '' : 'floating-button'}>
                     <Fab
                         variant="extended"
-                        href="/feedback"
+                        href="https://mainframe.broadcom.com/developer-site-feedback"
                         rel="noopener noreferrer"
                         target="_blank"
                         className="button-cta feedback-button"

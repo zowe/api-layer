@@ -112,7 +112,7 @@ export default class Homepage extends Component {
                     <div>
                         <Button onClick={this.redirectToDetailPage}>
                             <img alt="Code" src={Code} />
-                            <h5>Develop with APIs</h5>
+                            <h5>Design Using APIs</h5>
                             <p>Use Standardized, open APIs to secure access to mainframe data and functionality.</p>
                         </Button>
                         <Button target="_blank" href="https://docs.zowe.org">
