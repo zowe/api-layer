@@ -10,10 +10,15 @@ body {
     }
 
   }
+  .info__contact {
+    margin-bottom: var( --spaceMedium );
+  }
   input[type=text].operation-filter-input {
-    padding-left: var( --spaceLargest );
-    background: url(../../assets/images/magnifying-glass.svg) 8px 50% no-repeat;
-    background-size: var( --spaceMedium );
+    padding: 4px 16px 4px 36px;
+    background: url(../../assets/images/magnifying-glass.svg) 12px 50% no-repeat;
+    background-size: var( --spaceSmall );
+    font-style: italic;
+    font-size: var( --fontSmall );
 
     &:hover {
       border: 1px solid var( --linkHover );
@@ -74,6 +79,10 @@ body {
     margin-bottom: var( --spaceTiny );
     border: 1px solid var( --surface15 );
     border-radius: var( --borderRadius1 );
+
+    &:hover {
+      box-shadow: 1px 3px 4px 0px rgba(0, 0, 0, 0.45);
+    }
 
     .opblock-summary-method {
       padding: var( --spaceSmaller );

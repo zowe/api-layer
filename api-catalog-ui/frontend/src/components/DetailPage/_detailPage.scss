@@ -5,6 +5,7 @@ $background-color_2: #f5f7fa;
 body .detail-content {
   h6#resources-menu-title {
     color: $color_1;
+    font-size: var( --fontMedium );
   }
   h2#title {
     color: $color_1;
@@ -63,6 +64,7 @@ body .detail-content {
         pre {
           font-family: var( --fontFamily00 );
           margin: 0px;
+          font-size: 0.875rem;
         }
         pre.base-url {
             visibility: hidden;
@@ -70,6 +72,7 @@ body .detail-content {
         h2.title {
           @extend .MuiTypography-h4;
           margin-top: 0px;
+          margin-bottom: 4px;
           display: flex;
           flex-direction: column;
           font-size: var( --fontMedium );
@@ -78,12 +81,9 @@ body .detail-content {
             font-weight: normal;
           }
         }
-        h2.title span {
-            visibility: visible;
-        }
-        .version {
+        .version-stamp .version {
           &:before {
-            content: "Specification Version: ";
+            content: "OpenAPI Specification: ";
           }
         }
 
@@ -125,17 +125,14 @@ body .detail-content {
   }
 
     #right-resources-menu {
-        position: relative;
-        float: right;
+        position: fixed;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        border-radius: 4px;
-        background: #F7F9FA;
-        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-        padding: 14px;
-        margin-right: 30px;
-        margin-top: -60px;
+        border-left: 2px solid var( --surface25 );
+        padding: 0 10px;
+        right: 0px;
+        top: 70px;
     }
 
     /* Extra small devices (phones, 1361px and down) */
@@ -148,9 +145,16 @@ body .detail-content {
     .links {
         display: flex;
         font-size: 14px;
-    }
-    #description {
-        position: relative;
+        line-height: 22px;
+
+        &.selected {
+          color: var( --controlText15 );
+         }
+
+        &.disabled {
+         pointer-events: none;
+         color: var( --controlText15Disabled );
+        }
     }
     h4#description {
         display: contents;
@@ -191,7 +195,8 @@ body .detail-content {
     }
 
     .detailed-description-container {
-        display: flow-root;
+        display: flex;
+        flex-direction: column;
     }
 
     .btn > h4 {
