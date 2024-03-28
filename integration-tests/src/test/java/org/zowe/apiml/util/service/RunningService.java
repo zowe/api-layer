@@ -11,9 +11,12 @@
 package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.platform.commons.util.StringUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -58,7 +61,7 @@ public class RunningService {
     }
 
     public void startWithScript(String bashScript, Map<String, String> env) {
-        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
+        log.info("Starting new Service using script with JAR file {} and ID {}", jarFile, id);
 
         ProcessBuilder builder1 = new ProcessBuilder(bashScript);
         Map<String, String> envVariables = builder1.environment();
@@ -78,19 +81,14 @@ public class RunningService {
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
-            while (StringUtils.isBlank(this.subprocessPid) && (line = br.readLine()) != null) {
-                log.info(line);
-                if (line.startsWith("pid")) {
-                    this.subprocessPid = line.substring(line.indexOf("=") + 1);
-                    log.info("found PID:" + this.subprocessPid + " for service: {}", id);
-                }
-            }
 
             while ((line = br.readLine()) != null) {
-                log.info(line);
+                System.out.println(line);
             }
-        } catch (IOException e) {
-            log.error(e.getMessage());
+            int exitCode = terminalCommandProcess.waitFor();
+            System.out.println("\nExited with error code : " + exitCode);
+        } catch (Exception e) {
+            log.error("Error during service startup {}", e.getMessage());
         }
     }
 

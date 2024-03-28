@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -23,6 +24,7 @@ import java.util.Map;
 //TODO this class doesn't lend itself well to switching of configurations.
 //attls is integrated in a kludgy way, and deserves a rewrite
 
+@Slf4j
 public class FullApiMediationLayer {
     private RunningService discoveryService;
     private RunningService gatewayService;
@@ -120,7 +122,7 @@ public class FullApiMediationLayer {
             }
             cachingService.startWithScript("caching-service-package/src/main/resources/bin/start.sh", env);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("Could not start services",ex);
         }
     }
 
