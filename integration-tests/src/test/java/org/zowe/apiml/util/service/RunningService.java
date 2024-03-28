@@ -11,12 +11,9 @@
 package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.platform.commons.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -81,14 +78,19 @@ public class RunningService {
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
+            while (StringUtils.isBlank(this.subprocessPid) && (line = br.readLine()) != null) {
+                log.info(line);
+                if (line.startsWith("pid")) {
+                    this.subprocessPid = line.substring(line.indexOf("=") + 1);
+                    log.info("found PID:" + this.subprocessPid + " for service: {}", id);
+                }
+            }
 
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
+                log.info(line);
             }
-            int exitCode = terminalCommandProcess.waitFor();
-            System.out.println("\nExited with error code : " + exitCode);
-        } catch (Exception e) {
-            log.error("Error during service startup {}", e.getMessage());
+        } catch (IOException e) {
+            log.error("Error during service startup", e);
         }
     }
 
