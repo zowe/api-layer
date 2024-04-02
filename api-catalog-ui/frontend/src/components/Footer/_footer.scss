@@ -1,26 +1,28 @@
 body {
   #pageFooter {
-    > div {
-      display: flex;
-      justify-content: center;
+    .MuiContainer-root {
+      width: auto;
+      margin-left: 0px;
+      padding-left: 0px;
     }
   }
   #bottom-info-div {
     display: flex;
-    width: 74%;
+    width: 98%;
     margin: auto;
     justify-content: space-between;
     padding: var( --spaceMedium ) 0px;
-    text-align: center;
+    margin-bottom: 30px;
+    margin-top: 60px;
   
     strong {
       font-size: var( --fontMedium );
       display: block;
-      margin-bottom: var( --spaceMedium );
+      margin-bottom: var( --spaceSmaller );
     }
     .links {
       display: block;
-      padding: 5px;
+      padding: 5px 5px 5px 0px;
     }
     a {
       color: var( --text10Disabled );
@@ -31,6 +33,9 @@ body {
       }
     }
   }
+  .footer-links:not(:last-child) {
+    padding-right: 5px;
+  }
 
   .footerZoweLinks {
     color: var( --text-secondary) !important;
@@ -40,15 +45,31 @@ body {
   }
 }
 h6#footer-message {
+    display: flex;
+    flex-direction: column;
+    width: 98%;
+    margin: auto;
     color: #53565A;
-    text-align: center;
-    font-size: 11px;
+    font-size: 9px;
     font-style: normal;
     font-weight: 400;
-    line-height: 18.7px;
+    line-height: 11px;
+
+    .footer-policy {
+      margin: var( --spaceMedium ) auto var( --spaceHuge ) auto;
+
+      a {
+        font-size: 11px;
+      }
+    }
+
+    .footer-copyright {
+      display: flex;
+      margin: auto;
+    }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   body {
     #bottom-info-div {
       flex-direction: column;
@@ -62,7 +83,32 @@ h6#footer-message {
     
     #pageFooter {
       .MuiContainer-root:not(:first-child) {
-        margin-top: var( --spaceMedium );
+        margin-top: var( --spaceLargest );
+      }
+    }
+  }
+  h6#footer-message {
+    .footer-policy {
+      margin: var( --spaceMedium ) 0 var( --spaceHuge ) 0;
+
+    }
+    .footer-copyright {
+      flex-direction: column;
+      margin: 0;
+
+      a {
+        margin-bottom: var( --spaceMedium );
+      }
+    }
+  }
+}
+
+@media (min-width: 769px) {
+  body {
+    #pageFooter {
+      .MuiContainer-root:last-child {
+        margin-right: 0px;
+        padding-right: 0px;
       }
     }
   } 

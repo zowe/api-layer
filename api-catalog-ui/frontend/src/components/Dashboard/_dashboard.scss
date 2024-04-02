@@ -136,6 +136,11 @@
     width: 128px;
     height: 200px;
   }
+
+  .registered {
+    position: relative;
+    bottom: 5px;
+  }
 }
 
 .floating-button {
@@ -188,7 +193,6 @@ body {
   
     .homepage-content {
       max-width: 1250px;
-      padding-bottom: var( --spaceHuge );
       max-height: calc(100vh - #{var( --headerHeight )});
       scrollbar-width: none;
       -ms-overflow-style: none;

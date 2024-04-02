@@ -40,14 +40,17 @@ function setFilterBarStyle() {
     if (filterInput && filterInput.length > 0) {
         filterInput.item(0).placeholder = 'Search in endpoints...';
     }
-    if (isAPIPortal() && !document.getElementById('filter-label')) {
-        const divInfo = document.querySelector('.info');
-        const searchLabel = document.createElement('span');
-        if (divInfo && searchLabel) {
-            searchLabel.setAttribute('id', 'filter-label');
-            searchLabel.textContent = 'Search through Swagger';
-            searchLabel.style.fontSize = '13.3px';
-            divInfo.appendChild(searchLabel);
+    if (isAPIPortal()) {
+        const divInfo = document.querySelector('.information-container');
+        if (divInfo !== null) {
+            const title = divInfo.querySelector('.title');
+            if (title !== null) {
+                const version = title.querySelector('.version-stamp');
+                title.innerText = '';
+                if (version !== null) {
+                    title.appendChild(version);
+                }
+            }
         }
     }
 }
