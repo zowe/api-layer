@@ -104,6 +104,16 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
+if [ "${keystore_type}" = "JCERACFKS" ]; then
+keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+fi
 
 CLOUD_GATEWAY_CODE=CG
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \

@@ -138,7 +138,7 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.util=ALL-UNNAMED
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
         --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
-        
+
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
 key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
@@ -148,7 +148,16 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 #echo "keystore='$keystore_location' truststore='$truststore_location'"
-
+if [ "${keystore_type}" = "JCERACFKS" ]; then
+keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+fi
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
