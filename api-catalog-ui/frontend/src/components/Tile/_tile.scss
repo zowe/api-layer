@@ -9,21 +9,13 @@ body {
   .MuiCard-root {
     padding: 0;
     margin: var( --spaceSmallest ) var( --spaceSmaller ) var( --spaceMedium );
+    overflow: visible;
 
     .MuiCardActionArea-focusHighlight,
     .MuiTouchRipple-root {
       display: none;
     }
-    .tile-desc,
-    .icon-ctn > .expanded-spacer {
-      flex: 0 0;
-      width: 0;
-      height: 0;
-      overflow: hidden;
-    }
-    .tile-desc {
-      transition: all .5s ease;
-    }
+
     .card-action {
       &:hover, &:focus {
         cursor: pointer;
@@ -33,11 +25,52 @@ body {
           color: var( --linkHover );
         }
       }
+      min-height: 72px;
+    }
+
+    .tile-title {
+      .tile-desc {
+        visibility: hidden;
+        max-width: 500px;
+        background-color: black;
+        color: #fff;
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.24px;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        top: 120%;
+        left: 100px;
+      }
+      &:hover .tile-desc {
+        visibility: visible;
+        transition-delay: 1s;
+      }
+  
+      .tile-desc::after {
+        content: " ";
+        position: absolute;
+        bottom: 100%;  /* At the top of the tooltip */
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent black transparent;
+      }
     }
 
     .icon-ctn {
       display: flex;
       flex: 4 1;
+
+      .media-labels {
+        color: var(--criticalShade00);
+      }
+      svg path {
+        fill: var( --criticalShade00 );
+      }
 
       > * {
         display: flex;
@@ -50,67 +83,41 @@ body {
         .swagger-img {
           background-image: url(../../assets/images/swagger.svg);
         }
-        &.link-counter .icon-img-ctn {
-          &:focus, &:hover {
-            background: transparent;
-
-            svg path {
-              fill: var( --linkHover );
-            }
-          }
-        }
         &.disabled-counter {
           svg path {
-            fill: var( --control00Disabled );
+            fill: var( --control00Disabled ) !important;
           }
-          .media-labels,
-          .expanded-icon-title {
+          .media-labels {
             color: var( --control00Disabled ) !important;
+          }
+          .icon-img-ctn {
+            box-shadow: 0 0 0 0 !important;
           }
         }
 
-        .expanded-icon-title {
-          margin-top: var( --spaceSmallest );
-          display: none;
-          color: #014ba4;
-          font-weight: var( --fontWeightBold );
-        }
         .icon-img-ctn {
           display: flex;
           align-items: center;
-          height: 22px;
+          height: 40px;
           padding: 0px;
 
           svg {
             width: 100%;
           }
+          &:hover {
+            box-shadow: 0 0 0 2px var( --linkHover );
+            padding: 8px;
+
+            svg path {
+              fill: var( --linkHover );
+            }
+            .media-labels {
+              color: var(--linkHover);
+            }
+          }
         }
       }
     }//end icon-ctn
-
-    &.expanded {
-      .tile-ctn, #swagger {
-        flex-direction: column;
-      }
-      .expanded-icon-title {
-        display: block;
-      }
-      .expanded-spacer {
-        flex: 4 1;
-      }
-      .tile-desc {
-        padding: var( --spaceLarger ) 0;
-        text-align: left;
-        width: 100%;
-        font-size: var( --fontMedium );
-      }
-      .tile-desc,
-      .expanded-spacer {
-        width: auto;
-        height: auto;
-        overflow: visible;
-      }
-    }//end expanded
   }//end card-root
 
   .MuiCardContent-root,
@@ -159,6 +166,7 @@ body {
 
     .MuiCardContent-root.tile {
         display: flex;
+        padding-left: var( --spaceHuge );
     }
     .media-labels {
         font-size: 14px;
@@ -166,15 +174,6 @@ body {
     #tutorials-counter,
     #videos-counter {
       margin-right: var( --spaceSmaller );
-    }
-    #videos-counter {
-        color: #602C0A;
-    }
-    #use-cases-counter {
-        color: #D61A00;
-    }
-    #tutorials-counter {
-        color: #9B51E0;
     }
     .imageCounter {
       display: flex

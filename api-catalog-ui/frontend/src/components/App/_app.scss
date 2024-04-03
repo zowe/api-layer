@@ -416,7 +416,7 @@ body {
       font-family: var( --fontFamily00 );
       font-size: var(--spaceLarger);
       font-weight: var( --fontWeightBold);
-      line-height: 28px;
+      line-height: var( --spaceHuge );
       color: var( --text10 );
       text-align: left;
   }

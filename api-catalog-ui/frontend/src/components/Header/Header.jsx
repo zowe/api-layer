@@ -99,7 +99,7 @@ function Header(props) {
                 <Link data-testid="link" href={homepage}>
                     <div className="app-icon-container">
                         <img id="logo" alt="API Catalog" src={productImage} />
-                        {isAPIPortal() && <span className="tooltiptext">Mainframe Developer Homepage</span>}
+                        {isAPIPortal() && <span className="tooltiptext">Developer Portal</span>}
                     </div>
                 </Link>
             </div>
