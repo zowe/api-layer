@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.security.service.token;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -20,11 +19,9 @@ import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -72,15 +69,8 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private int jwkRefreshInterval;
 
-    @Qualifier("secureHttpClientWithoutKeystore")
-    @NonNull
-    private final CloseableHttpClient httpClient;
-
     @Qualifier("oidcJwtClock")
     private final Clock clock;
-
-    @Qualifier("oidcJwkMapper")
-    private final ObjectMapper mapper;
 
     @Getter
     private Map<String, Key> publicKeys = new ConcurrentHashMap<>();
