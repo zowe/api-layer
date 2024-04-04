@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.integration.authentication.oauth2;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.http.HttpHeaders;
@@ -29,12 +33,18 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.Endpoints;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.text.ParseException;
 import java.util.stream.Stream;
+import io.jsonwebtoken.impl.DefaultClock;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
@@ -42,6 +52,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 public class OktaOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
+    public static final URI JWK_ENDPOINT = HttpRequestUtils.getUriFromGateway(JWK_ALL);
     private static final String VALID_TOKEN_WITH_MAPPING = SecurityUtils.validOktaAccessToken(true);
     private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
     private static final String EXPIRED_TOKEN = SecurityUtils.expiredOktaAccessToken();
@@ -67,6 +78,25 @@ public class OktaOauth2Test {
 
     @Nested
     class GivenValidOktaToken {
+
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#validTokens")
+        void tenValidateUsingJWKLocally(String token) throws ParseException, IOException, JOSEException {
+            JWKSet jwkSet = JWKSet.load(new URL(JWK_ENDPOINT.toString()));
+            String kid = String.valueOf(Jwts.parserBuilder()
+                .setClock(new DefaultClock())
+                .build()
+                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .getHeader()
+                .get("kid"));
+            Claims claims = Jwts.parserBuilder()
+                .setSigningKey(jwkSet.getKeyByKeyId(kid).toRSAKey().toPublicKey())
+                .setClock(new DefaultClock())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+            assertNotNull(claims);
+        }
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#validTokens")
         void thenValidateReturns200(String validToken) {
