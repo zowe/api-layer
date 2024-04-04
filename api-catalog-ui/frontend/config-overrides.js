@@ -19,7 +19,7 @@ module.exports = {
             },
             {
                 resolve: {
-                    fallback: { querystring: require.resolve('querystring-es3') },
+                    fallback: { querystring: require.resolve('querystring-es3'), url: require.resolve('url/') },
                 },
             },
         ];
@@ -27,7 +27,7 @@ module.exports = {
         return config;
     },
     jest: (config) => {
-        config.transformIgnorePatterns = ['/node_modules/?!(swagger-ui-react/swagger-ui-es-bundle-core.js)'];
+        config.transformIgnorePatterns = ['/node_modules/?!(swagger-ui-react|swagger-client|react-syntax-highlighter)'];
         config.collectCoverageFrom = [
             'src/App.{jsx,js}',
             'src/**/*.{jsx,js}',
@@ -36,6 +36,19 @@ module.exports = {
             '!src/responsive-tests/**',
             '!cypress/*',
         ];
+        config.moduleNameMapper = {
+            '^#swagger-ui$': '<rootDir>/node_modules/swagger-ui-react/swagger-ui.js',
+            '^#buffer':
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/util/polyfills/buffer/standard-import.cjs',
+            '@swagger-api/apidom-reference/configuration/empty':
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/configuration/empty.cjs',
+            '@swagger-api/apidom-reference/parse/parsers/binary':
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/parse/parsers/binary/index-node.cjs',
+            '@swagger-api/apidom-reference/resolve/strategies/openapi-3-1':
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/resolve/strategies/openapi-3-1/index.cjs',
+            '@swagger-api/apidom-reference/dereference/strategies/openapi-3-1':
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/dereference/strategies/openapi-3-1/index.cjs',
+        };
         return config;
     },
 };

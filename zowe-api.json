@@ -3,6 +3,7 @@
     "defaultDirName": "api-mediation-layer",
     "defaultHlqSegment": "ZADSMP",
     "zfsMegabytes": 500,
+    "javaVersion": 17,
 
     "deployment": {
         "files": {

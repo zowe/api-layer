@@ -24,15 +24,7 @@ import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
 import { sortServices } from '../../selectors/selectors';
-
-const loadFeedbackButton = () => {
-    if (isAPIPortal()) {
-        return import('../FeedbackButton/FeedbackButton');
-    }
-    return Promise.resolve(null);
-};
-
-const FeedbackButton = React.lazy(loadFeedbackButton);
+import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 export default class Dashboard extends Component {
     componentDidMount() {

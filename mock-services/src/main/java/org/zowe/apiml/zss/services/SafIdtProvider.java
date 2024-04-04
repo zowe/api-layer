@@ -50,7 +50,8 @@ public class SafIdtProvider {
             Token token
     ) {
         String safToken = token.getJwt();
-        String username = Jwts.parserBuilder()
+        String username = Jwts.parser()
+            .unsecured()
                 .build()
                 .parseClaimsJwt(safToken)
                 .getBody()
