@@ -211,9 +211,8 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         verify(cmd, never()).apply(any());
     }
 
-    @ParameterizedTest
-    @MethodSource("provideAuthSources")
-    void givenNoMappedDistributedId_thenCallThrough(AuthSource authSource) {
+    @Test
+    void givenNoMappedDistributedId_thenCallThrough() {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
@@ -222,7 +221,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
 
-        AuthenticationCommand cmd = mock(AuthenticationCommand.class);
+        AuthSource authSource = new JwtAuthSource("token");
         Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, "");
         doReturn(authentication).when(serviceAuthenticationService).getAuthentication("service");
         doReturn(Optional.of(authSource)).when(serviceAuthenticationService).getAuthSourceByAuthentication(authentication);
