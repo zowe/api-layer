@@ -26,7 +26,7 @@ public class JwtKeys extends FunctionalApar {
     protected ResponseEntity<?> handleJwtKeys() {
         try {
             JWKSet jwkSet = JwtTokenService.getKeySet();
-            return new ResponseEntity<>(jwkSet, HttpStatus.OK);
+            return new ResponseEntity<>(jwkSet.toJSONObject(), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

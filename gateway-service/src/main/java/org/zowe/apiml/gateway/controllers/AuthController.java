@@ -32,6 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
+import org.zowe.apiml.gateway.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerResponse;
@@ -69,7 +70,7 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     @Nullable
-    private final OIDCProvider oidcProvider;
+    private final OIDCTokenProvider oidcProvider;
     private final WebFingerProvider webFingerProvider;
 
     private static final String TOKEN_KEY = "token";
@@ -210,9 +211,15 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public Map<String, Object> getAllPublicKeys() {
-        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+        List<JWK> keys;
+        if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
+            keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+        } else {
+            keys = new LinkedList<>();
+        }
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
+        keys.addAll(oidcProvider.getJwkSet().getKeys());
         return new JWKSet(keys).toJSONObject(true);
     }
 

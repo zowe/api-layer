@@ -246,7 +246,7 @@ class OIDCTokenProviderTest {
         void shouldNotModifyJwksUri() throws IOException {
             when(httpClientMock.execute(any())).thenReturn(httpResponse);
 
-            oidcTokenProvider.fetchJwksUrls();
+            oidcTokenProvider.fetchJWKSet();
 
             verify(httpClientMock).execute(argThat((getJwksRequest) -> getJwksRequest.getURI().toString().equals("https://jwksurl")));
         }

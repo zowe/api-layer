@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
+import org.zowe.apiml.gateway.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerResponse;
@@ -74,7 +75,7 @@ class AuthControllerTest {
     private AccessTokenProvider tokenProvider;
 
     @Mock
-    private OIDCProvider oidcProvider;
+    private OIDCTokenProvider oidcProvider;
 
     @Mock
     private WebFingerProvider webFingerProvider;
