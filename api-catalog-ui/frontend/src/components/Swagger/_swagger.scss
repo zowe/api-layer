@@ -59,6 +59,7 @@ body {
   .opblock {
     .arrow {
       transform: rotate(-90deg);
+      fill: var( --link20 );
     }
     &.is-open {
       > h3, > div {
@@ -190,10 +191,19 @@ body {
     cursor: pointer;
     width: 100%;
     font-size: var( --fontSmall );
-    padding: var( --spaceSmall ) 0;
-    border-bottom: 1px solid var( --divider20 );
+    padding: var( --spaceSmall ) 10px;
+    border-bottom: 1px solid var( --link20 );
     font-weight: var( --fontWeightNormal );
     margin-bottom: var( --spaceSmallest );
+
+    &:hover {
+      border-bottom: 1px solid var( --linkHover );
+      background-color: #F2F6FC;
+
+      svg {
+        fill: var( --linkHover );
+      }
+    }
 
     .expand-operation {
       background-color: transparent;
