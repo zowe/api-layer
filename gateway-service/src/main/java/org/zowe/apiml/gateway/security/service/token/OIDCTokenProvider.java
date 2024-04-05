@@ -105,7 +105,7 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     private Map<String, Key> processKeys(JWKSet jwkKeys) {
         return jwkKeys.getKeys().stream()
-            .filter(jwkKey -> "sig".equals(jwkKey.getKeyUse().getValue()) || "RSA".equals(jwkKey.getKeyType().getValue()))
+            .filter(jwkKey -> "sig".equals(jwkKey.getKeyUse().getValue()) && "RSA".equals(jwkKey.getKeyType().getValue()))
             .collect(Collectors.toMap(JWK::getKeyID, jwkKey -> {
                 try {
                     return jwkKey.toRSAKey().toRSAPublicKey();

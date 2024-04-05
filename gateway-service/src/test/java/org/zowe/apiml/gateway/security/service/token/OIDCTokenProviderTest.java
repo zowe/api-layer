@@ -10,7 +10,13 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.Requirement;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyType;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.impl.DefaultClock;
 import io.jsonwebtoken.impl.FixedClock;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,16 +37,21 @@ import java.net.URL;
 import java.security.Key;
 import java.text.ParseException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
@@ -132,7 +143,7 @@ class OIDCTokenProviderTest {
         }
 
         @Test
-        void whenValidtoken_thenReturnValid() throws IOException, ParseException {
+        void whenValidToken_thenReturnValid() throws IOException, ParseException {
             initPublicKeys();
             ReflectionTestUtils.setField(oidcTokenProvider, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
             assertTrue(oidcTokenProvider.isValid(EXPIRED_TOKEN));
@@ -145,7 +156,7 @@ class OIDCTokenProviderTest {
         }
 
         @Test
-        void whenNoJwks_thenReturnInvalid() {
+        void whenNoJwk_thenReturnInvalid() {
             assumeTrue(oidcTokenProvider.getPublicKeys().isEmpty());
             assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
@@ -203,6 +214,26 @@ class OIDCTokenProviderTest {
 
                 oidcTokenProvider.fetchJWKSet();
                 mockedStatic.verify(() -> JWKSet.load(new URL("https://jwksurl")), times(1));
+            }
+        }
+
+        @Test
+        void throwsCorrectException() throws JOSEException {
+
+            try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
+                JWKSet jwkSet1 = mock(JWKSet.class);
+                JWK invalidJwk = mock(JWK.class);
+                when(invalidJwk.getKeyUse()).thenReturn(new KeyUse("sig"));
+                when(invalidJwk.getKeyType()).thenReturn(new KeyType("RSA", Requirement.REQUIRED));
+                when(invalidJwk.getKeyID()).thenReturn("123");
+                RSAKey rsaKey = mock(RSAKey.class);
+                when(invalidJwk.toRSAKey()).thenReturn(rsaKey);
+                when(rsaKey.toRSAPublicKey()).thenThrow(new JOSEException());
+                List<JWK> keys = Collections.singletonList(invalidJwk);
+                when(jwkSet1.getKeys()).thenReturn(keys);
+                mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet1);
+
+                assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
             }
         }
     }
