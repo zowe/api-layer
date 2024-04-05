@@ -24,6 +24,7 @@ import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -123,6 +124,12 @@ class RestResponseHandlerTest {
             void thenHttpServerError() {
                 when(statusLine.getStatusCode()).thenReturn(500);
                 assertThrows(ServiceNotAccessibleException.class, () -> handler.handleErrorType(response, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
+            }
+
+            @Test
+            void thenNoMappingError() {
+                assertThrows(NoMainframeIdentityException.class,
+                    () -> handler.handleErrorType(response, ErrorType.IDENTITY_MAPPING_FAILED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS));
             }
         }
 

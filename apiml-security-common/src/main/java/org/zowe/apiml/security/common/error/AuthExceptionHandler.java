@@ -20,11 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +60,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleAuthMethodNotSupported(request, response, ex);
         } else if (ex instanceof TokenNotValidException) {
             handleTokenNotValid(request, response, ex);
-        } else if (ex instanceof TokenNotProvidedException) {
+        } else if (ex instanceof NoMainframeIdentityException) {
+            handleNoMainframeIdentity(request, response, ex);
+        }else if (ex instanceof TokenNotProvidedException) {
             handleTokenNotProvided(request, response, ex);
         } else if (ex instanceof TokenExpireException) {
             handleTokenExpire(request, response, ex);
@@ -118,6 +116,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleTokenNotValid(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
+    }
+
+    private void handleNoMainframeIdentity(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+        writeErrorResponse(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
     private void handleTokenNotProvided(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {

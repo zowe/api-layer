@@ -31,10 +31,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
-import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.ServletException;
 
@@ -132,6 +129,20 @@ class AuthExceptionHandlerTest {
         assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
 
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+    }
+
+    @Test
+    void testAuthenticationFailure_whenExceptionIsNoMainframeIdException() throws IOException, ServletException {
+        authExceptionHandler.handleException(
+            httpServletRequest,
+            httpServletResponse,
+            new NoMainframeIdentityException("ERROR"));
+
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+
+        Message message = messageService.createMessage(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 

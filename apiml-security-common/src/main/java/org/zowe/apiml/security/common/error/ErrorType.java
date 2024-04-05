@@ -31,7 +31,8 @@ public enum ErrorType {
     INVALID_TOKEN_TYPE("org.zowe.apiml.security.login.invalidTokenType", "Invalid token type in response from Authentication service.", "Review your APIML authentication provider configuration and ensure your Authentication service is working."),
     USER_SUSPENDED("org.zowe.apiml.security.platform.errno.EMVSSAFEXTRERR","Account Suspended", "Contact your security administrator to unsuspend your account."),
     NEW_PASSWORD_INVALID("org.zowe.apiml.security.platform.errno.EMVSPASSWORD", "The new password is not valid", "Provide valid password."),
-    PASSWORD_EXPIRED("org.zowe.apiml.security.platform.errno.EMVSEXPIRE", "Password has expired", "Contact your security administrator to reset your password.");
+    PASSWORD_EXPIRED("org.zowe.apiml.security.platform.errno.EMVSEXPIRE", "Password has expired", "Contact your security administrator to reset your password."),
+    IDENTITY_MAPPING_FAILED("org.zowe.apiml.gateway.security.schema.x509.mappingFailed", "No user was found", "Ask your security administrator to connect your token or client certificate with your mainframe user.");
 
     private final String errorMessageKey;
     private final String defaultMessage;
