@@ -168,7 +168,7 @@ dependencyResolutionManagement {
             library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
             library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4j')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
-            library('netty', 'io.netty', 'netty-all').versionRef('netty')
+            library('netty_bom', 'io.netty', 'netty-bom').versionRef('netty')
             library('netty_reactor_http', 'io.projectreactor.netty', 'reactor-netty-http').versionRef('nettyReactor')
             library('nimbus_jose_jwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
             library('openapidiff', 'org.openapitools.openapidiff', 'openapi-diff-core').versionRef('openApiDiff')

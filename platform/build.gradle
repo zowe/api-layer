@@ -17,6 +17,7 @@ javaPlatform {
  */
 dependencies {
     api(platform(libs.spring.boot.dependencies))
+    api(platform(libs.netty.bom))
 
     constraints {
         // to define preferred version (the minimal version constraints)
