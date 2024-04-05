@@ -110,7 +110,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                 try {
                     return jwkKey.toRSAKey().toRSAPublicKey();
                 } catch (JOSEException e) {
-                    log.error("Error", e.getCause());
+                    log.debug("Problem with getting RSA Public key from JWK. ", e.getCause());
                     throw new IllegalStateException("Failed to parse public key", e);
                 }
             }));
