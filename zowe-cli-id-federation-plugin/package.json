@@ -79,6 +79,9 @@
   "peerDependencies": {
     "@zowe/imperative": "5.9.1"
   },
+  "overrides": {
+    "ip": "2.0.1"
+  },
   "jest": {
     "modulePathIgnorePatterns": [
       "__tests__/__snapshots__/"
