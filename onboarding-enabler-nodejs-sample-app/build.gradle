@@ -24,6 +24,8 @@ node {
     nodeProjectDir = file("${project.projectDir}")
 }
 
+npmInstall.args = ['--registry', 'https://zowe.jfrog.io/artifactory/api/npm/npm-org']
+
 build.dependsOn npmInstall
 
 task nodeClean(type: Delete) {
