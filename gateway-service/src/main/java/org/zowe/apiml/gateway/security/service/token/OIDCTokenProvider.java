@@ -11,22 +11,17 @@
 package org.zowe.apiml.gateway.security.service.token;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import lombok.NonNull;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -40,13 +35,9 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
 import java.security.Key;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
+import java.text.ParseException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,72 +69,51 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private int jwkRefreshInterval;
 
-    @Qualifier("secureHttpClientWithoutKeystore")
-    @NonNull
-    private final CloseableHttpClient httpClient;
-
     @Qualifier("oidcJwtClock")
     private final Clock clock;
 
-    @Qualifier("oidcJwkMapper")
-    private final ObjectMapper mapper;
-
-    private Map<String, Key> jwks = new ConcurrentHashMap<>();
+    @Getter
+    private Map<String, Key> publicKeys = new ConcurrentHashMap<>();
+    @Getter
+    private JWKSet jwkSet;
 
     @PostConstruct
     public void afterPropertiesSet() {
-        this.fetchJwksUrls();
+        this.fetchJWKSet();
         Executors.newSingleThreadScheduledExecutor(r -> new Thread("OIDC JWK Refresh"))
-            .scheduleAtFixedRate(this::fetchJwksUrls , jwkRefreshInterval, jwkRefreshInterval, TimeUnit.HOURS);
+            .scheduleAtFixedRate(this::fetchJWKSet, jwkRefreshInterval, jwkRefreshInterval, TimeUnit.HOURS);
     }
 
     @Retryable
-    void fetchJwksUrls() {
+    void fetchJWKSet() {
         if (StringUtils.isBlank(jwksUri)) {
             log.debug("OIDC JWK URI not provided, JWK refresh not performed");
             return;
         }
         log.debug("Refreshing JWK endpoints {}", jwksUri);
-        HttpGet getRequest = new HttpGet(jwksUri);
+
         try {
-            CloseableHttpResponse response = httpClient.execute(getRequest);
-            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
-            final HttpEntity responseEntity = response.getEntity();
-            String responseBody = "";
-            if (responseEntity != null) {
-                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-            }
-            if (statusCode == HttpStatus.SC_OK && !responseBody.isEmpty()) {
-                jwks.clear();
-                JwkKeys jwkKeys = mapper.readValue(responseBody, JwkKeys.class);
-                jwks.putAll(processKeys(jwkKeys));
-            } else {
-                log.error("Failed to obtain JWKs from URI {}. Unexpected response: {}, response text: {}", jwksUri, statusCode, responseBody);
-            }
-        } catch (IOException | IllegalStateException e) {
-            log.error("Error processing response from URI {}", jwksUri, e.getMessage());
+            publicKeys.clear();
+            jwkSet = null;
+            jwkSet = JWKSet.load(new URL(jwksUri));
+            publicKeys.putAll(processKeys(jwkSet));
+        } catch (IOException | ParseException | IllegalStateException e) {
+            log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());
         }
     }
 
-    private Map<String, Key> processKeys(JwkKeys jwkKeys) {
-        return jwkKeys.getKeys().stream()
-            .filter(jwkKey -> "sig".equals(jwkKey.getUse()))
-            .filter(jwkKey -> "RSA".equals(jwkKey.getKty()))
-            .collect(Collectors.toMap(JwkKeys.Key::getKid, jwkKey -> {
-                BigInteger modulus = base64ToBigInteger(jwkKey.getN());
-                BigInteger exponent = base64ToBigInteger(jwkKey.getE());
-                RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(modulus, exponent);
-                try {
-                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                    return keyFactory.generatePublic(rsaPublicKeySpec);
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new IllegalStateException("Failed to parse public key");
-                }
-           }));
-    }
 
-    private BigInteger base64ToBigInteger(String value) {
-        return new BigInteger(1, Decoders.BASE64URL.decode(value));
+    private Map<String, Key> processKeys(JWKSet jwkKeys) {
+        return jwkKeys.getKeys().stream()
+            .filter(jwkKey -> "sig".equals(jwkKey.getKeyUse().getValue()) && "RSA".equals(jwkKey.getKeyType().getValue()))
+            .collect(Collectors.toMap(JWK::getKeyID, jwkKey -> {
+                try {
+                    return jwkKey.toRSAKey().toRSAPublicKey();
+                } catch (JOSEException e) {
+                    log.debug("Problem with getting RSA Public key from JWK. ", e.getCause());
+                    throw new IllegalStateException("Failed to parse public key", e);
+                }
+            }));
     }
 
     @Override
@@ -154,7 +124,7 @@ public class OIDCTokenProvider implements OIDCProvider {
         }
         String kid = getKeyId(token);
         logger.log(MessageType.DEBUG, "Token signed by key {}", kid);
-        return Optional.ofNullable(jwks.get(kid))
+        return Optional.ofNullable(publicKeys.get(kid))
             .map(key -> validate(token, key))
             .map(claims -> claims != null && !claims.isEmpty())
             .orElse(false);
@@ -163,11 +133,11 @@ public class OIDCTokenProvider implements OIDCProvider {
     private String getKeyId(String token) {
         try {
             return String.valueOf(Jwts.parserBuilder()
-                    .setClock(clock)
-                    .build()
-                    .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
-                    .getHeader()
-                    .get("kid"));
+                .setClock(clock)
+                .build()
+                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .getHeader()
+                .get("kid"));
         } catch (JwtException e) {
             log.error("OIDC Token is not valid: {}", e.getMessage());
             return "";
@@ -187,4 +157,5 @@ public class OIDCTokenProvider implements OIDCProvider {
             return null; // NOSONAR
         }
     }
+
 }

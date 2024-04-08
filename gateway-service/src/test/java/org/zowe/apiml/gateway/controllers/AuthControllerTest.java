@@ -32,13 +32,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
+import org.zowe.apiml.gateway.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerResponse;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
-import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
@@ -48,12 +48,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 class AuthControllerTest {
@@ -74,14 +87,14 @@ class AuthControllerTest {
     private AccessTokenProvider tokenProvider;
 
     @Mock
-    private OIDCProvider oidcProvider;
+    private OIDCTokenProvider oidcProvider;
 
     @Mock
     private WebFingerProvider webFingerProvider;
 
     private MessageService messageService;
 
-    private JWK jwk1, jwk2;
+    private JWK zosmfJwk, apimlJwk;
     private JSONObject body;
 
     @BeforeEach
@@ -93,8 +106,8 @@ class AuthControllerTest {
             .put("token", "token")
             .put("serviceId", "service");
 
-        jwk1 = getJwk(1);
-        jwk2 = getJwk(2);
+        zosmfJwk = getJwk(1);
+        apimlJwk = getJwk(2);
     }
 
     @Test
@@ -132,17 +145,43 @@ class AuthControllerTest {
     private void initPublicKeys() {
         JWKSet zosmf = mock(JWKSet.class);
         when(zosmf.getKeys()).thenReturn(
-            Arrays.asList(jwk1)
+            Collections.singletonList(zosmfJwk)
         );
+
         when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(Arrays.asList(jwk2)));
-        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(jwk2));
+        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(Collections.singletonList(apimlJwk)));
+        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
     }
 
     @Test
     void testGetAllPublicKeys() throws Exception {
         initPublicKeys();
-        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
+        when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
+        JWKSet jwkSet = new JWKSet(Arrays.asList(zosmfJwk, apimlJwk));
+        this.mockMvc.perform(get("/gateway/auth/keys/public/all"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toString()));
+    }
+
+    @Test
+    void givenAPIMLJWTProducer_whenGetAllPublicKeys_thenReturnsOnlyAPIMLKeys() throws Exception {
+        initPublicKeys();
+        when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
+        JWKSet jwkSet = new JWKSet(Collections.singletonList(apimlJwk));
+        this.mockMvc.perform(get("/gateway/auth/keys/public/all"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toString()));
+    }
+
+    @Test
+    void givenOIDCJWKSet_whenGetAllPublicKeys_thenIncludeOIDCInResult() throws Exception {
+        initPublicKeys();
+        JWKSet mockedJwkSet = mock(JWKSet.class);
+        JWK oidcJwk = getJwk(3);
+        when(oidcProvider.getJwkSet()).thenReturn(mockedJwkSet);
+        when(mockedJwkSet.getKeys()).thenReturn(Collections.singletonList(oidcJwk));
+
+        JWKSet jwkSet = new JWKSet(Arrays.asList(apimlJwk, oidcJwk));
         this.mockMvc.perform(get("/gateway/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
@@ -154,7 +193,7 @@ class AuthControllerTest {
         void useZoweJwt() throws Exception {
             initPublicKeys();
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk2));
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(apimlJwk));
             mockMvc.perform(get("/gateway/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
@@ -173,7 +212,7 @@ class AuthControllerTest {
         @Test
         void useZosmf() throws Exception {
             initPublicKeys();
-            JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk1));
+            JWKSet jwkSet = new JWKSet(Collections.singletonList(zosmfJwk));
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
             mockMvc.perform(get("/gateway/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))

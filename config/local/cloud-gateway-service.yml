@@ -25,3 +25,18 @@ spring:
             enabled: always
     profiles:
         include: debug
+    security:
+        oauth2:
+            client:
+                registration:
+                    okta:
+                        issuer: https://dev-95727686.okta.com/oauth2/default
+                        client-id:
+                        client-secret:
+                        redirectUri: "{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}"
+                provider:
+                    okta:
+                        authorization-uri: https://dev-95727686.okta.com/oauth2/v1/authorize
+                        token-uri: https://dev-95727686.okta.com/oauth2/v1/token
+                        user-info-uri: https://dev-95727686.okta.com/oauth2/v1/userinfo
+                        jwk-set-uri: https://dev-95727686.okta.com/oauth2/v1/keys

@@ -14,14 +14,14 @@ apiml:
         personalAccessToken:
             enabled: true
         oidc:
-            enabled: false
+            enabled: true
             clientId:
             clientSecret:
             registry: zowe.okta.com
             identityMapperUrl: https://localhost:10010/zss/api/v1/certificate/dn
             identityMapperUser: APIMTST
             jwks:
-                uri:
+                uri: https://dev-95727686.okta.com/oauth2/default/v1/keys
         auth:
             jwt:
                 customAuthHeader:

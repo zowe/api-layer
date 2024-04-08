@@ -64,10 +64,14 @@ auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 idpConfiguration:
     host: https://dev-95727686.okta.com
+    user: zoweson@zowe.com
+    password: hKE6tisHdujbmSg
+    alternateUser: winniethepooh@zowe.com
+    alternatePassword: 123Heslo!
 safIdtConfiguration:
     enabled: true
 oidcConfiguration:
-    clientId:
+    clientId: 0oa6a48mniXAqEMrx5d7
 instanceEnv:
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZWE_haInstance_hostname: localhost
