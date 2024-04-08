@@ -37,6 +37,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -142,7 +143,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
-    void givenInvalidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+    void givenInvalidAuthSource_whenAuthSourceRequired_thenCallThrough(AuthSource authSource) {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
@@ -195,7 +196,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
-    void givenExpiredJwt_thenCallThrought(AuthSource authSource) {
+    void givenExpiredJwt_thenCallThrough(AuthSource authSource) {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
@@ -208,6 +209,30 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         verify(RequestContext.getCurrentContext(), never()).setSendZuulResponse(false);
         verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(401);
         verify(cmd, never()).apply(any());
+    }
+
+    @Test
+    void givenNoMappedDistributedId_thenCallThrough() {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
+
+        RequestContext requestContext = mock(RequestContext.class);
+        when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
+        RequestContext.testSetCurrentContext(requestContext);
+
+        AuthSource authSource = new JwtAuthSource("token");
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, "");
+        doReturn(authentication).when(serviceAuthenticationService).getAuthentication("service");
+        doReturn(Optional.of(authSource)).when(serviceAuthenticationService).getAuthSourceByAuthentication(authentication);
+        doThrow(new NoMainframeIdentityException("User not found."))
+            .when(serviceAuthenticationService)
+            .getAuthenticationCommand(eq("service"), any(Authentication.class), any(AuthSource.class));
+
+        serviceAuthenticationFilter.run();
+
+        verify(RequestContext.getCurrentContext(), never()).setSendZuulResponse(false);
+        verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(401);
     }
 
     @ParameterizedTest

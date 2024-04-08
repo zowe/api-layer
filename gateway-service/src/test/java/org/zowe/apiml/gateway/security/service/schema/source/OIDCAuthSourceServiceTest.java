@@ -21,10 +21,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
-import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -115,7 +112,7 @@ class OIDCAuthSourceServiceTest {
             OIDCAuthSource authSource = mockValidAuthSource();
             when(mapper.mapToMainframeUserId(authSource)).thenReturn(null);
 
-            assertThrows(TokenNotValidException.class, () -> {
+            assertThrows(NoMainframeIdentityException.class, () -> {
                 service.parse(authSource);
             });
         }
