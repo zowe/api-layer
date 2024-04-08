@@ -271,12 +271,12 @@ public class ZosmfService extends AbstractZosmfService {
         log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
-            .exchange(
-                infoURIEndpoint,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                ZosmfInfo.class
-            );
+                .exchange(
+                    infoURIEndpoint,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    ZosmfInfo.class
+                );
 
             if (info.getStatusCode() != HttpStatus.OK) {
                 log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
@@ -557,12 +557,13 @@ public class ZosmfService extends AbstractZosmfService {
         final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
-            final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
-            return JWKSet.parse(json);
+            return JWKSet.load(new URL(url));
         } catch (ParseException pe) {
             log.debug("Invalid format of public keys from z/OSMF", pe);
         } catch (HttpClientErrorException.NotFound nf) {
             log.debug("Cannot get public keys from z/OSMF", nf);
+        } catch (IOException me) {
+            log.debug("Can't read JWK due to the exception " + me.getMessage(), me.getCause());
         }
         return new JWKSet();
     }
