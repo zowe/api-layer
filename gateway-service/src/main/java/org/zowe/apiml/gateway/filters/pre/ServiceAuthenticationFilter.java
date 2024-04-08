@@ -27,6 +27,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -88,6 +89,10 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
             return null;
         } catch (TokenNotValidException notValidException) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToLogMessage();
+            sendErrorMessage(error, context);
+            return null;
+        } catch (NoMainframeIdentityException noIdentityException) {
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
             sendErrorMessage(error, context);
             return null;
         } catch (AuthenticationException ae) {
