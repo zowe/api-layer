@@ -20,7 +20,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +67,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleTokenNotValid(request, response, ex);
         } else if (ex instanceof NoMainframeIdentityException) {
             handleNoMainframeIdentity(request, response, ex);
-        }else if (ex instanceof TokenNotProvidedException) {
+        } else if (ex instanceof TokenNotProvidedException) {
             handleTokenNotProvided(request, response, ex);
         } else if (ex instanceof TokenExpireException) {
             handleTokenExpire(request, response, ex);
