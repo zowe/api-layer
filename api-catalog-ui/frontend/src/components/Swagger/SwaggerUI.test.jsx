@@ -325,8 +325,8 @@ describe('>>> Swagger component tests', () => {
             },
         };
         const querySelectorSpy = jest.spyOn(document, 'querySelector').mockImplementation(() => null);
-        const querySelectorDivSpy = jest.spyOn(divInfo, 'querySelector')
-        const querySelectorTitleSpy = jest.spyOn(title, 'querySelector')
+        const querySelectorDivSpy = jest.spyOn(divInfo, 'querySelector');
+        const querySelectorTitleSpy = jest.spyOn(title, 'querySelector');
         const titleSpy = jest.spyOn(title, 'appendChild');
 
         const wrapper = shallow(<SwaggerUI selectedService={service} />);
@@ -361,7 +361,7 @@ describe('>>> Swagger component tests', () => {
         };
         const querySelectorSpy = jest.spyOn(document, 'querySelector').mockImplementation(() => divInfo);
         const querySelectorDivSpy = jest.spyOn(divInfo, 'querySelector').mockImplementation(() => null);
-        const querySelectorTitleSpy = jest.spyOn(title, 'querySelector')
+        const querySelectorTitleSpy = jest.spyOn(title, 'querySelector');
         const titleSpy = jest.spyOn(title, 'appendChild');
 
         const wrapper = shallow(<SwaggerUI selectedService={service} />);
