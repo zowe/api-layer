@@ -1,4 +1,6 @@
 $red-selected-bx: 0 0 0 2px var( --criticalShade10 ) inset;
+$hover-selected-bx: 0 0 0 2px var( --linkHover ) inset;
+$hover-soft-selected-bx: 0 0 0 1px var( --linkHover ) inset;
 
 #serviceIdTabs {
     margin-bottom: var( --spaceSmall );
@@ -60,6 +62,13 @@ svg.MuiSvgIcon-root.clear-text-search {
             box-shadow: $red-selected-bx;
             color: black;
             font-weight: 600;
+
+            &:hover {
+                box-shadow: $hover-selected-bx;
+            }
+        }
+        &:hover {
+            box-shadow: $hover-soft-selected-bx;
         }
     }
 }// end .custom-tabs
