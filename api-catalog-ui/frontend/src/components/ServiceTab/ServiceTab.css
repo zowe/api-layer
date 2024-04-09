@@ -97,7 +97,7 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     text-transform: none;
     line-height: 14px;
     letter-spacing: 0.24px;
-    order-radius: 3px;
+    border-radius: 3px;
     margin-left: 20px;
     border: 1px solid var(--link-in-the-text, #0056B3)
 }

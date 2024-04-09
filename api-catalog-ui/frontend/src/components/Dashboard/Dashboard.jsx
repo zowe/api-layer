@@ -211,8 +211,8 @@ export default class Dashboard extends Component {
                                     <div className="empty" />
                                     <h4 className="description-header">Swagger</h4>
                                     <h4 className="description-header">Use Cases</h4>
-                                    <h4 className="description-header">Videos</h4>
                                     <h4 className="description-header">Getting Started</h4>
+                                    <h4 className="description-header">Videos</h4>
                                 </div>
                             )}
 

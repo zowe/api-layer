@@ -30,8 +30,8 @@ p.MuiTypography-root.version-text.MuiTypography-body1 {
     margin: 0 0 var( --spaceSmall );
 }
 #version-label {
-    margin-top: var( --spaceMedium );
-    color: var( --surface100 );
+    margin-top: var( --spaceSmaller );
+    color: var( --text20 );
 }
 #compare-button {
     font-size: var( --fontSmaller );
@@ -128,5 +128,5 @@ button.MuiButtonBase-root.MuiIconButton-root.more-content-button {
 
 #single-api-version-label {
     margin-left: 5px;
-    margin-top: 16px;
+    margin-top: var( --spaceSmaller );
 }
