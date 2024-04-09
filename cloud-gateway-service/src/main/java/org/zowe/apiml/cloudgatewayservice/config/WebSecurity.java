@@ -68,7 +68,7 @@ public class WebSecurity {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain oauth2WebFilterChain(ServerHttpSecurity http) {
         http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/okta-oidc", "oauth2/authorization/**"))
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers( "oauth2/authorization/**"))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(Customizer.withDefaults())
             .oauth2Client(Customizer.withDefaults());

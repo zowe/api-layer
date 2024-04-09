@@ -67,6 +67,8 @@ dependencies {
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
+// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: '3.2.4'
 
     implementation libs.bcpkix
     implementation libs.janino
