@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,6 +27,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
@@ -62,22 +65,33 @@ public class WebSecurity {
     }
 
     @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityWebFilterChain oauth2WebFilterChain(ServerHttpSecurity http) {
+        http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/okta-oidc", "oauth2/authorization/**"))
+            .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
+            .oauth2Login(Customizer.withDefaults())
+            .oauth2Client(Customizer.withDefaults());
+        return http.build();
+    }
+
+    @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
-        SubjectDnX509PrincipalExtractor principalExtractor = new SubjectDnX509PrincipalExtractor();
-
-        ReactiveAuthenticationManager authenticationManager = authentication -> {
-            authentication.setAuthenticated(true);
-            return Mono.just(authentication);
-        };
-
-        http.x509(x509 ->
+        http
+            .x509(x509 ->
                 x509
-                    .principalExtractor(principalExtractor)
-                    .authenticationManager(authenticationManager))
+                    .principalExtractor(new SubjectDnX509PrincipalExtractor())
+                    .authenticationManager(authentication -> {
+                        authentication.setAuthenticated(true);
+                        return Mono.just(authentication);
+                    })
+            )
             .authorizeExchange(authorizeExchangeSpec ->
-                authorizeExchangeSpec.pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
-            ).authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().permitAll())
+                authorizeExchangeSpec
+                    .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
+                    .anyExchange().permitAll()
+            )
             .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         return http.build();
