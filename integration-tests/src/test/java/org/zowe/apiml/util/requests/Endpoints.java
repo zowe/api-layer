@@ -48,6 +48,7 @@ public class Endpoints {
     public final static String EVICT_ACCESS_TOKEN = "/gateway/auth/access-token/evict";
 
     public final static String VALIDATE_OIDC_TOKEN = "/gateway/api/v1/auth/oidc-token/validate";
+    public final static String JWK_ALL = "/gateway/api/v1/auth/keys/public/all";
 
     public final static String DISCOVERY_STATIC_API = "/discovery/api/v1/staticApi";
 
