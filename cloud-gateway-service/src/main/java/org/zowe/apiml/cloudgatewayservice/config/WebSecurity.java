@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.Authentication;
@@ -81,7 +83,13 @@ public class WebSecurity {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityWebFilterChain oauth2WebFilterChain(ServerHttpSecurity http, InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository, ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService, ApimlServerAuthorizationRequestRepository requestRepository) {
+    public SecurityWebFilterChain oauth2WebFilterChain(
+        ServerHttpSecurity http,
+        InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository,
+        ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService,
+        ApimlServerAuthorizationRequestRepository requestRepository,
+        ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver
+    ) {
         http
             .securityContextRepository(new ServerSecurityContextRepository() {
                 AtomicReference<SecurityContext> securityContextAtomicReference = new AtomicReference<>();
@@ -103,7 +111,7 @@ public class WebSecurity {
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(oauth2 -> oauth2
                 .authorizationRequestRepository(requestRepository)
-                .authorizationRequestResolver(this.authorizationRequestResolver(inMemoryReactiveClientRegistrationRepository))
+                .authorizationRequestResolver(authorizationRequestResolver)
                 .authenticationSuccessHandler(new ServerAuthenticationSuccessHandler() {
                     @Override
                     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
@@ -118,7 +126,8 @@ public class WebSecurity {
         return http.build();
     }
 
-    private ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
+    @Bean
+    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
         ServerWebExchangeMatcher authorizationRequestMatcher =
             new PathPatternParserServerWebExchangeMatcher(
                 "/login/oauth2/authorization/{registrationId}");
@@ -128,8 +137,8 @@ public class WebSecurity {
     }
 
     @Bean
-    public ApimlServerAuthorizationRequestRepository requestRepository() {
-        return new ApimlServerAuthorizationRequestRepository();
+    public ApimlServerAuthorizationRequestRepository requestRepository(ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver) {
+        return new ApimlServerAuthorizationRequestRepository(authorizationRequestResolver);
     }
 
     @Bean
@@ -168,13 +177,24 @@ public class WebSecurity {
         };
     }
 
+    @RequiredArgsConstructor
     static class ApimlServerAuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+
+        final ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver;
         AtomicReference<OAuth2AuthorizationRequest> reference = new AtomicReference<>();
 
         @Override
         public Mono<OAuth2AuthorizationRequest> loadAuthorizationRequest(ServerWebExchange exchange) {
-            System.out.println("druhe" + exchange.getRequest().getCookies().get("nonce"));
-            return Mono.empty();
+            return authorizationRequestResolver.resolve(exchange).map(
+                arr -> {
+                    HttpCookie nonceCookie = exchange.getRequest().getCookies().getFirst("nonce");
+                    if (nonceCookie != null) {
+                        arr.getAdditionalParameters().put("nonce", nonceCookie.getValue());
+                        arr.getAttributes().put("nonce", nonceCookie.getValue());
+                    }
+                    return arr;
+                }
+            );
         }
 
         @Override
