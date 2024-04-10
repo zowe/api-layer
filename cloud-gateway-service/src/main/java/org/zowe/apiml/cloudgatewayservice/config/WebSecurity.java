@@ -18,16 +18,30 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
+import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
@@ -37,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -66,13 +81,55 @@ public class WebSecurity {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityWebFilterChain oauth2WebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain oauth2WebFilterChain(ServerHttpSecurity http, InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository, ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService, ApimlServerAuthorizationRequestRepository requestRepository) {
         http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers( "oauth2/authorization/**"))
+            .securityContextRepository(new ServerSecurityContextRepository() {
+                AtomicReference<SecurityContext> securityContextAtomicReference = new AtomicReference<>();
+
+                @Override
+                public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {
+                    System.out.println("prve" + exchange.getRequest().getCookies().get("nonce"));
+                    securityContextAtomicReference.set(context);
+                    return Mono.empty();
+                }
+
+                @Override
+                public Mono<SecurityContext> load(ServerWebExchange exchange) {
+
+                    return Mono.justOrEmpty(securityContextAtomicReference.get());
+                }
+            })
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("oauth2/authorization/**", "/login/oauth2/code/**"))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
-            .oauth2Login(Customizer.withDefaults())
-            .oauth2Client(Customizer.withDefaults());
+            .oauth2Login(oauth2 -> oauth2
+                .authorizationRequestRepository(requestRepository)
+                .authorizationRequestResolver(this.authorizationRequestResolver(inMemoryReactiveClientRegistrationRepository))
+                .authenticationSuccessHandler(new ServerAuthenticationSuccessHandler() {
+                    @Override
+                    public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
+                        return reactiveOAuth2AuthorizedClientService.loadAuthorizedClient("okta", authentication.getName()).map(oAuth2AuthorizedClient -> {
+                            webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+                            System.out.println(oAuth2AuthorizedClient.getAccessToken().getTokenValue());
+                            return Mono.empty();
+                        }).flatMap(x -> Mono.empty());
+                    }
+                }))
+            .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository));
         return http.build();
+    }
+
+    private ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
+        ServerWebExchangeMatcher authorizationRequestMatcher =
+            new PathPatternParserServerWebExchangeMatcher(
+                "/login/oauth2/authorization/{registrationId}");
+
+        return new DefaultServerOAuth2AuthorizationRequestResolver(
+            inMemoryReactiveClientRegistrationRepository, authorizationRequestMatcher);
+    }
+
+    @Bean
+    public ApimlServerAuthorizationRequestRepository requestRepository() {
+        return new ApimlServerAuthorizationRequestRepository();
     }
 
     @Bean
@@ -111,4 +168,26 @@ public class WebSecurity {
         };
     }
 
+    static class ApimlServerAuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+        AtomicReference<OAuth2AuthorizationRequest> reference = new AtomicReference<>();
+
+        @Override
+        public Mono<OAuth2AuthorizationRequest> loadAuthorizationRequest(ServerWebExchange exchange) {
+            System.out.println("druhe" + exchange.getRequest().getCookies().get("nonce"));
+            return Mono.empty();
+        }
+
+        @Override
+        public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
+            exchange.getResponse().addCookie(ResponseCookie.from("nonce", String.valueOf(authorizationRequest.getAdditionalParameters().get("nonce"))).build());
+            reference.set(authorizationRequest);
+            return Mono.empty();
+        }
+
+        @Override
+        public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
+            exchange.getResponse().getCookies().remove("nonce");
+            return Mono.justOrEmpty(reference.getAndSet(null));
+        }
+    }
 }
