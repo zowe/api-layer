@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
-import io.netty.handler.codec.http.cookie.CookieHeaderNames;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
@@ -34,24 +33,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
 import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
-import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
@@ -153,7 +147,7 @@ public class WebSecurity {
     @Bean
     public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
         ServerWebExchangeMatcher authorizationRequestMatcher =
-             ServerWebExchangeMatchers.pathMatchers(
+            ServerWebExchangeMatchers.pathMatchers(
                 "/login/oauth2/codesdfs/{registrationId}");
 
         return new DefaultServerOAuth2AuthorizationRequestResolver(
@@ -208,43 +202,35 @@ public class WebSecurity {
 
         @Override
         public Mono<OAuth2AuthorizationRequest> loadAuthorizationRequest(ServerWebExchange exchange) {
-            return authorizationRequestResolver.resolve(exchange,"okta").map(
+            return authorizationRequestResolver.resolve(exchange, "okta").map(
                 arr -> {
                     HttpCookie nonceCookie = exchange.getRequest().getCookies().getFirst("nonce");
                     if (nonceCookie != null) {
-                        arr.getAdditionalParameters().put("nonce", createHash(nonceCookie.getValue()));
-                        arr.getAttributes().put("nonce", nonceCookie.getValue());
+                        return createAuthorizationRequest(exchange, arr);
                     }
                     return arr;
                 }
             );
         }
 
-//        ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("okta")
-//            .userNameAttributeName(IdTokenClaimNames.SUB)
-//            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-//            .redirectUri("{baseUrl}/{action}/oauth2/code/{registrationId}")
-//            .authorizationUri("https://dev-95727686.okta.com/oauth2/v1/authorize")
-////                .providerConfigurationMetadata(configurationMetadata)
-//            .tokenUri("https://dev-95727686.okta.com/oauth2/v1/token")
-//            .issuerUri("https://dev-95727686.okta.com/oauth2/default")
-//            .clientName("https://dev-95727686.okta.com/oauth2/default").build();
-//        OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode()
-//            .attributes((attrs) ->
-//                attrs.put(OAuth2ParameterNames.REGISTRATION_ID, clientRegistration.getRegistrationId()));
-//        String redirectUriStr = expandRedirectUri(exchange.getRequest(), clientRegistration);
-//        applyNonce(builder, exchange.getRequest().getCookies().get("nonce").get(0).getValue());
-//        // @formatter:off
-//            builder.clientId(clientRegistration.getClientId())
-//                .authorizationUri(clientRegistration.getProviderDetails().getAuthorizationUri())
-//            .redirectUri(redirectUriStr)
-//                .scopes(clientRegistration.getScopes())
-//            .state(DEFAULT_STATE_GENERATOR.generateKey());
+        public OAuth2AuthorizationRequest createAuthorizationRequest(ServerWebExchange exchange, OAuth2AuthorizationRequest original) {
+            OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode()
+                .attributes((attrs) ->
+                    attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID)));
+            String redirectUriStr = expandRedirectUri(exchange.getRequest(), original);
+            applyNonce(builder, exchange.getRequest().getCookies().getFirst("nonce").getValue());
+            // @formatter:off
+            builder.clientId(original.getClientId())
+                .authorizationUri(original.getAuthorizationUri())
+                .redirectUri(redirectUriStr)
+                .scopes(original.getScopes())
+                .state(exchange.getRequest().getCookies().getFirst("state").getValue());
+            return builder.build();
+        }
 
-        private static String expandRedirectUri(ServerHttpRequest request, ClientRegistration clientRegistration) {
+        private static String expandRedirectUri(ServerHttpRequest request, OAuth2AuthorizationRequest original) {
             Map<String, String> uriVariables = new HashMap<>();
-            uriVariables.put("registrationId", clientRegistration.getRegistrationId());
+            uriVariables.put("registrationId", original.getClientId());
             // @formatter:off
             UriComponents uriComponents = UriComponentsBuilder.fromUri(request.getURI())
                 .replacePath(request.getPath().contextPath().value())
@@ -268,12 +254,12 @@ public class WebSecurity {
             uriVariables.put("basePath", (path != null) ? path : "");
             uriVariables.put("baseUrl", uriComponents.toUriString());
             String action = "";
-            if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(clientRegistration.getAuthorizationGrantType())) {
+            if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(original.getGrantType())) {
                 action = "login";
             }
             uriVariables.put("action", action);
             // @formatter:off
-            return UriComponentsBuilder.fromUriString(clientRegistration.getRedirectUri())
+            return UriComponentsBuilder.fromUriString(original.getRedirectUri())
                 .buildAndExpand(uriVariables)
                 .toUriString();
             // @formatter:on
@@ -302,6 +288,7 @@ public class WebSecurity {
         @Override
         public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
             exchange.getResponse().addCookie(ResponseCookie.from("nonce", String.valueOf(authorizationRequest.getAttributes().get("nonce"))).sameSite("Lax").path("/").httpOnly(true).secure(true).build());
+            exchange.getResponse().addCookie(ResponseCookie.from("state", String.valueOf(authorizationRequest.getState())).sameSite("Lax").path("/").httpOnly(true).secure(true).build());
 
             return Mono.empty();
         }
