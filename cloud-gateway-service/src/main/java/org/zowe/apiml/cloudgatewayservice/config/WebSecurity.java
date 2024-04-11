@@ -56,16 +56,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 @Configuration
 public class WebSecurity {
 
+    public static final String COOKIE_NONCE = "oidc_nonce";
+    public static final String COOKIE_STATE = "oidc_state";
+    private static final Pattern CLIENT_REG_ID = Pattern.compile("^/login/oauth2/code/([^/]+)$");
+
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
 
     private Predicate<String> usernameAuthorizationTester;
+    public static final String DEFAULT_REGISTRATION_ID_URI_VARIABLE_NAME = "registrationId";
 
     @PostConstruct
     void initScopes() {
@@ -125,8 +131,8 @@ public class WebSecurity {
     }
 
     void clearCookies(WebFilterExchange webFilterExchange) {
-        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("nonce").maxAge(0).path("/").httpOnly(true).secure(true).build());
-        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("state").maxAge(0).path("/").httpOnly(true).secure(true).build());
+        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_NONCE).maxAge(0).path("/").httpOnly(true).secure(true).build());
+        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_STATE).maxAge(0).path("/").httpOnly(true).secure(true).build());
     }
 
     @Bean
@@ -183,9 +189,10 @@ public class WebSecurity {
 
         @Override
         public Mono<OAuth2AuthorizationRequest> loadAuthorizationRequest(ServerWebExchange exchange) {
-            return authorizationRequestResolver.resolve(exchange, "okta").map(
+            var registrationId = getClientRegistrationId(exchange);
+            return authorizationRequestResolver.resolve(exchange, registrationId).map(
                 arr -> {
-                    HttpCookie nonceCookie = exchange.getRequest().getCookies().getFirst("nonce");
+                    HttpCookie nonceCookie = exchange.getRequest().getCookies().getFirst(COOKIE_NONCE);
                     if (nonceCookie != null) {
                         return createAuthorizationRequest(exchange, arr);
                     }
@@ -194,17 +201,26 @@ public class WebSecurity {
             );
         }
 
+        String getClientRegistrationId(ServerWebExchange exchange) {
+            var path = exchange.getRequest().getPath().value();
+            var matcher = CLIENT_REG_ID.matcher(path);
+            if (matcher.matches()) {
+                return matcher.group(1);
+            }
+            throw new IllegalStateException("Client registration ID was not found in the path: " + path);
+        }
+
         public OAuth2AuthorizationRequest createAuthorizationRequest(ServerWebExchange exchange, OAuth2AuthorizationRequest original) {
             OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode()
                 .attributes((attrs) ->
                     attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID)));
-            applyNonce(builder, exchange.getRequest().getCookies().getFirst("nonce").getValue());
+            applyNonce(builder, exchange.getRequest().getCookies().getFirst(COOKIE_NONCE).getValue());
             // @formatter:off
             builder.clientId(original.getClientId())
                 .authorizationUri(original.getAuthorizationUri())
                 .redirectUri(original.getRedirectUri())
                 .scopes(original.getScopes())
-                .state(exchange.getRequest().getCookies().getFirst("state").getValue());
+                .state(exchange.getRequest().getCookies().getFirst(COOKIE_STATE).getValue());
             return builder.build();
         }
         private static void applyNonce(OAuth2AuthorizationRequest.Builder builder, String nonce) {
@@ -226,8 +242,8 @@ public class WebSecurity {
 
         @Override
         public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
-            exchange.getResponse().addCookie(ResponseCookie.from("nonce", String.valueOf(authorizationRequest.getAttributes().get("nonce"))).path("/").httpOnly(true).secure(true).build());
-            exchange.getResponse().addCookie(ResponseCookie.from("state", String.valueOf(authorizationRequest.getState())).path("/").httpOnly(true).secure(true).build());
+            exchange.getResponse().addCookie(ResponseCookie.from(COOKIE_NONCE, String.valueOf(authorizationRequest.getAttributes().get(OidcParameterNames.NONCE))).path("/").httpOnly(true).secure(true).build());
+            exchange.getResponse().addCookie(ResponseCookie.from(COOKIE_STATE, String.valueOf(authorizationRequest.getState())).path("/").httpOnly(true).secure(true).build());
 
             return Mono.empty();
         }
