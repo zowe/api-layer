@@ -21,54 +21,40 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
-import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
-import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
-import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -80,11 +66,6 @@ public class WebSecurity {
     private String allowedUsers;
 
     private Predicate<String> usernameAuthorizationTester;
-    private static final char PATH_DELIMITER = '/';
-    private static final StringKeyGenerator DEFAULT_SECURE_KEY_GENERATOR = new Base64StringKeyGenerator(
-        Base64.getUrlEncoder().withoutPadding(), 96);
-    private static final StringKeyGenerator DEFAULT_STATE_GENERATOR = new Base64StringKeyGenerator(
-        Base64.getUrlEncoder());
 
     @PostConstruct
     void initScopes() {
@@ -105,26 +86,21 @@ public class WebSecurity {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain oauth2WebFilterChain(
         ServerHttpSecurity http,
-        InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository,
         ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService,
         ApimlServerAuthorizationRequestRepository requestRepository,
         ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver
     ) {
         http
             .securityContextRepository(new ServerSecurityContextRepository() {
-                AtomicReference<SecurityContext> securityContextAtomicReference = new AtomicReference<>();
 
                 @Override
                 public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {
-                    System.out.println("prve" + exchange.getRequest().getCookies().get("nonce"));
-                    securityContextAtomicReference.set(context);
                     return Mono.empty();
                 }
 
                 @Override
                 public Mono<SecurityContext> load(ServerWebExchange exchange) {
-
-                    return Mono.justOrEmpty(securityContextAtomicReference.get());
+                    return Mono.empty();
                 }
             })
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("oauth2/authorization/**", "/login/oauth2/code/**"))
@@ -132,28 +108,23 @@ public class WebSecurity {
             .oauth2Login(oauth2 -> oauth2
                 .authorizationRequestRepository(requestRepository)
                 .authorizationRequestResolver(authorizationRequestResolver)
-                .authenticationSuccessHandler(new ServerAuthenticationSuccessHandler() {
-                    @Override
-                    public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
-                        return reactiveOAuth2AuthorizedClientService.loadAuthorizedClient("okta", authentication.getName()).map(oAuth2AuthorizedClient -> {
-                            webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
-                            clearCookies(webFilterExchange);
-                            return Mono.empty();
-                        }).flatMap(x -> Mono.empty());
-                    }
-                })
-                .authenticationFailureHandler(new ServerAuthenticationFailureHandler() {
-                    @Override
-                    public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
+                .authenticationSuccessHandler((webFilterExchange, authentication) ->
+                    reactiveOAuth2AuthorizedClientService.loadAuthorizedClient("okta", authentication.getName()).map(oAuth2AuthorizedClient -> {
+                        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+                        clearCookies(webFilterExchange);
+                        return Mono.empty();
+                    }).flatMap(x -> Mono.empty())
+                )
+                .authenticationFailureHandler((webFilterExchange, exception) -> {
                         clearCookies(webFilterExchange);
                         return Mono.empty();
                     }
-                }))
+                ))
             .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository));
         return http.build();
     }
 
-    void clearCookies(WebFilterExchange webFilterExchange){
+    void clearCookies(WebFilterExchange webFilterExchange) {
         webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("nonce").maxAge(0).path("/").httpOnly(true).secure(true).build());
         webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("state").maxAge(0).path("/").httpOnly(true).secure(true).build());
     }
@@ -227,65 +198,23 @@ public class WebSecurity {
             OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode()
                 .attributes((attrs) ->
                     attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID)));
-            String redirectUriStr = expandRedirectUri(exchange.getRequest(), original);
             applyNonce(builder, exchange.getRequest().getCookies().getFirst("nonce").getValue());
             // @formatter:off
             builder.clientId(original.getClientId())
                 .authorizationUri(original.getAuthorizationUri())
-                .redirectUri(redirectUriStr)
+                .redirectUri(original.getRedirectUri())
                 .scopes(original.getScopes())
                 .state(exchange.getRequest().getCookies().getFirst("state").getValue());
             return builder.build();
         }
-
-        private static String expandRedirectUri(ServerHttpRequest request, OAuth2AuthorizationRequest original) {
-            Map<String, String> uriVariables = new HashMap<>();
-            uriVariables.put("registrationId", original.getClientId());
-            // @formatter:off
-            UriComponents uriComponents = UriComponentsBuilder.fromUri(request.getURI())
-                .replacePath(request.getPath().contextPath().value())
-                .replaceQuery(null)
-                .fragment(null)
-                .build();
-            // @formatter:on
-            String scheme = uriComponents.getScheme();
-            uriVariables.put("baseScheme", (scheme != null) ? scheme : "");
-            String host = uriComponents.getHost();
-            uriVariables.put("baseHost", (host != null) ? host : "");
-            // following logic is based on HierarchicalUriComponents#toUriString()
-            int port = uriComponents.getPort();
-            uriVariables.put("basePort", (port == -1) ? "" : ":" + port);
-            String path = uriComponents.getPath();
-            if (org.springframework.util.StringUtils.hasLength(path)) {
-                if (path.charAt(0) != PATH_DELIMITER) {
-                    path = PATH_DELIMITER + path;
-                }
-            }
-            uriVariables.put("basePath", (path != null) ? path : "");
-            uriVariables.put("baseUrl", uriComponents.toUriString());
-            String action = "";
-            if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(original.getGrantType())) {
-                action = "login";
-            }
-            uriVariables.put("action", action);
-            // @formatter:off
-            return UriComponentsBuilder.fromUriString(original.getRedirectUri())
-                .buildAndExpand(uriVariables)
-                .toUriString();
-            // @formatter:on
-        }
-
         private static void applyNonce(OAuth2AuthorizationRequest.Builder builder, String nonce) {
-
             String nonceHash = createHash(nonce);
             builder.attributes((attrs) -> attrs.put(OidcParameterNames.NONCE, nonce));
             builder.additionalParameters((params) -> params.put(OidcParameterNames.NONCE, nonceHash));
-
-
         }
 
         private static String createHash(String value) {
-            MessageDigest md = null;
+            MessageDigest md;
             try {
                 md = MessageDigest.getInstance("SHA-256");
             } catch (NoSuchAlgorithmException e) {
