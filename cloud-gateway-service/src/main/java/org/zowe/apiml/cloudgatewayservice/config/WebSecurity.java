@@ -12,7 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +20,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -65,13 +68,15 @@ public class WebSecurity {
 
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
+    public static final String COOKIE_RETURN_URL = "oidc_return_url";
     private static final Pattern CLIENT_REG_ID = Pattern.compile("^/login/oauth2/code/([^/]+)$");
+    private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
+    private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
 
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
 
     private Predicate<String> usernameAuthorizationTester;
-    public static final String DEFAULT_REGISTRATION_ID_URI_VARIABLE_NAME = "registrationId";
 
     @PostConstruct
     void initScopes() {
@@ -117,12 +122,19 @@ public class WebSecurity {
                 .authenticationSuccessHandler((webFilterExchange, authentication) ->
                     reactiveOAuth2AuthorizedClientService.loadAuthorizedClient("okta", authentication.getName()).map(oAuth2AuthorizedClient -> {
                         webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+                        var location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
+                        if (!HAS_NO_VALUE.test(location)) {
+                            redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
+                        }
+
                         clearCookies(webFilterExchange);
                         return Mono.empty();
                     }).flatMap(x -> Mono.empty())
                 )
                 .authenticationFailureHandler((webFilterExchange, exception) -> {
+                        var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
                         clearCookies(webFilterExchange);
+                        redirect(webFilterExchange.getExchange().getResponse(), "/oauth2/authorization/" + clientRegistrationId);
                         return Mono.empty();
                     }
                 ))
@@ -130,9 +142,13 @@ public class WebSecurity {
         return http.build();
     }
 
+    void redirect(ServerHttpResponse response, String location) {
+        response.getHeaders().set(HttpHeaders.LOCATION, location);
+        response.setStatusCode(HttpStatusCode.valueOf(302));
+    }
+
     void clearCookies(WebFilterExchange webFilterExchange) {
-        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_NONCE).maxAge(0).path("/").httpOnly(true).secure(true).build());
-        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_STATE).maxAge(0).path("/").httpOnly(true).secure(true).build());
+        COOKIES.forEach(cookie -> webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(cookie).maxAge(0).path("/").httpOnly(true).secure(true).build()));
     }
 
     @Bean
@@ -182,6 +198,15 @@ public class WebSecurity {
         };
     }
 
+    static String getClientRegistrationId(ServerWebExchange exchange) {
+        var path = exchange.getRequest().getPath().value();
+        var matcher = CLIENT_REG_ID.matcher(path);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        throw new IllegalStateException("Client registration ID was not found in the path: " + path);
+    }
+
     @RequiredArgsConstructor
     static class ApimlServerAuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
@@ -201,58 +226,65 @@ public class WebSecurity {
             );
         }
 
-        String getClientRegistrationId(ServerWebExchange exchange) {
-            var path = exchange.getRequest().getPath().value();
-            var matcher = CLIENT_REG_ID.matcher(path);
-            if (matcher.matches()) {
-                return matcher.group(1);
-            }
-            throw new IllegalStateException("Client registration ID was not found in the path: " + path);
-        }
-
         public OAuth2AuthorizationRequest createAuthorizationRequest(ServerWebExchange exchange, OAuth2AuthorizationRequest original) {
-            OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode()
-                .attributes((attrs) ->
-                    attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID)));
-            applyNonce(builder, exchange.getRequest().getCookies().getFirst(COOKIE_NONCE).getValue());
-            // @formatter:off
-            builder.clientId(original.getClientId())
+            var nonceCookie = exchange.getRequest().getCookies().getFirst(COOKIE_NONCE);
+            var stateCookie = exchange.getRequest().getCookies().getFirst(COOKIE_STATE);
+            if (HAS_NO_VALUE.test(nonceCookie) && HAS_NO_VALUE.test(stateCookie)) {
+                return original;
+            }
+            var nonce = nonceCookie.getValue();
+            String nonceHash = createHash(nonce);
+
+            return OAuth2AuthorizationRequest.authorizationCode()
+                .attributes((attrs) -> {
+                        attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID));
+                        attrs.put(OidcParameterNames.NONCE, nonce);
+                    }
+                )
+                .additionalParameters((params) -> params.put(OidcParameterNames.NONCE, nonceHash))
+                .clientId(original.getClientId())
                 .authorizationUri(original.getAuthorizationUri())
                 .redirectUri(original.getRedirectUri())
                 .scopes(original.getScopes())
-                .state(exchange.getRequest().getCookies().getFirst(COOKIE_STATE).getValue());
-            return builder.build();
-        }
-        private static void applyNonce(OAuth2AuthorizationRequest.Builder builder, String nonce) {
-            String nonceHash = createHash(nonce);
-            builder.attributes((attrs) -> attrs.put(OidcParameterNames.NONCE, nonce));
-            builder.additionalParameters((params) -> params.put(OidcParameterNames.NONCE, nonceHash));
+                .state(stateCookie.getValue())
+                .build();
         }
 
         private static String createHash(String value) {
-            MessageDigest md;
             try {
-                md = MessageDigest.getInstance("SHA-256");
+                var md = MessageDigest.getInstance("SHA-256");
+                byte[] digest = md.digest(value.getBytes(StandardCharsets.US_ASCII));
+                return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
-            byte[] digest = md.digest(value.getBytes(StandardCharsets.US_ASCII));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
         }
 
         @Override
         public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
-            exchange.getResponse().addCookie(ResponseCookie.from(COOKIE_NONCE, String.valueOf(authorizationRequest.getAttributes().get(OidcParameterNames.NONCE))).path("/").httpOnly(true).secure(true).build());
-            exchange.getResponse().addCookie(ResponseCookie.from(COOKIE_STATE, String.valueOf(authorizationRequest.getState())).path("/").httpOnly(true).secure(true).build());
-
+            exchange.getResponse().addCookie(
+                createCookie(COOKIE_NONCE, String.valueOf(authorizationRequest.getAttributes().get(OidcParameterNames.NONCE)))
+            );
+            exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, getReturnUrl(exchange)));
+            exchange.getResponse().addCookie(createCookie(COOKIE_STATE, authorizationRequest.getState()));
             return Mono.empty();
         }
+
+        String getReturnUrl(ServerWebExchange exchange) {
+            return Optional.ofNullable(exchange.getRequest().getQueryParams().getFirst("returnUrl"))
+                .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
+        }
+
+
+        ResponseCookie createCookie(String name, String value) {
+            return ResponseCookie.from(name, value).path("/").httpOnly(true).secure(true).build();
+        }
+
 
         @Override
         public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
             Mono<OAuth2AuthorizationRequest> requestMono = loadAuthorizationRequest(exchange);
             exchange.getResponse().getCookies().remove("nonce");
-
             return requestMono;
         }
     }
