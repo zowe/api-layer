@@ -24,6 +24,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -44,9 +45,9 @@ import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
-import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponents;
@@ -57,6 +58,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -135,23 +137,31 @@ public class WebSecurity {
                     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
                         return reactiveOAuth2AuthorizedClientService.loadAuthorizedClient("okta", authentication.getName()).map(oAuth2AuthorizedClient -> {
                             webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
-                            System.out.println(oAuth2AuthorizedClient.getAccessToken().getTokenValue());
+                            clearCookies(webFilterExchange);
                             return Mono.empty();
                         }).flatMap(x -> Mono.empty());
+                    }
+                })
+                .authenticationFailureHandler(new ServerAuthenticationFailureHandler() {
+                    @Override
+                    public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
+                        clearCookies(webFilterExchange);
+                        return Mono.empty();
                     }
                 }))
             .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository));
         return http.build();
     }
 
+    void clearCookies(WebFilterExchange webFilterExchange){
+        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("nonce").maxAge(0).path("/").httpOnly(true).secure(true).build());
+        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("state").maxAge(0).path("/").httpOnly(true).secure(true).build());
+    }
+
     @Bean
     public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
-        ServerWebExchangeMatcher authorizationRequestMatcher =
-            ServerWebExchangeMatchers.pathMatchers(
-                "/login/oauth2/codesdfs/{registrationId}");
-
         return new DefaultServerOAuth2AuthorizationRequestResolver(
-            inMemoryReactiveClientRegistrationRepository, authorizationRequestMatcher);
+            inMemoryReactiveClientRegistrationRepository);
     }
 
     @Bean
@@ -287,8 +297,8 @@ public class WebSecurity {
 
         @Override
         public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
-            exchange.getResponse().addCookie(ResponseCookie.from("nonce", String.valueOf(authorizationRequest.getAttributes().get("nonce"))).sameSite("Lax").path("/").httpOnly(true).secure(true).build());
-            exchange.getResponse().addCookie(ResponseCookie.from("state", String.valueOf(authorizationRequest.getState())).sameSite("Lax").path("/").httpOnly(true).secure(true).build());
+            exchange.getResponse().addCookie(ResponseCookie.from("nonce", String.valueOf(authorizationRequest.getAttributes().get("nonce"))).path("/").httpOnly(true).secure(true).build());
+            exchange.getResponse().addCookie(ResponseCookie.from("state", String.valueOf(authorizationRequest.getState())).path("/").httpOnly(true).secure(true).build());
 
             return Mono.empty();
         }
