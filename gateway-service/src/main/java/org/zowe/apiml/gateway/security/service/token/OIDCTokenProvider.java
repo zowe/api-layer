@@ -14,6 +14,7 @@ package org.zowe.apiml.gateway.security.service.token;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Clock;
@@ -108,7 +109,8 @@ public class OIDCTokenProvider implements OIDCProvider {
         return jwkKeys.getKeys().stream()
             .filter(jwkKey -> {
                 KeyUse keyUse = jwkKey.getKeyUse();
-                return keyUse != null && "sig".equals(jwkKey.getKeyUse().getValue()) && "RSA".equals(jwkKey.getKeyType().getValue());
+                KeyType keyType = jwkKey.getKeyType();
+                return keyUse != null && keyType != null && "sig".equals(keyUse.getValue()) && "RSA".equals(keyType.getValue());
             })
             .collect(Collectors.toMap(JWK::getKeyID, jwkKey -> {
                 try {

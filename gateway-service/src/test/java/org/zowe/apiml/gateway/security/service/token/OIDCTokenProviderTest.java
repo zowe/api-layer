@@ -227,6 +227,28 @@ class OIDCTokenProviderTest {
         }
 
         @Test
+        void shouldHandleNullPointer_whenJWKTypeNull() {
+
+            JWKSet mockedJwtSet = mock(JWKSet.class);
+            List<JWK> mockedKeys = new ArrayList<>();
+            JWK mockedJwk = mock(JWK.class);
+            when(mockedJwk.getKeyType()).thenReturn(null);
+            RSAKey rsaKey = mock(RSAKey.class);
+            mockedKeys.add(mockedJwk);
+            when(mockedJwtSet.getKeys()).thenReturn(mockedKeys);
+
+            try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
+                mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(mockedJwtSet);
+
+                oidcTokenProvider.fetchJWKSet();
+
+                verify(rsaKey, never()).toRSAPublicKey();
+            } catch (JOSEException e) {
+                fail("Exception thrown: " + e.getMessage());
+            }
+        }
+
+        @Test
         void throwsCorrectException() throws JOSEException {
 
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
