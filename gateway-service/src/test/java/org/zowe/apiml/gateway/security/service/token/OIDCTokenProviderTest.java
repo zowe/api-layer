@@ -12,11 +12,7 @@ package org.zowe.apiml.gateway.security.service.token;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.Requirement;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.*;
 import io.jsonwebtoken.impl.DefaultClock;
 import io.jsonwebtoken.impl.FixedClock;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,21 +33,12 @@ import java.net.URL;
 import java.security.Key;
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
@@ -214,6 +201,50 @@ class OIDCTokenProviderTest {
 
                 oidcTokenProvider.fetchJWKSet();
                 mockedStatic.verify(() -> JWKSet.load(new URL("https://jwksurl")), times(1));
+            }
+        }
+
+        @Test
+        void shouldHandleNullPointer_whenJWKKeyNull() {
+
+            JWKSet mockedJwtSet = mock(JWKSet.class);
+            List<JWK> mockedKeys = new ArrayList<>();
+            JWK mockedJwk = mock(JWK.class);
+            when(mockedJwk.getKeyUse()).thenReturn(null);
+            RSAKey rsaKey = mock(RSAKey.class);
+            mockedKeys.add(mockedJwk);
+            when(mockedJwtSet.getKeys()).thenReturn(mockedKeys);
+
+            try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
+                mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(mockedJwtSet);
+
+                oidcTokenProvider.fetchJWKSet();
+
+                verify(rsaKey, never()).toRSAPublicKey();
+            } catch (JOSEException e) {
+                fail("Exception thrown: " + e.getMessage());
+            }
+        }
+
+        @Test
+        void shouldHandleNullPointer_whenJWKTypeNull() {
+
+            JWKSet mockedJwtSet = mock(JWKSet.class);
+            List<JWK> mockedKeys = new ArrayList<>();
+            JWK mockedJwk = mock(JWK.class);
+            when(mockedJwk.getKeyType()).thenReturn(null);
+            RSAKey rsaKey = mock(RSAKey.class);
+            mockedKeys.add(mockedJwk);
+            when(mockedJwtSet.getKeys()).thenReturn(mockedKeys);
+
+            try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
+                mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(mockedJwtSet);
+
+                oidcTokenProvider.fetchJWKSet();
+
+                verify(rsaKey, never()).toRSAPublicKey();
+            } catch (JOSEException e) {
+                fail("Exception thrown: " + e.getMessage());
             }
         }
 
