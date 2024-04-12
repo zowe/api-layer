@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
+import io.jsonwebtoken.Jwt;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.CustomHttpServletRequest;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -29,6 +31,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @Component
@@ -72,6 +75,16 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
                 throw new IllegalStateException("Error occurred while parsing authenticationSource");
             }
             jwt = authSourceService.getJWT(authSource);
+            if(jwt!=null){
+                final RequestContext context = RequestContext.getCurrentContext();
+                JwtCommand.setCustomHeader(context,"authorization",jwt);
+                JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
+                if (StringUtils.isNotEmpty(customHeader)) {
+                    JwtCommand.setCustomHeader(context, customHeader, jwt);
+                }
+                JwtCommand.removeHeader(context,"authorization");
+            }
+
         } catch (TokenNotValidException e) {
             logger.log(MessageType.DEBUG, e.getLocalizedMessage());
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
@@ -95,13 +108,25 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
         Long expireAt;
         String jwt;
 
+
         @Override
         public void apply(InstanceInfo instanceInfo) {
             if (jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
+                System.out.println("context is :" + context);
+                System.out.println("JwtCommand is : "+ JwtCommand.COOKIE_HEADER);
+                System.out.println(" customHeader is :" + customHeader);
+               // RequestContext context = RequestContext.getCurrentContext();
+          //      HttpServletRequest request = context.getRequest();
+           //     CustomHttpServletRequest customRequest = new CustomHttpServletRequest(request);
+            //    RequestContext.getCurrentContext().remove("request");
+            //    RequestContext.getCurrentContext().set("request", customRequest);
+
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
+            //    JwtCommand.setCustomHeader(context,"authorization","");
                 if (StringUtils.isNotEmpty(customHeader)) {
                     JwtCommand.setCustomHeader(context, customHeader, jwt);
+           //         JwtCommand.setCustomHeader(context,"authorization","");
                 }
             }
         }
