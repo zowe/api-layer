@@ -104,6 +104,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             if (jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
+                JwtCommand.setCustomHeader(context,"authorization","Bearer " + jwt);
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
                 if (StringUtils.isNotEmpty(customHeader)) {
                     JwtCommand.setCustomHeader(context, customHeader, jwt);
