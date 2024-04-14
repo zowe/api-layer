@@ -53,11 +53,6 @@ public abstract class JwtCommand extends AuthenticationCommand {
         context.addZuulRequestHeader(header, value);
     }
 
-    public static void removeHeader(RequestContext context, String header) {
-        log.debug("removing header {} from the request", header);
-        context.remove(header);
-    }
-
     @Override
     public boolean isExpired() {
         if (getExpireAt() == null) return false;
