@@ -31,7 +31,6 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Optional;
 
-
 @Component
 public class ZoweJwtScheme implements IAuthenticationScheme {
     @InjectApimlLogger
@@ -106,8 +105,6 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             if (jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 JwtCommand.setCustomHeader(context,"authorization","Bearer " + jwt);
-             //   context.getRequest().getHeaderNames().
-                System.out.println("inside jwt cmd");
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
                 if (StringUtils.isNotEmpty(customHeader)) {
                     JwtCommand.setCustomHeader(context, customHeader, jwt);
