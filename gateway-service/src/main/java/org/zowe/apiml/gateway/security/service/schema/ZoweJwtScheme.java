@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -73,9 +74,9 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             }
             jwt = authSourceService.getJWT(authSource);
 
-            if ( jwt != null) {
+            if (jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
-                JwtCommand.setCustomHeader(context,"authorization","Bearer " + jwt);
+                JwtCommand.setCustomHeader(context, HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
             }
         } catch (TokenNotValidException e) {
             logger.log(MessageType.DEBUG, e.getLocalizedMessage());
@@ -104,7 +105,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             if (jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
-                JwtCommand.setCustomHeader(context,"authorization","Bearer " + jwt);
+                JwtCommand.setCustomHeader(context, HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
                 JwtCommand.setCookie(context, configurationProperties.getCookieProperties().getCookieName(), jwt);
                 if (StringUtils.isNotEmpty(customHeader)) {
                     JwtCommand.setCustomHeader(context, customHeader, jwt);
