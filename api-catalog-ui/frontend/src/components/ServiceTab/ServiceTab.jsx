@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, MenuItem, Select, Button, IconButton } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -182,7 +182,7 @@ export default class ServiceTab extends Component {
                         <div className="header">
                             {!apiPortalEnabled && (
                                 <Typography id="service-title" data-testid="service" variant="h4">
-                                    {selectedService?.title}
+                                    {selectedService.title}
                                 </Typography>
                             )}
                             {hasHomepage && !apiPortalEnabled && (
