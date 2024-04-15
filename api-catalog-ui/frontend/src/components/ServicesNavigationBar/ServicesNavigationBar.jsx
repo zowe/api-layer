@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Tab, Tabs, Tooltip, Typography, withStyles, Button, IconButton } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -18,7 +18,15 @@ import { closeMobileMenu, isAPIPortal, findAndFormatZowe } from '../../utils/uti
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 import { sortServices } from '../../selectors/selectors';
-import HeaderDetail from '../Header/HeaderDetail';
+
+const loadHeaderDetail = () => {
+    if (isAPIPortal()) {
+        return import('../Header/HeaderDetail');
+    }
+    return Promise.resolve(null);
+};
+
+const HeaderDetail = React.lazy(loadHeaderDetail);
 
 export default class ServicesNavigationBar extends Component {
     componentDidMount() {
