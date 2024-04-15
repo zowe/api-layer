@@ -98,7 +98,7 @@ class ZoweJwtSchemeTest {
             when(authSourceService.parse(authSource)).thenReturn(new ParsedTokenAuthSource("user", new Date(), new Date(), Origin.ZOSMF));
             command = scheme.createCommand(null, authSource);
             command.apply(null);
-            verify(requestContext, times(3)).addZuulRequestHeader(any(), any());
+            verify(requestContext, times(2)).addZuulRequestHeader(any(), any());
         }
 
         @Test
@@ -167,7 +167,7 @@ class ZoweJwtSchemeTest {
                 when(authSourceService.parse(authSource)).thenReturn(new X509AuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF, "public key", "distinguishedName"));
                 command = scheme.createCommand(null, authSource);
                 command.apply(null);
-                verify(requestContext, times(3)).addZuulRequestHeader(any(), any());
+                verify(requestContext, times(2)).addZuulRequestHeader(any(), any());
                 assertEquals(EXPECTED_TOKEN_RESULT, requestContext.getZuulRequestHeaders().get("cookie"));
             }
 

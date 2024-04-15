@@ -73,11 +73,6 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
                 throw new IllegalStateException("Error occurred while parsing authenticationSource");
             }
             jwt = authSourceService.getJWT(authSource);
-
-            if (jwt != null) {
-                final RequestContext context = RequestContext.getCurrentContext();
-                JwtCommand.setCustomHeader(context, HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
-            }
         } catch (TokenNotValidException e) {
             logger.log(MessageType.DEBUG, e.getLocalizedMessage());
             throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
