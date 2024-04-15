@@ -18,6 +18,7 @@ import { closeMobileMenu, isAPIPortal, findAndFormatZowe } from '../../utils/uti
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 import { sortServices } from '../../selectors/selectors';
+import HeaderDetail from '../Header/HeaderDetail';
 
 export default class ServicesNavigationBar extends Component {
     componentDidMount() {
@@ -151,6 +152,11 @@ export default class ServicesNavigationBar extends Component {
                             />
                         ))}
                     </Tabs>
+                )}
+                {isAPIPortal() && (
+                    <div className="mobile-view header-menu">
+                        <HeaderDetail />
+                    </div>
                 )}
             </div>
         );
