@@ -36,12 +36,6 @@ export default function BlogTile(props) {
         return tag.innerText;
     }
 
-    function convertDate(date) {
-        const dateArray = date?.slice(0, 10).split('-');
-        const year = dateArray?.shift();
-        dateArray?.push(year);
-        return `Published: ${dateArray?.join('/')}`;
-    }
     function blogPost() {
         return (
             <a

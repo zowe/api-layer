@@ -29,7 +29,7 @@ describe('>>> BlogTile component tests', () => {
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual('title');
         expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
-        expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);;
+        expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);
     });
 
     it('should truncate text with space', () => {
