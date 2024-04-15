@@ -73,7 +73,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
             }
             jwt = authSourceService.getJWT(authSource);
 
-            if(jwt!=null){
+            if ( jwt != null) {
                 final RequestContext context = RequestContext.getCurrentContext();
                 JwtCommand.setCustomHeader(context,"authorization","Bearer " + jwt);
             }
