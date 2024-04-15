@@ -27,11 +27,9 @@ describe('>>> BlogTile component tests', () => {
     });
     it('should render blog tile', () => {
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
-        expect(blogTile.find('[data-testid="blogs-image"]').exists()).toEqual(true);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual('title');
         expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
-        expect(blogTile.find('[data-testid="author"]').first().prop('children')).toEqual('author');
-        expect(blogTile.find('[data-testid="pub-date"]').first().prop('children')).toEqual('Published: 123343');
+        expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);;
     });
 
     it('should truncate text with space', () => {
@@ -39,16 +37,16 @@ describe('>>> BlogTile component tests', () => {
             'long  title to text that word are not truncated in the middle eheheqwdqwdwqdqwdwqdwqdqw dwqdwqdwqdq dwqdqwdwq dwqdwqdwqdqwdwqdwqdqwdqwdqw ';
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
-            'long  title to text that word are not truncated in the'
+            'long  title to text that word are not truncated in the middle eheheqwdqwdwqdqwdwqdwqdqw dwqdwqdwqdq dwqdqwdwq...'
         );
     });
 
     it('should truncate if no space', () => {
         props.blogData.title =
-            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherange.';
+            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherangeThistextNeedToBeLittleBitLongerToBeTruncated.';
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
-            'Thisisaverylongstringwithnospacesanditisusedtodemonstratethe...'
+            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherangeThistextNeedToBeLittleBitLongerTo...'
         );
     });
 
