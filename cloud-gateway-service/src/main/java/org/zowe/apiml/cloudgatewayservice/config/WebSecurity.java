@@ -42,7 +42,9 @@ import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
+import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.product.constants.CoreService;
@@ -66,14 +68,16 @@ import java.util.stream.Collectors;
 @Configuration
 public class WebSecurity {
 
+    public static final String AUTH_PREFIX = "/auth";
+
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
     public static final String COOKIE_RETURN_URL = "oidc_return_url";
-    private static final Pattern CLIENT_REG_ID = Pattern.compile("^/login/oauth2/code/([^/]+)$");
+    private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + AUTH_PREFIX + "/oauth2/login/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
-    public static final String OAUTH_2_AUTHORIZATION = "/oauth2/authorization/**";
-    public static final String OAUTH_2_REDIRECT_URI = "/login/oauth2/code/**";
+    public static final String OAUTH_2_AUTHORIZATION = AUTH_PREFIX + "/oauth2/authorization/**";
+    public static final String OAUTH_2_REDIRECT_URI = AUTH_PREFIX + "/login/oauth2/code/**";
 
     @Value("${apiml.security.oidc.cookie.sameSite:Lax}")
     public String sameSite;
@@ -106,7 +110,7 @@ public class WebSecurity {
         ApimlServerAuthorizationRequestRepository requestRepository,
         ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver
     ) {
-        http
+        return http
             .securityContextRepository(new ServerSecurityContextRepository() {
 
                 @Override
@@ -122,6 +126,7 @@ public class WebSecurity {
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(oauth2 -> oauth2
+                .authenticationMatcher(new PathPatternParserServerWebExchangeMatcher(AUTH_PREFIX + "/oauth2/login/callback/{registrationId}"))
                 .authorizationRequestRepository(requestRepository)
                 .authorizationRequestResolver(authorizationRequestResolver)
                 .authenticationSuccessHandler((webFilterExchange, authentication) ->
@@ -138,12 +143,13 @@ public class WebSecurity {
                 .authenticationFailureHandler((webFilterExchange, exception) -> {
                         var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
                         clearCookies(webFilterExchange);
-                        redirect(webFilterExchange.getExchange().getResponse(), "/oauth2/authorization/" + clientRegistrationId);
+                        redirect(webFilterExchange.getExchange().getResponse(), AUTH_PREFIX + "/oauth2/authorization/" + clientRegistrationId);
                         return Mono.empty();
                     }
                 ))
-            .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository));
-        return http.build();
+            .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository))
+            .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(new RedirectServerAuthenticationEntryPoint(AUTH_PREFIX + "/oauth2/login")))
+            .build();
     }
 
     void redirect(ServerHttpResponse response, String location) {
