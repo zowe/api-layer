@@ -72,6 +72,11 @@ public class WebSecurity {
     private static final Pattern CLIENT_REG_ID = Pattern.compile("^/login/oauth2/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
+    public static final String OAUTH_2_AUTHORIZATION = "/oauth2/authorization/**";
+    public static final String OAUTH_2_REDIRECT_URI = "/login/oauth2/code/**";
+
+    @Value("${apiml.security.oidc.cookie.sameSite:Lax}")
+    public String sameSite;
 
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
@@ -114,7 +119,7 @@ public class WebSecurity {
                     return Mono.empty();
                 }
             })
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("oauth2/authorization/**", "/login/oauth2/code/**"))
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(oauth2 -> oauth2
                 .authorizationRequestRepository(requestRepository)
@@ -126,7 +131,6 @@ public class WebSecurity {
                         if (!HAS_NO_VALUE.test(location)) {
                             redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
                         }
-
                         clearCookies(webFilterExchange);
                         return Mono.empty();
                     }).flatMap(x -> Mono.empty())
@@ -208,7 +212,7 @@ public class WebSecurity {
     }
 
     @RequiredArgsConstructor
-    static class ApimlServerAuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+    class ApimlServerAuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
         final ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver;
 
@@ -277,7 +281,7 @@ public class WebSecurity {
 
 
         ResponseCookie createCookie(String name, String value) {
-            return ResponseCookie.from(name, value).path("/").httpOnly(true).secure(true).build();
+            return ResponseCookie.from(name, value).path("/").httpOnly(true).sameSite(sameSite).secure(true).build();
         }
 
 

@@ -1389,6 +1389,18 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.OKTA_JWK_URI }}
+                    APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
@@ -1414,6 +1426,8 @@ jobs:
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
+                    CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_CLIENT_ID }}
+                    CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_CLIENT_PASSWORD }}
                     npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
                 uses: actions/upload-artifact@v4
