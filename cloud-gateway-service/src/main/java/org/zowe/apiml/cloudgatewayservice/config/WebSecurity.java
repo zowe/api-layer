@@ -45,6 +45,7 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.product.constants.CoreService;
@@ -68,12 +69,12 @@ import java.util.stream.Collectors;
 @Configuration
 public class WebSecurity {
 
-    public static final String AUTH_PREFIX = "/auth";
+    public static final String AUTH_PREFIX = "/cloud-gateway";
 
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
     public static final String COOKIE_RETURN_URL = "oidc_return_url";
-    private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + AUTH_PREFIX + "/oauth2/login/code/([^/]+)$");
+    private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + AUTH_PREFIX + "/login/oauth2/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
     public static final String OAUTH_2_AUTHORIZATION = AUTH_PREFIX + "/oauth2/authorization/**";
@@ -126,7 +127,6 @@ public class WebSecurity {
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(oauth2 -> oauth2
-                .authenticationMatcher(new PathPatternParserServerWebExchangeMatcher(AUTH_PREFIX + "/oauth2/login/callback/{registrationId}"))
                 .authorizationRequestRepository(requestRepository)
                 .authorizationRequestResolver(authorizationRequestResolver)
                 .authenticationSuccessHandler((webFilterExchange, authentication) ->
@@ -148,7 +148,6 @@ public class WebSecurity {
                     }
                 ))
             .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository))
-            .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(new RedirectServerAuthenticationEntryPoint(AUTH_PREFIX + "/oauth2/login")))
             .build();
     }
 
@@ -164,7 +163,8 @@ public class WebSecurity {
     @Bean
     public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
         return new DefaultServerOAuth2AuthorizationRequestResolver(
-            inMemoryReactiveClientRegistrationRepository);
+            inMemoryReactiveClientRegistrationRepository, new PathPatternParserServerWebExchangeMatcher(
+            AUTH_PREFIX + "/oauth2/authorization/{registrationId}"));
     }
 
     @Bean
