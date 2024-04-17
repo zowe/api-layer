@@ -21,6 +21,12 @@ eureka:
 spring:
     application:
         name: cloud-gateway
+    security:
+        oauth2:
+            client:
+                registration:
+                    okta:
+                        redirectUri: "{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}"
 
 apiml:
     gateway:
