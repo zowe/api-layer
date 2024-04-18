@@ -35,6 +35,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
@@ -149,7 +150,6 @@ public class WebSecurity {
     ) {
         return http
             .securityContextRepository(new ServerSecurityContextRepository() {
-
                 @Override
                 public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {
                     return Mono.empty();
@@ -167,15 +167,10 @@ public class WebSecurity {
                 .authorizationRequestRepository(requestRepository)
                 .authorizationRequestResolver(authorizationRequestResolver)
                 .authenticationSuccessHandler((webFilterExchange, authentication) ->
-                    reactiveOAuth2AuthorizedClientService.loadAuthorizedClient("okta", authentication.getName()).map(oAuth2AuthorizedClient -> {
-                        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
-                        var location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
-                        if (!HAS_NO_VALUE.test(location)) {
-                            redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
-                        }
-                        clearCookies(webFilterExchange);
-                        return Mono.empty();
-                    }).flatMap(x -> Mono.empty())
+                    reactiveOAuth2AuthorizedClientService
+                        .loadAuthorizedClient("okta", authentication.getName())
+                        .map(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient)
+                    ).flatMap(x -> Mono.empty())
                 )
                 .authenticationFailureHandler((webFilterExchange, exception) -> {
                         var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
@@ -186,6 +181,16 @@ public class WebSecurity {
                 ))
             .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository))
             .build();
+    }
+
+    public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
+        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from("apimlAuthenticationToken", oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+        var location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
+        if (!HAS_NO_VALUE.test(location)) {
+            redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
+        }
+        clearCookies(webFilterExchange);
+        return Mono.empty();
     }
 
     void redirect(ServerHttpResponse response, String location) {
