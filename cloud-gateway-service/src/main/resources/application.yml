@@ -82,6 +82,7 @@ logging:
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
+        org.springframework.security: DEBUG
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
 
