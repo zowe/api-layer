@@ -342,7 +342,7 @@ public class WebSecurity {
         public OAuth2AuthorizationRequest createAuthorizationRequest(ServerWebExchange exchange, OAuth2AuthorizationRequest original) {
             var nonceCookie = exchange.getRequest().getCookies().getFirst(COOKIE_NONCE);
             var stateCookie = exchange.getRequest().getCookies().getFirst(COOKIE_STATE);
-            if (HAS_NO_VALUE.test(nonceCookie) && HAS_NO_VALUE.test(stateCookie)) {
+            if (HAS_NO_VALUE.test(nonceCookie) || HAS_NO_VALUE.test(stateCookie)) {
                 return original;
             }
             var nonce = nonceCookie.getValue();
