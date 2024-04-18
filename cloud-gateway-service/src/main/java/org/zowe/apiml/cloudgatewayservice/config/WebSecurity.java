@@ -99,9 +99,6 @@ public class WebSecurity {
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
 
-    @Value("${spring.security.oauth2.client.registration.okta.issuer}")
-    private String oktaIssuer;
-
     @Value("${spring.security.oauth2.client.registration.okta.client-id}")
     private String oktaClientId;
 
@@ -248,20 +245,6 @@ public class WebSecurity {
     }
 
     private ClientRegistration googleClientRegistration() {
-//        return ClientRegistration.withRegistrationId("okta")
-//            .clientId("0oa6a48mniXAqEMrx5d7")
-//            .clientSecret("4iXiWAY4MNw3LZqtQENkXXMbzpgcypvO4AlqRrHP")
-//            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-//            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//            .redirectUri("{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}")
-//            .scope("openid", "profile", "email")
-//            .authorizationUri("https://dev-95727686.okta.com/oauth2/v1/authorize")
-//            .tokenUri("https://dev-95727686.okta.com/oauth2/v1/token")
-//            .userInfoUri("https://dev-95727686.okta.com/oauth2/v1/userinfo")
-//            .userNameAttributeName(IdTokenClaimNames.SUB)
-//            .jwkSetUri("https://dev-95727686.okta.com/oauth2/v1/keys")
-//            .clientName("okta")
-//            .build();
         return ClientRegistration.withRegistrationId("okta")
             .clientId(oktaClientId)
             .clientSecret(oktaClientSecret)
