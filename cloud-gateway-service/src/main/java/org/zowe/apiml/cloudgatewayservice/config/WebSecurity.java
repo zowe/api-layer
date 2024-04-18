@@ -386,7 +386,7 @@ public class WebSecurity {
         @Override
         public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
             Mono<OAuth2AuthorizationRequest> requestMono = loadAuthorizationRequest(exchange);
-            exchange.getResponse().getCookies().remove("nonce");
+            exchange.getResponse().getCookies().remove(COOKIE_NONCE);
             return requestMono;
         }
     }
