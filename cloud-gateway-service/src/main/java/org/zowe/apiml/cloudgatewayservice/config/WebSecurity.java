@@ -14,6 +14,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -31,13 +33,25 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -85,6 +99,31 @@ public class WebSecurity {
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
 
+    @Value("${spring.security.oauth2.client.registration.okta.issuer}")
+    private String oktaIssuer;
+
+    @Value("${spring.security.oauth2.client.registration.okta.client-id}")
+    private String oktaClientId;
+
+    @Value("${spring.security.oauth2.client.registration.okta.client-secret}")
+    private String oktaClientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.okta.redirectUri}")
+    private String oktaRedirectUri;
+
+    @Value("${spring.security.oauth2.client.provider.okta.authorization-uri}")
+    private String oktaAuthorizationUri;
+
+    @Value("${spring.security.oauth2.client.provider.okta.token-uri}")
+    private String oktaTokenUri;
+
+    @Value("${spring.security.oauth2.client.provider.okta.user-info-uri}")
+    private String oktaUserInfoUri;
+
+    @Value("${spring.security.oauth2.client.provider.okta.jwk-set-uri}")
+    private String oktaJwkSetUri;
+
+
     private Predicate<String> usernameAuthorizationTester;
 
     @PostConstruct
@@ -103,6 +142,7 @@ public class WebSecurity {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain oauth2WebFilterChain(
         ServerHttpSecurity http,
@@ -161,6 +201,14 @@ public class WebSecurity {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
+    ReactiveOAuth2AuthorizedClientService authorizedClientService(
+        ReactiveClientRegistrationRepository clientRegistrationRepository) {
+        return new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistrationRepository);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
         return new DefaultServerOAuth2AuthorizationRequestResolver(
             inMemoryReactiveClientRegistrationRepository, new PathPatternParserServerWebExchangeMatcher(
@@ -168,8 +216,66 @@ public class WebSecurity {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     public ApimlServerAuthorizationRequestRepository requestRepository(ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver) {
         return new ApimlServerAuthorizationRequestRepository(authorizationRequestResolver);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
+    public ReactiveClientRegistrationRepository clientRegistrationRepository() {
+        return new InMemoryReactiveClientRegistrationRepository(this.googleClientRegistration());
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
+    public ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(ReactiveOAuth2AuthorizedClientService clientService) {
+        return new AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository(clientService);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
+    @ConditionalOnBean(ReactiveClientRegistrationRepository.class)
+    public ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
+        ReactiveClientRegistrationRepository clientRegistrationRepository,
+        ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
+            .builder().authorizationCode().refreshToken().build();
+        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
+            clientRegistrationRepository, authorizedClientService);
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+        return authorizedClientManager;
+    }
+
+    private ClientRegistration googleClientRegistration() {
+//        return ClientRegistration.withRegistrationId("okta")
+//            .clientId("0oa6a48mniXAqEMrx5d7")
+//            .clientSecret("4iXiWAY4MNw3LZqtQENkXXMbzpgcypvO4AlqRrHP")
+//            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+//            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+//            .redirectUri("{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}")
+//            .scope("openid", "profile", "email")
+//            .authorizationUri("https://dev-95727686.okta.com/oauth2/v1/authorize")
+//            .tokenUri("https://dev-95727686.okta.com/oauth2/v1/token")
+//            .userInfoUri("https://dev-95727686.okta.com/oauth2/v1/userinfo")
+//            .userNameAttributeName(IdTokenClaimNames.SUB)
+//            .jwkSetUri("https://dev-95727686.okta.com/oauth2/v1/keys")
+//            .clientName("okta")
+//            .build();
+        return ClientRegistration.withRegistrationId("okta")
+            .clientId(oktaClientId)
+            .clientSecret(oktaClientSecret)
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .redirectUri(oktaRedirectUri)
+            .scope("openid", "profile", "email")
+            .authorizationUri(oktaAuthorizationUri)
+            .tokenUri(oktaTokenUri)
+            .userInfoUri(oktaUserInfoUri)
+            .userNameAttributeName(IdTokenClaimNames.SUB)
+            .jwkSetUri(oktaJwkSetUri)
+            .clientName("okta")
+            .build();
     }
 
     @Bean
