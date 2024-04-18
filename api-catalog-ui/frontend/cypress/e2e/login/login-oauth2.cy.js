@@ -17,7 +17,14 @@ describe('>>> Login through Okta OK', () => {
         cy.visit(`${Cypress.env('gatewayOktaRedirect')}`);
 
         const username = Cypress.env('OKTA_USERNAME');
+        if(!username) {
+            cy.log("System env CYPRESS_OKTA_USERNAME is not set");
+        }
+
         const password = Cypress.env('OKTA_PASSWORD');
+        if(!password) {
+            cy.log("System env CYPRESS_OKTA_PASSWORD is not set");
+        }
 
         cy.get('form span.o-form-input-name-identifier input').type(username);
         cy.get('form input[type="password"]').type(password);

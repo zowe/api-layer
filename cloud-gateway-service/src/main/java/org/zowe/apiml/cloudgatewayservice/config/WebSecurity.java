@@ -29,15 +29,23 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.*;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -46,7 +54,7 @@ import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
-import org.springframework.security.web.server.context.ServerSecurityContextRepository;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
@@ -57,7 +65,13 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -67,17 +81,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WebSecurity {
 
-    public static final String AUTH_PREFIX = "/cloud-gateway";
+    public static final String CONTEXT_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId();
 
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
     public static final String COOKIE_RETURN_URL = "oidc_return_url";
-    private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + AUTH_PREFIX + "/login/oauth2/code/([^/]+)$");
+    private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + CONTEXT_PATH + "/login/oauth2/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
-    public static final String OAUTH_2_AUTHORIZATION = AUTH_PREFIX + "/oauth2/authorization/**";
-    public static final String OAUTH_2_REDIRECT_URI = AUTH_PREFIX + "/login/oauth2/code/**";
-    public static final String OAUTH_2_REDIRECT_LOGIN_URI = AUTH_PREFIX + "/login/oauth2/code/{registrationId}";
+    public static final String OAUTH_2_AUTHORIZATION = CONTEXT_PATH + "/oauth2/authorization/**";
+    public static final String OAUTH_2_REDIRECT_URI = CONTEXT_PATH + "/login/oauth2/code/**";
+    public static final String OAUTH_2_REDIRECT_LOGIN_URI = CONTEXT_PATH + "/login/oauth2/code/{registrationId}";
 
     @Value("${apiml.security.oidc.cookie.sameSite:Lax}")
     public String sameSite;
@@ -116,17 +130,7 @@ public class WebSecurity {
             return null;
         }
         return http
-            .securityContextRepository(new ServerSecurityContextRepository() {
-                @Override
-                public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {
-                    return Mono.empty();
-                }
-
-                @Override
-                public Mono<SecurityContext> load(ServerWebExchange exchange) {
-                    return Mono.empty();
-                }
-            })
+            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(oauth2 -> oauth2
@@ -147,7 +151,7 @@ public class WebSecurity {
                 .authenticationFailureHandler((webFilterExchange, exception) -> {
                         var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
                         clearCookies(webFilterExchange);
-                        redirect(webFilterExchange.getExchange().getResponse(), AUTH_PREFIX + "/oauth2/authorization/" + clientRegistrationId);
+                        redirect(webFilterExchange.getExchange().getResponse(), CONTEXT_PATH + "/oauth2/authorization/" + clientRegistrationId);
                         return Mono.empty();
                     }
                 ))
@@ -199,7 +203,7 @@ public class WebSecurity {
         return new DefaultServerOAuth2AuthorizationRequestResolver(
             inMemoryReactiveClientRegistrationRepository
                 .orElseThrow(() -> new NoSuchBeanDefinitionException(InMemoryReactiveClientRegistrationRepository.class)),
-            new PathPatternParserServerWebExchangeMatcher(AUTH_PREFIX + "/oauth2/authorization/{registrationId}")
+            new PathPatternParserServerWebExchangeMatcher(CONTEXT_PATH + "/oauth2/authorization/{registrationId}")
         );
     }
 
@@ -286,7 +290,7 @@ public class WebSecurity {
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
+                    .pathMatchers(CONTEXT_PATH + "/api/v1/registry/**").authenticated()
                     .anyExchange().permitAll()
             )
             .csrf(ServerHttpSecurity.CsrfSpec::disable)

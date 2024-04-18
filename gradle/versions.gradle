@@ -5,7 +5,7 @@ dependencyResolutionManagement {
             version('projectNode', '18.14.0')
             version('projectNpm', '9.3.1')
 
-            version('springBoot', '3.2.2')
+            version('springBoot', '3.2.4')
             version('springCloud', '2023.0.0')
             version('springCloudNetflix', '4.1.0')
             version('springCloudZuulNetflix', '2.2.10.RELEASE')
@@ -106,6 +106,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_thymeleaf', 'org.springframework.boot', 'spring-boot-starter-thymeleaf').versionRef('springBoot')
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
+            library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
 
             library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudZuulNetflix')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
