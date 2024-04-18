@@ -13,9 +13,9 @@ package org.zowe.apiml.cloudgatewayservice.config;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -33,26 +33,15 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.*;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -61,25 +50,21 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 @Configuration
+@RequiredArgsConstructor
 public class WebSecurity {
 
     public static final String AUTH_PREFIX = "/cloud-gateway";
@@ -100,27 +85,7 @@ public class WebSecurity {
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
 
-    @Value("${spring.security.oauth2.client.registration.okta.client-id}")
-    private String oktaClientId;
-
-    @Value("${spring.security.oauth2.client.registration.okta.client-secret}")
-    private String oktaClientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.okta.redirectUri}")
-    private String oktaRedirectUri;
-
-    @Value("${spring.security.oauth2.client.provider.okta.authorization-uri}")
-    private String oktaAuthorizationUri;
-
-    @Value("${spring.security.oauth2.client.provider.okta.token-uri}")
-    private String oktaTokenUri;
-
-    @Value("${spring.security.oauth2.client.provider.okta.user-info-uri}")
-    private String oktaUserInfoUri;
-
-    @Value("${spring.security.oauth2.client.provider.okta.jwk-set-uri}")
-    private String oktaJwkSetUri;
-
+    private final ClientConfiguration clientConfiguration;
 
     private Predicate<String> usernameAuthorizationTester;
 
@@ -140,14 +105,16 @@ public class WebSecurity {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain oauth2WebFilterChain(
         ServerHttpSecurity http,
-        ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService,
-        ApimlServerAuthorizationRequestRepository requestRepository,
-        ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver
+        Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
+        Optional<ApimlServerAuthorizationRequestRepository> requestRepository,
+        Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver
     ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
         return http
             .securityContextRepository(new ServerSecurityContextRepository() {
                 @Override
@@ -164,10 +131,15 @@ public class WebSecurity {
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
             .oauth2Login(oauth2 -> oauth2
                 .authenticationMatcher(new PathPatternParserServerWebExchangeMatcher(OAUTH_2_REDIRECT_LOGIN_URI))
-                .authorizationRequestRepository(requestRepository)
-                .authorizationRequestResolver(authorizationRequestResolver)
+                .authorizationRequestRepository(
+                    requestRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ApimlServerAuthorizationRequestRepository.class))
+                )
+                .authorizationRequestResolver(
+                    authorizationRequestResolver.orElseThrow(() -> new NoSuchBeanDefinitionException(ServerOAuth2AuthorizationRequestResolver.class))
+                )
                 .authenticationSuccessHandler((webFilterExchange, authentication) ->
                     reactiveOAuth2AuthorizedClientService
+                        .orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
                         .loadAuthorizedClient("okta", authentication.getName())
                         .map(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient)
                     ).flatMap(x -> Mono.empty())
@@ -179,7 +151,9 @@ public class WebSecurity {
                         return Mono.empty();
                     }
                 ))
-            .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(requestRepository))
+            .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(
+                requestRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ApimlServerAuthorizationRequestRepository.class))
+            ))
             .build();
     }
 
@@ -203,73 +177,105 @@ public class WebSecurity {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     ReactiveOAuth2AuthorizedClientService authorizedClientService(
-        ReactiveClientRegistrationRepository clientRegistrationRepository) {
-        return new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistrationRepository);
+        Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository)
+    {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new InMemoryReactiveOAuth2AuthorizedClientService(
+            clientRegistrationRepository
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveClientRegistrationRepository.class))
+        );
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
-    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(InMemoryReactiveClientRegistrationRepository inMemoryReactiveClientRegistrationRepository) {
+    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
+        Optional<InMemoryReactiveClientRegistrationRepository> inMemoryReactiveClientRegistrationRepository
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
         return new DefaultServerOAuth2AuthorizationRequestResolver(
-            inMemoryReactiveClientRegistrationRepository, new PathPatternParserServerWebExchangeMatcher(
-            AUTH_PREFIX + "/oauth2/authorization/{registrationId}"));
+            inMemoryReactiveClientRegistrationRepository
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(InMemoryReactiveClientRegistrationRepository.class)),
+            new PathPatternParserServerWebExchangeMatcher(AUTH_PREFIX + "/oauth2/authorization/{registrationId}")
+        );
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
-    public ApimlServerAuthorizationRequestRepository requestRepository(ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver) {
-        return new ApimlServerAuthorizationRequestRepository(authorizationRequestResolver);
+    public ApimlServerAuthorizationRequestRepository requestRepository(Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new ApimlServerAuthorizationRequestRepository(
+            authorizationRequestResolver
+                    .orElseThrow(() -> new NoSuchBeanDefinitionException(ServerOAuth2AuthorizationRequestResolver.class))
+        );
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     public ReactiveClientRegistrationRepository clientRegistrationRepository() {
-        return new InMemoryReactiveClientRegistrationRepository(this.googleClientRegistration());
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new InMemoryReactiveClientRegistrationRepository(this.getClientRegistrations());
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
-    public ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(ReactiveOAuth2AuthorizedClientService clientService) {
-        return new AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository(clientService);
+    public ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(
+        Optional<ReactiveOAuth2AuthorizedClientService> clientService
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository(
+            clientService.orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
+        );
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.okta.client-id")
     @ConditionalOnBean(ReactiveClientRegistrationRepository.class)
     public ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
-        ReactiveClientRegistrationRepository clientRegistrationRepository,
-        ReactiveOAuth2AuthorizedClientService authorizedClientService) {
-        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
+        Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository,
+        Optional<ReactiveOAuth2AuthorizedClientService> authorizedClientService
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+
+        var authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
             .builder().authorizationCode().refreshToken().build();
-        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
-            clientRegistrationRepository, authorizedClientService);
+        var authorizedClientManager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
+            clientRegistrationRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveClientRegistrationRepository.class)),
+            authorizedClientService.orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
+        );
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
         return authorizedClientManager;
     }
 
-    private ClientRegistration googleClientRegistration() {
-        return ClientRegistration.withRegistrationId("okta")
-            .clientId(oktaClientId)
-            .clientSecret(oktaClientSecret)
-            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .redirectUri(oktaRedirectUri)
-            .scope("openid", "profile", "email")
-            .authorizationUri(oktaAuthorizationUri)
-            .tokenUri(oktaTokenUri)
-            .userInfoUri(oktaUserInfoUri)
-            .userNameAttributeName(IdTokenClaimNames.SUB)
-            .jwkSetUri(oktaJwkSetUri)
-            .clientName("okta")
-            .build();
+    private List<ClientRegistration> getClientRegistrations() {
+        return clientConfiguration.getConfigurations().values().stream()
+            .map(c -> ClientRegistration.withRegistrationId(c.getId())
+                .clientId(c.getRegistration().getClientId())
+                .clientSecret(c.getRegistration().getClientSecret())
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri(c.getRegistration().getRedirectUri())
+                .scope(c.getRegistration().getScope())
+                .authorizationUri(c.getProvider().getAuthorizationUri())
+                .tokenUri(c.getProvider().getTokenUri())
+                .userInfoUri(c.getProvider().getUserInfoUri())
+                .userNameAttributeName(c.getProvider().getUserNameAttribute())
+                .jwkSetUri(c.getProvider().getJwkSetUri())
+                .clientName(c.getId())
+                .build()
+            ).collect(Collectors.toList());
     }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-
-        http
+        return http
             .x509(x509 ->
                 x509
                     .principalExtractor(new SubjectDnX509PrincipalExtractor())
@@ -283,9 +289,8 @@ public class WebSecurity {
                     .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
                     .anyExchange().permitAll()
             )
-            .csrf(ServerHttpSecurity.CsrfSpec::disable);
-
-        return http.build();
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .build();
     }
 
     @Bean
