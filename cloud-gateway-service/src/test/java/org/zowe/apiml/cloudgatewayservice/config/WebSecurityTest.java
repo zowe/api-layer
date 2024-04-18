@@ -19,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -35,7 +36,7 @@ class WebSecurityTest {
     class WhenListOfAllowedUserDefined {
         @BeforeEach
         void setUp() {
-            WebSecurity webSecurity = new WebSecurity();
+            WebSecurity webSecurity = new WebSecurity(new ClientConfiguration());
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "registryUser,registryAdmin");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
@@ -90,7 +91,7 @@ class WebSecurityTest {
     class WhenAnyUsersWildcardDefined {
         @BeforeEach
         void setUp() {
-            WebSecurity webSecurity = new WebSecurity();
+            WebSecurity webSecurity = new WebSecurity(new ClientConfiguration());
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "*");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
