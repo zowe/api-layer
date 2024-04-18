@@ -18,15 +18,7 @@ import { closeMobileMenu, isAPIPortal, findAndFormatZowe } from '../../utils/uti
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 import { sortServices } from '../../selectors/selectors';
-
-const loadHeaderDetail = () => {
-    if (isAPIPortal()) {
-        return import('../Header/HeaderDetail');
-    }
-    return Promise.resolve(null);
-};
-
-const HeaderDetail = React.lazy(loadHeaderDetail);
+import HeaderDetail from '../Header/HeaderDetail';
 
 export default class ServicesNavigationBar extends Component {
     componentDidMount() {

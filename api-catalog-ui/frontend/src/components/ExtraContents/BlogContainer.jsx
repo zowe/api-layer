@@ -80,14 +80,14 @@ export default function BlogContainer({ user, url, title, type }) {
         fetchDataEffect();
     }, [rss2json]);
 
-    function displayBlog(isMedia = false) {
+    function displayBlog() {
         if (myBlog?.items) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(url));
-            return correctBlog && <BlogTile blogData={{ ...correctBlog, isMedia }} />;
+            return correctBlog && <BlogTile blogData={{ ...correctBlog, isMedia: true }} />;
         }
     }
     if (url?.includes('medium.com')) {
-        return <div data-testid="medium-blog-container">{displayBlog(true)}</div>;
+        return <div data-testid="medium-blog-container">{displayBlog()}</div>;
     }
 
     return (
@@ -109,5 +109,5 @@ BlogContainer.propTypes = {
     }).isRequired,
     user: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
-    type: PropTypes.oneOf('tutorials', 'useCases'),
+    type: PropTypes.oneOf(['tutorials', 'useCases']),
 };

@@ -41,10 +41,12 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default class DetailPage extends Component {
     componentDidUpdate() {
         const { selectedContentAnchor } = this.props;
-        document.title =
-            this.props.tiles?.length > 0
-                ? `${this.props.tiles[0].title} | ${process.env.REACT_APP_API_PORTAL_SERVICE_TITLE}`
-                : process.env.REACT_APP_API_PORTAL_SERVICE_TITLE;
+        if (isAPIPortal()) {
+            document.title =
+                this.props.tiles?.length > 0
+                    ? `${this.props.tiles[0].title} | ${process.env.REACT_APP_API_PORTAL_SERVICE_TITLE}`
+                    : process.env.REACT_APP_API_PORTAL_SERVICE_TITLE;
+        }
         const elementToView = document.querySelector(selectedContentAnchor);
         if (elementToView) {
             setTimeout(() => {

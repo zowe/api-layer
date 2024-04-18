@@ -30,6 +30,15 @@ describe('>>> BlogTile component tests', () => {
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual('title');
         expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
         expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);
+        expect(blogTile.find('.no_title').exists()).toEqual(false);
+    });
+
+    it('should render blog tile without title', () => {
+        const blogTile = shallow(<BlogTile blogData={{ ...props.blogData, title: undefined }} />);
+        expect(blogTile.find('[data-testid="blog-title"]').exists()).toEqual(false);
+        expect(blogTile.find('.no_title').exists()).toEqual(true);
+        expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
+        expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);
     });
 
     it('should truncate text with space', () => {

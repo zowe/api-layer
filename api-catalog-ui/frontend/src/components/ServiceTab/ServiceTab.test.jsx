@@ -181,6 +181,24 @@ describe('>>> ServiceTab component tests', () => {
         );
         expect(serviceTab.find('.footer-labels').exists()).toEqual(true);
         expect(serviceTab.find('#detail-footer').exists()).toEqual(true);
+        expect(serviceTab.find('.use-cases').exists()).toEqual(true);
+    });
+
+    it('should display more than one useCases and not show use-cases className', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedService}
+                tiles={[tiles]}
+                selectService={selectService}
+                useCasesCounter={2}
+                videosCounter={2}
+                tutorialsCounter={1}
+            />
+        );
+        expect(serviceTab.find('.use-cases').exists()).toEqual(false);
     });
 
     it('should not display default footer for custom portal in case there is not additional content', () => {

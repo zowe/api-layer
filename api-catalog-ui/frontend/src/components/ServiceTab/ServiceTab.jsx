@@ -345,7 +345,7 @@ export default class ServiceTab extends Component {
                                                     user={useCase.user}
                                                     url={useCase.url}
                                                     title={useCase.title}
-                                                    type={useCasesCounter > 1 ? 'tutorials' : 'useCases'}
+                                                    type={useCasesCounter > 1 ? 'tutorials' : 'useCases'} // type tutorials means it will show more tiles and  with title, same as Getting Started
                                                 />
                                             ))}
                                         </div>

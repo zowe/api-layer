@@ -9,6 +9,7 @@
  */
 import { shallow, mount } from 'enzyme';
 import React from 'react';
+import { act } from '@testing-library/react';
 import BlogContainer from './BlogContainer';
 
 describe('>>> BlogContainer component tests', () => {
@@ -162,6 +163,24 @@ describe('>>> BlogContainer component tests', () => {
         expect(wrapper.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
 
         // Restore the original fetch function
+        mockFetch.mockRestore();
+    });
+
+    it('should render blog without title when type useCase', async () => {
+        const mockFetch = jest.spyOn(global, 'fetch');
+        mockFetch.mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce('<div class="p"><h1 class="title">Blog content</h1></div>'),
+        });
+
+        await act(async () => {
+            const wrapper = mount(
+                <BlogContainer user="user" url="https://example.com/hello" title="title" type="useCase" />
+            );
+            expect(wrapper.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
+            expect(wrapper.find('BlogTile').exists()).toEqual(true);
+            expect(wrapper.find('.no_title').exists()).toEqual(true);
+        });
+
         mockFetch.mockRestore();
     });
 

@@ -10,7 +10,6 @@
 import { Component } from 'react';
 
 // Component provided as placeholder
-// NOSONAR
 export default class HeaderDetail extends Component {
     render() {
         return (
