@@ -26,9 +26,9 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -133,7 +133,7 @@ class WebSecurityTest {
     class WhenAnyUsersWildcardDefined {
         @BeforeEach
         void setUp() {
-            WebSecurity webSecurity = new WebSecurity(new ClientConfiguration());
+            var webSecurity = new WebSecurity(new ClientConfiguration());
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "*");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
