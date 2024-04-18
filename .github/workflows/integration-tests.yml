@@ -1426,8 +1426,8 @@ jobs:
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
-                    export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_CLIENT_ID }}
-                    export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
+                    export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
                     npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
                 uses: actions/upload-artifact@v4
