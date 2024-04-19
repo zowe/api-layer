@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.config.oidc;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -36,34 +37,38 @@ class ClientConfigurationTest {
         "ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_jwkSetUri"
     };
 
-    @Test
-    void givenNoConfiguration_whenCreated_thenReturnNoProvider() {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        assertTrue(clientConfiguration.getConfigurations().isEmpty());
-        assertFalse(clientConfiguration.isConfigured());
-    }
+    @Nested
+    class WhenCreatingConfiguration {
 
-    @Test
-    void givenOnlyProvider_whenCreated_thenReturnNoProvider() {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        ReflectionTestUtils.setField(clientConfiguration, "provider", Collections.singletonMap("id", new Provider()));
-        assertTrue(clientConfiguration.getConfigurations().isEmpty());
-        assertFalse(clientConfiguration.isConfigured());
-    }
+        @Test
+        void givenNoConfiguration_thenReturnNoProvider() {
+            ClientConfiguration clientConfiguration = new ClientConfiguration();
+            assertTrue(clientConfiguration.getConfigurations().isEmpty());
+            assertFalse(clientConfiguration.isConfigured());
+        }
 
-    @Test
-    void givenOnlyRegistration_whenCreated_thenReturnNoProvider() {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        ReflectionTestUtils.setField(clientConfiguration, "registration", Collections.singletonMap("id", new Registration()));
-        assertTrue(clientConfiguration.getConfigurations().isEmpty());
-        assertFalse(clientConfiguration.isConfigured());
+        @Test
+        void givenOnlyProvider_thenReturnNoProvider() {
+            ClientConfiguration clientConfiguration = new ClientConfiguration();
+            ReflectionTestUtils.setField(clientConfiguration, "provider", Collections.singletonMap("id", new Provider()));
+            assertTrue(clientConfiguration.getConfigurations().isEmpty());
+            assertFalse(clientConfiguration.isConfigured());
+        }
+
+        @Test
+        void givenOnlyRegistration_thenReturnNoProvider() {
+            ClientConfiguration clientConfiguration = new ClientConfiguration();
+            ReflectionTestUtils.setField(clientConfiguration, "registration", Collections.singletonMap("id", new Registration()));
+            assertTrue(clientConfiguration.getConfigurations().isEmpty());
+            assertFalse(clientConfiguration.isConfigured());
+        }
     }
 
     @Test
     void givenConfiguration_whenGetConfiguration_thenReturnJustFullProviders() {
         ClientConfiguration clientConfiguration = new ClientConfiguration();
-        Map<String, Registration> registration = (Map<String, Registration>) ReflectionTestUtils.getField(clientConfiguration, "registration");
-        Map<String, Provider> provider = (Map<String, Provider>) ReflectionTestUtils.getField(clientConfiguration, "provider");
+        Map<String, Registration> registration = clientConfiguration.getRegistration();
+        Map<String, Provider> provider = clientConfiguration.getProvider();
 
         registration.put("id1", new Registration());
         registration.put("id2", new Registration());

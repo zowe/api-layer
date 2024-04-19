@@ -85,6 +85,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 public class WebSecurity {
 
     public static final String CONTEXT_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId();
+    public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry/**";
 
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
@@ -123,6 +124,9 @@ public class WebSecurity {
         usernameAuthorizationTester = user -> authorizeAnyUsers || users.contains(StringUtils.lowerCase(user));
     }
 
+    /**
+     * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
+     */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain oauth2WebFilterChain(
@@ -178,12 +182,12 @@ public class WebSecurity {
         return Mono.empty();
     }
 
-    void redirect(ServerHttpResponse response, String location) {
+    private void redirect(ServerHttpResponse response, String location) {
         response.getHeaders().set(HttpHeaders.LOCATION, location);
         response.setStatusCode(HttpStatusCode.valueOf(302));
     }
 
-    void clearCookies(WebFilterExchange webFilterExchange) {
+    private void clearCookies(WebFilterExchange webFilterExchange) {
         COOKIES.forEach(cookie -> webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(cookie).maxAge(0).path("/").httpOnly(true).secure(true).build()));
     }
 
@@ -297,7 +301,7 @@ public class WebSecurity {
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers(CONTEXT_PATH + "/api/v1/registry/**").authenticated()
+                    .pathMatchers(REGISTRY_PATH).authenticated()
                     .anyExchange().permitAll()
             )
             .csrf(ServerHttpSecurity.CsrfSpec::disable)

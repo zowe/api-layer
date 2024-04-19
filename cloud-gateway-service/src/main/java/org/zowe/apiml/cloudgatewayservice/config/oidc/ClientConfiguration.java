@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +25,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Reads OIDC Client configuration from environment variables or application configuration file.
+ */
 @Data
 @Component
+@Slf4j
 @ConfigurationProperties(prefix = "spring.security.oauth2.client", ignoreInvalidFields = true)
 public class ClientConfiguration {
 
@@ -101,6 +106,9 @@ public class ClientConfiguration {
                     .build()
                 );
             }
+        }
+        if (map.size() < Math.max(registration.size(), provider.size())) {
+            log.debug("OIDC configuration is not complete, please refer to the documentation.");
         }
         return map;
     }
