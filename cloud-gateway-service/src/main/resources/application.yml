@@ -19,6 +19,10 @@ eureka:
             enabled: true
 
 spring:
+    cloud:
+        gateway:
+            httpclient:
+                wiretap: true
     application:
         name: cloud-gateway
     security:
@@ -102,6 +106,9 @@ logging:
         org.zowe.apiml: DEBUG
         org.springframework.cloud.gateway: DEBUG
         org.springframework.security: DEBUG
+        org.springframework.web.reactive: DEBUG
         reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
 
