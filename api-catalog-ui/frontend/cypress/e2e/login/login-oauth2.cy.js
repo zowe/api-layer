@@ -34,7 +34,7 @@ describe('>>> Login through Okta OK', () => {
 
         cy.location('href').should('contain', '/oauth2/v1/authorize')
 
-        cy.url().should('not.contain', '/oauth2/v1/authorize');
+        cy.url().should('contain', '/application');
 
         cy.getCookie('apimlAuthenticationToken').should('exist');
 

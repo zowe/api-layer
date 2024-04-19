@@ -32,11 +32,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.*;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -56,7 +65,13 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -119,6 +134,7 @@ public class WebSecurity {
             return null;
         }
         return http
+            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
@@ -135,7 +151,7 @@ public class WebSecurity {
                         .orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
                         .loadAuthorizedClient(getClientRegistrationId(webFilterExchange.getExchange()), authentication.getName())
                         .map(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient)
-                    ).flatMap(x -> Mono.empty())
+                        ).flatMap(x -> Mono.empty())
                 )
                 .authenticationFailureHandler((webFilterExchange, exception) -> {
                         var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
@@ -171,8 +187,7 @@ public class WebSecurity {
 
     @Bean
     ReactiveOAuth2AuthorizedClientService authorizedClientService(
-        Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository)
-    {
+        Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository) {
         if (!clientConfiguration.isConfigured()) {
             return null;
         }
@@ -203,7 +218,7 @@ public class WebSecurity {
         }
         return new ApimlServerAuthorizationRequestRepository(
             authorizationRequestResolver
-                    .orElseThrow(() -> new NoSuchBeanDefinitionException(ServerOAuth2AuthorizationRequestResolver.class))
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(ServerOAuth2AuthorizationRequestResolver.class))
         );
     }
 
@@ -269,6 +284,7 @@ public class WebSecurity {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
+            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 ->
                 x509
                     .principalExtractor(new SubjectDnX509PrincipalExtractor())
