@@ -755,7 +755,6 @@ jobs:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -824,7 +823,6 @@ jobs:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -1496,7 +1494,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting,E2EUITests]
+        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting,E2EUITests]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1522,14 +1520,6 @@ jobs:
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v4
                 with:
-                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
-                    path: ContainerCITestsWithRedisReplica
-            -   uses: actions/download-artifact@v4
-                with:
-                    name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
-                    path: ContainerCITestsWithRedisSentinel
-            -   uses: actions/download-artifact@v4
-                with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
             -   uses: actions/download-artifact@v4
@@ -1551,7 +1541,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica,ContainerCITestsWithRedisSentinel,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas,e2euitestscgw"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results,e2euitestscgw"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
