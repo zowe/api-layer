@@ -33,10 +33,3 @@ runs:
                     ~/.gradle/wrapper
                 key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-        -   name: Cache Node.js modules
-            uses: actions/cache@v4
-            with:
-                path: |
-                    ~/.npm
-                    **/node_modules
-                key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
