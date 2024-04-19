@@ -19,10 +19,6 @@ eureka:
             enabled: true
 
 spring:
-    cloud:
-        gateway:
-            httpclient:
-                wiretap: true
     application:
         name: cloud-gateway
     security:
