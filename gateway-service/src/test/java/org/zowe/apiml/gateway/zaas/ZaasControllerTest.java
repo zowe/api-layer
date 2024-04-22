@@ -23,7 +23,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
-import org.zowe.apiml.gateway.security.service.schema.source.*;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -36,7 +40,11 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import javax.management.ServiceNotFoundException;
 import java.util.Date;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
@@ -101,7 +109,7 @@ class ZaasControllerTest {
         @Test
         void whenRequestZosmfToken_thenResponseOK() throws Exception {
             when(zosmfService.exchangeAuthenticationForZosmfToken(JWT_TOKEN, authParsedSource))
-                .thenReturn(new ZaasTokenResponse(ZosmfService.TokenType.JWT.getCookieName(), JWT_TOKEN));
+                .thenReturn(ZaasTokenResponse.builder().cookieName(ZosmfService.TokenType.JWT.getCookieName()).token(JWT_TOKEN).build());
 
             mockMvc.perform(post(ZOSMF_TOKEN_URL)
                     .requestAttr(AUTH_SOURCE_ATTR, authSource)
