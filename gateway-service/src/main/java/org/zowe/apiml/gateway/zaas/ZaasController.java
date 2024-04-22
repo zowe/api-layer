@@ -16,7 +16,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -80,18 +86,28 @@ public class ZaasController {
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
 
-        try {
-            String token = authSourceService.getJWT(authSource);
+        String token = authSourceService.getJWT(authSource);
 
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build());
+
+    }
+
+    /**
+     * Controller level exception handler for cases when NO mapping with mainframe ID exists.
+     *
+     * @param authSource credentials that will be used for authentication translation
+     * @param nmie       exception thrown in case of missing user mapping
+     * @return status code OK, header name and value if OIDC token is valid, otherwise status code UNAUTHORIZED
+     */
+    @ExceptionHandler(NoMainframeIdentityException.class)
+    public ResponseEntity<ZaasTokenResponse> handleNoMainframeIdException(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource, NoMainframeIdentityException nmie) {
+        if (nmie.isValidToken() && authSource.getType() == AuthSource.AuthSourceType.OIDC) {
             return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build());
-        } catch (NoMainframeIdentityException nmie) {
-            if (nmie.isValidToken() && authSource.getType() == AuthSource.AuthSourceType.OIDC) {
-                return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(ZaasTokenResponse.builder().headerName("OIDC-token").token(String.valueOf(authSource.getRawSource())).build());
-            }
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ZaasTokenResponse.builder().headerName(ApimlConstants.HEADER_OIDC_TOKEN).token(String.valueOf(authSource.getRawSource())).build());
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }

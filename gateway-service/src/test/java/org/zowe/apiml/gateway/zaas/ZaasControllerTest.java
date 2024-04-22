@@ -21,18 +21,21 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.saf.SafIdtException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.ParsedTokenAuthSource;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
@@ -51,6 +54,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
@@ -240,6 +244,19 @@ class ZaasControllerTest {
                     .andExpect(jsonPath("$.messages", hasSize(1)))
                     .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG103E"))
                     .andExpect(jsonPath("$.messages[0].messageContent", is("The token has expired")));
+            }
+            @Test
+            void whenRequestingZoweTokensAndUserMissingMapping_thenOkWithTokenInHeader() throws Exception {
+                authSource = new OIDCAuthSource(JWT_TOKEN);
+                when(authSourceService.getJWT(authSource))
+                    .thenThrow(new NoMainframeIdentityException("No user mappring",null,true));
+
+                mockMvc.perform(post(ZOWE_TOKEN_URL)
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource))
+                    .andExpect(status().is(SC_OK))
+                    .andExpect(jsonPath("$.token", is(JWT_TOKEN)))
+                    .andExpect(jsonPath("$.headerName", is(ApimlConstants.HEADER_OIDC_TOKEN)));
+
             }
 
             @Test
