@@ -2,7 +2,7 @@
     box-sizing: border-box;
 }
 .main {
-    display: flex;
+    display: contents;
 }
 
 .main-content2 detail-content {
