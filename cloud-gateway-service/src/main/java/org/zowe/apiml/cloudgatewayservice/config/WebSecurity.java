@@ -32,20 +32,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.*;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -66,13 +57,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -124,6 +109,14 @@ public class WebSecurity {
         usernameAuthorizationTester = user -> authorizeAnyUsers || users.contains(StringUtils.lowerCase(user));
     }
 
+    private ResponseCookie.ResponseCookieBuilder defaultCookieAttr(ResponseCookie.ResponseCookieBuilder builder) {
+        return builder.path("/").sameSite(sameSite).httpOnly(true).secure(true);
+    }
+
+    private ResponseCookie createCookie(String name, String value) {
+        return defaultCookieAttr(ResponseCookie.from(name, value)).build();
+    }
+
     /**
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
@@ -173,7 +166,7 @@ public class WebSecurity {
     }
 
     public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
-        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+        webFilterExchange.getExchange().getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
         var location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
         if (!HAS_NO_VALUE.test(location)) {
             redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
@@ -188,7 +181,7 @@ public class WebSecurity {
     }
 
     private void clearCookies(WebFilterExchange webFilterExchange) {
-        COOKIES.forEach(cookie -> webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(cookie).maxAge(0).path("/").httpOnly(true).secure(true).build()));
+        COOKIES.forEach(cookie -> webFilterExchange.getExchange().getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(cookie).maxAge(0)).build()));
     }
 
     @Bean
@@ -399,17 +392,13 @@ public class WebSecurity {
                 .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
         }
 
-
-        ResponseCookie createCookie(String name, String value) {
-            return ResponseCookie.from(name, value).path("/").httpOnly(true).sameSite(sameSite).secure(true).build();
-        }
-
-
         @Override
         public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
             Mono<OAuth2AuthorizationRequest> requestMono = loadAuthorizationRequest(exchange);
             exchange.getResponse().getCookies().remove(COOKIE_NONCE);
             return requestMono;
         }
+
     }
+
 }
