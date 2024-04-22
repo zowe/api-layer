@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 class OidcCommandTest {
-    String tokenValue = "tokenValue";
+
+    private static final String tokenValue = "tokenValue";
 
     @Test
     void givenTokenExists_thenSetAsHeaderAndRemoveAuthorization() {
@@ -38,4 +39,5 @@ class OidcCommandTest {
         assertNull(mockContext.getZuulRequestHeaders().get(HttpHeaders.AUTHORIZATION.toLowerCase()));
         assertEquals(tokenValue, mockContext.getZuulRequestHeaders().get(ApimlConstants.HEADER_OIDC_TOKEN.toLowerCase()));
     }
+
 }
