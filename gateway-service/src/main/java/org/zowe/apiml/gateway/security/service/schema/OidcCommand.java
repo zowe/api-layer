@@ -30,15 +30,12 @@ public class OidcCommand extends AuthenticationCommand {
     public void apply(InstanceInfo instanceInfo) {
         RequestContext context = RequestContext.getCurrentContext();
 
-        // remove apimlAuthenticationToken cookie
         String cookie = context.getRequest().getHeader(COOKIE_HEADER);
         cookie = CookieUtil.removeCookie(cookie, COOKIE_AUTH_NAME);
         context.addZuulRequestHeader(COOKIE_HEADER, cookie);
 
-        // remove authorization header
-        context.getZuulRequestHeaders().remove(HttpHeaders.AUTHORIZATION);
+        context.getZuulRequestHeaders().remove(HttpHeaders.AUTHORIZATION.toLowerCase());
 
-        // set OIDC header
         context.addZuulRequestHeader(ApimlConstants.HEADER_OIDC_TOKEN, token);
     }
 
