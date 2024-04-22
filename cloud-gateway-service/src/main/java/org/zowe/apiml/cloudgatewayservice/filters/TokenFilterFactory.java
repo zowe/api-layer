@@ -73,7 +73,8 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
                 request = exchange.getRequest().mutate().headers(headers ->
                     headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString())
                 ).build();
-            } else if (!StringUtils.isEmpty(response.getHeaderName())) {
+            }
+            if (!StringUtils.isEmpty(response.getHeaderName())) {
                 request = exchange.getRequest().mutate().headers(headers ->
                     headers.add(response.getHeaderName(), response.getToken())
                 ).build();
