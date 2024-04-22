@@ -54,7 +54,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.zowe.apiml.gateway.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
@@ -245,11 +244,12 @@ class ZaasControllerTest {
                     .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG103E"))
                     .andExpect(jsonPath("$.messages[0].messageContent", is("The token has expired")));
             }
+
             @Test
             void whenRequestingZoweTokensAndUserMissingMapping_thenOkWithTokenInHeader() throws Exception {
                 authSource = new OIDCAuthSource(JWT_TOKEN);
                 when(authSourceService.getJWT(authSource))
-                    .thenThrow(new NoMainframeIdentityException("No user mappring",null,true));
+                    .thenThrow(new NoMainframeIdentityException("No user mappring", null, true));
 
                 mockMvc.perform(post(ZOWE_TOKEN_URL)
                         .requestAttr(AUTH_SOURCE_ATTR, authSource))
