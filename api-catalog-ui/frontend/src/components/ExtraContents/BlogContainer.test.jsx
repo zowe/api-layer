@@ -30,7 +30,9 @@ describe('>>> BlogContainer component tests', () => {
             text: jest.fn().mockResolvedValueOnce(),
         });
 
-        const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="tutorials" />);
+        const blogContainer = shallow(
+            <BlogContainer user="user" url="https://medium.com/some/medium" title="tutorials" />
+        );
 
         expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
 
