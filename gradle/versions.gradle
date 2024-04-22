@@ -103,6 +103,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_thymeleaf', 'org.springframework.boot', 'spring-boot-starter-thymeleaf').versionRef('springBoot')
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
+            library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
 
             library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudZuulNetflix')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
