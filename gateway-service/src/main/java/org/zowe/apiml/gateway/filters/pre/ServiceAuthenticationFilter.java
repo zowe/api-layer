@@ -85,13 +85,12 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
                 throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidAuthentication");
             }
         } catch (NoMainframeIdentityException noIdentityException) {
-            if (noIdentityException.isValidToken()) {
-                cmd = new OidcCommand(noIdentityException.getToken());
-            } else {
-                String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
-                sendErrorMessage(error, context);
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
+            sendErrorMessage(error, context);
+            if (!noIdentityException.isValidToken()) {
                 return null;
             }
+            cmd = new OidcCommand(noIdentityException.getToken());
         } catch (TokenExpireException tee) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
             sendErrorMessage(error, context);
