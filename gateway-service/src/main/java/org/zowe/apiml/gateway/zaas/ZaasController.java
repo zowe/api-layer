@@ -24,6 +24,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
@@ -79,11 +80,20 @@ public class ZaasController {
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
 
-        String token = authSourceService.getJWT(authSource);
+        try {
+            String token = authSourceService.getJWT(authSource);
 
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(new ZaasTokenResponse(COOKIE_AUTH_NAME, token));
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build());
+        } catch (NoMainframeIdentityException nmie) {
+            if (authSource.getType() == AuthSource.AuthSourceType.OIDC) {
+                return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(ZaasTokenResponse.builder().headerName("OIDC-token").token(String.valueOf(authSource.getRawSource())).build());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping(path = "safIdt", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,7 +109,7 @@ public class ZaasController {
         String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new ZaasTokenResponse("", safIdToken));
+            .body(ZaasTokenResponse.builder().token(safIdToken).build());
     }
 
 }
