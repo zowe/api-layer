@@ -1419,8 +1419,8 @@ jobs:
                 with:
                     path: |
                         ~/.cache/Cypress
-                        node_modules
-                    key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+                        api-catalog-ui/frontend/node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
