@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.CookieUtil;
 
 import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.COOKIE_HEADER;
@@ -21,6 +22,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 public class OidcCommand extends AuthenticationCommand {
+
 
     private final String token;
 
@@ -37,7 +39,7 @@ public class OidcCommand extends AuthenticationCommand {
         context.getZuulRequestHeaders().remove(HttpHeaders.AUTHORIZATION);
 
         // set OIDC header
-        context.addZuulRequestHeader("OIDC-token", token);
+        context.addZuulRequestHeader(ApimlConstants.HEADER_OIDC_TOKEN, token);
     }
 
 }

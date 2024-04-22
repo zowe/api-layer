@@ -147,8 +147,7 @@ public class OktaOauth2Test {
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
-                    .body("headers", hasKey("authorization"))
-                    .body("headers.authorization", startsWith("Bearer"))
+                    .body("headers", hasKey(ApimlConstants.HEADER_OIDC_TOKEN))
                     .body("headers", not(hasKey("cookie")));
             }
 
@@ -212,8 +211,7 @@ public class OktaOauth2Test {
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
-                    .body("headers", hasKey("authorization"))
-                    .body("headers.authorization", startsWith("Bearer"))
+                    .body("headers", hasKey(ApimlConstants.HEADER_OIDC_TOKEN))
                     .body("headers", not(hasKey("cookie")));
             }
 
@@ -275,8 +273,7 @@ public class OktaOauth2Test {
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
-                    .body("headers", hasKey("authorization"))
-                    .body("headers.authorization", startsWith("Bearer"))
+                    .body("headers", hasKey(ApimlConstants.HEADER_OIDC_TOKEN))
                     .body("headers", not(hasKey("x-saf-token")));
             }
 
@@ -337,8 +334,7 @@ public class OktaOauth2Test {
                     .get(DC_url)
                     .then().statusCode(200)
                     .body("headers", hasKey("x-zowe-auth-failure"))
-                    .body("headers", hasKey("authorization"))
-                    .body("headers.authorization", startsWith("Bearer"));
+                    .body("headers", hasKey(ApimlConstants.HEADER_OIDC_TOKEN));
             }
 
             @Nested
