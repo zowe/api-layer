@@ -87,7 +87,7 @@ public class ZaasController {
                 .status(HttpStatus.OK)
                 .body(ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build());
         } catch (NoMainframeIdentityException nmie) {
-            if (authSource.getType() == AuthSource.AuthSourceType.OIDC) {
+            if (nmie.isValidToken() && authSource.getType() == AuthSource.AuthSourceType.OIDC) {
                 return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(ZaasTokenResponse.builder().headerName("OIDC-token").token(String.valueOf(authSource.getRawSource())).build());
