@@ -25,6 +25,20 @@ describe('>>> BlogContainer component tests', () => {
         global.fetch.mockRestore();
     });
 
+    it('should render tutorials blog', async () => {
+        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+            text: jest.fn().mockResolvedValueOnce(),
+        });
+
+        const blogContainer = shallow(
+            <BlogContainer user="user" url="https://medium.com/some/medium" title="tutorials" />
+        );
+
+        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
+
+        global.fetch.mockRestore();
+    });
+
     it('should not render medium blog if url missing', async () => {
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             text: jest.fn().mockResolvedValueOnce(),
