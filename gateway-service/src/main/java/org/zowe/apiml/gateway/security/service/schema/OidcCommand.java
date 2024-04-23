@@ -39,15 +39,18 @@ public class OidcCommand extends AuthenticationCommand {
         if (!StringUtils.isEmpty(cookie)) {
             cookie = CookieUtil.removeCookie(cookie, COOKIE_AUTH_NAME);
             if (StringUtils.isEmpty(cookie)) {
-                context.getZuulRequestHeaders().remove(COOKIE_HEADER.toLowerCase());
+                removeCookieFromRequest(context, COOKIE_HEADER);
             } else {
                 context.addZuulRequestHeader(COOKIE_HEADER, cookie);
             }
         }
-
-        ((Set<String>) context.computeIfAbsent(IGNORED_HEADERS, k -> new HashSet<>())).add(HttpHeaders.AUTHORIZATION.toLowerCase()); // NOSONAR
+        removeCookieFromRequest(context, HttpHeaders.AUTHORIZATION);
 
         context.addZuulRequestHeader(ApimlConstants.HEADER_OIDC_TOKEN, token);
+    }
+
+    void removeCookieFromRequest(RequestContext context, String headerName) {
+        ((Set<String>) context.computeIfAbsent(IGNORED_HEADERS, k -> new HashSet<>())).add(headerName.toLowerCase()); // NOSONAR
     }
 
 }

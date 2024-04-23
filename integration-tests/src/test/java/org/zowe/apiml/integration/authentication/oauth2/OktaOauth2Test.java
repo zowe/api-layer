@@ -178,7 +178,7 @@ public class OktaOauth2Test {
                         .get(DC_url)
                         .then().statusCode(200)
                         .body("headers", hasKey("x-zowe-auth-failure"))
-                        .body("cookies", hasKey("apimlAuthenticationToken"))
+                        .body("cookies", not(hasKey("apimlAuthenticationToken")))
                         .body("cookies.apimlAuthenticationToken", is(VALID_TOKEN_NO_MAPPING));
                 }
             }

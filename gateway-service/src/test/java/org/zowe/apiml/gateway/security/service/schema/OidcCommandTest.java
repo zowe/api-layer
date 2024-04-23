@@ -29,7 +29,7 @@ class OidcCommandTest {
     private static final String tokenValue = "tokenValue";
 
     @Test
-    void givenTokenExists_thenSetAsHeaderAndRemoveAuthorization() {
+    void givenTokenExistsAndMultipleCookies_thenSetAsHeaderAndRemoveAuthorization() {
         RequestContext mockContext = new RequestContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         RequestContext.testSetCurrentContext(mockContext);
@@ -41,6 +41,21 @@ class OidcCommandTest {
         assertEquals("cookieName=cookieValue", mockContext.getZuulRequestHeaders().get(HttpHeaders.COOKIE.toLowerCase()));
         assertEquals(tokenValue, mockContext.getZuulRequestHeaders().get(ApimlConstants.HEADER_OIDC_TOKEN.toLowerCase()));
         assertTrue(((Set<String>) mockContext.get(IGNORED_HEADERS)).contains(HttpHeaders.AUTHORIZATION.toLowerCase())); // NOSONAR
+    }
+
+    @Test
+    void givenTokenExists_thenSetAsHeaderAndRemoveAuthorization() {
+        RequestContext mockContext = new RequestContext();
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        RequestContext.testSetCurrentContext(mockContext);
+        mockContext.setRequest(mockRequest);
+
+        mockRequest.addHeader(HttpHeaders.COOKIE, "apimlAuthenticationToken=xyz");
+        new OidcCommand(tokenValue).apply(mock(InstanceInfo.class));
+
+        assertEquals(tokenValue, mockContext.getZuulRequestHeaders().get(ApimlConstants.HEADER_OIDC_TOKEN.toLowerCase()));
+        assertTrue(((Set<String>) mockContext.get(IGNORED_HEADERS)).contains(HttpHeaders.AUTHORIZATION.toLowerCase())); // NOSONAR
+        assertTrue(((Set<String>) mockContext.get(IGNORED_HEADERS)).contains(HttpHeaders.COOKIE.toLowerCase())); // NOSONAR
     }
 
 }
