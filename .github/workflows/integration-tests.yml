@@ -755,7 +755,6 @@ jobs:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -824,7 +823,6 @@ jobs:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-                        results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -1389,6 +1387,18 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+            cloud-gateway-service:
+                image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.OKTA_JWKSET_URI }}
+                    APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
@@ -1409,12 +1419,26 @@ jobs:
                 with:
                     path: |
                         ~/.cache/Cypress
-                        node_modules
-                    key: my-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+                        api-catalog-ui/frontend/node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
+                    export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
+                    export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
                     npm run cy:e2e:ci
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: E2EUITests-${{ env.JOB_ID }}
+                    path: |
+                        results/**
+
             -   name: Upload screenshots API Catalog
                 uses: actions/upload-artifact@v4
                 if: ${{ !cancelled() }}
@@ -1470,7 +1494,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedisReplica,CITestsWithRedisSentinel,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting]
+        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1496,14 +1520,6 @@ jobs:
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v4
                 with:
-                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
-                    path: ContainerCITestsWithRedisReplica
-            -   uses: actions/download-artifact@v4
-                with:
-                    name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
-                    path: ContainerCITestsWithRedisSentinel
-            -   uses: actions/download-artifact@v4
-                with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
             -   uses: actions/download-artifact@v4
@@ -1521,7 +1537,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
