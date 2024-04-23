@@ -90,18 +90,18 @@ public class OktaOauth2Test {
         void tenValidateUsingJWKLocally(String token) throws ParseException, IOException, JOSEException {
             HttpsURLConnection.setDefaultSSLSocketFactory(SecurityUtils.getSslContext().getSocketFactory());
             JWKSet jwkSet = JWKSet.load(new URL(JWK_ENDPOINT.toString()));
-            String kid = String.valueOf(Jwts.parserBuilder()
-                .setClock(new DefaultClock())
+            String kid = String.valueOf(Jwts.parser()
+                .clock(new DefaultClock())
                 .build()
-                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .parseUnsecuredClaims(token.substring(0, token.lastIndexOf('.') + 1))
                 .getHeader()
                 .get("kid"));
-            Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwkSet.getKeyByKeyId(kid).toRSAKey().toPublicKey())
-                .setClock(new DefaultClock())
+            Claims claims = Jwts.parser()
+                .verifyWith(jwkSet.getKeyByKeyId(kid).toRSAKey().toPublicKey())
+                .clock(new DefaultClock())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
             assertNotNull(claims);
         }
 
