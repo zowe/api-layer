@@ -109,7 +109,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         String mappedUser = mapper.mapToMainframeUserId(oidcAuthSource);
         if (StringUtils.isEmpty(mappedUser)) {
             logger.log(MessageType.DEBUG, "No mainframe user id retrieved. Cancel parsing of OIDC token.");
-            throw new NoMainframeIdentityException("No mainframe identity found.");
+            throw new NoMainframeIdentityException("No mainframe identity found.", token, true);
         }
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtToken(token);
