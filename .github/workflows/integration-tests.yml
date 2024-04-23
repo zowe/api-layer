@@ -104,7 +104,7 @@ jobs:
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
                     APIML_SECURITY_OIDC_ENABLED: true
                     APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
-                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWK_URI }}
+                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
                     APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
             discovery-service:
@@ -391,7 +391,7 @@ jobs:
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
                     APIML_SECURITY_OIDC_ENABLED: true
                     APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
-                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWK_URI }}
+                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
                     APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
             mock-services:
