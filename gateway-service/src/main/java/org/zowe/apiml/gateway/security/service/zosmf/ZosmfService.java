@@ -28,7 +28,12 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -229,19 +234,19 @@ public class ZosmfService extends AbstractZosmfService {
     public ZaasTokenResponse exchangeAuthenticationForZosmfToken(String token, AuthSource.Parsed authSource) throws ServiceNotFoundException {
         switch (authSource.getOrigin()) {
             case ZOSMF:
-                return new ZaasTokenResponse(ZosmfService.TokenType.JWT.getCookieName(), token);
+                return ZaasTokenResponse.builder().cookieName(JWT.getCookieName()).token(token).build();
             case ZOWE:
                 String ltpaToken = authenticationService.getLtpaToken(token);
                 if (ltpaToken != null) {
-                    return new ZaasTokenResponse(ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
+                    return ZaasTokenResponse.builder().cookieName(LTPA.getCookieName()).token(ltpaToken).build();
                 }
             default:
                 Map<ZosmfService.TokenType, String> zosmfTokens = tokenCreationService.createZosmfTokensWithoutCredentials(authSource.getUserId());
 
                 if (zosmfTokens.containsKey(JWT)) {
-                    return new ZaasTokenResponse(ZosmfService.TokenType.JWT.getCookieName(), zosmfTokens.get(JWT));
+                    return ZaasTokenResponse.builder().cookieName(JWT.getCookieName()).token(zosmfTokens.get(JWT)).build();
                 } else if (zosmfTokens.containsKey(LTPA)) {
-                    return new ZaasTokenResponse(ZosmfService.TokenType.LTPA.getCookieName(), zosmfTokens.get(LTPA));
+                    return ZaasTokenResponse.builder().cookieName(LTPA.getCookieName()).token(zosmfTokens.get(LTPA)).build();
                 }
         }
 
