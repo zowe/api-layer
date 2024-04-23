@@ -166,7 +166,7 @@ describe('>>> BlogContainer component tests', () => {
         mockFetch.mockRestore();
     });
 
-    it('should render blog without title when type useCase', async () => {
+    it('should render blog without title when type useCases', async () => {
         const mockFetch = jest.spyOn(global, 'fetch');
         mockFetch.mockResolvedValueOnce({
             text: jest.fn().mockResolvedValueOnce('<div class="p"><h1 class="title">Blog content</h1></div>'),
@@ -174,7 +174,7 @@ describe('>>> BlogContainer component tests', () => {
 
         await act(async () => {
             const wrapper = mount(
-                <BlogContainer user="user" url="https://example.com/hello" title="title" type="useCase" />
+                <BlogContainer user="user" url="https://example.com/hello" title="title" type="useCases" />
             );
             expect(wrapper.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
             expect(wrapper.find('BlogTile').exists()).toEqual(true);
@@ -186,7 +186,7 @@ describe('>>> BlogContainer component tests', () => {
 
     it('should render multiple medium blogs', async () => {
         const myBlogData = {
-            items: [{ link: 'https://medium.com/blog1' }, { link: 'https:///medium.com/blog2' }],
+            items: [{ link: 'https://medium.com/some/medium' }, { link: 'https:///medium.com/blog2' }],
         };
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             json: jest.fn().mockResolvedValueOnce(myBlogData),
