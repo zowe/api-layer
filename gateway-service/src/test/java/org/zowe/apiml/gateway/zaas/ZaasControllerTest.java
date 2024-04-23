@@ -260,6 +260,17 @@ class ZaasControllerTest {
             }
 
             @Test
+            void whenRequestingZoweTokensAndUserMissingMappingAndTokenIsInvalid_thenUnauthorized() throws Exception {
+                authSource = new OIDCAuthSource(JWT_TOKEN);
+                when(authSourceService.getJWT(authSource))
+                    .thenThrow(new NoMainframeIdentityException("No user mappring", null, false));
+
+                mockMvc.perform(post(ZOWE_TOKEN_URL)
+                        .requestAttr(AUTH_SOURCE_ATTR, authSource))
+                    .andExpect(status().is(SC_UNAUTHORIZED));
+            }
+
+            @Test
             void whenRequestingZoweTokensAndAuthSchemeException_thenUnauthorized() throws Exception {
                 when(authSourceService.getJWT(authSource))
                     .thenThrow(new AuthSchemeException("No mainframe identity found."));
