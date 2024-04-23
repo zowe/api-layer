@@ -19,11 +19,11 @@ import org.springframework.security.core.AuthenticationException;
 @Getter
 public class NoMainframeIdentityException extends AuthenticationException {
 
-    private boolean validToken;
-    private String token;
+    private final boolean validToken;
+    private final String token;
 
     public NoMainframeIdentityException(String msg) {
-        super(msg);
+        this(msg, null, false);
     }
 
     public NoMainframeIdentityException(String msg, String token, boolean validToken) {
