@@ -18,6 +18,10 @@ import org.apache.http.HttpHeaders;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.CookieUtil;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper.IGNORED_HEADERS;
 import static org.zowe.apiml.gateway.security.service.schema.JwtCommand.COOKIE_HEADER;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
@@ -41,7 +45,7 @@ public class OidcCommand extends AuthenticationCommand {
             }
         }
 
-        context.getZuulRequestHeaders().remove(HttpHeaders.AUTHORIZATION.toLowerCase());
+        ((Set<String>) context.computeIfAbsent(IGNORED_HEADERS, k -> new HashSet<>())).add(HttpHeaders.AUTHORIZATION.toLowerCase()); // NOSONAR
 
         context.addZuulRequestHeader(ApimlConstants.HEADER_OIDC_TOKEN, token);
     }

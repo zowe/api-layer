@@ -17,9 +17,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.constants.ApimlConstants;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper.IGNORED_HEADERS;
 
 class OidcCommandTest {
 
@@ -31,13 +34,13 @@ class OidcCommandTest {
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         RequestContext.testSetCurrentContext(mockContext);
         mockContext.setRequest(mockRequest);
-        mockContext.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, "value");
+
         mockRequest.addHeader(HttpHeaders.COOKIE, "cookieName=cookieValue; apimlAuthenticationToken=xyz");
         new OidcCommand(tokenValue).apply(mock(InstanceInfo.class));
 
         assertEquals("cookieName=cookieValue", mockContext.getZuulRequestHeaders().get(HttpHeaders.COOKIE.toLowerCase()));
-        assertNull(mockContext.getZuulRequestHeaders().get(HttpHeaders.AUTHORIZATION.toLowerCase()));
         assertEquals(tokenValue, mockContext.getZuulRequestHeaders().get(ApimlConstants.HEADER_OIDC_TOKEN.toLowerCase()));
+        assertTrue(((Set<String>) mockContext.get(IGNORED_HEADERS)).contains(HttpHeaders.AUTHORIZATION.toLowerCase())); // NOSONAR
     }
 
 }
