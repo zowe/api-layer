@@ -179,7 +179,7 @@ public class OktaOauth2Test {
                         .then().statusCode(200)
                         .body("headers", hasKey("x-zowe-auth-failure"))
                         .body("cookies", not(hasKey("apimlAuthenticationToken")))
-                        .body("cookies.apimlAuthenticationToken", is(VALID_TOKEN_NO_MAPPING));
+                        .body("cookies.apimlAuthenticationToken", is((String) null));
                 }
             }
         }
@@ -242,7 +242,7 @@ public class OktaOauth2Test {
                         .get(DC_url)
                         .then().statusCode(200)
                         .body("headers", hasKey("x-zowe-auth-failure"))
-                        .body("headers", hasKey("cookie"))
+                        .body("headers", not(hasKey("cookie")))
                         .body("cookies", not(hasKey("jwtToken")));
                 }
             }
