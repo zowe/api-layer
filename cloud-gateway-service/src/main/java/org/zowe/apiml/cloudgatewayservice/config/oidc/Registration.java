@@ -8,21 +8,22 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas;
+package org.zowe.apiml.cloudgatewayservice.config.oidc;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class ZaasTokenResponse {
+public class Registration {
 
-    private String cookieName;
-    private String headerName;
-    private String token;
+    private String clientId;
+
+    private String clientSecret;
+
+    private String redirectUri;
+
+    private List<String> scope = Arrays.asList("openid", "profile", "email");
 
 }

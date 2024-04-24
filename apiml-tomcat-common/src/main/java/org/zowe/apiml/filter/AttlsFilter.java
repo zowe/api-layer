@@ -10,14 +10,14 @@
 
 package org.zowe.apiml.filter;
 
-import org.apache.tomcat.util.codec.binary.Base64;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.zowe.commons.attls.InboundAttls;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.commons.attls.InboundAttls;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -32,12 +32,9 @@ public class AttlsFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
-                try {
-                    populateRequestWithCertificate(request, InboundAttls.getCertificate());
-                } finally {
-                    InboundAttls.clean();
-                }
+            byte[] certificate = InboundAttls.getCertificate();
+            if (certificate != null && InboundAttls.getCertificate().length > 0) {
+                populateRequestWithCertificate(request, certificate);
             }
         } catch (Exception e) {
             logger.error("Not possible to get certificate from AT-TLS context", e);

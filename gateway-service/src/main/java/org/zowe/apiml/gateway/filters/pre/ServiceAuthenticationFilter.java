@@ -20,6 +20,7 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.gateway.security.service.schema.OidcCommand;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSchemeException;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -27,6 +28,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -82,6 +84,13 @@ public class ServiceAuthenticationFilter extends PreZuulFilter {
             if (authSource.isPresent() && !isSourceValidForCommand(authSource.get(), cmd)) {
                 throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidAuthentication");
             }
+        } catch (NoMainframeIdentityException noIdentityException) {
+            String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.schema.x509.mappingFailed").mapToLogMessage();
+            sendErrorMessage(error, context);
+            if (!noIdentityException.isValidToken()) {
+                return null;
+            }
+            cmd = new OidcCommand(noIdentityException.getToken());
         } catch (TokenExpireException tee) {
             String error = this.messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToLogMessage();
             sendErrorMessage(error, context);

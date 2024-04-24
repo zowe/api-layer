@@ -8,21 +8,22 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas;
+package org.zowe.apiml.cloudgatewayservice.config.oidc;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class ZaasTokenResponse {
+public class Provider {
 
-    private String cookieName;
-    private String headerName;
-    private String token;
+    private String authorizationUri;
+
+    private String tokenUri;
+
+    private String userInfoUri;
+
+    private String userNameAttribute = IdTokenClaimNames.SUB;
+
+    private String jwkSetUri;
 
 }

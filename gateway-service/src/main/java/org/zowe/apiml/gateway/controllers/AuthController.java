@@ -29,16 +29,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
+import org.zowe.apiml.gateway.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.gateway.security.webfinger.WebFingerResponse;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
-import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,9 +53,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
@@ -69,7 +82,7 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     @Nullable
-    private final OIDCProvider oidcProvider;
+    private final OIDCTokenProvider oidcProvider;
     private final WebFingerProvider webFingerProvider;
 
     private static final String TOKEN_KEY = "token";
@@ -210,9 +223,18 @@ public class AuthController {
     @ResponseBody
     @HystrixCommand
     public Map<String, Object> getAllPublicKeys() {
-        final List<JWK> keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+        List<JWK> keys;
+        if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
+            keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+        } else {
+            keys = new LinkedList<>();
+        }
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
+        JWKSet oidcSet = oidcProvider.getJwkSet();
+        if (oidcSet != null) {
+            keys.addAll(oidcSet.getKeys());
+        }
         return new JWKSet(keys).toJSONObject(true);
     }
 

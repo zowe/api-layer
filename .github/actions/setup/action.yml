@@ -31,12 +31,46 @@ runs:
                 path: |
                     ~/.gradle/caches
                     ~/.gradle/wrapper
-                key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
-        -   name: Cache Node.js modules
+                key: ${{ runner.os }}-gradle-${{ hashFiles('build.gradle', 'settings.gradle', '*/build.gradle', '*/gradle/**/*.gradle', '*/gradle/**/*.properties') }}
+        -   name: Cache Node.js modules of root folder
             uses: actions/cache@v4
             with:
                 path: |
                     ~/.npm
-                    **/node_modules
-                key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+                    node_modules
+                key: ${{ runner.OS }}-node-${{ hashFiles('*.json') }}
+        -   name: Cache Node.js modules of API Catalog
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.npm
+                    api-catalog-ui/frontend/node_modules
+                key: ${{ runner.OS }}-api-catalog-ui-node-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
+        -   name: Cache Node.js modules of Zowe CLI ID Federation Plugin
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.npm
+                    zowe-cli-id-federation-plugin/node_modules
+                key: ${{ runner.OS }}-zowe-cli-id-federation-plugin-node-${{ hashFiles('zowe-cli-id-federation-plugin/*.json') }}
+        -   name: Cache Node.js modules of Onboarding Enabler Nodejs
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.npm
+                    onboarding-enabler-nodejs/node_modules
+                key: ${{ runner.OS }}-onboarding-enabler-nodejs-node-${{ hashFiles('onboarding-enabler-nodejs/*.json') }}
+        -   name: Cache Node.js modules of Onboarding Enabler Nodejs Sample App
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.npm
+                    onboarding-enabler-nodejs-sample-app/node_modules
+                key: ${{ runner.OS }}-onboarding-enabler-nodejs-sample-app-node-${{ hashFiles('onboarding-enabler-nodejs-sample-app/*.json') }}
+        -   name: Cache Node.js modules of ZSS Sample Service
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.npm
+                    zss-sample-service/node_modules
+                key: ${{ runner.OS }}-zss-sample-service-node-${{ hashFiles('zss-sample-service/*.json') }}

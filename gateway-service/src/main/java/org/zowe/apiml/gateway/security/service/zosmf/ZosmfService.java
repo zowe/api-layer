@@ -28,7 +28,12 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -229,19 +234,19 @@ public class ZosmfService extends AbstractZosmfService {
     public ZaasTokenResponse exchangeAuthenticationForZosmfToken(String token, AuthSource.Parsed authSource) throws ServiceNotFoundException {
         switch (authSource.getOrigin()) {
             case ZOSMF:
-                return new ZaasTokenResponse(ZosmfService.TokenType.JWT.getCookieName(), token);
+                return ZaasTokenResponse.builder().cookieName(JWT.getCookieName()).token(token).build();
             case ZOWE:
                 String ltpaToken = authenticationService.getLtpaToken(token);
                 if (ltpaToken != null) {
-                    return new ZaasTokenResponse(ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
+                    return ZaasTokenResponse.builder().cookieName(LTPA.getCookieName()).token(ltpaToken).build();
                 }
             default:
                 Map<ZosmfService.TokenType, String> zosmfTokens = tokenCreationService.createZosmfTokensWithoutCredentials(authSource.getUserId());
 
                 if (zosmfTokens.containsKey(JWT)) {
-                    return new ZaasTokenResponse(ZosmfService.TokenType.JWT.getCookieName(), zosmfTokens.get(JWT));
+                    return ZaasTokenResponse.builder().cookieName(JWT.getCookieName()).token(zosmfTokens.get(JWT)).build();
                 } else if (zosmfTokens.containsKey(LTPA)) {
-                    return new ZaasTokenResponse(ZosmfService.TokenType.LTPA.getCookieName(), zosmfTokens.get(LTPA));
+                    return ZaasTokenResponse.builder().cookieName(LTPA.getCookieName()).token(zosmfTokens.get(LTPA)).build();
                 }
         }
 
@@ -271,12 +276,12 @@ public class ZosmfService extends AbstractZosmfService {
         log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
-            .exchange(
-                infoURIEndpoint,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                ZosmfInfo.class
-            );
+                .exchange(
+                    infoURIEndpoint,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    ZosmfInfo.class
+                );
 
             if (info.getStatusCode() != HttpStatus.OK) {
                 log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
@@ -557,12 +562,13 @@ public class ZosmfService extends AbstractZosmfService {
         final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
-            final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
-            return JWKSet.parse(json);
+            return JWKSet.load(new URL(url));
         } catch (ParseException pe) {
             log.debug("Invalid format of public keys from z/OSMF", pe);
         } catch (HttpClientErrorException.NotFound nf) {
             log.debug("Cannot get public keys from z/OSMF", nf);
+        } catch (IOException me) {
+            log.debug("Can't read JWK due to the exception " + me.getMessage(), me.getCause());
         }
         return new JWKSet();
     }
