@@ -23,6 +23,7 @@ import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -51,6 +52,8 @@ public class RestResponseHandler {
                         throw new ZosAuthenticationException(PlatformReturned.builder().errno(169).errnoMsg("org.zowe.apiml.security.platform.errno.EMVSPASSWORD").build());
                     } else if (errorType.equals(ErrorType.PASSWORD_EXPIRED)) {
                         throw new ZosAuthenticationException(PlatformReturned.builder().errno(168).errnoMsg("org.zowe.apiml.security.platform.errno.EMVSEXPIRE").build());
+                    } else if (errorType.equals(ErrorType.IDENTITY_MAPPING_FAILED)) {
+                        throw new NoMainframeIdentityException(errorType.getDefaultMessage());
                     }
                 }
                 throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage());

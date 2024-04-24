@@ -37,6 +37,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +45,11 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
@@ -142,7 +147,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
-    void givenInvalidAuthSource_whenAuthSourceRequired_thenCallThrought(AuthSource authSource) {
+    void givenInvalidAuthSource_whenAuthSourceRequired_thenCallThrough(AuthSource authSource) {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
@@ -195,7 +200,7 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @ParameterizedTest
     @MethodSource("provideAuthSources")
-    void givenExpiredJwt_thenCallThrought(AuthSource authSource) {
+    void givenExpiredJwt_thenCallThrough(AuthSource authSource) {
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
@@ -208,6 +213,46 @@ class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
         verify(RequestContext.getCurrentContext(), never()).setSendZuulResponse(false);
         verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(401);
         verify(cmd, never()).apply(any());
+    }
+
+    @Test
+    void givenNoMappedDistributedId_thenCallThrough() {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
+
+        RequestContext requestContext = mock(RequestContext.class);
+        when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
+        RequestContext.testSetCurrentContext(requestContext);
+
+        AuthSource authSource = new JwtAuthSource("token");
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, "");
+        doReturn(authentication).when(serviceAuthenticationService).getAuthentication("service");
+        doReturn(Optional.of(authSource)).when(serviceAuthenticationService).getAuthSourceByAuthentication(authentication);
+        doThrow(new NoMainframeIdentityException("User not found."))
+            .when(serviceAuthenticationService)
+            .getAuthenticationCommand(eq("service"), any(Authentication.class), any(AuthSource.class));
+
+        serviceAuthenticationFilter.run();
+
+        verify(RequestContext.getCurrentContext(), never()).setSendZuulResponse(false);
+        verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(401);
+    }
+
+    @Test
+    void givenNoMappedDistributedIdAndInvalidToken_thenCallThrough() {
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        doReturn(message).when(messageService).createMessage(anyString(), (Object) any());
+        RequestContext.testSetCurrentContext(new RequestContext());
+        doThrow(new NoMainframeIdentityException("User not found.", null, false))
+            .when(serviceAuthenticationService)
+            .getAuthentication((String) null);
+
+        assertNull(serviceAuthenticationFilter.run());
+
+        assertNotNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase()));
+        assertEquals(ApimlConstants.AUTH_FAIL_HEADER, RequestContext.getCurrentContext().getZuulResponseHeaders().get(0).first());
     }
 
     @ParameterizedTest

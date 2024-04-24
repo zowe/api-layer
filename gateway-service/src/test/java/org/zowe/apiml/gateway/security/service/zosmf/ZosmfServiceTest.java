@@ -17,6 +17,7 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import com.nimbusds.jose.jwk.JWKSet;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,17 +29,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
@@ -54,14 +66,40 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;
+import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -358,7 +396,7 @@ class ZosmfServiceTest {
                         HttpMethod.PUT,
                         new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
                         String.class))
-                    .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", "{\"returnCode\": 8}".getBytes(), Charset.defaultCharset()));
+                        .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", "{\"returnCode\": 8}".getBytes(), Charset.defaultCharset()));
 
                     assertThrows(BadCredentialsException.class, () -> zosmfService.changePassword(authentication));
                 }
@@ -693,16 +731,15 @@ class ZosmfServiceTest {
             "}";
 
         @Test
-        void thenSuccess() throws JSONException {
+        void thenSuccess() throws JSONException, ParseException {
             String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
             when(authConfigurationProperties.getZosmf().getJwtEndpoint()).thenReturn(zosmfJwtUrl);
             ZosmfService zosmfService = getZosmfServiceSpy();
-            when(restTemplate.getForObject(
-                "http://zosmf:1433" + zosmfJwtUrl,
-                String.class
-            )).thenReturn(ZOSMF_PUBLIC_KEY_JSON);
-
-            JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
+            JWKSet jwkSet = JWKSet.parse(ZOSMF_PUBLIC_KEY_JSON);
+            try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
+                mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet);
+                JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
+            }
         }
 
         @Test
@@ -721,20 +758,10 @@ class ZosmfServiceTest {
 
     @Nested
     class WhenGetsPublicKeys {
-        @Test
-        void thenThrowException() {
-            ZosmfService zosmfService = getZosmfServiceSpy();
-            when(restTemplate.getForObject(anyString(), any()))
-                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND,
-                    "", new HttpHeaders(), new byte[]{}, null));
-            assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
-        }
 
         @Test
-        void thenReturnInvalidFormat() {
+        void givenExceptionInTheResponse_thenPublicKeysAreEmpty() {
             ZosmfService zosmfService = getZosmfServiceSpy();
-            when(restTemplate.getForObject(anyString(), any()))
-                .thenReturn("invalidFormat");
             assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
         }
     }

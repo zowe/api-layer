@@ -137,6 +137,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         }
 
         try {
+            log.debug("Trying to open a WebSocket connection and route to the {} service", serviceId);
             meAsProxy.openConn(serviceId, service, webSocketSession, path);
         } catch (WebSocketProxyError e) {
             log.debug("Error opening WebSocket connection to: {}, {}", service.getServiceUrl(), e.getMessage());

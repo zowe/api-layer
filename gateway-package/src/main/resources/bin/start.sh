@@ -32,6 +32,7 @@
 # - ZWE_configs_apiml_catalog_serviceId
 # - ZWE_configs_apiml_gateway_timeoutMillis
 # - ZWE_configs_apiml_security_auth_provider
+# - ZWE_configs_apiml_security_allowtokenrefresh
 # - ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration
 # - ZWE_configs_apiml_security_auth_zosmf_serviceId
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
@@ -300,6 +301,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
     -Dapiml.security.oidc.jwks.uri=${ZWE_configs_apiml_security_oidc_jwks_uri} \
     -Dapiml.security.oidc.jwks.refreshInternalHours=${ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours:-1} \
+    -Dapiml.security.allowTokenRefresh=${ZWE_configs_apiml_security_allowtokenrefresh:-false} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \

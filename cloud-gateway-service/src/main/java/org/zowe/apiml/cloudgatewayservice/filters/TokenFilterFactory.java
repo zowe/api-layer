@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.filters;
 
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -66,12 +67,20 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
     @Override
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
-        ServerHttpRequest request;
+        ServerHttpRequest request = null;
         if (response.getToken() != null) {
-            request = exchange.getRequest().mutate().headers(headers ->
-                headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString())
-            ).build();
-        } else {
+            if (!StringUtils.isEmpty(response.getCookieName())) {
+                request = exchange.getRequest().mutate().headers(headers ->
+                    headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString())
+                ).build();
+            }
+            if (!StringUtils.isEmpty(response.getHeaderName())) {
+                request = exchange.getRequest().mutate().headers(headers ->
+                    headers.add(response.getHeaderName(), response.getToken())
+                ).build();
+            }
+        }
+        if (request == null) {
             request = updateHeadersForError(exchange, "Invalid or missing authentication");
         }
 
