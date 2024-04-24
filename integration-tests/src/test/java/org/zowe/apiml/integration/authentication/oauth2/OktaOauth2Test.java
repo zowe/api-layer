@@ -14,6 +14,8 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.LocatorAdapter;
+import io.jsonwebtoken.ProtectedHeader;
 import io.jsonwebtoken.impl.DefaultClock;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -38,6 +40,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.security.Key;
 import java.text.ParseException;
 import java.util.stream.Stream;
 
@@ -87,17 +90,20 @@ public class OktaOauth2Test {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#validTokens")
-        void tenValidateUsingJWKLocally(String token) throws ParseException, IOException, JOSEException {
+        void thenValidateUsingJWKLocally(String token) throws ParseException, IOException, JOSEException {
             HttpsURLConnection.setDefaultSSLSocketFactory(SecurityUtils.getSslContext().getSocketFactory());
             JWKSet jwkSet = JWKSet.load(new URL(JWK_ENDPOINT.toString()));
-            String kid = String.valueOf(Jwts.parser()
-                .clock(new DefaultClock())
-                .build()
-                .parseUnsecuredClaims(token.substring(0, token.lastIndexOf('.') + 1))
-                .getHeader()
-                .get("kid"));
             Claims claims = Jwts.parser()
-                .verifyWith(jwkSet.getKeyByKeyId(kid).toRSAKey().toPublicKey())
+                .keyLocator(new LocatorAdapter<Key>() {
+                    @Override
+                    protected Key locate(ProtectedHeader header) {
+                        try {
+                            return jwkSet.getKeyByKeyId(header.getKeyId()).toRSAKey().toPublicKey();
+                        } catch (JOSEException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                })
                 .clock(new DefaultClock())
                 .build()
                 .parseSignedClaims(token)
