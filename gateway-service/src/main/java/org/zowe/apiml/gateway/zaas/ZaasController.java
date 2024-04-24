@@ -16,7 +16,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.AuthSourceService;
@@ -24,6 +30,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.gateway.security.ticket.ApplicationNameNotFoundException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
@@ -83,7 +90,26 @@ public class ZaasController {
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new ZaasTokenResponse(COOKIE_AUTH_NAME, token));
+            .body(ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build());
+
+    }
+
+    /**
+     * Controller level exception handler for cases when NO mapping with mainframe ID exists.
+     *
+     * @param authSource credentials that will be used for authentication translation
+     * @param nmie       exception thrown in case of missing user mapping
+     * @return status code OK, header name and value if OIDC token is valid, otherwise status code UNAUTHORIZED
+     */
+    @ExceptionHandler(NoMainframeIdentityException.class)
+    public ResponseEntity<ZaasTokenResponse> handleNoMainframeIdException(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource, NoMainframeIdentityException nmie) {
+        if (nmie.isValidToken() && authSource.getType() == AuthSource.AuthSourceType.OIDC) {
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ZaasTokenResponse.builder().headerName(ApimlConstants.HEADER_OIDC_TOKEN).token(String.valueOf(authSource.getRawSource())).build());
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping(path = "safIdt", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,7 +125,7 @@ public class ZaasController {
         String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new ZaasTokenResponse("", safIdToken));
+            .body(ZaasTokenResponse.builder().token(safIdToken).build());
     }
 
 }
