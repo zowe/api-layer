@@ -11,6 +11,13 @@ body {
       display: flex;
       justify-content: space-between;
       align-items: center;
+
+      svg {
+        rotate: -90deg;
+      }
+    }
+    .models-control[aria-expanded="true"] svg {
+        rotate: 180deg;
     }
     .model-container {
       margin-bottom: var( --spaceSmallest );
@@ -41,7 +48,7 @@ body {
       }
     }
     .model-box-control[aria-expanded="true"] .model-toggle {
-      rotate: -90deg;
+      rotate: 90deg;
     }
     .model .property {
       word-break: break-word;
@@ -53,7 +60,6 @@ body {
       width: 20px;
       height: 20px;
       display: block;
-      rotate: 90deg;
       margin-left: auto;
       
       &:after {
