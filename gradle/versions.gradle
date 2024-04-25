@@ -5,7 +5,7 @@ ext {
     springCloudLoadBalancerVersion = '2.2.9.RELEASE'
     springCloudVersion3 = '3.1.7'
     springSecurityVersion = '5.7.11'
-    springFrameworkVersion = '5.3.30'
+    springFrameworkVersion = '5.3.32'
     springRetryVersion = '1.2.5.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
