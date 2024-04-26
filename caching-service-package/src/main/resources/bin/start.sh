@@ -116,6 +116,7 @@ LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 ATTLS_ENABLED="false"
 if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
     ATTLS_ENABLED="true"
+    ZWE_configs_server_ssl_enabled="false"
 fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
