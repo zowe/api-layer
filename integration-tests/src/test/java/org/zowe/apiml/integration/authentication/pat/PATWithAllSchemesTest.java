@@ -57,9 +57,9 @@ public class PATWithAllSchemesTest {
             Arguments.of("cookie", COOKIE_NAME));
     }
 
-    String updateHeaders(String headerType,String headerValue, String pat){
+    String updateHeaders(String headerType,String headerValue, String pat) {
 
-        if((headerType.equals("header")) && (headerValue.equals("authorization"))) {
+        if ((headerType.equals("header")) && (headerValue.equals("authorization"))) {
             return ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + pat;
         }
         return pat;
@@ -87,7 +87,7 @@ public class PATWithAllSchemesTest {
 
             String updatedPAT = updateHeaders( headerType, headerValue,  pat);
 
-            if(headerType.equals("header"))
+            if (headerType.equals("header"))
             {
                 verifyZoweZwtHeaders(given()
                     .config(SslContext.tlsWithoutCert)
@@ -112,7 +112,6 @@ public class PATWithAllSchemesTest {
             assertEquals(JWTParser.parse(jwt).getJWTClaimsSet().toJSONObject().get("iss"),"APIML");
             assertThat(response.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
         }
-
     }
 
     @Nested
@@ -129,7 +128,7 @@ public class PATWithAllSchemesTest {
 
             String updatedPAT = updateHeaders( headerType, headerValue,  pat);
 
-            if(headerType.equals("header")) {
+            if (headerType.equals("header")) {
                 verifyPassTicketHeaders(given()
                     .config(SslContext.tlsWithoutCert)
                     .header(headerValue, updatedPAT)
@@ -165,7 +164,7 @@ public class PATWithAllSchemesTest {
 
             String updatedPAT = updateHeaders( headerType, headerValue,  pat);
 
-            if(headerType.equals("header")) {
+            if (headerType.equals("header")) {
                 verifySafIDTHeaders(given()
                     .config(SslContext.tlsWithoutCert)
                     .header(headerValue, updatedPAT)
