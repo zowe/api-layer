@@ -11,12 +11,12 @@
 package org.zowe.apiml.integration.authentication.pat;
 
 import com.nimbusds.jwt.JWTParser;
-import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import org.apache.groovy.util.Arrays;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -26,118 +26,85 @@ import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import java.net.URI;
 import java.text.ParseException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.commons.lang3.StringUtils.substring;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 public class PATWithAllSchemesTest {
 
-    private static URI URL;
-    private static URI URL_SAF;
-    private static URI URL_PASS;
-
     static Stream<Arguments> authentication() {
         return Stream.of(
-            Arguments.of((BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.header(ApimlConstants.PAT_HEADER_NAME, token)),
-            Arguments.of((BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token)),
-            Arguments.of((BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.cookie(ApimlConstants.PAT_COOKIE_AUTH_NAME, token)),
-            Arguments.of((BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.cookie(COOKIE_NAME, token))
+            Arguments.of("PAT header", (BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.header(ApimlConstants.PAT_HEADER_NAME, token)),
+            Arguments.of("authorization header", (BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token)),
+            Arguments.of("PAT cookie", (BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.cookie(ApimlConstants.PAT_COOKIE_AUTH_NAME, token)),
+            Arguments.of("APIML cookie", (BiFunction<RequestSpecification, String, RequestSpecification>) (rs, token) -> rs.cookie(COOKIE_NAME, token))
         );
     }
 
+    static Stream<Arguments> schemas() {
+        return Stream.of(
+            Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<ValidatableResponse>) r ->
+                r.body("headers.authorization", argThat(authorizationHeader -> {
+                    String header = authorizationHeader.toString();
+                    assertTrue(header.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " "));
+                    String jwt = header.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim();
+                    try {
+                        assertEquals(JWTParser.parse(jwt).getJWTClaimsSet().toJSONObject().get("iss"),"APIML");
+                    } catch (ParseException e) {
+                        fail(e);
+                    }
+                    return true;
+                }))
+                .body("headers.cookie", containsString(COOKIE_NAME))
+            ),
+            Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<ValidatableResponse>) r -> {
+                r.body("headers.authorization", startsWith("Basic "))
+                .body("cookies", not(hasKey(COOKIE_NAME)));
+            }),
+            Arguments.of("dcsafidt", HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST), (Consumer<ValidatableResponse>) r -> {
+                r.body("headers", hasKey("x-saf-token"));
+            })
+        );
+    }
+
+    static Stream<Arguments> authSchemas() {
+        return authentication().flatMap(a -> schemas().map(s ->
+            Arguments.of(Arrays.concat(a.get(), s.get()))
+        ));
+    }
+
     @BeforeAll
-   static void init() throws Exception {
+    static void init() throws Exception {
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-        URL = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
-        URL_SAF = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
-        URL_PASS = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     }
 
-    @Nested
-    class GivenPATWithZowejwtscheme {
+    @InfinispanStorageTest
+    @ParameterizedTest(name = "Test service with {0} schema with the credentials stored in {2}")
+    @MethodSource("org.zowe.apiml.integration.authentication.pat.PATWithAllSchemesTest#authSchemas")
+    void requestWithPATZoweZwt(
+        String credentialContainer, BiFunction<RequestSpecification, String, RequestSpecification> authenticationAction,
+        String name, String urlSpecification, Consumer<ValidatableResponse> validation
+   ) {
+        String pat = personalAccessToken(Collections.singleton(name));
 
-        @InfinispanStorageTest
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.authentication.pat.PATWithAllSchemesTest#authentication")
-        void requestWithPATZoweZwt(BiFunction<RequestSpecification, String, RequestSpecification> authenticationAction) throws ParseException {
-            Set<String> scopes = new HashSet<>();
-            scopes.add("zowejwt");
-            String pat = personalAccessToken(scopes);
-
-            verifyZoweZwtHeaders(
-                authenticationAction.apply(given().config(SslContext.tlsWithoutCert), pat).when().get(URL)
-            );
-        }
-        void verifyZoweZwtHeaders(Response response) throws ParseException {
-
-            assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
-            String jwt = substring(response.getBody().path("headers.authorization").toString(),7);
-
-            assertEquals(JWTParser.parse(jwt).getJWTClaimsSet().toJSONObject().get("iss"),"APIML");
-            assertThat(response.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
-        }
-    }
-
-    @Nested
-    class GivenPATWithPassTicketscheme {
-
-
-        @InfinispanStorageTest
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.authentication.pat.PATWithAllSchemesTest#authentication")
-        void requestWithPATwithPassTicket(BiFunction<RequestSpecification, String, RequestSpecification> authenticationAction) {
-            Set<String> scopes = new HashSet<>();
-            scopes.add("dcpassticket");
-            String pat = personalAccessToken(scopes);
-
-
-            verifyPassTicketHeaders(authenticationAction.apply(given().config(SslContext.tlsWithoutCert), pat)
-                .when().get(URL_PASS)
-            );
-        }
-
-        void verifyPassTicketHeaders(Response response) {
-            assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
-            assertThat(response.getBody().path("headers.authorization"), startsWith("Basic "));
-            assertThat(response.getBody().path("cookies"), not(hasKey(COOKIE_NAME)));
-        }
-
-    }
-
-    @Nested
-    class GivenPATWithSAFIDTscheme {
-
-        @InfinispanStorageTest
-        @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.authentication.pat.PATWithAllSchemesTest#authentication")
-        void requestWithPATWithSafidt(BiFunction<RequestSpecification, String, RequestSpecification> authenticationAction) {
-            Set<String> scopes = new HashSet<>();
-            scopes.add("dcsafidt");
-            String pat = personalAccessToken(scopes);
-
-
-            verifySafIDTHeaders(authenticationAction.apply(given().config(SslContext.tlsWithoutCert), pat)
-                .when().get(URL_SAF)
-            );
-        }
-
-        void verifySafIDTHeaders(Response response) {
-            assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
-            assertThat(response.getBody().path("headers"), hasKey("x-saf-token"));
-        }
+        validation.accept(authenticationAction.apply(given(), pat)
+            .config(SslContext.tlsWithoutCert)
+        .when()
+            .get(urlSpecification)
+        .then()
+            .statusCode(HttpStatus.SC_OK)
+        );
 
     }
 
