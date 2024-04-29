@@ -26,6 +26,7 @@ import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
+import java.net.URI;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.function.BiFunction;
@@ -92,9 +93,9 @@ public class PATWithAllSchemesTest {
     @InfinispanStorageTest
     @ParameterizedTest(name = "Test service with {0} schema with the credentials stored in {2}")
     @MethodSource("org.zowe.apiml.integration.authentication.pat.PATWithAllSchemesTest#authSchemas")
-    void requestWithPATZoweZwt(
+    void requestWithPAT(
         String credentialContainer, BiFunction<RequestSpecification, String, RequestSpecification> authenticationAction,
-        String name, String urlSpecification, Consumer<ValidatableResponse> validation
+        String name, URI urlSpecification, Consumer<ValidatableResponse> validation
    ) {
         String pat = personalAccessToken(Collections.singleton(name));
 
