@@ -13,7 +13,7 @@ messages:
     - key: org.zowe.apiml.common.mediationLayerStarted
       number: ZWEAM001
       type: INFO
-      text: "%s started"
+      text: "started"
       reason: "The service started."
       action: "No action required."
 
