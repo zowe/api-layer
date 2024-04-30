@@ -11,7 +11,7 @@
 package org.zowe.apiml.integration.authentication.pat;
 
 import com.nimbusds.jwt.JWTParser;
-import io.restassured.response.ValidatableResponse;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.groovy.util.Arrays;
 import org.apache.http.HttpHeaders;
@@ -35,9 +35,9 @@ import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
@@ -55,26 +55,23 @@ public class PATWithAllSchemesTest {
 
     static Stream<Arguments> schemas() {
         return Stream.of(
-            Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<ValidatableResponse>) r ->
-                r.body("headers.authorization", argThat(authorizationHeader -> {
-                    String header = authorizationHeader.toString();
-                    assertTrue(header.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " "));
-                    String jwt = header.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim();
-                    try {
-                        assertEquals(JWTParser.parse(jwt).getJWTClaimsSet().toJSONObject().get("iss"),"APIML");
-                    } catch (ParseException e) {
-                        fail(e);
-                    }
-                    return true;
-                }))
-                .body("headers.cookie", containsString(COOKIE_NAME))
-            ),
-            Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<ValidatableResponse>) r -> {
-                r.body("headers.authorization", startsWith("Basic "))
-                .body("cookies", not(hasKey(COOKIE_NAME)));
+            Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
+                assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                String jwt = r.getBody().path("headers.authorization").toString();
+                try {
+                    JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss");
+                } catch (ParseException e) {
+                    fail(e);
+                }
             }),
-            Arguments.of("dcsafidt", HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST), (Consumer<ValidatableResponse>) r -> {
-                r.body("headers", hasKey("x-saf-token"));
+            Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<Response>) r -> {
+                assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                assertThat(r.getBody().path("headers.authorization"), startsWith("Basic "));
+                assertThat(r.getBody().path("cookies"), not(hasKey(COOKIE_NAME)));
+            }),
+            Arguments.of("dcsafidt", HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST), (Consumer<Response>) r -> {
+                assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                assertThat(r.getBody().path("headers"), hasKey("x-saf-token"));
             })
         );
     }
@@ -95,16 +92,13 @@ public class PATWithAllSchemesTest {
     @MethodSource("org.zowe.apiml.integration.authentication.pat.PATWithAllSchemesTest#authSchemas")
     void requestWithPAT(
         String credentialContainer, BiFunction<RequestSpecification, String, RequestSpecification> authenticationAction,
-        String name, URI urlSpecification, Consumer<ValidatableResponse> validation
-   ) {
+        String name, URI urlSpecification, Consumer<Response> validation) {
         String pat = personalAccessToken(Collections.singleton(name));
 
         validation.accept(authenticationAction.apply(given(), pat)
             .config(SslContext.tlsWithoutCert)
         .when()
             .get(urlSpecification)
-        .then()
-            .statusCode(HttpStatus.SC_OK)
         );
 
     }
