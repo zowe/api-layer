@@ -14,7 +14,7 @@ messages:
       number: ZWEAM001
       type: INFO
       text: "started"
-      reason: "The service started."
+      reason: "All API ML services started."
       action: "No action required."
 
     # General messages
