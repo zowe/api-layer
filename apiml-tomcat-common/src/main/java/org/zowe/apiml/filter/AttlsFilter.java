@@ -47,12 +47,13 @@ public class AttlsFilter extends OncePerRequestFilter {
     }
 
     public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {
-        byte[] encodedCert = Base64.encodeBase64(rawCertificate);
-        String s = new String(encodedCert);
-        s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
+        StringBuilder sb = new StringBuilder();
+        sb.append("-----BEGIN CERTIFICATE-----\n");
+        sb.append(Base64.encodeBase64String(rawCertificate));
+        sb.append("\n-----END CERTIFICATE-----");
         X509Certificate certificate = (X509Certificate) CertificateFactory
             .getInstance("X509")
-            .generateCertificate(new ByteArrayInputStream(s.getBytes()));
+            .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes()));
         X509Certificate[] certificates = new X509Certificate[1];
         certificates[0] = certificate;
         request.setAttribute("javax.servlet.request.X509Certificate", certificates);
