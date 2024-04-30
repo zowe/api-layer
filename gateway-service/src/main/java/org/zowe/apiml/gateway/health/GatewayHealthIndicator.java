@@ -76,11 +76,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
         }
 
-        if (!startedInformationPublished) {
-            if (discoveryUp && apiCatalogUp && authUp) {
-                apimlLog.log("org.zowe.apiml.common.mediationLayerStarted", "API Mediation Layer");
-                startedInformationPublished = true;
-            }
+        if (!startedInformationPublished && discoveryUp && apiCatalogUp && authUp) {
+            apimlLog.log("org.zowe.apiml.common.mediationLayerStarted", "API Mediation Layer");
+            startedInformationPublished = true;
         }
     }
 
