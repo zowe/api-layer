@@ -10,6 +10,13 @@ messages:
       reason: "The service started."
       action: "No action required."
 
+    - key: org.zowe.apiml.common.mediationLayerStarted
+      number: ZWEAM001
+      type: INFO
+      text: "started"
+      reason: "All API ML services started."
+      action: "No action required."
+
     # General messages
     # 100-199
 
