@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -98,7 +99,8 @@ class ZoweJwtSchemeTest {
             when(authSourceService.parse(authSource)).thenReturn(new ParsedTokenAuthSource("user", new Date(), new Date(), Origin.ZOSMF));
             command = scheme.createCommand(null, authSource);
             command.apply(null);
-            verify(requestContext, times(2)).addZuulRequestHeader(any(), any());
+            verify(requestContext).addZuulRequestHeader(eq("cookie"), any());
+            verify(requestContext).addZuulRequestHeader(eq(HttpHeaders.AUTHORIZATION), any());
         }
 
         @Test
@@ -167,7 +169,8 @@ class ZoweJwtSchemeTest {
                 when(authSourceService.parse(authSource)).thenReturn(new X509AuthSource.Parsed("user", new Date(), new Date(), Origin.ZOSMF, "public key", "distinguishedName"));
                 command = scheme.createCommand(null, authSource);
                 command.apply(null);
-                verify(requestContext, times(2)).addZuulRequestHeader(any(), any());
+                verify(requestContext).addZuulRequestHeader(eq("cookie"), any());
+                verify(requestContext).addZuulRequestHeader(eq(HttpHeaders.AUTHORIZATION), any());
                 assertEquals(EXPECTED_TOKEN_RESULT, requestContext.getZuulRequestHeaders().get("cookie"));
             }
 
