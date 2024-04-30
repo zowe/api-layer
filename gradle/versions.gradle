@@ -182,6 +182,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_thymeleaf', 'org.springframework.boot', 'spring-boot-starter-thymeleaf').versionRef('springBoot')
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
+            library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
 
             library('spring_cloud_hystrix_dashboard', 'org.springframework.cloud', 'spring-cloud-starter-netflix-hystrix-dashboard').versionRef('springCloud')
             library('spring_cloud_loadbalancer', 'org.springframework.cloud', 'spring-cloud-starter-loadbalancer').versionRef('springCloudVersion3')

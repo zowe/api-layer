@@ -85,6 +85,7 @@ dependencies {
     implementation libs.janino
     implementation libs.spring.doc
     implementation libs.swagger3.parser
+    implementation libs.spring.boot.starter.oauth2.client
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

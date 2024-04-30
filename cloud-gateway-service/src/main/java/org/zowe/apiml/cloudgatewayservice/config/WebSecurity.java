@@ -10,39 +10,105 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
+import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 
 @Configuration
+@RequiredArgsConstructor
 public class WebSecurity {
+
+    public static final String CONTEXT_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId();
+    public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry/**";
+
+    public static final String COOKIE_NONCE = "oidc_nonce";
+    public static final String COOKIE_STATE = "oidc_state";
+    public static final String COOKIE_RETURN_URL = "oidc_return_url";
+    private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + CONTEXT_PATH + "/login/oauth2/code/([^/]+)$");
+    private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
+    private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
+    public static final String OAUTH_2_AUTHORIZATION = CONTEXT_PATH + "/oauth2/authorization/**";
+    public static final String OAUTH_2_AUTHORIZATION_BASE_URI = CONTEXT_PATH + "/oauth2/authorization/";
+    public static final String OAUTH_2_AUTHORIZATION_URI = CONTEXT_PATH + "/oauth2/authorization/{registrationId}";
+    public static final String OAUTH_2_REDIRECT_URI = CONTEXT_PATH + "/login/oauth2/code/**";
+    public static final String OAUTH_2_REDIRECT_LOGIN_URI = CONTEXT_PATH + "/login/oauth2/code/{registrationId}";
+
+    @Value("${apiml.security.oidc.cookie.sameSite:Lax}")
+    public String sameSite;
 
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
+
+    private final ClientConfiguration clientConfiguration;
 
     private Predicate<String> usernameAuthorizationTester;
 
@@ -61,25 +127,193 @@ public class WebSecurity {
         usernameAuthorizationTester = user -> authorizeAnyUsers || users.contains(StringUtils.lowerCase(user));
     }
 
+     /**
+     * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityWebFilterChain oauth2WebFilterChain(
+        ServerHttpSecurity http,
+        Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
+        Optional<ApimlServerAuthorizationRequestRepository> requestRepository,
+        Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return http
+            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
+            .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
+            .oauth2Login(oauth2 -> oauth2
+                .authenticationMatcher(new PathPatternParserServerWebExchangeMatcher(OAUTH_2_REDIRECT_LOGIN_URI))
+                .authorizationRequestRepository(
+                    requestRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ApimlServerAuthorizationRequestRepository.class))
+                )
+                .authorizationRequestResolver(
+                    authorizationRequestResolver.orElseThrow(() -> new NoSuchBeanDefinitionException(ServerOAuth2AuthorizationRequestResolver.class))
+                )
+                .authenticationSuccessHandler((webFilterExchange, authentication) ->
+                    reactiveOAuth2AuthorizedClientService
+                        .orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
+                        .loadAuthorizedClient(getClientRegistrationId(webFilterExchange.getExchange()), authentication.getName())
+                        .map(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient)
+                        ).flatMap(x -> Mono.empty())
+                )
+                .authenticationFailureHandler((webFilterExchange, exception) -> {
+                        String clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
+                        clearCookies(webFilterExchange);
+                        redirect(webFilterExchange.getExchange().getResponse(), OAUTH_2_AUTHORIZATION_BASE_URI + clientRegistrationId);
+                        return Mono.empty();
+                    }
+                ))
+            .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(
+                requestRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ApimlServerAuthorizationRequestRepository.class))
+            ))
+            .requestCache(requestCacheSpec -> requestCacheSpec.requestCache(new CookieServerRequestCache()))
+            .build();
+    }
+
+    public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
+        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+        HttpCookie location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
+        if (!HAS_NO_VALUE.test(location)) {
+            redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
+        }
+        clearCookies(webFilterExchange);
+        return Mono.empty();
+    }
+
+    private void redirect(ServerHttpResponse response, String location) {
+        response.getHeaders().set(HttpHeaders.LOCATION, location);
+        response.setStatusCode(HttpStatus.valueOf(302));
+    }
+
+    private void clearCookies(WebFilterExchange webFilterExchange) {
+        COOKIES.forEach(cookie -> webFilterExchange
+            .getExchange()
+            .getResponse()
+            .addCookie(ResponseCookie.from(cookie, "").maxAge(0).path("/").httpOnly(true).secure(true).build()));
+    }
+
+    @Bean
+    ReactiveOAuth2AuthorizedClientService authorizedClientService(
+        Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new InMemoryReactiveOAuth2AuthorizedClientService(
+            clientRegistrationRepository
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveClientRegistrationRepository.class))
+        );
+    }
+
+    @Bean
+    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
+        Optional<InMemoryReactiveClientRegistrationRepository> inMemoryReactiveClientRegistrationRepository
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new DefaultServerOAuth2AuthorizationRequestResolver(
+            inMemoryReactiveClientRegistrationRepository
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(InMemoryReactiveClientRegistrationRepository.class)),
+            new PathPatternParserServerWebExchangeMatcher(OAUTH_2_AUTHORIZATION_URI)
+        );
+    }
+
+    @Bean
+    public ApimlServerAuthorizationRequestRepository requestRepository(Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new ApimlServerAuthorizationRequestRepository(
+            authorizationRequestResolver
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(ServerOAuth2AuthorizationRequestResolver.class))
+        );
+    }
+
+    @Bean
+    public ReactiveClientRegistrationRepository clientRegistrationRepository() {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new InMemoryReactiveClientRegistrationRepository(this.getClientRegistrations());
+    }
+
+    @Bean
+    public ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(
+        Optional<ReactiveOAuth2AuthorizedClientService> clientService
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+        return new AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository(
+            clientService.orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
+        );
+    }
+
+    @Bean
+    @ConditionalOnBean(ReactiveClientRegistrationRepository.class)
+    public ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
+        Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository,
+        Optional<ReactiveOAuth2AuthorizedClientService> authorizedClientService
+    ) {
+        if (!clientConfiguration.isConfigured()) {
+            return null;
+        }
+
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
+            .builder().authorizationCode().refreshToken().build();
+        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
+            clientRegistrationRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveClientRegistrationRepository.class)),
+            authorizedClientService.orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
+        );
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+        return authorizedClientManager;
+    }
+
+    private List<ClientRegistration> getClientRegistrations() {
+        List<ClientRegistration> clientRegistrations = clientConfiguration.getConfigurations().values().stream()
+            .map(c -> ClientRegistration.withRegistrationId(c.getId())
+                .clientId(c.getRegistration().getClientId())
+                .clientSecret(c.getRegistration().getClientSecret())
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri(c.getRegistration().getRedirectUri())
+                .scope(c.getRegistration().getScope())
+                .authorizationUri(c.getProvider().getAuthorizationUri())
+                .tokenUri(c.getProvider().getTokenUri())
+                .userInfoUri(c.getProvider().getUserInfoUri())
+                .userNameAttributeName(c.getProvider().getUserNameAttribute())
+                .jwkSetUri(c.getProvider().getJwkSetUri())
+                .clientName(c.getId())
+                .build())
+            .collect(Collectors.toList());
+
+        return clientRegistrations;
+    }
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-
-        SubjectDnX509PrincipalExtractor principalExtractor = new SubjectDnX509PrincipalExtractor();
-
-        ReactiveAuthenticationManager authenticationManager = authentication -> {
-            authentication.setAuthenticated(true);
-            return Mono.just(authentication);
-        };
-
-        http.x509(x509 ->
+        return http
+            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .x509(x509 ->
                 x509
-                    .principalExtractor(principalExtractor)
-                    .authenticationManager(authenticationManager)).authorizeExchange()
-            .pathMatchers("/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry/**").authenticated()
-            .and().csrf().disable()
-            .authorizeExchange().anyExchange().permitAll();
-
-        return http.build();
+                    .principalExtractor(new SubjectDnX509PrincipalExtractor())
+                    .authenticationManager(authentication -> {
+                        authentication.setAuthenticated(true);
+                        return Mono.just(authentication);
+                    })
+            )
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec
+                    .pathMatchers(REGISTRY_PATH).authenticated()
+                    .anyExchange().permitAll()
+            )
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .build();
     }
 
     @Bean
@@ -94,6 +328,98 @@ public class WebSecurity {
             UserDetails userDetails = User.withUsername(username).authorities(authorities).password("").build();
             return Mono.just(userDetails);
         };
+    }
+
+    static String getClientRegistrationId(ServerWebExchange exchange) {
+        String path = exchange.getRequest().getPath().value();
+        Matcher matcher = CLIENT_REG_ID.matcher(path);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        throw new IllegalStateException("Client registration ID was not found in the path: " + path);
+    }
+
+    static String createHash(String value) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(value.getBytes(StandardCharsets.US_ASCII));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @RequiredArgsConstructor
+    class ApimlServerAuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+
+        final ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver;
+
+        @Override
+        public Mono<OAuth2AuthorizationRequest> loadAuthorizationRequest(ServerWebExchange exchange) {
+            String registrationId = getClientRegistrationId(exchange);
+            return authorizationRequestResolver.resolve(exchange, registrationId).map(
+                arr -> {
+                    HttpCookie nonceCookie = exchange.getRequest().getCookies().getFirst(COOKIE_NONCE);
+                    if (nonceCookie != null) {
+                        return createAuthorizationRequest(exchange, arr);
+                    }
+                    return arr;
+                }
+            );
+        }
+
+        public OAuth2AuthorizationRequest createAuthorizationRequest(ServerWebExchange exchange, OAuth2AuthorizationRequest original) {
+            HttpCookie nonceCookie = exchange.getRequest().getCookies().getFirst(COOKIE_NONCE);
+            HttpCookie stateCookie = exchange.getRequest().getCookies().getFirst(COOKIE_STATE);
+            if (HAS_NO_VALUE.test(nonceCookie) || HAS_NO_VALUE.test(stateCookie)) {
+                return original;
+            }
+            String nonce = nonceCookie.getValue();
+            String nonceHash = createHash(nonce);
+
+            return OAuth2AuthorizationRequest.authorizationCode()
+                .attributes((attrs) -> {
+                        attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID));
+                        attrs.put(OidcParameterNames.NONCE, nonce);
+                    }
+                )
+                .additionalParameters((params) -> params.put(OidcParameterNames.NONCE, nonceHash))
+                .clientId(original.getClientId())
+                .authorizationUri(original.getAuthorizationUri())
+                .redirectUri(original.getRedirectUri())
+                .scopes(original.getScopes())
+                .state(stateCookie.getValue())
+                .build();
+        }
+
+        @Override
+        public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
+            exchange.getResponse().addCookie(
+                createCookie(COOKIE_NONCE, String.valueOf(authorizationRequest.getAttributes().get(OidcParameterNames.NONCE)))
+            );
+            exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, getReturnUrl(exchange)));
+            exchange.getResponse().addCookie(createCookie(COOKIE_STATE, authorizationRequest.getState()));
+            return Mono.empty();
+        }
+
+        String getReturnUrl(ServerWebExchange exchange) {
+            return Optional.ofNullable(exchange.getRequest().getQueryParams().getFirst("returnUrl"))
+                .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
+        }
+
+
+        ResponseCookie createCookie(String name, String value) {
+            return ResponseCookie.from(name, value).path("/").httpOnly(true).sameSite(sameSite).secure(true).build();
+        }
+
+
+        @Override
+        public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
+            Mono<OAuth2AuthorizationRequest> requestMono = loadAuthorizationRequest(exchange);
+            exchange.getResponse().getCookies().remove(COOKIE_NONCE);
+            return requestMono;
+        }
+
     }
 
 }
