@@ -13,8 +13,8 @@ messages:
     - key: org.zowe.apiml.common.mediationLayerStarted
       number: ZWEAM001
       type: INFO
-      text: "API ML services started"
-      reason: "All API ML services started."
+      text: "API Mediation Layer started"
+      reason: "All key API Mediation Layer services started."
       action: "No action required."
 
     # General messages
