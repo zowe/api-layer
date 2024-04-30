@@ -19,6 +19,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.product.constants.CoreService;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
@@ -26,11 +27,14 @@ import static org.springframework.boot.actuate.health.Status.UP;
 /**
  * Gateway health information (/application/health)
  */
+@Slf4j
 @Component
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
     private final Providers loginProviders;
     private String apiCatalogServiceId;
+    
+    boolean startedInformationPublished = false;
 
     public GatewayHealthIndicator(DiscoveryClient discoveryClient,
                                   Providers providers,
@@ -68,6 +72,14 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         if (anyCatalogIsAvailable) {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
+        }
+
+        if (!startedInformationPublished) {
+            if (discoveryUp && anyCatalogIsAvailable && authUp) {
+                log.info("ZWEAM001I API Mediation Layer is UP");
+                
+                startedInformationPublished = true;
+            }
         }
     }
 
