@@ -18,9 +18,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.Providers;
-import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.constants.CoreService;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
@@ -78,8 +78,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         if (!startedInformationPublished) {
             if (discoveryUp && apiCatalogUp && authUp) {
-                apimlLog.log("org.zowe.apiml.common.mediationLayerStarted", "API Mediation Layer");
-                
+                apimlLog.log("org.zowe.apiml.common.serviceStarted", "API Mediation Layer", 1);
                 startedInformationPublished = true;
             }
         }
