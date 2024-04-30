@@ -57,9 +57,11 @@ public class PATWithAllSchemesTest {
         return Stream.of(
             Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
                 assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                assertThat(r.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
                 String jwt = r.getBody().path("headers.authorization").toString();
                 try {
-                    JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss");
+                   String issuer = JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
+                    assertEquals(issuer,"APIML");
                 } catch (ParseException e) {
                     fail(e);
                 }
