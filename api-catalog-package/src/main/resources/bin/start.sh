@@ -128,6 +128,7 @@ LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 ATTLS_ENABLED="false"
 if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
     ATTLS_ENABLED="true"
+    ZWE_configs_server_ssl_enabled="false"
 fi
 
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
