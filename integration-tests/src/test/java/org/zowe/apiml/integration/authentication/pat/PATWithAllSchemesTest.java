@@ -42,7 +42,7 @@ import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
-public class PATWithAllSchemesTest {
+ class PATWithAllSchemesTest {
 
     static Stream<Arguments> authentication() {
         return Stream.of(
@@ -56,23 +56,23 @@ public class PATWithAllSchemesTest {
     static Stream<Arguments> schemas() {
         return Stream.of(
             Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
                 assertThat(r.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
                 String jwt = r.getBody().path("headers.authorization").toString();
                 try {
                    String issuer = JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
-                    assertEquals(issuer,"APIML");
+                    assertEquals("APIML", issuer);
                 } catch (ParseException e) {
                     fail(e);
                 }
             }),
             Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<Response>) r -> {
-                assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
                 assertThat(r.getBody().path("headers.authorization"), startsWith("Basic "));
                 assertThat(r.getBody().path("cookies"), not(hasKey(COOKIE_NAME)));
             }),
             Arguments.of("dcsafidt", HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(r.getStatusCode(), HttpStatus.SC_OK);
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
                 assertThat(r.getBody().path("headers"), hasKey("x-saf-token"));
             })
         );
@@ -102,7 +102,5 @@ public class PATWithAllSchemesTest {
         .when()
             .get(urlSpecification)
         );
-
     }
-
 }
