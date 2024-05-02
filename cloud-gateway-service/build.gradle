@@ -75,9 +75,11 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
 
     implementation libs.spring.cloud.circuit.breaker
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.web
+
+    implementation libs.spring.security57.config
+    implementation libs.spring.security57.core
+    implementation libs.spring.security57.web
+
     implementation libs.spring.aop
     implementation libs.spring.expression
     implementation libs.bcpkix
