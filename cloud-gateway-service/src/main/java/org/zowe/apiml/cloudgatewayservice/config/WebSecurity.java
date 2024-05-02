@@ -127,6 +127,14 @@ public class WebSecurity {
         usernameAuthorizationTester = user -> authorizeAnyUsers || users.contains(StringUtils.lowerCase(user));
     }
 
+    private ResponseCookie.ResponseCookieBuilder defaultCookieAttr(ResponseCookie.ResponseCookieBuilder builder) {
+        return builder.path("/").sameSite(sameSite).httpOnly(true).secure(true);
+    }
+
+    private ResponseCookie createCookie(String name, String value) {
+        return defaultCookieAttr(ResponseCookie.from(name, value)).build();
+    }
+
      /**
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
@@ -176,7 +184,7 @@ public class WebSecurity {
     }
 
     public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
-        webFilterExchange.getExchange().getResponse().addCookie(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue()).build());
+        webFilterExchange.getExchange().getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
         HttpCookie location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
         if (!HAS_NO_VALUE.test(location)) {
             redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
@@ -194,7 +202,7 @@ public class WebSecurity {
         COOKIES.forEach(cookie -> webFilterExchange
             .getExchange()
             .getResponse()
-            .addCookie(ResponseCookie.from(cookie, "").maxAge(0).path("/").httpOnly(true).secure(true).build()));
+            .addCookie(defaultCookieAttr(ResponseCookie.from(cookie, "").maxAge(0)).build()));
     }
 
     @Bean
@@ -406,12 +414,6 @@ public class WebSecurity {
             return Optional.ofNullable(exchange.getRequest().getQueryParams().getFirst("returnUrl"))
                 .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
         }
-
-
-        ResponseCookie createCookie(String name, String value) {
-            return ResponseCookie.from(name, value).path("/").httpOnly(true).sameSite(sameSite).secure(true).build();
-        }
-
 
         @Override
         public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
