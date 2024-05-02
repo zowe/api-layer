@@ -58,7 +58,7 @@ class WebSecurityTest {
 
         @BeforeEach
         void setUp() {
-            WebSecurity webSecurity = new WebSecurity(new ClientConfiguration());
+            webSecurity = new WebSecurity(new ClientConfiguration());
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "registryUser,registryAdmin");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
