@@ -1440,9 +1440,9 @@ jobs:
                     export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
                     export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
                     npm run cy:e2e:ci
-                    -   name: Dump CGW jacoco data
-                    run: >
-                        java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
