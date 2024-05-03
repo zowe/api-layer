@@ -1044,50 +1044,50 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    PublishResults:
-        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis,CITestsInternalPort]
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-
-        steps:
-            -   uses: actions/checkout@v3
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-                with:
-                    jdkVersion: 11
-
-            -   uses: actions/download-artifact@v3
-                with:
-                    name: ContainerCITests-${{ env.JOB_ID }}
-                    path: containercitests
-            -   uses: actions/download-artifact@v3
-                with:
-                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
-                    path: citestswithinfinispan
-            -   uses: actions/download-artifact@v3
-                with:
-                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
-                    path: containercitestszosmfrsu2012
-            -   uses: actions/download-artifact@v3
-                with:
-                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
-                    path: containercitestswithredis
-            -   uses: actions/download-artifact@v3
-                with:
-                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
-                    path: containercitestsinternalport
-            -   name: Code coverage and publish results
-                run: >
-                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results,containercitestsinternalport/results"
-                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-            -   uses: ./.github/actions/teardown
+#    PublishResults:
+#        needs: [CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsWithRedis,CITestsInternalPort]
+#        runs-on: ubuntu-latest
+#        timeout-minutes: 15
+#
+#        steps:
+#            -   uses: actions/checkout@v3
+#                with:
+#                    ref: ${{ github.head_ref }}
+#
+#            -   uses: ./.github/actions/setup
+#                with:
+#                    jdkVersion: 11
+#
+#            -   uses: actions/download-artifact@v3
+#                with:
+#                    name: ContainerCITests-${{ env.JOB_ID }}
+#                    path: containercitests
+#            -   uses: actions/download-artifact@v3
+#                with:
+#                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
+#                    path: citestswithinfinispan
+#            -   uses: actions/download-artifact@v3
+#                with:
+#                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
+#                    path: containercitestszosmfrsu2012
+#            -   uses: actions/download-artifact@v3
+#                with:
+#                    name: ContainerCITestsWithRedis-${{ env.JOB_ID }}
+#                    path: containercitestswithredis
+#            -   uses: actions/download-artifact@v3
+#                with:
+#                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
+#                    path: containercitestsinternalport
+#            -   name: Code coverage and publish results
+#                run: >
+#                    ./gradlew --info coverage sonarqube -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestswithredis/results,containercitestsinternalport/results"
+#                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+#                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+#                env:
+#                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#            -   uses: ./.github/actions/teardown
