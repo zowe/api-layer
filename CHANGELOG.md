@@ -14,7 +14,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Allow key exchange port configuration (#3453) ([d82322e](https://github.com/zowe/api-layer/commit/d82322e)), closes [#3453](https://github.com/zowe/api-layer/issues/3453)
 * Bugfix:  Change scheme of service homepage when AT-TLS is enabled and fix bug in UI (#3346) ([c75280c](https://github.com/zowe/api-layer/commit/c75280c)), closes [#3346](https://github.com/zowe/api-layer/issues/3346)
 * Bugfix:  Check for NullPointerException when jwk key can't be retrieved (#3503) ([7c00dba](https://github.com/zowe/api-layer/commit/7c00dba)), closes [#3503](https://github.com/zowe/api-layer/issues/3503)
-* Bugfix:  Correct the API ML started message (#3524) ([faace92](https://github.com/zowe/api-layer/commit/faace92)), closes [#3524](https://github.com/zowe/api-layer/issues/3524)
 * Bugfix:  Fixes the issue when PAT passed as authorization header with auth scheme zoweJwt (#3505) ([5585231](https://github.com/zowe/api-layer/commit/5585231)), closes [#3505](https://github.com/zowe/api-layer/issues/3505)
 * Bugfix:  Fix header position in the API Catalog (#3345) ([9a9f8e3](https://github.com/zowe/api-layer/commit/9a9f8e3)), closes [#3345](https://github.com/zowe/api-layer/issues/3345)
 * Bugfix:  Fix log message about unauthorized calls (#3326) ([8a42c17](https://github.com/zowe/api-layer/commit/8a42c17)), closes [#3326](https://github.com/zowe/api-layer/issues/3326)
