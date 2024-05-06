@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, MenuItem, Select, Button, IconButton } from '@material-ui/core';
+import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -24,9 +24,6 @@ export default class ServiceTab extends Component {
             selectedVersion: null,
             previousVersion: null,
             isDialogOpen: false,
-            displayVideosCount: 2,
-            displayUseCasesCount: 3,
-            displayBlogsCount: 3,
         };
         this.handleDialogClose = this.handleDialogClose.bind(this);
     }
@@ -143,21 +140,6 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
-    showMoreVideos = () => {
-        const { videos } = this.props;
-        this.setState((prevState) => ({ displayVideosCount: prevState.displayVideosCount + videos.length }));
-    };
-
-    showMoreBlogs = () => {
-        const { tutorials } = this.props;
-        this.setState((prevState) => ({ displayBlogsCount: prevState.displayBlogsCount + tutorials.length }));
-    };
-
-    showMoreUseCases = () => {
-        const { useCases } = this.props;
-        this.setState((prevState) => ({ displayUseCasesCount: prevState.displayUseCasesCount + useCases.length }));
-    };
-
     render() {
         const {
             match: {
@@ -173,7 +155,6 @@ export default class ServiceTab extends Component {
             videosCounter,
             documentation,
         } = this.props;
-        const { displayVideosCount, displayBlogsCount, displayUseCasesCount } = this.state;
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -269,9 +250,11 @@ export default class ServiceTab extends Component {
                                 </div>
                             )}
 
-                            <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
-                                {selectedService.description}
-                            </Typography>
+                            {!apiPortalEnabled && (
+                                <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
+                                    {selectedService.description}
+                                </Typography>
+                            )}
                             <br />
                             {isAPIPortal() && documentation?.label && documentation?.url && (
                                 <Typography variant="subtitle2">
@@ -343,82 +326,69 @@ export default class ServiceTab extends Component {
                         {isAPIPortal() && (
                             <div id="detail-footer">
                                 {useCasesPresent && (
-                                    <Typography
-                                        className="footer-labels"
-                                        id="use-cases-label"
-                                        size="medium"
-                                        variant="outlined"
-                                    >
-                                        Use Cases ({useCasesCounter})
-                                    </Typography>
+                                    <div className="blogs">
+                                        <Typography
+                                            className="footer-labels"
+                                            id="use-cases-label"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            Use Cases
+                                        </Typography>
+                                        <div
+                                            id="blogs-container"
+                                            className={`${useCasesCounter > 1 ? '' : 'use-cases'}`}
+                                        >
+                                            {useCases?.map((useCase) => (
+                                                <BlogContainer
+                                                    key={useCase.url}
+                                                    user={useCase.user}
+                                                    url={useCase.url}
+                                                    title={useCase.title}
+                                                    type={useCasesCounter > 1 ? 'tutorials' : 'useCases'} // type tutorials means it will show more tiles and  with title, same as Getting Started
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
-                                <br />
-                                <br />
-                                <div id="blogs-container">
-                                    {useCases?.slice(0, displayUseCasesCount).map((useCase) => (
-                                        <BlogContainer
-                                            key={useCase.url}
-                                            user={useCase.user}
-                                            url={useCase.url}
-                                            title={useCase.title}
-                                        />
-                                    ))}
-                                </div>
-                                {useCasesCounter > displayUseCasesCount && displayUseCasesCount < useCases.length && (
-                                    <IconButton className="more-content-button" onClick={this.showMoreUseCases}>
-                                        Show all ({useCasesCounter} articles)
-                                    </IconButton>
-                                )}
-                                <br />
-                                <br />
                                 {tutorialsPresent && (
-                                    <Typography
-                                        className="footer-labels"
-                                        id="tutorials-label"
-                                        size="medium"
-                                        variant="outlined"
-                                    >
-                                        Getting Started ({tutorialsCounter})
-                                    </Typography>
+                                    <div className="blogs">
+                                        <Typography
+                                            className="footer-labels"
+                                            id="tutorials-label"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            Getting Started ({tutorialsCounter})
+                                        </Typography>
+                                        <div id="blogs-container">
+                                            {tutorials?.map((tutorial) => (
+                                                <BlogContainer
+                                                    key={tutorial.url}
+                                                    user={tutorial.user}
+                                                    url={tutorial.url}
+                                                    title={tutorial.title}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
-                                <br />
-                                <div id="blogs-container">
-                                    {tutorials?.slice(0, displayBlogsCount).map((tutorial) => (
-                                        <BlogContainer
-                                            key={tutorial.url}
-                                            user={tutorial.user}
-                                            url={tutorial.url}
-                                            title={tutorial.title}
-                                        />
-                                    ))}
-                                </div>
-                                {tutorialsCounter > displayBlogsCount && displayBlogsCount < tutorials.length && (
-                                    <IconButton className="more-content-button" onClick={this.showMoreBlogs}>
-                                        Show all ({tutorialsCounter} articles)
-                                    </IconButton>
-                                )}
-                                <br />
-                                <br />
                                 {videosPresent && (
-                                    <Typography
-                                        className="footer-labels"
-                                        id="videos-label"
-                                        size="medium"
-                                        variant="outlined"
-                                    >
-                                        Videos ({videosCounter})
-                                    </Typography>
-                                )}
-                                <br />
-                                <div>
-                                    {videos?.slice(0, displayVideosCount).map((url) => (
-                                        <VideoWrapper key={url.url} url={url} />
-                                    ))}
-                                </div>
-                                {videosCounter > displayVideosCount && displayVideosCount < videos.length && (
-                                    <IconButton className="more-content-button" onClick={this.showMoreVideos}>
-                                        Show all ({videosCounter})
-                                    </IconButton>
+                                    <div className="blogs">
+                                        <Typography
+                                            className="footer-labels"
+                                            id="videos-label"
+                                            size="medium"
+                                            variant="outlined"
+                                        >
+                                            Videos ({videosCounter})
+                                        </Typography>
+                                        <div>
+                                            {videos?.map((url) => (
+                                                <VideoWrapper key={url.url} url={url} />
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -430,18 +400,24 @@ export default class ServiceTab extends Component {
 }
 
 ServiceTab.propTypes = {
-    videos: PropTypes.shape({
-        length: PropTypes.func.isRequired,
-        slice: PropTypes.func.isRequired,
-    }).isRequired,
-    tutorials: PropTypes.shape({
-        length: PropTypes.func.isRequired,
-        slice: PropTypes.func.isRequired,
-    }).isRequired,
-    useCases: PropTypes.shape({
-        length: PropTypes.func.isRequired,
-        slice: PropTypes.func.isRequired,
-    }).isRequired,
+    videos: PropTypes.arrayOf(
+        PropTypes.shape({
+            length: PropTypes.func.isRequired,
+            slice: PropTypes.func.isRequired,
+        })
+    ).isRequired,
+    tutorials: PropTypes.arrayOf(
+        PropTypes.shape({
+            length: PropTypes.func.isRequired,
+            slice: PropTypes.func.isRequired,
+        })
+    ).isRequired,
+    useCases: PropTypes.arrayOf(
+        PropTypes.shape({
+            length: PropTypes.func.isRequired,
+            slice: PropTypes.func.isRequired,
+        })
+    ).isRequired,
     documentation: PropTypes.oneOfType([
         PropTypes.shape({
             label: PropTypes.string.isRequired,
