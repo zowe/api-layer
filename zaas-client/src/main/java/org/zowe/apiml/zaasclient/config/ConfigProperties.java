@@ -29,6 +29,8 @@ public class ConfigProperties {
     private char[] trustStorePassword;
     private boolean httpOnly;
     private boolean nonStrictVerifySslCertificatesOfServices;
+    @Builder.Default
+    private String protocol = "TLS";
 
     @SuppressWarnings("squid:S1075")
     private static final String OLD_PATH_FORMAT = "/api/v1/gateway";
