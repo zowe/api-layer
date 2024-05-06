@@ -100,13 +100,17 @@ body {
           display: flex;
           align-items: center;
           padding: 8px;
+          background-color: transparent;
+          border: transparent;
+          cursor: pointer;
 
           svg {
             width: 100%;
           }
-          &:hover {
+          &:hover, &:focus {
             box-shadow: 0 0 0 2px var( --linkHover );
             padding: 8px;
+            
 
             svg path {
               fill: var( --linkHover );

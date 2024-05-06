@@ -27,7 +27,7 @@ body {
     margin-top: var( --spaceSmallest );
     border: 1px solid var( --divider00 );
   }
-  .header {
+  .header, .header-menu {
     padding: var( --headerVPadding) var( --spaceSmall );
 
     &, > * {
@@ -146,20 +146,100 @@ body {
 
       a {
         padding: var( --spaceSmall );
-        border-radius: 3px;
         background: var(--tile-bg, #FFF);
-        box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.25);
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.25);
         margin-bottom: var( --spaceSmall );
+
+        &:hover:not(.feedback-ctn .MuiFab-extended) {
+          box-shadow: 0 0 0 1px var( --linkHover ) !important;
+          text-decoration: none;
+        }
       }
       .feedback-ctn .MuiFab-extended{
         width: 100%;
-        border-radius: var( --borderRadius1 );
+        border-radius: 0px;
         justify-content: flex-start;
+
+        &:hover {
+          border-color: var( --linkHover );
+
+          .MuiFab-label {
+            color: var( --linkHover );
+    
+            svg {
+              rect {
+                fill: var( --linkHover );
+              }
+            }
+          }
+        }
       }
     }
 
     #internal-link {
       margin-right: 0 !important;
+    }
+  }
+
+  .header-menu {
+    margin-top: var( --spaceSmall );
+    margin-bottom: var( --spaceHuge );
+    padding: 0;
+
+    &, .right-icons, #zowe-links, .feedback-ctn, .dashboard-develop-link {
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+    }
+
+    a {
+      padding: var( --spaceSmall );
+      background: var(--tile-bg, #FFF);
+      box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.25) !important;
+      margin: 0 2px var(--spaceSmaller);
+      max-width: 100%;
+
+      &:hover:not(.feedback-ctn .MuiFab-extended) {
+        box-shadow: 0 0 0 1px var( --linkHover ) !important;
+        text-decoration: none;
+      }
+    }
+    .feedback-ctn .MuiFab-extended{
+      border-radius: 0px;
+      justify-content: flex-start;
+      height: auto;
+      width: calc(100% - 4px );
+      max-width: 100%;
+
+      &:hover {
+        border-color: var( --linkHover );
+      }
+
+      .MuiFab-label {
+        color: var( --text10 );
+
+        &:hover {
+          color: var( --linkHover );
+
+          svg {
+            rect {
+              fill: var( --linkHover );
+            }
+          }
+        }
+
+        svg {
+          rect {
+            fill: var( --text10 );
+          }
+          path {
+            fill: var( --surface05 );
+          }
+        }
+      }
+    }
+    #img-internal-link {
+      margin-left: var( --spaceSmaller );
     }
   }
 }

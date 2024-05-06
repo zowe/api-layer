@@ -124,4 +124,22 @@ class GatewayHealthIndicatorTest {
         String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
         assertThat(code, is("UP"));
     }
+
+    @Test
+    void givenEverythingIsHealthy_whenHealthRequested_onceLogMessageAboutStartup() {
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
+        
+        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
+        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
+            Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
+        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
+            Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
+
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        Health.Builder builder = new Health.Builder();
+        gatewayHealthIndicator.doHealthCheck(builder);
+
+        assertThat(gatewayHealthIndicator.startedInformationPublished, is(true));
+    }
 }

@@ -22,7 +22,9 @@ node {
 }
 
 if (project.hasProperty('omitDevDependencies')) {
-    npmInstall.args = ['--production', '--omit=dev'] // different args for different npm versions
+    npmInstall.args = ['--registry', 'https://zowe.jfrog.io/artifactory/api/npm/npm-org', '--production', '--omit=dev'] // different args for different npm versions
+} else {
+    npmInstall.args = ['--registry', 'https://zowe.jfrog.io/artifactory/api/npm/npm-org'] // different args for different npm versions
 }
 
 // =================================================

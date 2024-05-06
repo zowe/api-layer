@@ -21,6 +21,12 @@ eureka:
 spring:
     application:
         name: cloud-gateway
+    security:
+        oauth2:
+            client:
+                registration:
+                    okta:
+                        redirectUri: "{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}"
 
 apiml:
     gateway:
@@ -98,6 +104,10 @@ logging:
     level:
         org.zowe.apiml: DEBUG
         org.springframework.cloud.gateway: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.web.reactive: DEBUG
         reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
 

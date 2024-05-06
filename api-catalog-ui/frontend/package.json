@@ -42,12 +42,12 @@
         "redux-logger": "3.0.6",
         "redux-observable": "2.0.0",
         "redux-persist": "6.0.0",
-        "redux-persist-transform-filter": "0.0.20",
+        "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "2.3.0",
         "rxjs": "7.4.0",
         "sass": "1.62.1",
         "stream": "0.0.2",
-        "swagger-ui-react": "4.12.0",
+        "swagger-ui-react": "4.19.1",
         "util": "0.12.4",
         "uuid": "8.3.2"
     },
@@ -57,7 +57,7 @@
         "postbuild": "rimraf build/**/*.map",
         "test": "react-app-rewired test --silent --watchAll=false --env=jsdom components/* utils/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* helpers/* --reporters=default --reporters=jest-html-reporter --coverage",
         "cy:open": "cypress open",
-        "cy:e2e:ci": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --env catalogHomePage=https://gateway-service:10010/apicatalog/ui/v1 --browser chrome --headless",
+        "cy:e2e:ci": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --env catalogHomePage=https://gateway-service:10010/apicatalog/ui/v1,gatewayOktaRedirect=https://cloud-gateway-service:10023/cloud-gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Fcloud-gateway-service%3A10023%2Fapplication --browser chrome --headless",
         "cy:e2e:localhost": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headless",
         "cy:e2e:localhost-headful": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headed",
         "cy:e2e:localhost-firefox": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser firefox --headless",
@@ -102,7 +102,7 @@
         "eslint-plugin-jsx-a11y": "6.6.0",
         "eslint-plugin-prettier": "3.4.0",
         "eslint-plugin-react": "7.30.1",
-        "express": "4.17.3",
+        "express": "4.19.2",
         "html-loader": "4.2.0",
         "jest": "29.7.0",
         "jest-environment-enzyme": "7.1.2",
@@ -135,7 +135,9 @@
         "react-error-overlay": "6.0.9",
         "tough-cookie": "4.1.3",
         "@braintree/sanitize-url": "6.0.4",
-        "resolve-url-loader": "5.0.0"
+        "resolve-url-loader": "5.0.0",
+        "follow-redirects": "1.15.6",
+        "webpack-dev-middleware": "5.3.4"
     },
     "engines": {
         "npm": "=9.3.1",
