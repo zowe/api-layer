@@ -105,14 +105,14 @@ keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certifica
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
 if [ "${keystore_type}" = "JCERACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
 elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
 elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
 CLOUD_GATEWAY_CODE=CG
@@ -133,6 +133,14 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dapiml.cloudGateway.registry.enabled=${ZWE_configs_cloudGateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dsecurity.oauth2.client.registration.okta.issuer=${ZWE_configs_security_oauth2_client_registration_okta_issuer} \
+    -Dsecurity.oauth2.client.registration.okta.clientId=${ZWE_configs_security_oauth2_client_registration_okta_clientId} \
+    -Dsecurity.oauth2.client.registration.okta.clientSecret=${ZWE_configs_security_oauth2_client_registration_okta_secret} \
+    -Dsecurity.oauth2.client.provider.okta.authorizationUrl=${ZWE_configs_security_oauth2_client_provider_okta_authorizationUrl} \
+    -Dsecurity.oauth2.client.provider.okta.tokenUri=${ZWE_configs_security_oauth2_client_provider_okta_tokenUri} \
+    -Dsecurity.oauth2.client.provider.okta.userInfoUri=${ZWE_configs_security_oauth2_client_provider_okta_userInfoUri} \
+    -Dsecurity.oauth2.client.provider.okta.userNameAttribute=${ZWE_configs_security_oauth2_client_provider_okta_userNameAttribute:-sub} \
+    -Dsecurity.oauth2.client.provider.okta.jwkSetUri=${ZWE_configs_security_oauth2_client_provider_okta_jwkSetUri} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \

@@ -32,6 +32,80 @@
                                                 }
                                             }
                                         },
+                                        "security" :{
+                                            "type": "object",
+                                            "description": "Security settings",
+                                            "properties": {
+                                                "oauth2": {
+                                                    "type": "object",
+                                                    "description": "Enable OAuth2 login flow",
+                                                    "properties": {
+                                                        "client": {
+                                                            "type": "object",
+                                                            "description": "OAuth2 client settings",
+                                                            "properties": {
+                                                                "registration": {
+                                                                    "type": "object",
+                                                                    "description": "OAuth2 client registration settings",
+                                                                    "properties": {
+                                                                        "okta": {
+                                                                            "type": "object",
+                                                                            "description": "OAuth2 Okta-specific settings",
+                                                                            "properties": {
+                                                                                "issuer": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                },
+                                                                                "clientId": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                },
+                                                                                "clientSecret": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "provider": {
+                                                                    "type": "object",
+                                                                    "description": "OAuth2 client authentication provider settings",
+                                                                    "properties": {
+                                                                        "okta": {
+                                                                            "type": "object",
+                                                                            "description": "OAuth2 Okta-specific settings",
+                                                                            "properties": {
+                                                                                "authorizationUrl": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                },
+                                                                                "tokenUri": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                },
+                                                                                "userInfoUri": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                },
+                                                                                "userNameAttribute": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                },
+                                                                                "jwkSetUri": {
+                                                                                    "type": "string",
+                                                                                    "description": ""
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
                                         "port": {
                                             "$ref": "#/$defs/port",
                                             "default": 7563
