@@ -8,7 +8,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  SSL is now disabled when profile `attls` is active to simplify AT-TLS configuration (#3521) ([f28aec8](https://github.com/zowe/api-layer/commit/f28aec8)), closes [#3521](https://github.com/zowe/api-layer/issues/3521)
 * Feature:  Valid OIDC tokens are now forwarded to the downstream service when the distributed ID is not mapped (#3497) ([60777c1](https://github.com/zowe/api-layer/commit/60777c1)), closes [#3497](https://github.com/zowe/api-layer/issues/3497)
 * Feature:  Included OIDC JWKSet in the gateway JWKs. JWKs retrieved from the Identity Provider allow clients and services to validate the OIDC access token locally (#3499) ([a588a8f](https://github.com/zowe/api-layer/commit/a588a8f)), closes [#3499](https://github.com/zowe/api-layer/issues/3499)
-* Feature:  Moved OIDC access token from cookie to special header (#3513) ([6248308](https://github.com/zowe/api-layer/commit/6248308)), closes [#3513](https://github.com/zowe/api-layer/issues/3513)
+* Feature:  Moved OIDC access token from cookie to special header. If the user ID from the token cannot be mapped to a mainframe account, the access token is now sent via the request header OIDC-token (#3513) ([6248308](https://github.com/zowe/api-layer/commit/6248308)), closes [#3513](https://github.com/zowe/api-layer/issues/3513)
 
 
 * Bugfix:  Allow key exchange port configuration (#3453) ([d82322e](https://github.com/zowe/api-layer/commit/d82322e)), closes [#3453](https://github.com/zowe/api-layer/issues/3453)
