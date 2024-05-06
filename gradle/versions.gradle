@@ -15,6 +15,10 @@ dependencyResolutionManagement {
                 strictly '[5.8.12,6.0.0['
                 prefer '5.8.12'
             }
+            version('springSecurity5.7') {
+                strictly '[5.7.12,6.0.0['
+                prefer '5.7.12'
+            }
             version('springFramework') {
                 strictly '[5.3.34,6.0.0['
                 prefer '5.3.34'
@@ -182,6 +186,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_thymeleaf', 'org.springframework.boot', 'spring-boot-starter-thymeleaf').versionRef('springBoot')
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
+            library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
 
             library('spring_cloud_hystrix_dashboard', 'org.springframework.cloud', 'spring-cloud-starter-netflix-hystrix-dashboard').versionRef('springCloud')
             library('spring_cloud_loadbalancer', 'org.springframework.cloud', 'spring-cloud-starter-loadbalancer').versionRef('springCloudVersion3')
@@ -202,6 +207,11 @@ dependencyResolutionManagement {
             library('spring_security_core', 'org.springframework.security', 'spring-security-core').versionRef('springSecurity')
             library('spring_security_crypto', 'org.springframework.security', 'spring-security-crypto').versionRef('springSecurity')
             library('spring_security_web', 'org.springframework.security', 'spring-security-web').versionRef('springSecurity')
+
+            library('spring_security57_config', 'org.springframework.security', 'spring-security-config').versionRef('springSecurity5.7')
+            library('spring_security57_core', 'org.springframework.security', 'spring-security-core').versionRef('springSecurity5.7')
+            library('spring_security57_crypto', 'org.springframework.security', 'spring-security-crypto').versionRef('springSecurity5.7')
+            library('spring_security57_web', 'org.springframework.security', 'spring-security-web').versionRef('springSecurity5.7')
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetry')
             library('spring_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('springWebTestClient')
