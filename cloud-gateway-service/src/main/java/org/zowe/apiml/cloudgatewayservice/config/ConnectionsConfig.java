@@ -18,15 +18,23 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
+
+import javax.net.ssl.SSLContext;
+//import io.netty.handler.ssl.SslContextBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.nio.ssl.BasicClientTlsStrategy;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -51,10 +59,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.client.reactive.HttpComponentsClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.socket.client.TomcatWebSocketClient;
+import org.springframework.web.reactive.socket.client.WebSocketClient;
+import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
+import org.springframework.web.reactive.socket.server.upgrade.TomcatRequestUpgradeStrategy;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
@@ -67,7 +80,7 @@ import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
-import reactor.netty.http.client.HttpClient;
+//import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -159,17 +172,28 @@ public class ConnectionsConfig {
     }
 
     public HttpsFactory factory() {
-        HttpsConfig config = HttpsConfig.builder()
+        HttpsConfig config = getDefaultBuilder().keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
+            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
+        log.info("Using HTTPS configuration: {}", config.toString());
+
+        return new HttpsFactory(config);
+    }
+
+    public HttpsFactory factoryWithoutKeystore() {
+        HttpsConfig config = getDefaultBuilder().build();
+        log.info("Using HTTPS configuration: {}", config.toString());
+
+        return new HttpsFactory(config);
+    }
+
+    public HttpsConfig.HttpsConfigBuilder getDefaultBuilder() {
+        return HttpsConfig.builder()
             .protocol(protocol)
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)
-            .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
-        log.info("Using HTTPS configuration: {}", config.toString());
-
-        return new HttpsFactory(config);
+            ;
     }
 
     /**
@@ -183,57 +207,27 @@ public class ConnectionsConfig {
      * @param properties             client HTTP properties
      * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
      */
-    @Bean
-    public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-        // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
-        SslContext justTruststore = sslContext(false);
-        SslContext withKeystore = sslContext(true);
+//    @Bean
+//    public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+//        // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
+//        SslContext justTruststore = sslContext(false);
+//        SslContext withKeystore = sslContext(true);
+//
+//        return new BeanPostProcessor() {
+//            @Override
+//            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+//                if ("routingFilter".equals(beanName)) {
+//                    log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
+//                    // once is creating original bean by autoconfiguration replace it with custom implementation
+//                    return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
+//                }
+//                // do not touch any other bean
+//                return bean;
+//            }
+//        };
+//    }
+//
 
-        return new BeanPostProcessor() {
-            @Override
-            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-                if ("routingFilter".equals(beanName)) {
-                    log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
-                    // once is creating original bean by autoconfiguration replace it with custom implementation
-                    return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
-                }
-                // do not touch any other bean
-                return bean;
-            }
-        };
-    }
-
-    /**
-     * @return io.netty.handler.ssl.SslContext for http client.
-     */
-    SslContext sslContext(boolean setKeystore) {
-        try {
-            SslContextBuilder builder = SslContextBuilder.forClient();
-
-            KeyStore trustStore = SecurityUtils.loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(trustStore);
-            builder.trustManager(trustManagerFactory);
-
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            if (setKeystore) {
-                KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
-                keyManagerFactory.init(keyStore, keyStorePassword);
-                builder.keyManager(keyManagerFactory);
-            } else {
-                KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                emptyKeystore.load(null, null);
-                keyManagerFactory.init(emptyKeystore, null);
-                builder.keyManager(keyManagerFactory);
-            }
-
-            return builder.build();
-        } catch (Exception e) {
-            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, factory().getConfig());
-        }
-    }
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
@@ -325,16 +319,44 @@ public class ConnectionsConfig {
     }
 
     @Bean
+    @Qualifier("webClientClientCert")
     @Primary
-    public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+    public WebClient webClient(@Qualifier("asyncClient") CloseableHttpAsyncClient httpClient) {
+        return WebClient.builder().clientConnector(new HttpComponentsClientHttpConnector(httpClient)).build();
     }
 
     @Bean
-    public WebClient webClientClientCert(HttpClient httpClient) {
-        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
+    public WebSocketClient webSocketClient() {
+        return new TomcatWebSocketClient();
+    }
+
+    @Bean
+    public RequestUpgradeStrategy requestUpgradeStrategy() {
+        return new TomcatRequestUpgradeStrategy();
+    }
+
+    @Bean
+    public WebClient webClientClientCert(@Qualifier("asyncClientWithKeystore") CloseableHttpAsyncClient httpClient) {
+//        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
         return webClient(httpClient);
     }
+
+    @Bean
+    @Qualifier("asyncClientWithKeystore")
+    public CloseableHttpAsyncClient asyncClientWithKeystore() {
+        var sslContext = factoryWithoutKeystore().getSslContext();
+        var connManager = PoolingAsyncClientConnectionManagerBuilder.create().setTlsStrategy(new BasicClientTlsStrategy(sslContext)).build();
+        return HttpAsyncClients.custom().setConnectionManager(connManager).build();
+    }
+
+    @Bean
+    @Qualifier("asyncClient")
+    public CloseableHttpAsyncClient asyncClient() {
+        var sslContext = factory().getSslContext();
+        var connManager = PoolingAsyncClientConnectionManagerBuilder.create().setTlsStrategy(new BasicClientTlsStrategy(sslContext)).build();
+        return HttpAsyncClients.custom().setConnectionManager(connManager).build();
+    }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {

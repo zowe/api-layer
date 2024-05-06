@@ -56,10 +56,13 @@ configurations.all {
     exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-reactor-netty'
 }
 
 dependencies {
     api project(':apiml-utility')
+// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '3.2.5'
 
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.circuit.breaker
