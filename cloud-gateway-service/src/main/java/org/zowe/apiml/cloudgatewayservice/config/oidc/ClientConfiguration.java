@@ -19,16 +19,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
-* Reads OIDC Client configuration from environment variables or application configuration file.
-*/
+ * Reads OIDC Client configuration from environment variables or application configuration file.
+ */
 @Data
 @Component
 @Slf4j
@@ -37,14 +41,14 @@ public class ClientConfiguration {
 
     private static final String SYSTEM_ENV_PREFIX = "ZWE_configs_spring_security_oauth2_client_";
     private static final Pattern REGISTRATION_ID_PATTERN = Pattern.compile(
-    "^" + SYSTEM_ENV_PREFIX + "([^_]+)_.*$"
+        "^" + SYSTEM_ENV_PREFIX + "([^_]+)_.*$"
     );
 
     private Map<String, Registration> registration = new HashMap<>();
     private Map<String, Provider> provider = new HashMap<>();
 
     private String getSystemEnv(String id, String name) {
-        return System.getProperty(SYSTEM_ENV_PREFIX + id + "_" + name);
+        return System.getenv(SYSTEM_ENV_PREFIX + id + "_" + name);
     }
 
     private void update(String id, String base, Consumer<String> setter) {
@@ -74,16 +78,16 @@ public class ClientConfiguration {
     }
 
     private Set<String> getRegistrationsIdsFromSystemEnv() {
-        return System.getProperties().keySet().stream()
-        .map(key -> {
-            Matcher matcher = REGISTRATION_ID_PATTERN.matcher(String.valueOf(key));
-            if (matcher.matches()) {
-                return matcher.group(1);
-            }
-            return null;
-        })
-        .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
+        return System.getenv().keySet().stream()
+            .map(key -> {
+                Matcher matcher = REGISTRATION_ID_PATTERN.matcher(String.valueOf(key));
+                if (matcher.matches()) {
+                    return matcher.group(1);
+                }
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     @PostConstruct
@@ -101,10 +105,10 @@ public class ClientConfiguration {
             Provider providerConfig = provider.get(id);
             if (providerConfig != null) {
                 map.put(id, Config.builder()
-                .id(id)
-                .registration(registrationEntry.getValue())
-                .provider(providerConfig)
-                .build()
+                    .id(id)
+                    .registration(registrationEntry.getValue())
+                    .provider(providerConfig)
+                    .build()
                 );
             }
         }
