@@ -47,10 +47,10 @@
                                                                 "registration": {
                                                                     "type": "object",
                                                                     "description": "OAuth2 client registration settings",
-                                                                    "properties": {
-                                                                        "okta": {
+                                                                    "patternProperties": {
+                                                                        "$*.^": {
                                                                             "type": "object",
-                                                                            "description": "OAuth2 Okta-specific settings",
+                                                                            "description": "OAuth2 provider-specific settings",
                                                                             "properties": {
                                                                                 "issuer": {
                                                                                     "type": "string",
@@ -71,10 +71,10 @@
                                                                 "provider": {
                                                                     "type": "object",
                                                                     "description": "OAuth2 client authentication provider settings",
-                                                                    "properties": {
-                                                                        "okta": {
+                                                                    "patternProperties": {
+                                                                        "$*.^": {
                                                                             "type": "object",
-                                                                            "description": "OAuth2 Okta-specific settings",
+                                                                            "description": "OAuth2 provider-specific settings",
                                                                             "properties": {
                                                                                 "authorizationUrl": {
                                                                                     "type": "string",
