@@ -43,6 +43,7 @@ public class ConfigProperties {
     @Tolerate
     public ConfigProperties() {
         // lombok Builder.Default bug workaround
+        this.protocol = "TLS";
         this.tokenPrefix = "apimlAuthenticationToken";
     }
 
@@ -56,6 +57,7 @@ public class ConfigProperties {
             .trustStorePassword(trustStorePassword)
             .httpOnly(httpOnly)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
+            .protocol(protocol)
             .tokenPrefix(tokenPrefix)
             .build();
     }
