@@ -11,7 +11,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { shallow } from 'enzyme';
 import { describe, expect, it, jest } from '@jest/globals';
-import { Suspense } from 'react';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
 
