@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.config.oidc;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,24 +22,22 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 class ClientConfigurationTest {
 
     private static final String PROVIDER = "oidcprovider";
     private static final String[] SYSTEM_ENVIRONMENTS = {
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_clientId",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_clientSecret",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_redirectUri",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_scope",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_authorizationUri",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_tokenUri",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_userInfoUri",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_userNameAttribute",
-        "ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_jwkSetUri"
+        "ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_clientId",
+        "ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_clientSecret",
+        "ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_redirectUri",
+        "ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_scope",
+        "ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_authorizationUri",
+        "ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_tokenUri",
+        "ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_userInfoUri",
+        "ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_userNameAttribute",
+        "ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_jwkSetUri"
     };
 
     @Nested
@@ -92,19 +91,19 @@ class ClientConfigurationTest {
     }
 
     void assertSystemEnv(Registration registration) {
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_clientIdV", registration.getClientId());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_clientSecretV", registration.getClientSecret());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_redirectUriV", registration.getRedirectUri());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_clientIdV", registration.getClientId());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_clientSecretV", registration.getClientSecret());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_redirectUriV", registration.getRedirectUri());
         assertEquals(1, registration.getScope().size());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_registration_scopeV", registration.getScope().get(0));
+        assertEquals("ZWE_configs_spring_security_oauth2_client_registration_oidcprovider_scopeV", registration.getScope().get(0));
     }
 
     void assertSystemEnv(Provider provider) {
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_authorizationUriV", provider.getAuthorizationUri());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_tokenUriV", provider.getTokenUri());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_userInfoUriV", provider.getUserInfoUri());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_userNameAttributeV", provider.getUserNameAttribute());
-        assertEquals("ZWE_configs_spring_security_oauth2_client_oidcprovider_provider_jwkSetUriV", provider.getJwkSetUri());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_authorizationUriV", provider.getAuthorizationUri());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_tokenUriV", provider.getTokenUri());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_userInfoUriV", provider.getUserInfoUri());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_userNameAttributeV", provider.getUserNameAttribute());
+        assertEquals("ZWE_configs_spring_security_oauth2_client_provider_oidcprovider_jwkSetUriV", provider.getJwkSetUri());
     }
 
     void assertSystemEnv(ClientConfiguration clientConfiguration) {
@@ -115,6 +114,8 @@ class ClientConfigurationTest {
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void givenSystemEnvironment_whenCreateClientConfiguration_thenSet(boolean providerSet) throws NoSuchFieldException, IllegalAccessException {
+        assumeFalse(StringUtils.containsIgnoreCase(System.getProperty("os.name"), "win"));
+
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         Class<?> envVarClass = System.getenv().getClass();
         Field mField = envVarClass.getDeclaredField("m");
