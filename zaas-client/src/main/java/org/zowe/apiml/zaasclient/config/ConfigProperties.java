@@ -29,6 +29,8 @@ public class ConfigProperties {
     private char[] trustStorePassword;
     private boolean httpOnly;
     private boolean nonStrictVerifySslCertificatesOfServices;
+    @Builder.Default
+    private String protocol = "TLS";
 
     @SuppressWarnings("squid:S1075")
     private static final String OLD_PATH_FORMAT = "/api/v1/gateway";
@@ -41,6 +43,7 @@ public class ConfigProperties {
     @Tolerate
     public ConfigProperties() {
         // lombok Builder.Default bug workaround
+        this.protocol = "TLS";
         this.tokenPrefix = "apimlAuthenticationToken";
     }
 
@@ -54,6 +57,7 @@ public class ConfigProperties {
             .trustStorePassword(trustStorePassword)
             .httpOnly(httpOnly)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
+            .protocol(protocol)
             .tokenPrefix(tokenPrefix)
             .build();
     }
