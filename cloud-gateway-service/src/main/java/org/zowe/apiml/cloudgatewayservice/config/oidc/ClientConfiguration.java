@@ -19,7 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +48,7 @@ public class ClientConfiguration {
     private Map<String, Provider> provider = new HashMap<>();
 
     private String getSystemEnv(String id, String name) {
-        return System.getProperty(SYSTEM_ENV_PREFIX + id + "_" + name);
+        return System.getenv(SYSTEM_ENV_PREFIX + id + "_" + name);
     }
 
     private void update(String id, String base, Consumer<String> setter) {
@@ -73,7 +78,7 @@ public class ClientConfiguration {
     }
 
     private Set<String> getRegistrationsIdsFromSystemEnv() {
-        return System.getProperties().keySet().stream()
+        return System.getenv().keySet().stream()
             .map(key -> {
                 Matcher matcher = REGISTRATION_ID_PATTERN.matcher(String.valueOf(key));
                 if (matcher.matches()) {
@@ -82,7 +87,7 @@ public class ClientConfiguration {
                 return null;
             })
             .filter(Objects::nonNull)
-            .collect(Collectors.toUnmodifiableSet());
+            .collect(Collectors.toSet());
     }
 
     @PostConstruct

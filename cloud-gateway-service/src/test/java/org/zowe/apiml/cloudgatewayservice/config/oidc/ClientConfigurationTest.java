@@ -16,11 +16,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientConfigurationTest {
 
@@ -110,10 +114,14 @@ class ClientConfigurationTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void givenSystemEnvironment_whenCreateClientConfiguration_thenSet(boolean providerSet) {
+    void givenSystemEnvironment_whenCreateClientConfiguration_thenSet(boolean providerSet) throws NoSuchFieldException, IllegalAccessException {
         ClientConfiguration clientConfiguration = new ClientConfiguration();
+        Class<?> envVarClass = System.getenv().getClass();
+        Field mField = envVarClass.getDeclaredField("m");
+        mField.setAccessible(true);
+        Map<String, String> writeableEnvVars = (Map<String, String>) mField.get(System.getenv());
         try {
-            Arrays.asList(SYSTEM_ENVIRONMENTS).forEach(s -> System.setProperty(s, s + "V"));
+            Arrays.asList(SYSTEM_ENVIRONMENTS).forEach(s -> writeableEnvVars.put(s, s + "V"));
             if (providerSet) {
                 clientConfiguration.getProvider().put(PROVIDER, new Provider());
                 clientConfiguration.getRegistration().put(PROVIDER, new Registration());
@@ -122,7 +130,7 @@ class ClientConfigurationTest {
 
             assertSystemEnv(clientConfiguration);
         } finally {
-            Arrays.asList(SYSTEM_ENVIRONMENTS).forEach(s -> System.getProperties().remove(s));
+            Arrays.asList(SYSTEM_ENVIRONMENTS).forEach(s -> writeableEnvVars.remove(s));
         }
 
         // test if missing system environment will be skipped
