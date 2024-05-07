@@ -47,53 +47,56 @@
                                                                 "client": {
                                                                     "type": "object",
                                                                     "description": "OAuth2 client settings",
-                                                                    "patternProperties": {
-                                                                        "$*.^": {
+                                                                    "properties": {
+                                                                        "registration": {
                                                                             "type": "object",
                                                                             "description": "OAuth2 Login flow provider-specific settings",
-                                                                            "properties": {
-                                                                                "registration": {
+                                                                            "patternProperties": {
+                                                                                "^[a-zA-Z0-9_]+$": {
                                                                                     "type": "object",
                                                                                     "description": "OAuth2 client registration settings",
                                                                                     "properties": {
                                                                                         "issuer": {
                                                                                             "type": "string",
-                                                                                            "description": ""
+                                                                                            "description": "The URI used to discover the configuration information for an OAuth 2.0 or OpenID Connect 1.0 Provider."
                                                                                         },
                                                                                         "clientId": {
                                                                                             "type": "string",
-                                                                                            "description": ""
+                                                                                            "description": "The client identifier."
                                                                                         },
                                                                                         "clientSecret": {
                                                                                             "type": "string",
-                                                                                            "description": ""
+                                                                                            "description": "The client secret."
                                                                                         }
                                                                                     }
-                                                                                },
-                                                                                "provider": {
-                                                                                    "type": "object",
-                                                                                    "description": "OAuth2 client authentication provider settings",
-                                                                                    "properties": {
-                                                                                        "authorizationUrl": {
-                                                                                            "type": "string",
-                                                                                            "description": ""
-                                                                                        },
-                                                                                        "tokenUri": {
-                                                                                            "type": "string",
-                                                                                            "description": ""
-                                                                                        },
-                                                                                        "userInfoUri": {
-                                                                                            "type": "string",
-                                                                                            "description": ""
-                                                                                        },
-                                                                                        "userNameAttribute": {
-                                                                                            "type": "string",
-                                                                                            "description": ""
-                                                                                        },
-                                                                                        "jwkSetUri": {
-                                                                                            "type": "string",
-                                                                                            "description": ""
-                                                                                        }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "provider": {
+                                                                            "type": "object",
+                                                                            "description": "OAuth2 client authentication provider settings",
+                                                                            "patternProperties": {
+                                                                                "^[a-zA-Z0-9_]+$": {
+                                                                                    "authorizationUrl": {
+                                                                                        "type": "string",
+                                                                                        "description": "The Authorization Endpoint URI for the Authorization Server."
+                                                                                    },
+                                                                                    "tokenUri": {
+                                                                                        "type": "string",
+                                                                                        "description": "The Token Endpoint URI for the Authorization Server."
+                                                                                    },
+                                                                                    "userInfoUri": {
+                                                                                        "type": "string",
+                                                                                        "description": "The UserInfo Endpoint URI used to access the claims/attributes of the authenticated end-user."
+                                                                                    },
+                                                                                    "userNameAttribute": {
+                                                                                        "type": "string",
+                                                                                        "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user.",
+                                                                                        "default": "sub"
+                                                                                    },
+                                                                                    "jwkSetUri": {
+                                                                                        "type": "string",
+                                                                                        "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
                                                                                     }
                                                                                 }
                                                                             }
