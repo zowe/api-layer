@@ -32,69 +32,69 @@
                                                 }
                                             }
                                         },
-                                        "security" :{
+                                        "spring": {
                                             "type": "object",
-                                            "description": "Security settings",
+                                            "description": "",
                                             "properties": {
-                                                "oauth2": {
+                                                "security": {
                                                     "type": "object",
-                                                    "description": "Enable OAuth2 login flow",
+                                                    "description": "Security settings",
                                                     "properties": {
-                                                        "client": {
+                                                        "oauth2": {
                                                             "type": "object",
-                                                            "description": "OAuth2 client settings",
+                                                            "description": "Enable OAuth2 login flow",
                                                             "properties": {
-                                                                "registration": {
+                                                                "client": {
                                                                     "type": "object",
-                                                                    "description": "OAuth2 client registration settings",
+                                                                    "description": "OAuth2 client settings",
                                                                     "patternProperties": {
                                                                         "$*.^": {
                                                                             "type": "object",
-                                                                            "description": "OAuth2 provider-specific settings",
+                                                                            "description": "OAuth2 Login flow provider-specific settings",
                                                                             "properties": {
-                                                                                "issuer": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
+                                                                                "registration": {
+                                                                                    "type": "object",
+                                                                                    "description": "OAuth2 client registration settings",
+                                                                                    "properties": {
+                                                                                        "issuer": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        },
+                                                                                        "clientId": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        },
+                                                                                        "clientSecret": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        }
+                                                                                    }
                                                                                 },
-                                                                                "clientId": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
-                                                                                },
-                                                                                "clientSecret": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                },
-                                                                "provider": {
-                                                                    "type": "object",
-                                                                    "description": "OAuth2 client authentication provider settings",
-                                                                    "patternProperties": {
-                                                                        "$*.^": {
-                                                                            "type": "object",
-                                                                            "description": "OAuth2 provider-specific settings",
-                                                                            "properties": {
-                                                                                "authorizationUrl": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
-                                                                                },
-                                                                                "tokenUri": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
-                                                                                },
-                                                                                "userInfoUri": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
-                                                                                },
-                                                                                "userNameAttribute": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
-                                                                                },
-                                                                                "jwkSetUri": {
-                                                                                    "type": "string",
-                                                                                    "description": ""
+                                                                                "provider": {
+                                                                                    "type": "object",
+                                                                                    "description": "OAuth2 client authentication provider settings",
+                                                                                    "properties": {
+                                                                                        "authorizationUrl": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        },
+                                                                                        "tokenUri": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        },
+                                                                                        "userInfoUri": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        },
+                                                                                        "userNameAttribute": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        },
+                                                                                        "jwkSetUri": {
+                                                                                            "type": "string",
+                                                                                            "description": ""
+                                                                                        }
+                                                                                    }
                                                                                 }
                                                                             }
                                                                         }
