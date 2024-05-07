@@ -41,40 +41,42 @@ public class ClientConfiguration {
 
     private static final String SYSTEM_ENV_PREFIX = "ZWE_configs_spring_security_oauth2_client_";
     private static final Pattern REGISTRATION_ID_PATTERN = Pattern.compile(
-        "^" + SYSTEM_ENV_PREFIX + "([^_]+)_.*$"
+        "^" + SYSTEM_ENV_PREFIX + "(registration|provider)_([^_]+)_.*$"
     );
 
     private Map<String, Registration> registration = new HashMap<>();
     private Map<String, Provider> provider = new HashMap<>();
 
-    private String getSystemEnv(String id, String name) {
-        return System.getenv(SYSTEM_ENV_PREFIX + id + "_" + name);
+    private String getSystemEnv(String id, String type, String name) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(SYSTEM_ENV_PREFIX).append(type).append('_').append(id).append('_').append(name);
+        return System.getenv(sb.toString());
     }
 
-    private void update(String id, String base, Consumer<String> setter) {
-        String systemEnv = getSystemEnv(id, base);
+    private void update(String id, String type, String base, Consumer<String> setter) {
+        String systemEnv = getSystemEnv(id, type, base);
         if (systemEnv != null) {
             setter.accept(systemEnv);
         }
     }
 
     private void update(String id, Registration registration) {
-        update(id, "registration_clientId", registration::setClientId);
-        update(id, "registration_clientSecret", registration::setClientSecret);
-        update(id, "registration_redirectUri", registration::setRedirectUri);
+        update(id, "registration", "clientId", registration::setClientId);
+        update(id, "registration", "clientSecret", registration::setClientSecret);
+        update(id, "registration", "redirectUri", registration::setRedirectUri);
 
-        String scope = getSystemEnv(id, "registration_scope");
+        String scope = getSystemEnv(id, "registration", "scope");
         if (scope != null) {
             registration.setScope(Arrays.asList(scope.split("[,]")));
         }
     }
 
     private void update(String id, Provider provider) {
-        update(id, "provider_authorizationUri", provider::setAuthorizationUri);
-        update(id, "provider_tokenUri", provider::setTokenUri);
-        update(id, "provider_userInfoUri", provider::setUserInfoUri);
-        update(id, "provider_userNameAttribute", provider::setUserNameAttribute);
-        update(id, "provider_jwkSetUri", provider::setJwkSetUri);
+        update(id, "provider", "authorizationUri", provider::setAuthorizationUri);
+        update(id, "provider", "tokenUri", provider::setTokenUri);
+        update(id, "provider", "userInfoUri", provider::setUserInfoUri);
+        update(id, "provider", "userNameAttribute", provider::setUserNameAttribute);
+        update(id, "provider", "jwkSetUri", provider::setJwkSetUri);
     }
 
     private Set<String> getRegistrationsIdsFromSystemEnv() {
@@ -82,7 +84,7 @@ public class ClientConfiguration {
             .map(key -> {
                 Matcher matcher = REGISTRATION_ID_PATTERN.matcher(String.valueOf(key));
                 if (matcher.matches()) {
-                    return matcher.group(1);
+                    return matcher.group(2);
                 }
                 return null;
             })
