@@ -77,26 +77,30 @@
                                                                             "description": "OAuth2 client authentication provider settings",
                                                                             "patternProperties": {
                                                                                 "^[a-zA-Z0-9_]+$": {
-                                                                                    "authorizationUrl": {
-                                                                                        "type": "string",
-                                                                                        "description": "The Authorization Endpoint URI for the Authorization Server."
-                                                                                    },
-                                                                                    "tokenUri": {
-                                                                                        "type": "string",
-                                                                                        "description": "The Token Endpoint URI for the Authorization Server."
-                                                                                    },
-                                                                                    "userInfoUri": {
-                                                                                        "type": "string",
-                                                                                        "description": "The UserInfo Endpoint URI used to access the claims/attributes of the authenticated end-user."
-                                                                                    },
-                                                                                    "userNameAttribute": {
-                                                                                        "type": "string",
-                                                                                        "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user.",
-                                                                                        "default": "sub"
-                                                                                    },
-                                                                                    "jwkSetUri": {
-                                                                                        "type": "string",
-                                                                                        "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                                                    "type": "object",
+                                                                                    "description": "OAuth2 client provider settings",
+                                                                                    "properties": {
+                                                                                        "authorizationUrl": {
+                                                                                            "type": "string",
+                                                                                            "description": "The Authorization Endpoint URI for the Authorization Server."
+                                                                                        },
+                                                                                        "tokenUri": {
+                                                                                            "type": "string",
+                                                                                            "description": "The Token Endpoint URI for the Authorization Server."
+                                                                                        },
+                                                                                        "userInfoUri": {
+                                                                                            "type": "string",
+                                                                                            "description": "The UserInfo Endpoint URI used to access the claims/attributes of the authenticated end-user."
+                                                                                        },
+                                                                                        "userNameAttribute": {
+                                                                                            "type": "string",
+                                                                                            "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user.",
+                                                                                            "default": "sub"
+                                                                                        },
+                                                                                        "jwkSetUri": {
+                                                                                            "type": "string",
+                                                                                            "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                                                        }
                                                                                     }
                                                                                 }
                                                                             }
