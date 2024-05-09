@@ -18,21 +18,19 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_AUTH;
 public class ConfigReaderZaasClient {
 
         public static ConfigProperties getConfigProperties() {
-
-            ConfigProperties configProperties = new ConfigProperties();
-
-
-            configProperties.setApimlHost(environmentConfiguration().getGatewayServiceConfiguration().getHost());
-            configProperties.setApimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "");
-            configProperties.setApimlBaseUrl(ROUTED_AUTH);
-            configProperties.setKeyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore());
-            configProperties.setKeyStorePassword(environmentConfiguration().getTlsConfiguration().getKeyStorePassword());
-            configProperties.setKeyStoreType(environmentConfiguration().getTlsConfiguration().getKeyStoreType());
-            configProperties.setTrustStorePath(environmentConfiguration().getTlsConfiguration().getTrustStore());
-            configProperties.setTrustStorePassword(environmentConfiguration().getTlsConfiguration().getTrustStorePassword());
-            configProperties.setTrustStoreType(environmentConfiguration().getTlsConfiguration().getTrustStoreType());
-            configProperties.setNonStrictVerifySslCertificatesOfServices(environmentConfiguration().getTlsConfiguration().isNonStrictVerifySslCertificatesOfServices());
-            return configProperties;
+            return ConfigProperties.builder()
+                .apimlHost(environmentConfiguration().getGatewayServiceConfiguration().getHost())
+                .apimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "")
+                .apimlBaseUrl(ROUTED_AUTH)
+                .keyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore())
+                .keyStorePassword(environmentConfiguration().getTlsConfiguration().getKeyStorePassword())
+                .keyStoreType(environmentConfiguration().getTlsConfiguration().getKeyStoreType())
+                .trustStorePath(environmentConfiguration().getTlsConfiguration().getTrustStore())
+                .trustStorePassword(environmentConfiguration().getTlsConfiguration().getTrustStorePassword())
+                .trustStoreType(environmentConfiguration().getTlsConfiguration().getTrustStoreType())
+                .nonStrictVerifySslCertificatesOfServices(environmentConfiguration().getTlsConfiguration().isNonStrictVerifySslCertificatesOfServices())
+                .build();
         }
+
 }
 
