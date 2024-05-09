@@ -19,7 +19,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.HttpsSupport;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.util.Timeout;
@@ -27,8 +27,6 @@ import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -36,12 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,8 +43,9 @@ import java.util.regex.Pattern;
 class ZaasHttpsClientProvider implements CloseableClientProvider {
     private static final int REQUEST_TIMEOUT = 30 * 1000;
 
-
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
+
+    private ConfigProperties configProperties;
 
     private TrustManagerFactory tmf;
     private KeyManagerFactory kmf;
@@ -59,21 +53,19 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     private final char[] keyStorePassword;
     private final String keyStoreType;
     private final String keyStorePath;
-    private final HostnameVerifier hostnameVerifier;
 
     private final CookieStore cookieStore = new BasicCookieStore();
 
     private CloseableHttpClient httpsClient;
 
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
-
-
         if (configProperties.getTrustStorePath() == null) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.TRUST_STORE_NOT_PROVIDED);
         }
 
+        this.configProperties = configProperties;
+
         initializeTrustManagerFactory(configProperties.getTrustStorePath(), configProperties.getTrustStoreType(), configProperties.getTrustStorePassword());
-        this.hostnameVerifier = configProperties.isNonStrictVerifySslCertificatesOfServices() ? new NoopHostnameVerifier() : new DefaultHostnameVerifier();
         this.keyStorePath = configProperties.getKeyStorePath();
         this.keyStorePassword = configProperties.getKeyStorePassword();
         this.keyStoreType = configProperties.getKeyStoreType();
@@ -104,7 +96,10 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             if (kmf == null) {
                 initializeKeyStoreManagerFactory();
             }
-            var manager = PoolingHttpClientConnectionManagerBuilder.create().setSSLSocketFactory(new SSLConnectionSocketFactory(getSSLContext())).build();
+            var hostnameVerifier = configProperties.isNonStrictVerifySslCertificatesOfServices() ?
+                new NoopHostnameVerifier() : HttpsSupport.getDefaultHostnameVerifier();
+            var sslConnectionSocketFactory = new SSLConnectionSocketFactory(getSSLContext(), hostnameVerifier);
+            var manager = PoolingHttpClientConnectionManagerBuilder.create().setSSLSocketFactory(sslConnectionSocketFactory).build();
 
             httpsClient = createSecureHttpClient(manager).build();
         }
@@ -169,14 +164,12 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private SSLContext getSSLContext() throws ZaasConfigurationException {
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            SSLContext sslContext = SSLContext.getInstance(configProperties.getProtocol());
             sslContext.init(
                 kmf != null ? kmf.getKeyManagers() : null,
                 tmf.getTrustManagers(),
                 new SecureRandom()
             );
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
             return sslContext;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
@@ -197,7 +190,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             .evictExpiredConnections()
             .evictIdleConnections(Timeout.ofSeconds(REQUEST_TIMEOUT))
             .disableAuthCaching();
-
     }
 
 }

@@ -18,6 +18,8 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
@@ -31,6 +33,10 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
     private final Providers loginProviders;
     private String apiCatalogServiceId;
+    
+    private final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class,
+            YamlMessageServiceInstance.getInstance());
+    boolean startedInformationPublished = false;
 
     public GatewayHealthIndicator(DiscoveryClient discoveryClient,
                                   Providers providers,
@@ -68,6 +74,11 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         if (anyCatalogIsAvailable) {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
+        }
+
+        if (!startedInformationPublished && discoveryUp && apiCatalogUp && authUp) {
+            apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
+            startedInformationPublished = true;
         }
     }
 

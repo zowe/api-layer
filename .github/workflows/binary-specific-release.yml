@@ -47,6 +47,7 @@ jobs:
                   npm version ${{ github.event.inputs.release_version }}
                   npm publish --access public
                   git add package.json
+                  git add package-lock.json
                   git commit -m "[skip ci] Update version"
                   git push
                   cd ..
