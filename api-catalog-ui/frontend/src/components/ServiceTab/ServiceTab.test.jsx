@@ -181,6 +181,24 @@ describe('>>> ServiceTab component tests', () => {
         );
         expect(serviceTab.find('.footer-labels').exists()).toEqual(true);
         expect(serviceTab.find('#detail-footer').exists()).toEqual(true);
+        expect(serviceTab.find('.use-cases').exists()).toEqual(true);
+    });
+
+    it('should display more than one useCases and not show use-cases className', () => {
+        process.env.REACT_APP_API_PORTAL = true;
+        const selectService = jest.fn();
+        const serviceTab = shallow(
+            <ServiceTab
+                match={params}
+                selectedService={selectedService}
+                tiles={[tiles]}
+                selectService={selectService}
+                useCasesCounter={2}
+                videosCounter={2}
+                tutorialsCounter={1}
+            />
+        );
+        expect(serviceTab.find('.use-cases').exists()).toEqual(false);
     });
 
     it('should not display default footer for custom portal in case there is not additional content', () => {
@@ -276,72 +294,6 @@ describe('>>> ServiceTab component tests', () => {
         expect(button.exists()).toEqual(true);
     });
 
-    it('should show more videos', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const selectService = jest.fn();
-        const wrapper = shallow(
-            <ServiceTab
-                match={params}
-                selectedService={selectedServiceDown}
-                tiles={[tiles]}
-                selectService={selectService}
-                videos={videos}
-                tutorials={tutorials}
-                useCases={useCases}
-            />
-        );
-
-        wrapper.instance().showMoreVideos();
-
-        expect(wrapper.state().displayVideosCount).toEqual(4);
-        expect(wrapper.state().displayBlogsCount).toEqual(3);
-        expect(wrapper.state().displayUseCasesCount).toEqual(3);
-    });
-
-    it('should show more use cases', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const selectService = jest.fn();
-        const wrapper = shallow(
-            <ServiceTab
-                match={params}
-                selectedService={selectedServiceDown}
-                tiles={[tiles]}
-                selectService={selectService}
-                videos={videos}
-                tutorials={tutorials}
-                useCases={useCases}
-            />
-        );
-
-        wrapper.instance().showMoreUseCases();
-
-        expect(wrapper.state().displayVideosCount).toEqual(2);
-        expect(wrapper.state().displayBlogsCount).toEqual(3);
-        expect(wrapper.state().displayUseCasesCount).toEqual(5);
-    });
-
-    it('should show more tutorials', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const selectService = jest.fn();
-        const wrapper = shallow(
-            <ServiceTab
-                match={params}
-                selectedService={selectedServiceDown}
-                tiles={[tiles]}
-                selectService={selectService}
-                videos={videos}
-                tutorials={tutorials}
-                useCases={useCases}
-            />
-        );
-
-        wrapper.instance().showMoreBlogs();
-
-        expect(wrapper.state().displayVideosCount).toEqual(2);
-        expect(wrapper.state().displayBlogsCount).toEqual(5);
-        expect(wrapper.state().displayUseCasesCount).toEqual(3);
-    });
-
     it('should call handle dialog close', () => {
         const selectService = jest.fn();
         const wrapper = shallow(
@@ -394,43 +346,5 @@ describe('>>> ServiceTab component tests', () => {
         );
 
         expect(wrapper.find('.service-doc-link')).toExist();
-        expect(wrapper.find('.more-content-button').exists()).toEqual(false);
-    });
-
-    it('extra contents should be more than the default counters', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const selectService = jest.fn();
-        videos = ['url1', 'url2', 'url3', 'url4', 'url5'];
-        tutorials = [
-            { url: 'url1', user: 'user', title: 'title' },
-            { url: 'url2', user: 'user', title: 'title' },
-            { url: 'url3', user: 'user', title: 'title' },
-            { url: 'url4', user: 'user', title: 'title' },
-            { url: 'url5', user: 'user', title: 'title' },
-            { url: 'url6', user: 'user', title: 'title' },
-        ];
-        useCases = [
-            { url: 'url1', user: 'user' },
-            { url: 'url2', user: 'user' },
-            { url: 'url3', user: 'user' },
-            { url: 'url4', user: 'user' },
-            { url: 'url5', user: 'user' },
-        ];
-        const wrapper = shallow(
-            <ServiceTab
-                match={params}
-                selectedService={selectedServiceDown}
-                tiles={[tiles]}
-                selectService={selectService}
-                videos={videos}
-                tutorials={tutorials}
-                useCases={useCases}
-                useCasesCounter={8}
-                tutorialsCounter={8}
-                videosCounter={8}
-            />
-        );
-
-        expect(wrapper.find('.more-content-button').exists()).toEqual(true);
     });
 });
