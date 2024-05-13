@@ -227,8 +227,6 @@ public class ConnectionsConfig {
 //        };
 //    }
 //
-
-
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
@@ -321,8 +319,8 @@ public class ConnectionsConfig {
     @Bean
     @Qualifier("webClientClientCert")
     @Primary
-    public WebClient webClient(@Qualifier("asyncClient") CloseableHttpAsyncClient httpClient) {
-        return WebClient.builder().clientConnector(new HttpComponentsClientHttpConnector(httpClient)).build();
+    public WebClient webClientClientCert(@Qualifier("asyncClient") CloseableHttpAsyncClient httpClient) {
+        return webClient(httpClient);
     }
 
     @Bean
@@ -336,9 +334,16 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public WebClient webClientClientCert(@Qualifier("asyncClientWithKeystore") CloseableHttpAsyncClient httpClient) {
-//        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
-        return webClient(httpClient);
+    @Qualifier("webClient")
+    public WebClient webClient(@Qualifier("asyncClientWithKeystore") CloseableHttpAsyncClient httpClient) {
+        return WebClient.builder().clientConnector(new HttpComponentsClientHttpConnector(httpClient)).build();
+    }
+
+    @Bean
+    public ApimlWebClientRoutingFilter routingFilter(@Qualifier("webClient") WebClient webClient,
+                                                     @Qualifier("webClientClientCert") WebClient webClientClientCert,
+                                                     ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider) {
+        return new ApimlWebClientRoutingFilter(webClient, webClientClientCert, headersFiltersProvider);
     }
 
     @Bean

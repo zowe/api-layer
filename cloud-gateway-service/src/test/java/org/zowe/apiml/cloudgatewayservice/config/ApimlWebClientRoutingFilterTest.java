@@ -20,6 +20,7 @@ import org.springframework.cloud.gateway.route.Route;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
@@ -31,29 +32,29 @@ import static org.mockito.Mockito.*;
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
-class NettyRoutingFilterApimlTest {
+class ApimlWebClientRoutingFilterTest {
 
     @Nested
     class Parsing {
 
         @Test
         void givenInteger_whenGetInteger_thenConvert() {
-            assertEquals(Integer.valueOf(157), NettyRoutingFilterApiml.getInteger(157));
+            assertEquals(Integer.valueOf(157), ApimlWebClientRoutingFilter.getInteger(157));
         }
 
         @Test
         void givenNumberString_whenGetInteger_thenParse() {
-            assertEquals(Integer.valueOf(759), NettyRoutingFilterApiml.getInteger("759"));
+            assertEquals(Integer.valueOf(759), ApimlWebClientRoutingFilter.getInteger("759"));
         }
 
         @Test
         void givenNull_whenGetInteger_thenThrowNullPointerException() {
-            assertThrows(NullPointerException.class, () -> NettyRoutingFilterApiml.getInteger(null));
+            assertThrows(NullPointerException.class, () -> ApimlWebClientRoutingFilter.getInteger(null));
         }
 
         @Test
         void givenNonNumericValue_whenGetInteger_thenThrowNumberFormatException() {
-            assertThrows(NumberFormatException.class, () -> NettyRoutingFilterApiml.getInteger("nonNumeric"));
+            assertThrows(NumberFormatException.class, () -> ApimlWebClientRoutingFilter.getInteger("nonNumeric"));
         }
 
     }
@@ -62,13 +63,10 @@ class NettyRoutingFilterApimlTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class HttpClientChooser {
 
-        SslContext sslContextNoCert;
-        SslContext sslContextClientCert;
 
-        HttpClient httpClientNoCert = mock(HttpClient.class);
-        HttpClient httpClientClientCert = mock(HttpClient.class);
+        WebClient httpClientNoCert = mock(WebClient.class);
+        WebClient httpClientClientCert = mock(WebClient.class);
 
-        HttpClient httpClient = mock(HttpClient.class);
 
         @BeforeAll
         void initHttpClients() throws SSLException {
@@ -99,17 +97,17 @@ class NettyRoutingFilterApimlTest {
 
         @Test
         void givenDefaultHttpClient_whenCreatingAInstance_thenBothHttpClientsAreCreatedWell() {
-            NettyRoutingFilterApiml nettyRoutingFilterApiml = new NettyRoutingFilterApiml(httpClient, null, null, sslContextNoCert, sslContextClientCert);
+            ApimlWebClientRoutingFilter apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClient, null, null, sslContextNoCert, sslContextClientCert);
 
             // verify if proper httpClient instances were created
-            assertSame(httpClientNoCert, ReflectionTestUtils.getField(nettyRoutingFilterApiml, "httpClientNoCert"));
-            assertSame(httpClientClientCert, ReflectionTestUtils.getField(nettyRoutingFilterApiml, "httpClientClientCert"));
+            assertSame(httpClientNoCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "httpClientNoCert"));
+            assertSame(httpClientClientCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "httpClientClientCert"));
         }
 
         @Nested
         class GetHttpClient {
 
-            NettyRoutingFilterApiml nettyRoutingFilterApiml;
+            ApimlWebClientRoutingFilter apimlWebClientRoutingFilter;
             private final Route ROUTE_NO_TIMEOUT = Route.async()
                 .id("1").uri("http://localhost/").predicate(serverWebExchange -> true)
                 .build();
@@ -120,7 +118,7 @@ class NettyRoutingFilterApimlTest {
 
             @BeforeEach
             void initMocks() {
-                nettyRoutingFilterApiml = new NettyRoutingFilterApiml(httpClient, null, null, sslContextNoCert, sslContextClientCert);
+                apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, null);
 
                 MockServerHttpRequest mockServerHttpRequest = MockServerHttpRequest.get("/path").build();
                 serverWebExchange = MockServerWebExchange.from(mockServerHttpRequest);
@@ -128,31 +126,31 @@ class NettyRoutingFilterApimlTest {
 
             @Test
             void givenNoTimeoutAndNoRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
-                assertSame(httpClientNoCert, nettyRoutingFilterApiml.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
+                assertSame(httpClientNoCert, apimlWebClientRoutingFilter.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
             }
 
             @Test
             void givenNoTimeoutAndFalseAsRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
                 serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.FALSE);
-                assertSame(httpClientNoCert, nettyRoutingFilterApiml.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
+                assertSame(httpClientNoCert, apimlWebClientRoutingFilter.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
             }
 
             @Test
             void givenNoTimeoutAndRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
                 serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
-                assertSame(httpClientClientCert, nettyRoutingFilterApiml.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
+                assertSame(httpClientClientCert, apimlWebClientRoutingFilter.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
             }
 
             @Test
             void givenTimeoutAndNoRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
-                nettyRoutingFilterApiml.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
+                apimlWebClientRoutingFilter.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
                 verify(httpClientNoCert).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100);
             }
 
             @Test
             void givenTimeoutAndRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
                 serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
-                nettyRoutingFilterApiml.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
+                apimlWebClientRoutingFilter.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
                 verify(httpClientClientCert).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100);
             }
 
