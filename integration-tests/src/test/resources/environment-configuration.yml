@@ -2,66 +2,72 @@ credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
     user: USER
     password: validPassword
+    clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
-    host: r151.msd.labs.broadcom.net
-    port: 10310
-    internalPorts: 10310
-    externalPort: 10310
+    host: localhost
+    port: 10010
+    internalPorts: 10017
+    externalPort: 10010
     instances: 1
     servicesEndpoint: gateway/api/v1/services
 discoveryServiceConfiguration:
     scheme: https
     user: user
     password: user
-    host: r151.msd.labs.broadcom.net
+    host: localhost
     additionalHost: localhost
-    additionalPort: 10311
-    port: 10311
+    additionalPort: 10021
+    port: 10011
     instances: 1
 discoverableClientConfiguration:
     applId: ZOWEAPPL
     scheme: https
-    port: 10399
-    host: r151.msd.labs.broadcom.net
+    port: 10012
+    host: localhost
     instances: 1
 apiCatalogServiceConfiguration:
     scheme: https
     url:
-    host: r151.msd.labs.broadcom.net
-    port: 10312
+    host: localhost
+    port: 10014
     instances: 1
 apiCatalogStandaloneConfiguration:
     scheme: https
     url:
-    host: r151.msd.labs.broadcom.net
-    port: 10312
+    host: localhost
+    port: 10015
     instances: 1
 cachingServiceConfiguration:
     url:
 cloudGatewayConfiguration:
     scheme: https
-    host: r151.msd.labs.broadcom.net
-    port: 10333
+    host: localhost
+    port: 10023
 tlsConfiguration:
-    keyAlias: rootstar
+    keyAlias: localhost
     keyPassword: password
     keyStoreType: PKCS12
-    keyStore: C:\\workspace\\ca-brightside-services-packaging\\scripts\\zowe\\zowe-keystore\\R151\\r151.p12
-    clientKeystore: C:\\workspace\\ca-brightside-services-packaging\\scripts\\zowe\\zowe-keystore\\client_cert\\apimtst.p12
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
+    clientCN: APIMTST
     keyStorePassword: password
     trustStoreType: PKCS12
-    trustStore: C:\\workspace\\ca-brightside-services-packaging\\scripts\\zowe\\zowe-keystore\\R151\\r151.truststore.p12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: https
-    host: r151.msd.labs.broadcom.net
-    port: 1443
-    serviceId: zosmf
+    host: localhost
+    port: 10013
+    serviceId: mockzosmf
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 idpConfiguration:
     host: https://dev-95727686.okta.com
+safIdtConfiguration:
+    enabled: true
+oidcConfiguration:
+    clientId:
 instanceEnv:
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZWE_haInstance_hostname: localhost
@@ -71,12 +77,12 @@ instanceEnv:
     ZWE_configs_apiml_security_x509_enabled: true
     ZWE_configs_apiml_security_auth_provider: zosmf
     ZWE_configs_apiml_security_auth_zosmf_serviceId: mockzosmf
-    #ZWE_configs_certificate_keystore_file: keystore/localhost/localhost.keystore.p12
-    #ZWE_configs_certificate_keystore_type: PKCS12
-    #ZWE_configs_certificate_keystore_password: password
-    #ZWE_configs_certificate_keystore_alias: localhost
-    #ZWE_configs_certificate_truststore_file: keystore/localhost/localhost.truststore.p12
-    #ZWE_configs_certificate_truststore_type: PKCS12
+    ZWE_configs_certificate_keystore_file: keystore/localhost/localhost.keystore.p12
+    ZWE_configs_certificate_keystore_type: PKCS12
+    ZWE_configs_certificate_keystore_password: password
+    ZWE_configs_certificate_keystore_alias: localhost
+    ZWE_configs_certificate_truststore_file: keystore/localhost/localhost.truststore.p12
+    ZWE_configs_certificate_truststore_type: PKCS12
     ZWE_configs_certificate_truststore_password: password
     ZWE_DISCOVERY_SERVICES_LIST: https://localhost:10011/eureka/
     ZWE_zowe_workspaceDirectory: ./workspace
