@@ -49,13 +49,15 @@ class ApimlWebClientRoutingFilterTest {
     class HttpClientChooser {
 
 
-        WebClient httpClientNoCert = mock(WebClient.class);
-        WebClient httpClientClientCert = mock(WebClient.class);
+        WebClient httpClientNoCert;
+        WebClient httpClientClientCert;
 
 
         @Test
         void givenDefaultHttpClient_whenCreatingAInstance_thenBothHttpClientsAreCreatedWell() {
-            ApimlWebClientRoutingFilter apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, null);
+            httpClientClientCert = mock(WebClient.class);
+            httpClientNoCert = mock(WebClient.class);
+            var apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, null);
 
             // verify if proper httpClient instances were created
             assertSame(httpClientNoCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "webClient"));
@@ -72,13 +74,15 @@ class ApimlWebClientRoutingFilterTest {
 
             @BeforeEach
             void initMocks() throws URISyntaxException {
+                httpClientNoCert = mock(WebClient.class);
+                httpClientClientCert = mock(WebClient.class);
                 headersFiltersProvider = new SimpleObjectProvider<>(new ArrayList<>());
                 apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, headersFiltersProvider);
 
-                MockServerHttpRequest mockServerHttpRequest = MockServerHttpRequest.get("/path").build();
+                var mockServerHttpRequest = MockServerHttpRequest.get("/path").build();
                 serverWebExchange = MockServerWebExchange.from(mockServerHttpRequest);
                 filterChain = mock(GatewayFilterChain.class);
-                URI uri = new URI("https://localhost:10010");
+                var uri = new URI("https://localhost:10010");
                 serverWebExchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, uri);
 
                 var requestBodySpec = mock(WebClient.RequestBodyUriSpec.class);
@@ -121,6 +125,7 @@ class ApimlWebClientRoutingFilterTest {
             @Test
             void givenAlreadyRouted_thenDoNotUseClient() {
                 serverWebExchange.getAttributes().put(GATEWAY_ALREADY_ROUTED_ATTR, Boolean.TRUE);
+                apimlWebClientRoutingFilter.filter(serverWebExchange, filterChain);
                 verify(httpClientClientCert, times(0)).method(any());
                 verify(httpClientNoCert, times(0)).method(any());
             }
