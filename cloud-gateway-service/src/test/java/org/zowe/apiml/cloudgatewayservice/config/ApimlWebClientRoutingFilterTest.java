@@ -10,54 +10,39 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
-import io.netty.channel.ChannelOption;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import org.junit.jupiter.api.*;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.springframework.cloud.gateway.route.Route;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
+import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.SslProvider;
+import reactor.core.publisher.Mono;
 
-import javax.net.ssl.SSLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ALREADY_ROUTED_ATTR;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 class ApimlWebClientRoutingFilterTest {
-
-    @Nested
-    class Parsing {
-
-        @Test
-        void givenInteger_whenGetInteger_thenConvert() {
-            assertEquals(Integer.valueOf(157), ApimlWebClientRoutingFilter.getInteger(157));
-        }
-
-        @Test
-        void givenNumberString_whenGetInteger_thenParse() {
-            assertEquals(Integer.valueOf(759), ApimlWebClientRoutingFilter.getInteger("759"));
-        }
-
-        @Test
-        void givenNull_whenGetInteger_thenThrowNullPointerException() {
-            assertThrows(NullPointerException.class, () -> ApimlWebClientRoutingFilter.getInteger(null));
-        }
-
-        @Test
-        void givenNonNumericValue_whenGetInteger_thenThrowNumberFormatException() {
-            assertThrows(NumberFormatException.class, () -> ApimlWebClientRoutingFilter.getInteger("nonNumeric"));
-        }
-
-    }
 
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -68,90 +53,76 @@ class ApimlWebClientRoutingFilterTest {
         WebClient httpClientClientCert = mock(WebClient.class);
 
 
-        @BeforeAll
-        void initHttpClients() throws SSLException {
-            sslContextNoCert = SslContextBuilder.forClient().build();
-            sslContextClientCert = SslContextBuilder.forClient().build();
-
-            // mock calling of HttpClient.secure to handle thw both cases - with and without client cert
-            doAnswer(answer -> {
-                Consumer<? super SslProvider.SslContextSpec> consumer = answer.getArgument(0);
-
-                // detect what sslContext was provided - see sslContextArg
-                SslProvider.SslContextSpec sslContextSpec = mock(SslProvider.SslContextSpec.class);
-                ArgumentCaptor<SslContext> sslContextArg = ArgumentCaptor.forClass(SslContext.class);
-                consumer.accept(sslContextSpec);
-                verify(sslContextSpec).sslContext(sslContextArg.capture());
-
-                // return the related http client instance
-                if (sslContextArg.getValue() == sslContextNoCert) {
-                    return httpClientNoCert;
-                }
-                if (sslContextArg.getValue() == sslContextClientCert) {
-                    return httpClientClientCert;
-                }
-                fail("Received unexpencted SSL config");
-                return null;
-            }).when(httpClient).secure(Mockito.<Consumer<? super SslProvider.SslContextSpec>>any());
-        }
-
         @Test
         void givenDefaultHttpClient_whenCreatingAInstance_thenBothHttpClientsAreCreatedWell() {
-            ApimlWebClientRoutingFilter apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClient, null, null, sslContextNoCert, sslContextClientCert);
+            ApimlWebClientRoutingFilter apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, null);
 
             // verify if proper httpClient instances were created
-            assertSame(httpClientNoCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "httpClientNoCert"));
-            assertSame(httpClientClientCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "httpClientClientCert"));
+            assertSame(httpClientNoCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "webClient"));
+            assertSame(httpClientClientCert, ReflectionTestUtils.getField(apimlWebClientRoutingFilter, "webClientClientCert"));
         }
 
         @Nested
         class GetHttpClient {
 
             ApimlWebClientRoutingFilter apimlWebClientRoutingFilter;
-            private final Route ROUTE_NO_TIMEOUT = Route.async()
-                .id("1").uri("http://localhost/").predicate(serverWebExchange -> true)
-                .build();
-            private final Route ROUTE_TIMEOUT = Route.async()
-                .id("2").uri("http://localhost/").predicate(serverWebExchange -> true).metadata(CONNECT_TIMEOUT_ATTR, "100")
-                .build();
             MockServerWebExchange serverWebExchange;
+            GatewayFilterChain filterChain;
+            ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider;
 
             @BeforeEach
-            void initMocks() {
-                apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, null);
+            void initMocks() throws URISyntaxException {
+                headersFiltersProvider = new SimpleObjectProvider<>(new ArrayList<>());
+                apimlWebClientRoutingFilter = new ApimlWebClientRoutingFilter(httpClientNoCert, httpClientClientCert, headersFiltersProvider);
 
                 MockServerHttpRequest mockServerHttpRequest = MockServerHttpRequest.get("/path").build();
                 serverWebExchange = MockServerWebExchange.from(mockServerHttpRequest);
+                filterChain = mock(GatewayFilterChain.class);
+                URI uri = new URI("https://localhost:10010");
+                serverWebExchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, uri);
+
+                var requestBodySpec = mock(WebClient.RequestBodyUriSpec.class);
+                when(httpClientClientCert.method(any())).thenReturn(requestBodySpec);
+                when(httpClientNoCert.method(any())).thenReturn(requestBodySpec);
+                var httpHeaders = new HttpHeaders();
+                when(requestBodySpec.headers(any())).thenAnswer(invocation -> {
+                    Consumer<HttpHeaders> function = invocation.getArgument(0);
+                    function.accept(httpHeaders);
+                    return requestBodySpec;
+                });
+                when(requestBodySpec.uri(any(URI.class))).thenReturn(requestBodySpec);
+                var clientResp = mock(ClientResponse.class);
+                var headers = mock(ClientResponse.Headers.class);
+                when(headers.asHttpHeaders()).thenReturn(new HttpHeaders());
+                when(clientResp.headers()).thenReturn(headers);
+                when(requestBodySpec.exchangeToMono(any())).thenReturn(Mono.just(clientResp));
+                when(filterChain.filter(serverWebExchange)).thenReturn(Mono.empty());
+
             }
 
             @Test
-            void givenNoTimeoutAndNoRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
-                assertSame(httpClientNoCert, apimlWebClientRoutingFilter.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
-            }
-
-            @Test
-            void givenNoTimeoutAndFalseAsRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
-                serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.FALSE);
-                assertSame(httpClientNoCert, apimlWebClientRoutingFilter.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
-            }
-
-            @Test
-            void givenNoTimeoutAndRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
+            void givenRequirementsForClientCert_whenGetHttpClient_thenCallWithClientCert() {
                 serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
-                assertSame(httpClientClientCert, apimlWebClientRoutingFilter.getHttpClient(ROUTE_NO_TIMEOUT, serverWebExchange));
+                var result = apimlWebClientRoutingFilter.filter(serverWebExchange, filterChain);
+                verify(httpClientClientCert, times(1)).method(any());
+                verify(httpClientNoCert, times(0)).method(any());
+                result.block();
             }
 
             @Test
-            void givenTimeoutAndNoRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
-                apimlWebClientRoutingFilter.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
-                verify(httpClientNoCert).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100);
+            void givenNoRequirementsForClientCert_whenGetHttpClient_thenDoNotUseClientCert() {
+
+                var result = apimlWebClientRoutingFilter.filter(serverWebExchange, filterChain);
+                verify(httpClientClientCert, times(0)).method(any());
+                verify(httpClientNoCert, times(1)).method(any());
+                result.block();
             }
 
             @Test
-            void givenTimeoutAndRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCert() {
-                serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
-                apimlWebClientRoutingFilter.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
-                verify(httpClientClientCert).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100);
+            void givenAlreadyRouted_thenDoNotUseClient() {
+                serverWebExchange.getAttributes().put(GATEWAY_ALREADY_ROUTED_ATTR, Boolean.TRUE);
+                verify(httpClientClientCert, times(0)).method(any());
+                verify(httpClientNoCert, times(0)).method(any());
             }
 
         }

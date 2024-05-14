@@ -93,7 +93,6 @@ public class ApimlWebClientRoutingFilter implements GlobalFilter, Ordered {
 
         RequestBodySpec bodySpec = httpClient.method(method).uri(requestUrl).headers(httpHeaders -> {
             httpHeaders.addAll(filteredHeaders);
-            // TODO: can this support preserviceHostHeader?
             if (!preserveHost) {
                 httpHeaders.remove(HttpHeaders.HOST);
             }

@@ -196,37 +196,6 @@ public class ConnectionsConfig {
             ;
     }
 
-    /**
-     * This bean processor is used to override bean routingFilter defined at
-     * org.springframework.cloud.gateway.config.GatewayAutoConfiguration.NettyConfiguration#routingFilter(HttpClient, ObjectProvider, HttpClientProperties)
-     * <p>
-     * There is no simple way how to override this specific bean, but bean processing could handle that.
-     *
-     * @param httpClient             default http client
-     * @param headersFiltersProvider header filter for spring cloud gateway router
-     * @param properties             client HTTP properties
-     * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
-     */
-//    @Bean
-//    public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-//        // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
-//        SslContext justTruststore = sslContext(false);
-//        SslContext withKeystore = sslContext(true);
-//
-//        return new BeanPostProcessor() {
-//            @Override
-//            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-//                if ("routingFilter".equals(beanName)) {
-//                    log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
-//                    // once is creating original bean by autoconfiguration replace it with custom implementation
-//                    return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
-//                }
-//                // do not touch any other bean
-//                return bean;
-//            }
-//        };
-//    }
-//
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
