@@ -63,6 +63,8 @@ dependencies {
     api project(':apiml-utility')
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '3.2.5'
+// https://mvnrepository.com/artifact/org.apache.httpcomponents.core5/httpcore5-reactive
+    testImplementation group: 'org.apache.httpcomponents.core5', name: 'httpcore5-reactive', version: '5.2.4'
 
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.circuit.breaker
