@@ -11,24 +11,25 @@
 package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.apache.tomcat.util.net.NioChannel;
-import org.apache.tomcat.util.net.SocketEvent;
-import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.apache.tomcat.util.net.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
-import org.zowe.commons.attls.ContextIsNotInitializedException;
+
 import org.zowe.commons.attls.InboundAttls;
 
+import java.io.FileDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
 
 @Component
@@ -64,42 +65,118 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         }
     }
 
+
     public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
         private final AbstractEndpoint.Handler<S> handler;
-        private final Field fdField;
+
+
+        // this field cannot be final for testing purpose, but using is the same as final
+        @SuppressWarnings("squid:S3008")
+        private static  /*final*/ Field ASYNCHRONOUS_SOCKET_CHANNEL_FD ;
+        private static Field FILE_DESCRIPTOR_FD;
+
+        private static  Method SOCKET_CHANNEL_GET_FDVAL_METHOD;
 
         public ApimlAttlsHandler(AbstractEndpoint.Handler<S> handler) {
             this.handler = handler;
             try {
-                Class<?> socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl");
-                fdField = socketChannelImpl.getDeclaredField("fdVal");
-                fdField.setAccessible(true);
-            } catch (ClassNotFoundException | NoSuchFieldException e) {
+                Class<?> nioClazz = Class.forName("sun.nio.ch.SocketChannelImpl");
+
+                SOCKET_CHANNEL_GET_FDVAL_METHOD = nioClazz.getMethod("getFDVal");
+                SOCKET_CHANNEL_GET_FDVAL_METHOD.setAccessible(true);
+
+                // obtain field to get file descriptor if NIO2 is using
+                Class<?> nio2Clazz = Class.forName("sun.nio.ch.AsynchronousSocketChannelImpl");
+                ASYNCHRONOUS_SOCKET_CHANNEL_FD = nio2Clazz.getDeclaredField("fd");
+                ASYNCHRONOUS_SOCKET_CHANNEL_FD.setAccessible(true);
+
+                // obtain fd field in FileDescriptor class
+                FILE_DESCRIPTOR_FD = FileDescriptor.class.getDeclaredField("fd");
+                FILE_DESCRIPTOR_FD.setAccessible(true);
+
+            } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
                 throw new IllegalArgumentException(e);
             }
         }
 
-        @Override
-        public SocketState process(SocketWrapperBase<S> socket, SocketEvent status) {
-            NioChannel secureChannel = (NioChannel) socket.getSocket();
-            SocketChannel socketChannel = secureChannel.getIOChannel();
+//        @Override
+//        public SocketState process(SocketWrapperBase<S> socket, SocketEvent status) {
+//            NioChannel secureChannel = (NioChannel) socket.getSocket();
+//            SocketChannel socketChannel = secureChannel.getIOChannel();
+//            try {
+//                int fileDescriptor = fdField.getInt(socketChannel);
+//                InboundAttls.init(fileDescriptor);
+//                return handler.process(socket, status);
+//            } catch (IllegalAccessException e) {
+//                throw new AttlsHandlerException("Different implementation expected.", e);
+//            } finally {
+//                try {
+//                    InboundAttls.clean();
+//                } catch (ContextIsNotInitializedException e) {
+//                    log.debug("Cannot clean AT-TLS context");
+//                } finally {
+//                    InboundAttls.dispose();
+//                }
+//            }
+//
+//        }
+
+        /**
+         * This method handle processing of each request. At first create AT-TLS context, the process and on the end
+         * dispose the context.
+         * @param socketWrapperBase describing socket (see Tomcat implementation)
+         * @param status status of socket (see Tomcat implementation)
+         * @return new status of socket (see Tomcat implementation)
+         */
+        public SocketState process(SocketWrapperBase socketWrapperBase, SocketEvent status) {
+            final int fdVal = getFd(socketWrapperBase.getSocket());
+
+            InboundAttls.init(fdVal);
             try {
-                int fileDescriptor = fdField.getInt(socketChannel);
-                InboundAttls.init(fileDescriptor);
-                return handler.process(socket, status);
-            } catch (IllegalAccessException e) {
-                throw new AttlsHandlerException("Different implementation expected.", e);
+                return handler.process(socketWrapperBase, status);
             } finally {
-                try {
-                    InboundAttls.clean();
-                } catch (ContextIsNotInitializedException e) {
-                    log.debug("Cannot clean AT-TLS context");
-                } finally {
-                    InboundAttls.dispose();
+                InboundAttls.dispose();
+            }
+        }
+
+        private int getFd(Object socket) {
+            try {
+                if (socket instanceof NioChannel nioChannel) {
+                    return getFd(nioChannel);
+                } else if (socket instanceof Nio2Channel nio2Channel) {
+                    return getFdAsync(nio2Channel);
+                } else if (socket instanceof Long socketNioChannel) { // APR uses Long as socket to identify
+                    return socketNioChannel.intValue();
+                } else {
+                    throw new IllegalStateException("Socket " + socket.getClass() + " is not supported for AT-TLS");
                 }
+            } catch (IllegalArgumentException | IllegalAccessException | IllegalStateException |
+                     InvocationTargetException e) {
+                throw new IllegalStateException(  e.getMessage(), e);
+            }
+        }
+
+        private int getFd(NioChannel socket) throws InvocationTargetException, IllegalAccessException {
+            SocketChannel socketChannel = socket.getIOChannel();
+            if (socketChannel == null) {
+                throw new IllegalStateException("Socket channel is not initialized");
+            }
+            return (int) SOCKET_CHANNEL_GET_FDVAL_METHOD.invoke(socketChannel);
+        }
+
+        private int getFdAsync(Nio2Channel socket) throws IllegalAccessException {
+            AsynchronousSocketChannel asch = socket.getIOChannel();
+            if (asch == null) {
+                throw new IllegalStateException("Asynchronous socket channel is not initialized");
             }
 
+            FileDescriptor fd = (FileDescriptor) ASYNCHRONOUS_SOCKET_CHANNEL_FD.get(asch);
+            if (fd == null) {
+                throw new IllegalStateException("File descriptor is not set in the asynchronous socket channel");
+            }
+
+            return FILE_DESCRIPTOR_FD.getInt(fd);
         }
 
         @Override
