@@ -10,17 +10,12 @@
 
 package org.zowe.apiml.cloudgatewayservice.config;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Optional;
-
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import reactor.core.publisher.Mono;
-
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -30,6 +25,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter.filterRequest;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.CLIENT_RESPONSE_ATTR;
@@ -53,7 +53,7 @@ public class ApimlWebClientRoutingFilter implements GlobalFilter, Ordered {
     private volatile List<HttpHeadersFilter> headersFilters;
 
     public ApimlWebClientRoutingFilter(WebClient webClient, WebClient webClientClientCert,
-                                      ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider) {
+                                       ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider) {
         this.webClient = webClient;
         this.webClientClientCert = webClientClientCert;
         this.headersFiltersProvider = headersFiltersProvider;
@@ -101,23 +101,21 @@ public class ApimlWebClientRoutingFilter implements GlobalFilter, Ordered {
         RequestHeadersSpec<?> headersSpec;
         if (requiresBody(method)) {
             headersSpec = bodySpec.body(BodyInserters.fromDataBuffers(request.getBody()));
-        }
-        else {
+        } else {
             headersSpec = bodySpec;
         }
 
-        return headersSpec.exchangeToMono(Mono::just)
-            // .log("webClient route")
-            .flatMap(res -> {
-                ServerHttpResponse response = exchange.getResponse();
-                response.getHeaders().putAll(res.headers().asHttpHeaders());
-                response.setStatusCode(res.statusCode());
-                // Defer committing the response until all route filters have run
-                // Put client response as ServerWebExchange attribute and write
-                // response later NettyWriteResponseFilter
-                exchange.getAttributes().put(CLIENT_RESPONSE_ATTR, res);
-                return chain.filter(exchange);
-            });
+        return headersSpec.exchangeToMono(res -> {
+            ServerHttpResponse response = exchange.getResponse();
+            response.getHeaders().putAll(res.headers().asHttpHeaders());
+            response.setStatusCode(res.statusCode());
+            // Defer committing the response until all route filters have run
+            // Put client response as ServerWebExchange attribute and write
+            // response later NettyWriteResponseFilter
+
+            exchange.getAttributes().put(CLIENT_RESPONSE_ATTR, res);
+            return response.writeWith(res.bodyToMono(DataBuffer.class));
+        });
     }
 
     private boolean requiresBody(HttpMethod method) {

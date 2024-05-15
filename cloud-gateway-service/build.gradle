@@ -66,6 +66,10 @@ dependencies {
 // https://mvnrepository.com/artifact/org.apache.httpcomponents.core5/httpcore5-reactive
     implementation group: 'org.apache.httpcomponents.core5', name: 'httpcore5-reactive', version: '5.2.4'
 
+    // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-http
+    implementation group: 'io.projectreactor.netty', name: 'reactor-netty-http', version: '1.1.18'
+
+
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.circuit.breaker
     implementation libs.spring.cloud.starter.eureka.client
