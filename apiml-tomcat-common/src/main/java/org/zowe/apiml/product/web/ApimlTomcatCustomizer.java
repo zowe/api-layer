@@ -12,6 +12,8 @@ package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
 
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
@@ -23,6 +25,7 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
 
+import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.FileDescriptor;
@@ -65,16 +68,16 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         }
     }
 
+    static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
-    public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
-
+        @Delegate(excludes = Overridden.class)
         private final AbstractEndpoint.Handler<S> handler;
 
 
         // this field cannot be final for testing purpose, but using is the same as final
         @SuppressWarnings("squid:S3008")
         private static  /*final*/ Field ASYNCHRONOUS_SOCKET_CHANNEL_FD ;
-        private static Field FILE_DESCRIPTOR_FD;
+        private static   Field FILE_DESCRIPTOR_FD;
 
         private static  Method SOCKET_CHANNEL_GET_FDVAL_METHOD;
 
@@ -100,28 +103,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             }
         }
 
-//        @Override
-//        public SocketState process(SocketWrapperBase<S> socket, SocketEvent status) {
-//            NioChannel secureChannel = (NioChannel) socket.getSocket();
-//            SocketChannel socketChannel = secureChannel.getIOChannel();
-//            try {
-//                int fileDescriptor = fdField.getInt(socketChannel);
-//                InboundAttls.init(fileDescriptor);
-//                return handler.process(socket, status);
-//            } catch (IllegalAccessException e) {
-//                throw new AttlsHandlerException("Different implementation expected.", e);
-//            } finally {
-//                try {
-//                    InboundAttls.clean();
-//                } catch (ContextIsNotInitializedException e) {
-//                    log.debug("Cannot clean AT-TLS context");
-//                } finally {
-//                    InboundAttls.dispose();
-//                }
-//            }
-//
-//        }
-
         /**
          * This method handle processing of each request. At first create AT-TLS context, the process and on the end
          * dispose the context.
@@ -136,6 +117,11 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             try {
                 return handler.process(socketWrapperBase, status);
             } finally {
+                try {
+                    InboundAttls.clean();
+                } catch (ContextIsNotInitializedException e) {
+                    log.debug("Cannot clean AT-TLS context");
+                }
                 InboundAttls.dispose();
             }
         }
@@ -179,25 +165,10 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             return FILE_DESCRIPTOR_FD.getInt(fd);
         }
 
-        @Override
-        public Object getGlobal() {
+        interface Overridden {
 
-            return handler.getGlobal();
-        }
+            <S> SocketState process(SocketWrapperBase<S> socket, SocketEvent status);
 
-        @Override
-        public void release(SocketWrapperBase<S> socketWrapper) {
-            handler.release(socketWrapper);
-        }
-
-        @Override
-        public void pause() {
-            handler.pause();
-        }
-
-        @Override
-        public void recycle() {
-            handler.recycle();
         }
     }
 }
