@@ -6,7 +6,7 @@ messages:
     # 100-199
 
     - key: org.zowe.apiml.gateway.internalServerError
-      number: BRSA500
+      number: ZWEAG100
       type: ERROR
       text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
 
