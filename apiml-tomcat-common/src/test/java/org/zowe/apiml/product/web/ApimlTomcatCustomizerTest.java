@@ -173,7 +173,7 @@ class ApimlTomcatCustomizerTest {
             }).when(mockThreadLocal).set(any());
             doAnswer(answer -> attlsContextHolder.get()).when(mockThreadLocal).get();
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", mockThreadLocal);
-            doAnswer(answer->(Answer<AbstractEndpoint.Handler.SocketState>) invocation -> {
+            doAnswer(answer -> (Answer<AbstractEndpoint.Handler.SocketState>) invocation -> {
                 assertNotNull(InboundAttls.get());
                 Integer id = (Integer) ReflectionTestUtils.getField(InboundAttls.get(), "id");
                 assertNotNull(id);

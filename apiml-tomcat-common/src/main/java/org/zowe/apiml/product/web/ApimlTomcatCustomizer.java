@@ -12,7 +12,6 @@ package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
 
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
@@ -97,7 +96,6 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
                 // obtain fd field in FileDescriptor class
                 FILE_DESCRIPTOR_FD = FileDescriptor.class.getDeclaredField("fd");
                 FILE_DESCRIPTOR_FD.setAccessible(true);
-
             } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -156,19 +154,15 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
             if (asch == null) {
                 throw new IllegalStateException("Asynchronous socket channel is not initialized");
             }
-
             FileDescriptor fd = (FileDescriptor) ASYNCHRONOUS_SOCKET_CHANNEL_FD.get(asch);
             if (fd == null) {
                 throw new IllegalStateException("File descriptor is not set in the asynchronous socket channel");
             }
-
             return FILE_DESCRIPTOR_FD.getInt(fd);
         }
 
         interface Overridden {
-
             <S> SocketState process(SocketWrapperBase<S> socket, SocketEvent status);
-
         }
     }
 }
