@@ -75,6 +75,8 @@ dependencies {
     implementation libs.bcpkix
     implementation libs.janino
 
+    implementation libs.zowe.zos.utils
+
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.commons.io
     testImplementation libs.reactor.test

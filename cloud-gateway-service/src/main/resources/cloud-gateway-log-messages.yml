@@ -5,6 +5,11 @@ messages:
     # General messages
     # 100-199
 
+    - key: org.zowe.apiml.gateway.internalServerError
+      number: ZWEAG100
+      type: ERROR
+      text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
+
     # HTTP,Protocol messages
     # 400-499
 
@@ -16,6 +21,13 @@ messages:
       text: "Client certificate is missing in request."
       reason: "No client certificate is present in the HTTPS request."
       action: "Properly configure client to send client certificate."
+
+    - key: org.zowe.apiml.gateway.security.attls.notSecure
+      number: ZWEAG501
+      type: ERROR
+      text: "The connection is not secure."
+      reason: "AT-TLS is not properly configured."
+      action: "Review AT-TLS documentation and make sure your configuration is correct for this service."
 
     # Various messages
     # 600-699
