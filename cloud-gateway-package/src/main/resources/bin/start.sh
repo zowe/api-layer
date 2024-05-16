@@ -43,6 +43,8 @@
 # - ZWE_configs_server_maxTotalConnections
 # - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_spring_profiles_active
+# - ZWE_zowe_network_server_attls
+# - ZWE_haInstance_attls_enabled
 # - ZWE_DISCOVERY_SERVICES_LIST
 
 if [ -n "${LAUNCH_COMPONENT}" ]
@@ -84,8 +86,7 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
         --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
 
-ATTLS_ENABLED="false"
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" ]; then
     ATTLS_ENABLED="true"
     ZWE_configs_server_ssl_enabled="false"
 fi

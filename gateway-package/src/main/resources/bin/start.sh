@@ -79,6 +79,8 @@
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_GATEWAY_SHARED_LIBS
 # - ZWE_haInstance_hostname
+# - ZWE_zowe_network_server_attls
+# - ZWE_haInstance_attls_enabled
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
@@ -150,19 +152,19 @@ else
     GATEWAY_LOADER_PATH=""
 fi
 
-ATTLS_ENABLED="false"
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" ]; then
     ATTLS_ENABLED="true"
+    ZWE_configs_spring_profiles_active=attls
     ZWE_configs_server_ssl_enabled="false"
     ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
 fi
-
+ echo ${ZWE_configs_spring_profiles_active}
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
-    httpProtocol="https"
+    externalProtocol="https"
 else
-    httpProtocol="http"
+    externalProtocol="http"
 fi
-
+    echo ${externalProtocol}
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 if [ "$ATTLS_ENABLED" = "true" ]; then
@@ -239,7 +241,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
-    -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
+    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \

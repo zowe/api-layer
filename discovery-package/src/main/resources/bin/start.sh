@@ -37,6 +37,8 @@
 # - ZWE_configs_port - the port the api discovery service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_zowe_network_server_attls
+# - ZWE_haInstance_attls_enabled
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
@@ -99,9 +101,8 @@ if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
 fi
 
-ATTLS_ENABLED="false"
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-    ATTLS_ENABLED="true"
+if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" ]; then
+     ATTLS_ENABLED="true"
     ZWE_configs_server_ssl_enabled="false"
 fi
 
