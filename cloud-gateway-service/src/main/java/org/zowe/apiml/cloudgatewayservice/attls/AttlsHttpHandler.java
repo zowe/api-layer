@@ -23,10 +23,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.ServerCodecConfigurer;
-import org.springframework.http.server.reactive.AbstractServerHttpRequest;
-import org.springframework.http.server.reactive.HttpHandler;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.http.server.reactive.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
@@ -85,8 +82,8 @@ public class AttlsHttpHandler implements BeanPostProcessor {
         return writeError(request, response, getMessage("org.zowe.apiml.gateway.security.attls.notSecure"));
     }
 
-    void updateCertificate(HttpServletRequest request, byte[] certificate) throws CertificateException {
-        if (ArrayUtils.isEmpty(certificate)) return;
+    ServerHttpRequest updateCertificate(ServerHttpRequest request, HttpServletRequest nativeRequest, byte[] certificate) throws CertificateException {
+        if (ArrayUtils.isEmpty(certificate)) return request;
 
         StringBuilder sb = new StringBuilder();
         sb.append("-----BEGIN CERTIFICATE-----").append('\n');
@@ -96,7 +93,20 @@ public class AttlsHttpHandler implements BeanPostProcessor {
         X509Certificate cert = (X509Certificate) CertificateFactory
             .getInstance("X509")
             .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8)));
-        request.setAttribute("javax.servlet.request.X509Certificate", new X509Certificate[] { cert });
+        X509Certificate[] certs = new X509Certificate[] { cert };
+        nativeRequest.setAttribute("javax.servlet.request.X509Certificate", certs);
+
+        return request.mutate().sslInfo(new SslInfo() {
+            @Override
+            public String getSessionId() {
+                return null;
+            }
+
+            @Override
+            public X509Certificate[] getPeerCertificates() {
+                return certs;
+            }
+        }).build();
     }
 
     @Override
@@ -112,7 +122,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
 
                     RequestFacade requestFacade = ((AbstractServerHttpRequest) request).getNativeRequest();
                     requestFacade.setAttribute("attls", attlsContext);
-                    updateCertificate(requestFacade, attlsContext.getCertificate());
+                    request = updateCertificate(request, requestFacade, attlsContext.getCertificate());
                 } catch (IoctlCallException | UnknownEnumValueException | ContextIsNotInitializedException | CertificateException e) {
                     return internalError(request, response);
                 }

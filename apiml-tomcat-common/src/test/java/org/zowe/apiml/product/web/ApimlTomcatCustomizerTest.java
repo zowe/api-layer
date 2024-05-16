@@ -17,7 +17,6 @@ import org.apache.tomcat.util.net.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.commons.attls.AttlsContext;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
@@ -58,24 +57,25 @@ class ApimlTomcatCustomizerTest {
         originalHandler = (AbstractEndpoint.Handler<Object>) ReflectionTestUtils.getField(endpoint, "handler");
         originalHandler = spy(originalHandler);
 
-        TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
         ReflectionTestUtils.setField(endpoint, "handler", originalHandler);
         ReflectionTestUtils.setField(connector.getProtocolHandler(), "handler", originalHandler);
 
         endpoint.setBindOnInit(false);
         connector.init();
 
-        new ApimlTomcatCustomizer<>().customize(factory);
+        new ApimlTomcatCustomizer<>().customize(connector);
 
-        handler = (AbstractEndpoint.Handler<Object>) ReflectionTestUtils.getField(endpoint, "handler");
+        handler = spy((AbstractEndpoint.Handler<Object>) ReflectionTestUtils.getField(endpoint, "handler"));
+        ReflectionTestUtils.setField(endpoint, "handler", handler);
     }
+
     @Test
     void providedCorrectProtocolInConnector_endpointIsConfigured() {
         ApimlTomcatCustomizer<?, ?> customizer = new ApimlTomcatCustomizer<>();
         customizer.afterPropertiesSet();
         Http11NioProtocol protocol = new Http11NioProtocol();
         Connector connector = new Connector(protocol);
-        customizer.customizeConnector(connector);
+        customizer.customize(connector);
         Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
         AbstractEndpoint<?, ?> abstractEndpoint = ReflectionTestUtils.invokeMethod(protocolHandler, "getEndpoint");
         assumeTrue(abstractEndpoint != null);

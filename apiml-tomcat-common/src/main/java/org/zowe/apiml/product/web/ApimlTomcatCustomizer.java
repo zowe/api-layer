@@ -11,7 +11,6 @@
 package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
-
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
@@ -19,11 +18,9 @@ import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
-
 import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
@@ -37,20 +34,16 @@ import java.nio.channels.SocketChannel;
 @Component
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
 @Slf4j
-public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
 
     @PostConstruct
     public void afterPropertiesSet() {
         log.debug("AT-TLS mode is enabled");
+        InboundAttls.setAlwaysLoadCertificate(true);
     }
 
     @Override
-    public void customize(TomcatServletWebServerFactory factory) {
-        InboundAttls.setAlwaysLoadCertificate(true);
-        factory.addConnectorCustomizers(this::customizeConnector);
-    }
-
-    public void customizeConnector(Connector connector) {
+    public void customize(Connector connector) {
         Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
         try {
 

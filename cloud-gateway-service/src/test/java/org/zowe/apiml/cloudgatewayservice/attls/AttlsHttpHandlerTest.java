@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
 import org.springframework.http.server.reactive.HttpHandler;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -93,29 +94,36 @@ class AttlsHttpHandlerTest {
     @Nested
     class CertificateProcessing {
 
+        MockServerHttpRequest request = MockServerHttpRequest.get("/").build();
+
         @Test
         void givenCertificate_whenUpdateCertificate_thenSetInRequest() throws CertificateException {
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            attlsHandlerHandlerWrapper.updateCertificate(request, SAMPLE_CERTIFICATE_DATA);
-            X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            MockHttpServletRequest requestNative = new MockHttpServletRequest();
+            SslInfo sslInfo = attlsHandlerHandlerWrapper.updateCertificate(request, requestNative, SAMPLE_CERTIFICATE_DATA).getSslInfo();
+            X509Certificate[] certificates = (X509Certificate[]) requestNative.getAttribute("javax.servlet.request.X509Certificate");
+
             assertNotNull(certificates);
             assertEquals(1, certificates.length);
             assertNotNull(certificates[0]);
+
+            assertSame(certificates, sslInfo.getPeerCertificates());
         }
 
         @Test
         void givenNullAsCertificate_whenUpdateCertificate_thenDoNothing() throws CertificateException {
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            attlsHandlerHandlerWrapper.updateCertificate(request, null);
-            assertNull(request.getAttribute("javax.servlet.request.X509Certificate"));
+            MockHttpServletRequest requestNative = new MockHttpServletRequest();
+            SslInfo sslInfo = attlsHandlerHandlerWrapper.updateCertificate(request, requestNative, null).getSslInfo();
+            assertNull(requestNative.getAttribute("javax.servlet.request.X509Certificate"));
+            assertNull(sslInfo);
         }
 
 
         @Test
         void givenEmptyArrayAsCertificate_whenUpdateCertificate_thenDoNothing() throws CertificateException {
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            attlsHandlerHandlerWrapper.updateCertificate(request, new byte[0]);
-            assertNull(request.getAttribute("javax.servlet.request.X509Certificate"));
+            MockHttpServletRequest requestNative = new MockHttpServletRequest();
+            SslInfo sslInfo = attlsHandlerHandlerWrapper.updateCertificate(request, requestNative, new byte[0]).getSslInfo();
+            assertNull(requestNative.getAttribute("javax.servlet.request.X509Certificate"));
+            assertNull(sslInfo);
         }
 
     }
@@ -191,7 +199,7 @@ class AttlsHttpHandlerTest {
 
             assertSame(mono, handler.handle(request, response));
 
-            verify(attlsHandlerHandlerWrapper).updateCertificate(requestFacade, SAMPLE_CERTIFICATE_DATA);
+            verify(attlsHandlerHandlerWrapper).updateCertificate(request, requestFacade, SAMPLE_CERTIFICATE_DATA);
             verify(requestFacade).setAttribute("attls", InboundAttls.get());
         }
 
