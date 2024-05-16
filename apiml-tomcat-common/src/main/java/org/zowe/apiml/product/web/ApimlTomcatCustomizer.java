@@ -67,7 +67,7 @@ public class ApimlTomcatCustomizer<S, U> implements WebServerFactoryCustomizer<T
         }
     }
 
-    static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
+    public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
         @Delegate(excludes = Overridden.class)
         private final AbstractEndpoint.Handler<S> handler;

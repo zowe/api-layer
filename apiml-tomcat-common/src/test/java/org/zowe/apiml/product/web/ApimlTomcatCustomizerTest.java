@@ -24,7 +24,6 @@ import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -97,13 +96,14 @@ class ApimlTomcatCustomizerTest {
         ApimlTomcatCustomizer.ApimlAttlsHandler apimlAttlsHandler = new ApimlTomcatCustomizer.ApimlAttlsHandler(handler);
 
         when(socket.getIOChannel()).thenReturn(socketChannel);
-        SocketWrapperBase socketWrapper = getSocketWrapper(socket);
+        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(socket, endpoint);
+
         doAnswer(answer -> {
             int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
             int port = getFd(socketChannel);
             assertEquals(port, fdNumber);
             return AbstractEndpoint.Handler.SocketState.OPEN;
-        }).when(handler).process(socketWrapper, SocketEvent.OPEN_READ);
+        }).when(handler).process(socketWrapperBase, SocketEvent.OPEN_READ);
 
         try {
             ThreadLocal<AttlsContext> mockThreadLocal = mock(ThreadLocal.class);
@@ -120,7 +120,7 @@ class ApimlTomcatCustomizerTest {
             doAnswer(answer -> attlsContextHolder.get()).when(mockThreadLocal).get();
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", mockThreadLocal);
 
-            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, apimlAttlsHandler.process(socketWrapper, SocketEvent.OPEN_READ));
+            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, apimlAttlsHandler.process(socketWrapperBase, SocketEvent.OPEN_READ));
             verify(attlsContextHolder.get()).clean();
         } finally {
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal());
@@ -151,13 +151,13 @@ class ApimlTomcatCustomizerTest {
         ReflectionTestUtils.setField(nio2Channel, "sc", sc);
 
         when(nio2Channel.getIOChannel()).thenReturn(sc);
-        SocketWrapperBase socketWrapper = getSocketWrapper(nio2Channel);
+        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(nio2Channel, endpoint);
         doAnswer(answer -> {
             int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
             int port = getFd(sc);
             assertEquals(port, fdNumber);
             return AbstractEndpoint.Handler.SocketState.OPEN;
-        }).when(handler).process(socketWrapper, SocketEvent.OPEN_READ);
+        }).when(handler).process(socketWrapperBase, SocketEvent.OPEN_READ);
 
         try {
             ThreadLocal<AttlsContext> mockThreadLocal = mock(ThreadLocal.class);
@@ -186,7 +186,6 @@ class ApimlTomcatCustomizerTest {
        assertContextIsClean();
     }
 
-
     private int getFd(SocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         Method getFDMethod = socketChannel.getClass().getDeclaredMethod("getFD");
         getFDMethod.setAccessible(true);
@@ -207,216 +206,6 @@ class ApimlTomcatCustomizerTest {
         return port;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    SocketWrapperBase getSocketWrapper(NioChannel socket) {
-        return new SocketWrapperBase(socket, new NioEndpoint()) {
-
-            @Override
-            protected boolean flushNonBlocking() throws IOException {
-                return true;
-            }
-
-            @Override
-            protected void populateRemoteHost() {
-
-            }
-
-            @Override
-            protected void populateRemoteAddr() {
-
-            }
-
-            @Override
-            protected void populateRemotePort() {
-
-            }
-
-            @Override
-            protected void populateLocalName() {
-
-            }
-
-            @Override
-            protected void populateLocalAddr() {
-
-            }
-
-            @Override
-            protected void populateLocalPort() {
-
-            }
-
-            @Override
-            public int read(boolean block, byte[] b, int off, int len) throws IOException {
-                return 0;
-            }
-
-            @Override
-            public int read(boolean block, ByteBuffer to) throws IOException {
-                return 0;
-            }
-
-            @Override
-            public boolean isReadyForRead() throws IOException {
-                return false;
-            }
-
-            @Override
-            public void setAppReadBufHandler(ApplicationBufferHandler handler) {
-
-            }
-
-            @Override
-            protected void doClose() {
-
-            }
-
-            @Override
-            protected void doWrite(boolean block, ByteBuffer from) throws IOException {
-
-            }
-
-            @Override
-            public void registerReadInterest() {
-
-            }
-
-            @Override
-            public void registerWriteInterest() {
-
-            }
-
-            @Override
-            public SendfileDataBase createSendfileData(String filename, long pos, long length) {
-                return null;
-            }
-
-            @Override
-            public SendfileState processSendfile(SendfileDataBase sendfileData) {
-                return null;
-            }
-
-            @Override
-            public void doClientAuth(SSLSupport sslSupport) throws IOException {
-
-            }
-
-            @Override
-            protected OperationState newOperationState(boolean read, ByteBuffer[] buffers, int offset, int length, BlockingMode block, long timeout, TimeUnit unit, Object attachment, CompletionCheck check, CompletionHandler handler, Semaphore semaphore, VectoredIOCompletionHandler completion) {
-                return null;
-            }
-
-            @Override
-            public SSLSupport getSslSupport() {
-                return null;
-            }
-        };
-    }
-
-    SocketWrapperBase getSocketWrapper(Nio2Channel socket) {
-        return new SocketWrapperBase(socket, new NioEndpoint()) {
-
-            @Override
-            protected boolean flushNonBlocking() throws IOException {
-                return true;
-            }
-
-            @Override
-            protected void populateRemoteHost() {
-
-            }
-
-            @Override
-            protected void populateRemoteAddr() {
-
-            }
-
-            @Override
-            protected void populateRemotePort() {
-
-            }
-
-            @Override
-            protected void populateLocalName() {
-
-            }
-
-            @Override
-            protected void populateLocalAddr() {
-
-            }
-
-            @Override
-            protected void populateLocalPort() {
-
-            }
-
-            @Override
-            public int read(boolean block, byte[] b, int off, int len) throws IOException {
-                return 0;
-            }
-
-            @Override
-            public int read(boolean block, ByteBuffer to) throws IOException {
-                return 0;
-            }
-
-            @Override
-            public boolean isReadyForRead() throws IOException {
-                return false;
-            }
-
-            @Override
-            public void setAppReadBufHandler(ApplicationBufferHandler handler) {
-
-            }
-
-            @Override
-            protected void doClose() {
-
-            }
-
-            @Override
-            protected void doWrite(boolean block, ByteBuffer from) throws IOException {
-
-            }
-
-            @Override
-            public void registerReadInterest() {
-
-            }
-
-            @Override
-            public void registerWriteInterest() {
-
-            }
-
-            @Override
-            public SendfileDataBase createSendfileData(String filename, long pos, long length) {
-                return null;
-            }
-
-            @Override
-            public SendfileState processSendfile(SendfileDataBase sendfileData) {
-                return null;
-            }
-
-            @Override
-            public void doClientAuth(SSLSupport sslSupport) throws IOException {
-
-            }
-
-            @Override
-            protected OperationState newOperationState(boolean read, ByteBuffer[] buffers, int offset, int length, BlockingMode block, long timeout, TimeUnit unit, Object attachment, CompletionCheck check, CompletionHandler handler, Semaphore semaphore, VectoredIOCompletionHandler completion) {
-                return null;
-            }
-
-            @Override
-            public SSLSupport getSslSupport() {
-                return null;
-            }
-        };
-    }
     private FileDescriptor createFileDescriptor(int fd) {
         FileDescriptor out = new FileDescriptor();
         ReflectionTestUtils.setField(out, "fd", fd);
@@ -524,6 +313,102 @@ class ApimlTomcatCustomizerTest {
 
         @Override
         public void close() {
+        }
+
+    }
+
+    private static class SocketWrapperBaseTest extends SocketWrapperBase<Object> {
+
+        public SocketWrapperBaseTest(Object socket, AbstractEndpoint<Object,?> endpoint) {
+            super(socket, endpoint);
+        }
+
+        @Override
+        protected void populateRemoteHost() {
+        }
+
+        @Override
+        protected void populateRemoteAddr() {
+        }
+
+        @Override
+        protected void populateRemotePort() {
+        }
+
+        @Override
+        protected void populateLocalName() {
+        }
+
+        @Override
+        protected void populateLocalAddr() {
+        }
+
+        @Override
+        protected void populateLocalPort() {
+        }
+
+        @Override
+        public int read(boolean block, byte[] b, int off, int len) {
+            return 0;
+        }
+
+        @Override
+        public int read(boolean block, ByteBuffer to) {
+            return 0;
+        }
+
+        @Override
+        public boolean isReadyForRead() {
+            return false;
+        }
+
+        @Override
+        public void setAppReadBufHandler(ApplicationBufferHandler handler) {
+        }
+
+        @Override
+        protected void doClose() {
+        }
+
+        @Override
+        protected boolean flushNonBlocking() {
+            return false;
+        }
+
+        @Override
+        protected void doWrite(boolean block, ByteBuffer from) {
+        }
+
+        @Override
+        public void registerReadInterest() {
+        }
+
+        @Override
+        public void registerWriteInterest() {
+        }
+
+        @Override
+        public SendfileDataBase createSendfileData(String filename, long pos, long length) {
+            return null;
+        }
+
+        @Override
+        public SendfileState processSendfile(SendfileDataBase sendfileData) {
+            return null;
+        }
+
+        @Override
+        public void doClientAuth(SSLSupport sslSupport) {
+        }
+
+        @Override
+        public SSLSupport getSslSupport() {
+            return null;
+        }
+
+        @Override
+        protected <A> SocketWrapperBase<Object>.OperationState<A> newOperationState(boolean read, ByteBuffer[] buffers, int offset, int length, BlockingMode block, long timeout, TimeUnit unit, A attachment, CompletionCheck check, CompletionHandler<Long, ? super A> handler, Semaphore semaphore, SocketWrapperBase<Object>.VectoredIOCompletionHandler<A> completion) {
+            return null;
         }
 
     }
