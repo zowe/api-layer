@@ -61,14 +61,7 @@ configurations.all {
 
 dependencies {
     api project(':apiml-utility')
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '3.2.5'
-// https://mvnrepository.com/artifact/org.apache.httpcomponents.core5/httpcore5-reactive
-    implementation group: 'org.apache.httpcomponents.core5', name: 'httpcore5-reactive', version: '5.2.4'
-
-    // https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-http
-    implementation group: 'io.projectreactor.netty', name: 'reactor-netty-http', version: '1.1.18'
-
+    api project(':apiml-tomcat-common')
 
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.circuit.breaker
@@ -77,6 +70,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.doc
+    implementation libs.netty.reactor.http
 
     implementation libs.bcpkix
     implementation libs.janino
