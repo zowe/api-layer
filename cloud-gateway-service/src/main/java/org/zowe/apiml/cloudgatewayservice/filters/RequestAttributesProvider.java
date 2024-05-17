@@ -18,20 +18,31 @@ import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 @Component
-public class RequestAttributesProvider implements GlobalFilter, Ordered {
+public class RequestAttributesProvider implements WebFilter, GlobalFilter, Ordered {
 
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private void copyAttributes(ServerWebExchange exchange) {
         AbstractServerHttpRequest request = (AbstractServerHttpRequest) exchange.getRequest();
         RequestFacade requestFacade = request.getNativeRequest();
 
         Streams.of(requestFacade.getAttributeNames())
-            .filter(name -> !exchange.getAttributes().containsKey(name))
-            .forEach(name -> exchange.getAttributes().put(name, requestFacade.getAttribute(name)));
+                .filter(name -> !exchange.getAttributes().containsKey(name))
+                .forEach(name -> exchange.getAttributes().put(name, requestFacade.getAttribute(name)));
+    }
 
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        copyAttributes(exchange);
+        return chain.filter(exchange);
+    }
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        copyAttributes(exchange);
         return chain.filter(exchange);
     }
 
