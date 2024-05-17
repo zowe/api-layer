@@ -36,6 +36,7 @@ import java.nio.channels.SocketChannel;
 @Slf4j
 public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
 
+    private static final String INCOMPATIBLE_VERSION_MESSAGE = "ATTLS-Incompatible configuration. Verify ATTLS requirements: Java version, Tomcat version (REST API SDK version). Exception message: ";
     @PostConstruct
     public void afterPropertiesSet() {
         log.debug("AT-TLS mode is enabled");
@@ -89,8 +90,8 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
                 // obtain fd field in FileDescriptor class
                 FILE_DESCRIPTOR_FD = FileDescriptor.class.getDeclaredField("fd");
                 FILE_DESCRIPTOR_FD.setAccessible(true);
-            } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
-                throw new IllegalArgumentException(e);
+            } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | SecurityException e) {
+                throw new IllegalStateException(INCOMPATIBLE_VERSION_MESSAGE + e.getMessage(), e);
             }
         }
 
@@ -130,7 +131,7 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
                 }
             } catch (IllegalArgumentException | IllegalAccessException | IllegalStateException |
                      InvocationTargetException e) {
-                throw new IllegalStateException(  e.getMessage(), e);
+                throw new IllegalStateException(INCOMPATIBLE_VERSION_MESSAGE + e.getMessage(), e);
             }
         }
 

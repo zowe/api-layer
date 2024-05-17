@@ -84,7 +84,7 @@ class ApimlTomcatCustomizerTest {
 
     @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
-    void whenSocketArrives_fileDescriptorIsObtained() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, ContextIsNotInitializedException {
+    void whenSocketArrives_fileDescriptorIsObtained() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         AbstractEndpoint.Handler handler = mock(AbstractEndpoint.Handler.class);
         NioChannel socket = mock(NioChannel.class);
 
@@ -194,7 +194,40 @@ class ApimlTomcatCustomizerTest {
             handler.process(socketWrapperBase, null);
             fail();
         } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
             assertTrue(e.getCause().getMessage().contains("is not supported"), "Exception message was: " + e.getMessage());
+        }
+        assertContextIsClean();
+    }
+
+    @Test
+    void givenConnector_Nio2Channel_whenUnkownAsynchChannelUsed_thenFailed() {
+
+        Nio2Channel socket = mock(Nio2Channel.class);
+        when(socket.getIOChannel()).thenReturn(null);
+        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(socket, endpoint);
+        try {
+            handler.process(socketWrapperBase, null);
+            fail();
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("Asynchronous socket channel is not initialized"), "Exception message was: " + e.getMessage());
+            assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
+        }
+        assertContextIsClean();
+    }
+
+    @Test
+    void givenConnector_NioChannel_whenUnkownChannelUsed_thenFailed() {
+
+        NioChannel socket = mock(NioChannel.class);
+        when(socket.getIOChannel()).thenReturn(null);
+        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(socket, endpoint);
+        try {
+            handler.process(socketWrapperBase, null);
+            fail();
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("Socket channel is not initialized"), "Exception message was: " + e.getMessage());
+            assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
         }
         assertContextIsClean();
     }
