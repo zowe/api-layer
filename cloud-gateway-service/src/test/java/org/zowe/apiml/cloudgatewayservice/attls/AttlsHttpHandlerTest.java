@@ -194,7 +194,7 @@ class AttlsHttpHandlerTest {
         @Test
         void givenValidContext_whenHandle_thenLetProcess() throws CertificateException, ContextIsNotInitializedException {
             Mono<Void> mono = Mono.empty();
-            doReturn(mono).when(originalHandler).handle(request, response);
+            doReturn(mono).when(originalHandler).handle(any(), eq(response));
             mockAttlsContext(createAttlsContext(SECURE));
 
             assertSame(mono, handler.handle(request, response));
