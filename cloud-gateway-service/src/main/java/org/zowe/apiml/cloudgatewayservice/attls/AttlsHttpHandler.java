@@ -13,7 +13,9 @@ package org.zowe.apiml.cloudgatewayservice.attls;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hc.client5.http.utils.Base64;
@@ -25,7 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
@@ -58,7 +59,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
     private final ServerCodecConfigurer serverCodecConfigurer = ServerCodecConfigurer.create();
 
     private Mono<Void> writeError(ServerHttpRequest request, ServerHttpResponse response, String message) {
-        ServerWebExchange serverWebExchange = new DefaultServerWebExchange(request, response, sessionManager, serverCodecConfigurer, localeContextResolver);
+        var serverWebExchange = new DefaultServerWebExchange(request, response, sessionManager, serverCodecConfigurer, localeContextResolver);
         response.setRawStatusCode(500);
         response.getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
         DataBuffer buffer = serverWebExchange.getResponse().bufferFactory().wrap(message.getBytes(StandardCharsets.UTF_8));
@@ -83,30 +84,23 @@ public class AttlsHttpHandler implements BeanPostProcessor {
     }
 
     ServerHttpRequest updateCertificate(ServerHttpRequest request, HttpServletRequest nativeRequest, byte[] certificate) throws CertificateException {
-        if (ArrayUtils.isEmpty(certificate)) return request;
+        if (ArrayUtils.isEmpty(certificate)) {
+            return request;
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append("-----BEGIN CERTIFICATE-----").append('\n');
         sb.append(Base64.encodeBase64String(certificate)).append('\n');
         sb.append("-----END CERTIFICATE-----");
 
-        X509Certificate cert = (X509Certificate) CertificateFactory
+        var cert = (X509Certificate) CertificateFactory
             .getInstance("X509")
             .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8)));
-        X509Certificate[] certs = new X509Certificate[] { cert };
+        var certs = new X509Certificate[] { cert };
         nativeRequest.setAttribute("javax.servlet.request.X509Certificate", certs);
 
-        return request.mutate().sslInfo(new SslInfo() {
-            @Override
-            public String getSessionId() {
-                return null;
-            }
-
-            @Override
-            public X509Certificate[] getPeerCertificates() {
-                return certs;
-            }
-        }).build();
+        var sslInfo = AttlsSslInfo.builder().peerCertificates(certs).build();
+        return request.mutate().sslInfo(sslInfo).build();
     }
 
     @Override
@@ -114,7 +108,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
         if (bean instanceof HttpHandler httpHandler) {
             return (HttpHandler) (request, response) -> {
                 try {
-                    AttlsContext attlsContext = InboundAttls.get();
+                    var attlsContext = InboundAttls.get();
 
                     if (attlsContext.getStatConn() != StatConn.SECURE) {
                         return unsecureError(request, response);
@@ -131,6 +125,15 @@ public class AttlsHttpHandler implements BeanPostProcessor {
             };
         }
         return bean;
+    }
+
+    @Builder
+    @Value
+    static class AttlsSslInfo implements SslInfo {
+
+        private String sessionId;
+        private X509Certificate[] peerCertificates;
+
     }
 
 }
