@@ -34,9 +34,10 @@ import java.nio.channels.SocketChannel;
 @Component
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
 @Slf4j
-public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
+public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer {
 
     private static final String INCOMPATIBLE_VERSION_MESSAGE = "ATTLS-Incompatible configuration. Verify ATTLS requirements: Java version, Tomcat version (REST API SDK version). Exception message: ";
+
     @PostConstruct
     public void afterPropertiesSet() {
         log.debug("AT-TLS mode is enabled");
@@ -47,14 +48,13 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
     public void customize(Connector connector) {
         Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
         try {
-
             Field handlerField = AbstractProtocol.class.getDeclaredField("handler");
             handlerField.setAccessible(true);
-            AbstractEndpoint.Handler<S> handler = (AbstractEndpoint.Handler<S>) handlerField.get(protocolHandler);
+            AbstractEndpoint.Handler<Object> handler = (AbstractEndpoint.Handler<Object>) handlerField.get(protocolHandler);
             handler = new ApimlAttlsHandler<>(handler);
             Method method = AbstractProtocol.class.getDeclaredMethod("getEndpoint");
             method.setAccessible(true);
-            AbstractEndpoint<S, U> abstractEndpoint = (AbstractEndpoint<S, U>) method.invoke(protocolHandler);
+            AbstractEndpoint<Object, Object> abstractEndpoint = (AbstractEndpoint<Object, Object>) method.invoke(protocolHandler);
             abstractEndpoint.setHandler(handler);
         } catch (Exception e) {
             throw new AttlsHandlerException("Not able to add handler.", e);
@@ -65,7 +65,6 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
 
         @Delegate(excludes = Overridden.class)
         private final AbstractEndpoint.Handler<S> handler;
-
 
         // this field cannot be final for testing purpose, but using is the same as final
         @SuppressWarnings("squid:S3008")
@@ -135,7 +134,7 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
             }
         }
 
-        private int getFd(NioChannel socket) throws InvocationTargetException, IllegalAccessException {
+        int getFd(NioChannel socket) throws InvocationTargetException, IllegalAccessException {
             SocketChannel socketChannel = socket.getIOChannel();
             if (socketChannel == null) {
                 throw new IllegalStateException("Socket channel is not initialized");
@@ -143,7 +142,7 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
             return (int) SOCKET_CHANNEL_GET_FDVAL_METHOD.invoke(socketChannel);
         }
 
-        private int getFdAsync(Nio2Channel socket) throws IllegalAccessException {
+        int getFdAsync(Nio2Channel socket) throws IllegalAccessException {
             AsynchronousSocketChannel asch = socket.getIOChannel();
             if (asch == null) {
                 throw new IllegalStateException("Asynchronous socket channel is not initialized");
@@ -158,5 +157,7 @@ public class ApimlTomcatCustomizer<S, U> implements TomcatConnectorCustomizer {
         interface Overridden {
             <S> SocketState process(SocketWrapperBase<S> socket, SocketEvent status);
         }
+
     }
+
 }

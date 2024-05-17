@@ -12,9 +12,10 @@ package org.zowe.apiml.product.web;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
-import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -23,12 +24,11 @@ import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.SocketAddress;
-import java.net.SocketOption;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -38,11 +38,10 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.*;
+import static org.mockito.internal.util.MockUtil.isSpy;
 
 class ApimlTomcatCustomizerTest {
 
@@ -50,206 +49,58 @@ class ApimlTomcatCustomizerTest {
     private AbstractEndpoint<Object, ?> endpoint;
     private AbstractEndpoint.Handler<Object> originalHandler, handler;
 
+    private AttlsContext attlsContext;
+
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() throws LifecycleException {
         endpoint = (AbstractEndpoint<Object, ?>) ReflectionTestUtils.getField(connector.getProtocolHandler(), "endpoint");
         originalHandler = (AbstractEndpoint.Handler<Object>) ReflectionTestUtils.getField(endpoint, "handler");
         originalHandler = spy(originalHandler);
-
         ReflectionTestUtils.setField(endpoint, "handler", originalHandler);
         ReflectionTestUtils.setField(connector.getProtocolHandler(), "handler", originalHandler);
 
         endpoint.setBindOnInit(false);
         connector.init();
 
-        new ApimlTomcatCustomizer<>().customize(connector);
+        new ApimlTomcatCustomizer().customize(connector);
 
-        handler = spy((AbstractEndpoint.Handler<Object>) ReflectionTestUtils.getField(endpoint, "handler"));
-        ReflectionTestUtils.setField(endpoint, "handler", handler);
-    }
+        handler = (AbstractEndpoint.Handler<Object>) ReflectionTestUtils.getField(endpoint, "handler");
 
-    @Test
-    void providedCorrectProtocolInConnector_endpointIsConfigured() {
-        ApimlTomcatCustomizer<?, ?> customizer = new ApimlTomcatCustomizer<>();
-        customizer.afterPropertiesSet();
-        Http11NioProtocol protocol = new Http11NioProtocol();
-        Connector connector = new Connector(protocol);
-        customizer.customize(connector);
-        Http11NioProtocol protocolHandler = (Http11NioProtocol) connector.getProtocolHandler();
-        AbstractEndpoint<?, ?> abstractEndpoint = ReflectionTestUtils.invokeMethod(protocolHandler, "getEndpoint");
-        assumeTrue(abstractEndpoint != null);
-        assertEquals(ApimlTomcatCustomizer.ApimlAttlsHandler.class, abstractEndpoint.getHandler().getClass());
-    }
-
-    @Test
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    void whenSocketArrives_fileDescriptorIsObtained() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        AbstractEndpoint.Handler handler = mock(AbstractEndpoint.Handler.class);
-        NioChannel socket = mock(NioChannel.class);
-
-        Constructor<SocketChannel> channelConstructor = (Constructor<SocketChannel>) Class.forName("sun.nio.ch.SocketChannelImpl").getDeclaredConstructor(SelectorProvider.class);
-        channelConstructor.setAccessible(true);
-        SelectorProvider selectorProvider = mock(SelectorProvider.class);
-        SocketChannel socketChannel = channelConstructor.newInstance(selectorProvider);
-        socketChannel.socket().getLocalPort();
-        ApimlTomcatCustomizer.ApimlAttlsHandler apimlAttlsHandler = new ApimlTomcatCustomizer.ApimlAttlsHandler(handler);
-
-        when(socket.getIOChannel()).thenReturn(socketChannel);
-        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(socket, endpoint);
-
+        ThreadLocal<AttlsContext> contexts = spy((ThreadLocal<AttlsContext>) ReflectionTestUtils.getField(InboundAttls.class, "contexts"));
+        ReflectionTestUtils.setField(InboundAttls.class, "contexts", contexts);
         doAnswer(answer -> {
-            int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
-            int port = getFd(socketChannel);
-            assertEquals(port, fdNumber);
+            if (isSpy(answer.getArgument(0))) {
+                return answer.callRealMethod();
+            }
+
+            attlsContext = answer.getArgument(0);
+            attlsContext = spy(new AttlsContext(
+                (int) ReflectionTestUtils.getField(attlsContext, "id"),
+                (boolean) ReflectionTestUtils.getField(attlsContext, "alwaysLoadCertificate")
+            ) {
+                @Override
+                public void clean() {
+                }
+            });
+            contexts.set(attlsContext);
+            return null;
+        }).when(contexts).set(any());
+    }
+
+    @AfterEach
+    void tearDown() {
+        ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal<AttlsContext>());
+    }
+
+    private void mockOriginalHandlerAnswer(int fd) {
+        doAnswer((Answer<AbstractEndpoint.Handler.SocketState>) invocation -> {
+            assertNotNull(InboundAttls.get());
+            Integer id = (Integer) ReflectionTestUtils.getField(InboundAttls.get(), "id");
+            assertNotNull(id);
+            if (id != fd) return null;
             return AbstractEndpoint.Handler.SocketState.OPEN;
-        }).when(handler).process(socketWrapperBase, SocketEvent.OPEN_READ);
-
-        try {
-            ThreadLocal<AttlsContext> mockThreadLocal = mock(ThreadLocal.class);
-            AtomicReference<AttlsContext> attlsContextHolder = new AtomicReference<>();
-            doAnswer(answer -> {
-                AttlsContext attlsContext = answer.getArgument(0);
-                int fd = (int) ReflectionTestUtils.getField(attlsContext, "id");
-                attlsContextHolder.set(spy(new AttlsContext(fd, false) {
-                    @Override
-                    public void clean() {}
-                }));
-                return null;
-            }).when(mockThreadLocal).set(any());
-            doAnswer(answer -> attlsContextHolder.get()).when(mockThreadLocal).get();
-            ReflectionTestUtils.setField(InboundAttls.class, "contexts", mockThreadLocal);
-
-            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, apimlAttlsHandler.process(socketWrapperBase, SocketEvent.OPEN_READ));
-            verify(attlsContextHolder.get()).clean();
-        } finally {
-            ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal());
-        }
-    }
-
-    @Test
-    void givenConnector_whenNio2ProtocolIsUsed_thenContextIsCreated()
-        throws ClassNotFoundException, NoSuchFieldException
-    {
-        // example of file descriptor
-        FileDescriptor fd = createFileDescriptor(98741);
-
-        // verify using class and required field
-        Field fdField = Class.forName("sun.nio.ch.AsynchronousSocketChannelImpl").getDeclaredField("fd");
-        assertSame(FileDescriptor.class, fdField.getType());
-
-        /**
-         * Original class cannot be instantiated. Right child depends on OS and their parent is abstract and final.
-         * For this reason, the right type is replaced with classes to test and verify structure and process.
-         */
-        ReflectionTestUtils.setField(ApimlTomcatCustomizer.ApimlAttlsHandler.class, "ASYNCHRONOUS_SOCKET_CHANNEL_FD",
-            AsynchronousSocketChannelTest.class.getDeclaredField("fd"));
-
-        // prepare parameters in awaited structure
-        AsynchronousSocketChannel sc = new AsynchronousSocketChannelTest(fd);
-        Nio2Channel nio2Channel = new Nio2Channel(null);
-        ReflectionTestUtils.setField(nio2Channel, "sc", sc);
-
-        when(nio2Channel.getIOChannel()).thenReturn(sc);
-        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(nio2Channel, endpoint);
-        doAnswer(answer -> {
-            int fdNumber = (int) ReflectionTestUtils.getField(InboundAttls.get(), "id");
-            int port = getFd(sc);
-            assertEquals(port, fdNumber);
-            return AbstractEndpoint.Handler.SocketState.OPEN;
-        }).when(handler).process(socketWrapperBase, SocketEvent.OPEN_READ);
-
-        try {
-            ThreadLocal<AttlsContext> mockThreadLocal = mock(ThreadLocal.class);
-            AtomicReference<AttlsContext> attlsContextHolder = new AtomicReference<>();
-            doAnswer(answer -> {
-                AttlsContext attlsContext = answer.getArgument(0);
-                int fd1 = (int) ReflectionTestUtils.getField(attlsContext, "id");
-                attlsContextHolder.set(spy(new AttlsContext(fd1, false) {
-                    @Override
-                    public void clean() {}
-                }));
-                return null;
-            }).when(mockThreadLocal).set(any());
-            doAnswer(answer -> attlsContextHolder.get()).when(mockThreadLocal).get();
-            ReflectionTestUtils.setField(InboundAttls.class, "contexts", mockThreadLocal);
-            doAnswer(answer -> (Answer<AbstractEndpoint.Handler.SocketState>) invocation -> {
-                assertNotNull(InboundAttls.get());
-                Integer id = (Integer) ReflectionTestUtils.getField(InboundAttls.get(), "id");
-                assertNotNull(id);
-                return AbstractEndpoint.Handler.SocketState.OPEN;
-            }).when(originalHandler).process(any(), any());
-
-        } finally {
-            ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal());
-        }
-       assertContextIsClean();
-    }
-
-    @Test
-    void givenConnector_whenUnknownSocketTypeUsed_thenFailed() {
-        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest("unknown type", endpoint);
-
-        try {
-            handler.process(socketWrapperBase, null);
-            fail();
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
-            assertTrue(e.getCause().getMessage().contains("is not supported"), "Exception message was: " + e.getMessage());
-        }
-        assertContextIsClean();
-    }
-
-    @Test
-    void givenConnector_Nio2Channel_whenUnkownAsynchChannelUsed_thenFailed() {
-
-        Nio2Channel socket = mock(Nio2Channel.class);
-        when(socket.getIOChannel()).thenReturn(null);
-        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(socket, endpoint);
-        try {
-            handler.process(socketWrapperBase, null);
-            fail();
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("Asynchronous socket channel is not initialized"), "Exception message was: " + e.getMessage());
-            assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
-        }
-        assertContextIsClean();
-    }
-
-    @Test
-    void givenConnector_NioChannel_whenUnkownChannelUsed_thenFailed() {
-
-        NioChannel socket = mock(NioChannel.class);
-        when(socket.getIOChannel()).thenReturn(null);
-        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(socket, endpoint);
-        try {
-            handler.process(socketWrapperBase, null);
-            fail();
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("Socket channel is not initialized"), "Exception message was: " + e.getMessage());
-            assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
-        }
-        assertContextIsClean();
-    }
-
-    private int getFd(SocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
-        Method getFDMethod = socketChannel.getClass().getDeclaredMethod("getFD");
-        getFDMethod.setAccessible(true);
-        FileDescriptor fd = (FileDescriptor) getFDMethod.invoke(socketChannel);
-        Field fdField = FileDescriptor.class.getDeclaredField("fd");
-        fdField.setAccessible(true);
-        int port = (int) fdField.get(fd);
-        return port;
-    }
-
-    private int getFd(AsynchronousSocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
-        Method getFDMethod = socketChannel.getClass().getDeclaredMethod("getFD");
-        getFDMethod.setAccessible(true);
-        FileDescriptor fd = (FileDescriptor) getFDMethod.invoke(socketChannel);
-        Field fdField = FileDescriptor.class.getDeclaredField("fd");
-        fdField.setAccessible(true);
-        int port = (int) fdField.get(fd);
-        return port;
+        }).when(originalHandler).process(any(), any());
     }
 
     private FileDescriptor createFileDescriptor(int fd) {
@@ -259,14 +110,163 @@ class ApimlTomcatCustomizerTest {
     }
 
     private void assertContextIsClean() {
+        if (attlsContext != null) {
+            verify(attlsContext).clean();
+        }
+
         try {
             InboundAttls.get();
             fail();
         } catch (ContextIsNotInitializedException e) {
-            System.out.println("clean");
             // exception means context is clean, it does not exist
         }
     }
+
+    @Nested
+    class ProtocolTests {
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void givenConnector_whenNioProtocolIsUsed_thenContextIsCreated()
+                throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+                InvocationTargetException, InstantiationException, IOException {
+            // example of file descriptor
+            FileDescriptor fd = null;
+
+            SocketChannel sc = null;
+
+            try (ServerSocket server = new ServerSocket(0)) {
+                new Thread(() -> {
+                    try (Socket s = new Socket("127.0.0.1", server.getLocalPort())) {
+                        // do nothing
+                    } catch (Exception e) {
+                        fail(e); // NOSONAR
+                    }
+                }).start();
+                Socket socket = server.accept();
+                SocketImpl impl = (SocketImpl) ReflectionTestUtils.getField(socket, "impl");
+                fd = (FileDescriptor) ReflectionTestUtils.getField(impl, "fd");
+                // prepare parameters in awaited structure
+                Constructor<SocketChannel> constructor = ((Class<SocketChannel>) Class.forName("sun.nio.ch.SocketChannelImpl"))
+                        .getDeclaredConstructor(SelectorProvider.class, ProtocolFamily.class, FileDescriptor.class, SocketAddress.class);
+                constructor.setAccessible(true);
+                sc = constructor.newInstance(null, StandardProtocolFamily.INET, fd, UnixDomainSocketAddress.of("id"));
+            } catch (SecurityException | IllegalArgumentException e) {
+                fail("Could not get socket", e);
+            }
+
+            NioChannel nioChannel = new NioChannel(null);
+            ReflectionTestUtils.setField(nioChannel, "sc", sc);
+
+            SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(nioChannel, endpoint);
+
+            mockOriginalHandlerAnswer((int) ReflectionTestUtils.getField(fd, FileDescriptor.class, "fd"));
+
+            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, handler.process(socketWrapperBase, null));
+            assertContextIsClean();
+        }
+
+        @Test
+        void givenConnector_whenNio2ProtocolIsUsed_thenContextIsCreated()
+                throws ClassNotFoundException, NoSuchFieldException {
+            // example of file descriptor
+            FileDescriptor fd = createFileDescriptor(98741);
+
+            // verify using class and required field
+            Field fdField = Class.forName("sun.nio.ch.AsynchronousSocketChannelImpl").getDeclaredField("fd");
+            assertSame(FileDescriptor.class, fdField.getType());
+
+            /**
+             * Original class cannot be instantiated. Right child depends on OS and their parent is abstract and final.
+             * For this reason, the right type is replaced with classes to test and verify structure and process.
+             */
+            ReflectionTestUtils.setField(ApimlTomcatCustomizer.ApimlAttlsHandler.class, "ASYNCHRONOUS_SOCKET_CHANNEL_FD",
+                    AsynchronousSocketChannelTest.class.getDeclaredField("fd"));
+
+            // prepare parameters in awaited structure
+            AsynchronousSocketChannel sc = new AsynchronousSocketChannelTest(fd);
+            Nio2Channel nio2Channel = new Nio2Channel(null);
+            ReflectionTestUtils.setField(nio2Channel, "sc", sc);
+            SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(nio2Channel, endpoint);
+
+            mockOriginalHandlerAnswer(98741);
+
+            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, handler.process(socketWrapperBase, null));
+            assertContextIsClean();
+        }
+
+        @Test
+        void givenConnector_whenAprProtocolIsUsed_thenContextIsCreated() {
+            SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest(258963L, endpoint);
+
+            mockOriginalHandlerAnswer(258963);
+
+            assertEquals(AbstractEndpoint.Handler.SocketState.OPEN, handler.process(socketWrapperBase, null));
+            assertContextIsClean();
+        }
+
+        @Test
+        void givenConnector_whenUnknownSocketTypeUsed_thenFailed() {
+            SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest("unknown type", endpoint);
+
+            try {
+                handler.process(socketWrapperBase, null);
+                fail();
+            } catch (IllegalStateException e) {
+                assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
+                assertTrue(e.getCause().getMessage().contains("is not supported"), "Exception message was: " + e.getMessage());
+            }
+            assertContextIsClean();
+        }
+
+    }
+
+    @Nested
+    class ExceptionHandling {
+
+        @Test
+        void givenNioChannelWithoutIOChannel_whenGetFd_thenThrowException() {
+            ApimlTomcatCustomizer.ApimlAttlsHandler<Object> customizer = new ApimlTomcatCustomizer.ApimlAttlsHandler<>(handler);
+            NioChannel socket = mock(NioChannel.class);
+            assertThrows(IllegalStateException.class, () -> customizer.getFd(socket));
+        }
+
+        @Test
+        void givenNio2ChannelWithoutIOChannel_whenGetFdAsync_thenThrowException() {
+            ApimlTomcatCustomizer.ApimlAttlsHandler<Object> customizer = new ApimlTomcatCustomizer.ApimlAttlsHandler<>(handler);
+            Nio2Channel socket = mock(Nio2Channel.class);
+            var ise = assertThrows(IllegalStateException.class, () -> customizer.getFdAsync(socket));
+            assertTrue(ise.getMessage().contains("Asynchronous socket channel is not initialized"));
+        }
+
+        @Test
+        void givenNio2ChannelWithoutFd_whenGetFdAsync_thenThrowException() throws NoSuchFieldException {
+            ApimlTomcatCustomizer.ApimlAttlsHandler<Object> customizer = new ApimlTomcatCustomizer.ApimlAttlsHandler<>(handler);
+            Nio2Channel socket = mock(Nio2Channel.class);
+            AsynchronousSocketChannel sc = new AsynchronousSocketChannelTest(null);
+            doReturn(sc).when(socket).getIOChannel();
+
+            ReflectionTestUtils.setField(customizer, "ASYNCHRONOUS_SOCKET_CHANNEL_FD", AsynchronousSocketChannelTest.class.getDeclaredField("fd"));
+
+            var ise = assertThrows(IllegalStateException.class, () -> customizer.getFdAsync(socket));
+            assertTrue(ise.getMessage().contains("File descriptor is not set"));
+        }
+
+    }
+
+    @Nested
+    class Initialization {
+
+        @Test
+        void givenApimlTomcatCustomizerBean_whenInitialized_thenSetAlwaysLoadCertificate() throws ContextIsNotInitializedException {
+            InboundAttls.setAlwaysLoadCertificate(false);
+            new ApimlTomcatCustomizer().afterPropertiesSet();
+            InboundAttls.init(0);
+            assertTrue((Boolean) ReflectionTestUtils.getField(InboundAttls.get(), "alwaysLoadCertificate"));
+        }
+
+    }
+
     private static class AsynchronousSocketChannelTest extends AsynchronousSocketChannel {
 
         @SuppressWarnings("unused")
