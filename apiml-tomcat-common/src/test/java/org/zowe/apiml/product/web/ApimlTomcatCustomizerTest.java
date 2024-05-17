@@ -186,6 +186,19 @@ class ApimlTomcatCustomizerTest {
        assertContextIsClean();
     }
 
+    @Test
+    void givenConnector_whenUnknownSocketTypeUsed_thenFailed() {
+        SocketWrapperBase<Object> socketWrapperBase = new SocketWrapperBaseTest("unknown type", endpoint);
+
+        try {
+            handler.process(socketWrapperBase, null);
+            fail();
+        } catch (IllegalStateException e) {
+            assertTrue(e.getCause().getMessage().contains("is not supported"), "Exception message was: " + e.getMessage());
+        }
+        assertContextIsClean();
+    }
+
     private int getFd(SocketChannel socketChannel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         Method getFDMethod = socketChannel.getClass().getDeclaredMethod("getFD");
         getFDMethod.setAccessible(true);
@@ -316,7 +329,6 @@ class ApimlTomcatCustomizerTest {
         }
 
     }
-
     private static class SocketWrapperBaseTest extends SocketWrapperBase<Object> {
 
         public SocketWrapperBaseTest(Object socket, AbstractEndpoint<Object,?> endpoint) {
