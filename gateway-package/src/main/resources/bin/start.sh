@@ -152,25 +152,24 @@ else
     GATEWAY_LOADER_PATH=""
 fi
 
-if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" ]; then
+# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
+ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
+
+if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" -o -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
     ATTLS_ENABLED="true"
-    ZWE_configs_spring_profiles_active=attls
+    ZWE_configs_spring_profiles_active="attls"
     ZWE_configs_server_ssl_enabled="false"
     ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
+    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+    ZWE_configs_apiml_service_corsEnabled=true
 fi
- echo ${ZWE_configs_spring_profiles_active}
+
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
     externalProtocol="https"
 else
     externalProtocol="http"
 fi
-    echo ${externalProtocol}
-# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
-ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "$ATTLS_ENABLED" = "true" ]; then
-    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
-    ZWE_configs_apiml_service_corsEnabled=true
-fi
+
 
 # Check if the directory containing the Gateway shared JARs was set and append it to the GW loader path
 if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
