@@ -31,9 +31,9 @@ import java.lang.reflect.Method;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
-@Slf4j
 public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer {
 
     private static final String INCOMPATIBLE_VERSION_MESSAGE = "AT-TLS-Incompatible configuration. Verify AT-TLS requirements: Java version, Tomcat version. Exception message: ";

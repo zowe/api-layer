@@ -25,6 +25,7 @@ import org.springframework.web.server.WebFilterChain;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -42,7 +43,6 @@ class RequestAttributesProviderTest {
     void givenRequestWithAttributes_whenFilter_thenCopyJustMissing(String filterName, BiConsumer<RequestAttributesProvider, ServerWebExchange> filter) {
         RequestFacade requestFacade = new RequestFacade(new Request(null));
 
-        GatewayFilterChain filterChain = mock(GatewayFilterChain.class);
         MockServerHttpRequest request = spy(MockServerHttpRequest.get("/").build());
         doReturn(requestFacade).when(request).getNativeRequest();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
@@ -63,6 +63,16 @@ class RequestAttributesProviderTest {
     @Test
     void givenRequestAttributesProvider_whenOrder_thenIsTheFirstOne() {
         assertEquals(Integer.MIN_VALUE, new RequestAttributesProvider().getOrder());
+    }
+
+    @ParameterizedTest(name = "givenMockRequest_whenFilter_thenDoNoCrash with {0}")
+    @MethodSource("filterInterface")
+    void givenMockRequest_whenFilter_thenDoNoCrash(String filterName, BiConsumer<RequestAttributesProvider, ServerWebExchange> filter) {
+        MockServerHttpRequest request = spy(MockServerHttpRequest.get("/").build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+        RequestAttributesProvider requestAttributesProvider = new RequestAttributesProvider();
+
+        assertDoesNotThrow(() -> filter.accept(requestAttributesProvider, exchange));
     }
 
 }

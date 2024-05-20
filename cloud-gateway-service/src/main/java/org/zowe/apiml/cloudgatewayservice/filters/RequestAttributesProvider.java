@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.filters;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.stream.Streams;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -22,16 +23,23 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class RequestAttributesProvider implements WebFilter, GlobalFilter, Ordered {
 
     private void copyAttributes(ServerWebExchange exchange) {
         AbstractServerHttpRequest request = (AbstractServerHttpRequest) exchange.getRequest();
-        RequestFacade requestFacade = request.getNativeRequest();
+        RequestFacade requestFacade;
+        try {
+            requestFacade = request.getNativeRequest();
+        } catch (Exception e) {
+            log.debug("The current request implementation does not support obtaining of request attributes. Is it running a test?");
+            return;
+        }
 
         Streams.of(requestFacade.getAttributeNames())
-                .filter(name -> !exchange.getAttributes().containsKey(name))
-                .forEach(name -> exchange.getAttributes().put(name, requestFacade.getAttribute(name)));
+            .filter(name -> !exchange.getAttributes().containsKey(name))
+            .forEach(name -> exchange.getAttributes().put(name, requestFacade.getAttribute(name)));
     }
 
     @Override
