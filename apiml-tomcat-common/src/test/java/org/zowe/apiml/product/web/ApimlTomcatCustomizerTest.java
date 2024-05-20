@@ -213,7 +213,7 @@ class ApimlTomcatCustomizerTest {
                 handler.process(socketWrapperBase, null);
                 fail();
             } catch (IllegalStateException e) {
-                assertTrue(e.getMessage().contains("ATTLS-Incompatible configuration. Verify ATTLS requirements"), "Exception message was: " + e.getMessage());
+                assertTrue(e.getMessage().contains("AT-TLS-Incompatible configuration. Verify AT-TLS requirements"), "Exception message was: " + e.getMessage());
                 assertTrue(e.getCause().getMessage().contains("is not supported"), "Exception message was: " + e.getMessage());
             }
             assertContextIsClean();
