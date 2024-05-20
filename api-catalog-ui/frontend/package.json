@@ -45,7 +45,7 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "2.3.0",
         "rxjs": "7.4.0",
-        "sass": "1.62.1",
+        "sass": "1.77.0",
         "stream": "0.0.2",
         "swagger-ui-react": "4.19.1",
         "util": "0.12.4",
