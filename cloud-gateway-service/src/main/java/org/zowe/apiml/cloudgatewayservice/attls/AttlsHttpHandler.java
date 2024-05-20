@@ -88,7 +88,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
             return request;
         }
 
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         sb.append("-----BEGIN CERTIFICATE-----").append('\n');
         sb.append(Base64.encodeBase64String(certificate)).append('\n');
         sb.append("-----END CERTIFICATE-----");
