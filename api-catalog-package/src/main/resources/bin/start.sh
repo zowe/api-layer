@@ -134,10 +134,20 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
         --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
 
-if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" -o -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-    ATTLS_ENABLED="true"
-    ZWE_configs_spring_profiles_active="attls"
-    ZWE_configs_server_ssl_enabled="false"
+ATTLS_ENABLED="false"
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" ]
+  ATTLS_ENABLED="true"
+fi
+# for back compatibility - enabling via Spring profile
+if [ "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+  ATTLS_ENABLED="true"
+  ZWE_configs_server_ssl_enabled="false"
+fi
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
 fi
 
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then

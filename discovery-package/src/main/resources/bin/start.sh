@@ -101,12 +101,25 @@ if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
 fi
 
+ATTLS_ENABLED="false"
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" ]
+  ATTLS_ENABLED="true"
+fi
+# for back compatibility - enabling via Spring profile
+if [ "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+  ATTLS_ENABLED="true"
+  ZWE_configs_server_ssl_enabled="false"
+fi
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "${ZWE_zowe_network_server_attls}" = "true" -o "${ZWE_haInstance_attls_enabled}" = "true" -o -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-    ZWE_configs_spring_profiles_active="attls"
-    ZWE_configs_server_ssl_enabled="false"
+if [ ATTLS_ENABLED="true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 
