@@ -189,6 +189,7 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
     systemProperty "environment.offPlatform", "true"
     systemProperty "environment.zos.target", "true"
     systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
 
     useJUnitPlatform {
         excludeTags(

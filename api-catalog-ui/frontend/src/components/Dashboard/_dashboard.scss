@@ -40,7 +40,7 @@
 
   .dashboard-grid-header {
     flex-basis: content;
-    padding: 0 var( --spaceHuge );
+    padding: 0 var( --spaceMedium );
     padding-right: $gridHeaderSpacing;
     border-bottom: 2px solid var( --criticalShade10 );
     margin-bottom: var( --spaceMedium );
@@ -136,11 +136,6 @@
     width: 128px;
     height: 200px;
   }
-
-  .registered {
-    position: relative;
-    bottom: 5px;
-  }
 }
 
 .floating-button {
@@ -192,7 +187,8 @@ body {
     }//end homepage/dashboard
   
     .homepage-content {
-      max-width: 1250px;
+      max-width: 1086px;
+      padding-bottom: var( --spaceHuge );
       max-height: calc(100vh - #{var( --headerHeight )});
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -335,13 +331,39 @@ body {
           }
           &.homepage-header-images {
             width: 100%;
-            padding-left: 80px;
+            padding-left: 175px;
+            margin-top: 20px;
     
             .homepage-main-img {
               width: 501px;
             }
             .homepage-header-img {
               position: absolute;
+            }
+            .homepage-security-img {
+              height: 45px;
+              left: 290px;
+              bottom: 45px;
+            }
+            .homepage-payment-img {
+              height: 67px;
+              left: 118px;
+              top: 105px;
+            }
+            .homepage-mainframe-img {
+              height: 89px;
+              left: var( --spaceSmall );
+              top: -10px;
+            }
+            .homepage-enterprise-img {
+              height: 45px;
+              left: 295px;
+              top: 55px;
+            }
+            .homepage-storage-img {
+              height: 67px;
+              left: 264px;
+              top: -42px;
             }
           }
         }

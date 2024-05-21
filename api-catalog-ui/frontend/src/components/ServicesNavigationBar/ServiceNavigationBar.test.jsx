@@ -113,7 +113,6 @@ describe('>>> ServiceNavigationBar component tests', () => {
         expect(serviceNavigationBar.find('.title')).toBeDefined();
         expect(serviceNavigationBar.find('.mobile-menu-close-btn icon-btn')).toBeDefined();
         expect(serviceNavigationBar.find('.mobile-menu-close')).toBeDefined();
-        expect(serviceNavigationBar.find('.mobile-view header-menu')).toBeDefined();
     });
 
     it('should handle browser go back event', () => {
