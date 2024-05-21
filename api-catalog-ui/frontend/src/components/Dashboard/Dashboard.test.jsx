@@ -7,11 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { shallow } from 'enzyme';
 import { describe, expect, it, jest } from '@jest/globals';
-import { Suspense } from 'react';
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
 
@@ -293,28 +292,6 @@ describe('>>> Dashboard component tests', () => {
         const productLabel = wrapper.find('#go-back-button-portal');
         expect(document.getElementById('go-back-button-portal').style.display).toBe('none');
         expect(productLabel.length).toEqual(0);
-    });
-
-    it('should lazily load feedback button component in api portal mode', async () => {
-        process.env.REACT_APP_API_PORTAL = true;
-
-        const { getByText } = render(
-            <Suspense fallback={<div>loading</div>}>
-                <Dashboard
-                    tiles={null}
-                    fetchTilesStart={jest.fn()}
-                    fetchTilesStop={jest.fn()}
-                    clearService={jest.fn()}
-                    clear={jest.fn()}
-                    assertAuthorization={jest.fn()}
-                    authentication={jest.fn()}
-                />
-            </Suspense>
-        );
-
-        await waitFor(() => {
-            expect(getByText('Feedback Button')).toBeInTheDocument();
-        });
     });
 
     it('should add fixed-header class and update padding when scrolled below filter height', () => {

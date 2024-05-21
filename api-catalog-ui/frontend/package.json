@@ -84,6 +84,7 @@
         "@testing-library/jest-dom": "6.1.4",
         "@testing-library/react": "12.1.2",
         "@testing-library/user-event": "13.5.0",
+        "ajv": "8.13.0",
         "ansi-regex": "5.0.1",
         "body-parser": "1.19.2",
         "caniuse-lite": "1.0.30001600",
