@@ -259,15 +259,11 @@ describe('>>> Swagger component tests', () => {
         expect(container).not.toBeNull();
     });
 
-    const title = {
-        querySelector: jest.fn(),
+    const divInfo = {
         appendChild: jest.fn(),
     };
-    const divInfo = {
-        querySelector: jest.fn(),
-    };
 
-    it('should replace inner element in title with version', () => {
+    it('should create element if does not exist', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const service = {
             serviceId: 'testservice',
@@ -295,17 +291,15 @@ describe('>>> Swagger component tests', () => {
 
         wrapper.setProps({ selectedVersion: 'v2' });
 
+        expect(elementsByClassNameSpy).toHaveBeenCalled();
         expect(querySelectorSpy).toHaveBeenCalled();
-        expect(querySelectorSpy).toHaveBeenCalledWith('.information-container');
-        expect(querySelectorDivSpy).toHaveBeenCalled();
-        expect(querySelectorDivSpy).toHaveBeenCalledWith('.title');
-        expect(querySelectorTitleSpy).toHaveBeenCalled();
-        expect(querySelectorTitleSpy).toHaveBeenCalledWith('.version-stamp');
-        expect(titleSpy).toHaveBeenCalled();
-        expect(titleSpy).toHaveBeenCalledWith('myVersion');
+        expect(querySelectorSpy).toHaveBeenCalledWith('.info');
+        expect(createElementSpy).toHaveBeenCalled();
+        expect(createElementSpy).toHaveBeenCalledWith('span');
+        expect(divInfoSpy).toHaveBeenCalled();
     });
 
-    it('should NOT replace inner element in title with version if information-container missing', () => {
+    it('should not create element if span already exists', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const service = {
             serviceId: 'testservice',
@@ -368,16 +362,14 @@ describe('>>> Swagger component tests', () => {
 
         wrapper.setProps({ selectedVersion: 'v2' });
 
-        expect(querySelectorSpy).toHaveBeenCalled();
-        expect(querySelectorSpy).toHaveBeenCalledWith('.information-container');
-        expect(querySelectorDivSpy).toHaveBeenCalled();
-        expect(querySelectorDivSpy).toHaveBeenCalledWith('.title');
-        expect(querySelectorTitleSpy).not.toHaveBeenCalled();
-        expect(titleSpy).not.toHaveBeenCalled();
+        expect(elementsByClassNameSpy).toHaveBeenCalled();
+        expect(getElementByIdSpy).toHaveBeenCalledWith('filter-label');
+        expect(querySelectorSpy).not.toHaveBeenCalled();
+        expect(createElementSpy).not.toHaveBeenCalled();
+        expect(divInfoSpy).not.toHaveBeenCalled();
     });
 
-    it('should NOT replace inner element in title with version if version missing', () => {
-        process.env.REACT_APP_API_PORTAL = true;
+    it('should not create element if api portal disabled and element does not exist', () => {
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
@@ -413,7 +405,7 @@ describe('>>> Swagger component tests', () => {
         expect(titleSpy).not.toHaveBeenCalled();
     });
 
-    it('should not replace inner element if api portal disabled', () => {
+    it('should not create element api portal disabled and span already exists', () => {
         const service = {
             serviceId: 'testservice',
             title: 'Spring Boot Enabler Service',
@@ -431,7 +423,8 @@ describe('>>> Swagger component tests', () => {
                 language: 'java',
             },
         };
-        const querySelectorSpy = jest.spyOn(document, 'querySelector');
+        jest.spyOn(document, 'getElementById').mockImplementation(() => <span id="filter-label" />);
+        const createElement = jest.spyOn(document, 'createElement');
         const wrapper = shallow(
             <div>
                 <SwaggerUIApiml selectedService={service} />
@@ -439,7 +432,7 @@ describe('>>> Swagger component tests', () => {
         );
         const swaggerDiv = wrapper.find('span');
 
-        expect(swaggerDiv).toBeDefined();
-        expect(querySelectorSpy).not.toHaveBeenCalled();
+        expect(swaggerDiv.length).toEqual(0);
+        expect(createElement).not.toHaveBeenCalled();
     });
 });

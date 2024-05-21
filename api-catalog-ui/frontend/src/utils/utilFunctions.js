@@ -204,7 +204,7 @@ export const findAndFormatZowe = (title) => {
             const after = title.substring(zoweIndex + 5);
             return (
                 <span>
-                    {before}Zowe<sup className="registered">&reg;</sup> {after}
+                    {before}Zowe<sup>&reg;</sup> {after}
                 </span>
             );
         }

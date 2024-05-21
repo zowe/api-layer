@@ -269,11 +269,9 @@ export default class ServiceTab extends Component {
                                 </div>
                             )}
 
-                            {!apiPortalEnabled && (
-                                <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
-                                    {selectedService.description}
-                                </Typography>
-                            )}
+                            <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
+                                {selectedService.description}
+                            </Typography>
                             <br />
                             {isAPIPortal() && documentation?.label && documentation?.url && (
                                 <Typography variant="subtitle2">
