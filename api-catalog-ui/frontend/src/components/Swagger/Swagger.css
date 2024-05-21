@@ -1183,7 +1183,6 @@
     width: 100%;
     padding: 0 10px;
     border-collapse: collapse;
-    table-layout: fixed;
 }
 
 .swagger-ui table.model tbody tr td {
