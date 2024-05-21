@@ -31,7 +31,6 @@
 
 .swagger-ui *, .swagger-ui :after, .swagger-ui :before {
     background-color: transparent;
-    overflow: scroll;
     box-sizing: inherit
 }
 
@@ -1184,7 +1183,6 @@
     width: 100%;
     padding: 0 10px;
     border-collapse: collapse;
-    table-layout: fixed;
 }
 
 .swagger-ui table.model tbody tr td {
