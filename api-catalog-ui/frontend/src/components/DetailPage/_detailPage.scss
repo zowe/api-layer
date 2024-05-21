@@ -37,7 +37,7 @@ body .detail-content {
       &.information-container,
       &.filter {
         margin-top: var( --spaceSmallest );
-        display: none;
+
         a {
           @include blueLink();
         }

@@ -81,7 +81,7 @@ body {
     border: 1px solid var( --surface15 );
     border-radius: var( --borderRadius1 );
 
-    &:hover, &:focus{
+    &:hover {
       box-shadow: 1px 3px 4px 0px rgba(0, 0, 0, 0.45);
     }
 
