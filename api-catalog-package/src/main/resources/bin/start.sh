@@ -135,15 +135,12 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
 
 ATTLS_ENABLED="false"
-if [ "${ZWE_zowe_network_server_tls_attls}" = "true" ]
+# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
   ATTLS_ENABLED="true"
-fi
-# for back compatibility - enabling via Spring profile
-if [ "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-  ATTLS_ENABLED="true"
-  ZWE_configs_server_ssl_enabled="false"
 fi
 if [ "${ATTLS_ENABLED}" = "true" ]; then
+  ZWE_configs_server_ssl_enabled="false"
   if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
     ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
   fi
