@@ -147,7 +147,9 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
         --add-opens=java.base/java.util=ALL-UNNAMED
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+        --add-opens=java.base/java.io=ALL-UNNAMED"
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
