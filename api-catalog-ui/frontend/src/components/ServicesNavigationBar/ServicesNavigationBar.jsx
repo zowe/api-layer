@@ -14,7 +14,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
-import { closeMobileMenu, isAPIPortal, findAndFormatZowe } from '../../utils/utilFunctions';
+import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import MenuCloseImage from '../../assets/images/xmark.svg';
 import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 import { sortServices } from '../../selectors/selectors';
@@ -87,7 +87,7 @@ export default class ServicesNavigationBar extends Component {
         }
         const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
             <Tooltip title={label} placement="bottom">
-                <div className={classes.truncatedTabLabel}>{findAndFormatZowe(label)}</div>
+                <div className={classes.truncatedTabLabel}>{label}</div>
             </Tooltip>
         ));
         return (

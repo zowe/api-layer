@@ -20,14 +20,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import zoweImage from '../../assets/images/zowe-horizontal-color.png';
-
-import countAdditionalContents, {
-    customUIStyle,
-    isAPIPortal,
-    closeMobileMenu,
-    findAndFormatZowe,
-} from '../../utils/utilFunctions';
+import countAdditionalContents, { customUIStyle, isAPIPortal, closeMobileMenu } from '../../utils/utilFunctions';
 
 const loadFeedbackButton = () => {
     if (isAPIPortal()) {
@@ -135,7 +128,6 @@ export default class DetailPage extends Component {
         if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
-
         return (
             <div className="main">
                 {apiPortalEnabled && <FeedbackButton />}
@@ -189,7 +181,7 @@ export default class DetailPage extends Component {
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
                                         <h2 id="title" className="text-block-11 title1">
-                                            {findAndFormatZowe(tiles[0].title)}
+                                            {tiles[0].title}
                                         </h2>
                                     )}
                                 </div>
@@ -203,46 +195,6 @@ export default class DetailPage extends Component {
                                     </div>
                                 )}
                             </div>
-                            {/* Extra Zowe information */}
-                            {apiPortalEnabled && hasTiles && tiles[0].title?.toLowerCase().indexOf('zowe') >= 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
-                                    <div>
-                                        <img id="zowe" alt="Zowe" src={zoweImage} className="hover" />
-                                    </div>
-
-                                    <div>
-                                        <Link
-                                            rel="noopener noreferrer"
-                                            target="_blank"
-                                            href="https://www.zowe.org/"
-                                            className="externalLink"
-                                        >
-                                            Zowe
-                                        </Link>
-                                        <sup>&reg;</sup> is a project of the&nbsp;
-                                        <Link
-                                            rel="noopener noreferrer"
-                                            target="_blank"
-                                            href="https://openmainframeproject.org/ "
-                                            className="externalLink"
-                                        >
-                                            Open Mainframe Project
-                                        </Link>
-                                        &nbsp;Zowe, the Zowe logo and the Open Mainframe Project are trademarks of&nbsp;
-                                        <Link
-                                            rel="noopener noreferrer"
-                                            target="_blank"
-                                            href="https://www.linuxfoundation.org/ "
-                                            className="externalLink"
-                                        >
-                                            The Linux Foundation.
-                                        </Link>
-                                        &nbsp;Broadcom is a Platinum member of Open Mainframe Project and a leading
-                                        contributor of several projects.
-                                    </div>
-                                    <br />
-                                </div>
-                            )}
                             {apiPortalEnabled && !onlySwaggerPresent && (
                                 <div id="right-resources-menu">
                                     <Typography id="resources-menu-title" variant="subtitle1">
