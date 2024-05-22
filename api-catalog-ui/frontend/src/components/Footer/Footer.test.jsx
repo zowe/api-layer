@@ -11,21 +11,9 @@ import * as enzyme from 'enzyme';
 import Footer from './Footer';
 
 describe('>>> Footer component tests', () => {
-    it('should not display a Link', () => {
+    it('should display test build info', () => {
         const footer = enzyme.shallow(<Footer />);
-        expect(footer.find('footer').length).toBeFalsy();
-    });
-
-    it('should display link', () => {
-        process.env.REACT_APP_CA_ENV = true;
-        const footer = enzyme.shallow(<Footer />);
-        expect(footer.find('Link').length).toBeDefined();
-    });
-
-    it('should show the paragraph', () => {
-        process.env.REACT_APP_CA_ENV = true;
-        const footer = enzyme.shallow(<Footer />);
-        const paragraph = footer.find('p');
-        expect(paragraph).toExist();
+        expect(footer.find('footer').length).toBeDefined();
+        expect(footer.find('footer').contains('Version: test build info'));
     });
 });
