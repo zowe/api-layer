@@ -33,7 +33,7 @@ public class AttlsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             byte[] certificate = InboundAttls.getCertificate();
-            if (certificate != null && InboundAttls.getCertificate().length > 0) {
+            if (certificate != null && certificate.length > 0) {
                 populateRequestWithCertificate(request, certificate);
             }
         } catch (Exception e) {
@@ -52,7 +52,7 @@ public class AttlsFilter extends OncePerRequestFilter {
             .generateCertificate(new ByteArrayInputStream(s.getBytes()));
         X509Certificate[] certificates = new X509Certificate[1];
         certificates[0] = certificate;
-        request.setAttribute("javax.servlet.request.X509Certificate", certificates);
+        request.setAttribute("jakarta.servlet.request.X509Certificate", certificates);
     }
 
 }
