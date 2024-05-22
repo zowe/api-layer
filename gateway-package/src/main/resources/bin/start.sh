@@ -92,6 +92,11 @@ fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 
+if [ -z "${LIBRARY_PATH}" ]
+then
+    LIBRARY_PATH="../common-java-lib/bin/"
+fi
+
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
 
@@ -190,9 +195,7 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-if [ -n "${LIBRARY_PATH}" ]; then
-  LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
-fi
+LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
 then
