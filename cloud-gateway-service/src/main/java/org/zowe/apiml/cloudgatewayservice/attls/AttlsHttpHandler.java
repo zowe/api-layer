@@ -88,14 +88,17 @@ public class AttlsHttpHandler implements BeanPostProcessor {
             return request;
         }
 
-        var sb = new StringBuilder();
-        sb.append("-----BEGIN CERTIFICATE-----").append('\n');
-        sb.append(Base64.encodeBase64String(certificate)).append('\n');
-        sb.append("-----END CERTIFICATE-----");
+        var str = String.format("""
+            -----BEGIN CERTIFICATE-----
+            %s
+            -----END CERTIFICATE-----
+            """,
+            Base64.encodeBase64String(certificate)
+        );
 
         var cert = (X509Certificate) CertificateFactory
             .getInstance("X509")
-            .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8)));
+            .generateCertificate(new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
         var certs = new X509Certificate[] { cert };
         nativeRequest.setAttribute("javax.servlet.request.X509Certificate", certs);
 

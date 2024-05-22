@@ -30,7 +30,7 @@
 # - ZWE_components_gateway_apiml_security_authorization_provider
 # - ZWE_components_gateway_apiml_security_authorization_resourceClass
 # - ZWE_components_gateway_port - the port the api gateway service will use
-# - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
@@ -44,8 +44,7 @@
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_GATEWAY_HOST
-# - ZWE_zowe_network_server_attls
-# - ZWE_haInstance_attls_enabled
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates

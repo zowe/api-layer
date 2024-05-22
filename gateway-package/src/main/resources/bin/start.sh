@@ -79,8 +79,7 @@
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_GATEWAY_SHARED_LIBS
 # - ZWE_haInstance_hostname
-# - ZWE_zowe_network_server_attls
-# - ZWE_haInstance_attls_enabled
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 

@@ -43,8 +43,7 @@
 # - ZWE_configs_server_maxTotalConnections
 # - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_spring_profiles_active
-# - ZWE_zowe_network_server_attls
-# - ZWE_haInstance_attls_enabled
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
 
 if [ -n "${LAUNCH_COMPONENT}" ]

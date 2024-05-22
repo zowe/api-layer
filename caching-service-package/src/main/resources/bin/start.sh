@@ -24,7 +24,7 @@
 # - LIBRARY_PATH
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_components_gateway_port - the port the api gateway service will use
-# - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
 # - ZWE_configs_storage_evictionStrategy
@@ -41,8 +41,7 @@
 # - ZWE_configs_port - the port the caching service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
-# - ZWE_zowe_network_server_attls
-# - ZWE_haInstance_attls_enabled
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
