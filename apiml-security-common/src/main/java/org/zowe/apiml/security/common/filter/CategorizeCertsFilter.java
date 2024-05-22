@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
-    private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
+    private static final String ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
     private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
     private static final String CLIENT_CERT_HEADER = "Client-Cert";
 
@@ -66,7 +66,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null) {
             if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
@@ -81,7 +81,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             }
 
             request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-            request.setAttribute(ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
+            request.setAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
     }
