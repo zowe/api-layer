@@ -85,17 +85,12 @@
 
 if [ -n "${LAUNCH_COMPONENT}" ]
 then
-    JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
+    JAR_FILE="${LAUNCH_COMPONENT}/gateway-service.jar"
 else
-    JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
+    JAR_FILE="$(pwd)/bin/gateway-service.jar"
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
-
-if [ -z "${LIBRARY_PATH}" ]
-then
-    LIBRARY_PATH="../common-java-lib/bin/"
-fi
 
 # API Mediation Layer Debug Mode
 export LOG_LEVEL=
@@ -195,7 +190,9 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+if [ -n "${LIBRARY_PATH}" ]; then
+  LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+fi
 
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
 then
@@ -207,7 +204,9 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
         --add-opens=java.base/java.util=ALL-UNNAMED
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+        --add-opens=java.base/java.io=ALL-UNNAMED"
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
