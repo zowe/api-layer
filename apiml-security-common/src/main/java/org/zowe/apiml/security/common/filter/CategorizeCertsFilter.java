@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
-    private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
+    private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
     private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
     private static final String CLIENT_CERT_HEADER = "Client-Cert";
 
@@ -131,7 +131,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     }
 
     /**
-     * This filter removes all certificates in attribute "javax.servlet.request.X509Certificate" which has no relations
+     * This filter removes all certificates in attribute "jakarta.servlet.request.X509Certificate" which has no relations
      * with private certificate of apiml and then call original implementation (without "foreign" certificates)
      *
      * @param request     request to process

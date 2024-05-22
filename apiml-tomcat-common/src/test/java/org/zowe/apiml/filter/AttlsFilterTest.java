@@ -58,7 +58,7 @@ class AttlsFilterTest {
 
         HttpServletRequest request = new MockHttpServletRequest();
         attlsFilter.populateRequestWithCertificate(request, Base64.decodeBase64(certificate));
-        assertNotNull(request.getAttribute("javax.servlet.request.X509Certificate"));
+        assertNotNull(request.getAttribute("jakarta.servlet.request.X509Certificate"));
     }
 
     @Test
