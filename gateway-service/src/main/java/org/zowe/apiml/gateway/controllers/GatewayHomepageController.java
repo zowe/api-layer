@@ -110,12 +110,12 @@ public class GatewayHomepageController {
     }
 
     private void initializeAuthenticationAttributes(Model model) {
-        String authStatusText = "The Authentication service is not running";
+        String authStatusText = "The Authentication Service is not running";
         String authIconName = WARNING_ICON_NAME;
         boolean authUp = authorizationServiceUp();
 
         if (authUp) {
-            authStatusText = "The Authentication service is running";
+            authStatusText = "The Authentication Service is running";
             authIconName = SUCCESS_ICON_NAME;
         }
 
