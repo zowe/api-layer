@@ -10,7 +10,7 @@ ext {
     springWebTestClientVersion = '4.4.0'
 
     attlsVersion = '1.21.3'
-    awaitilityVersion = '3.0.0'
+    awaitilityVersion = '4.2.1'
     awsSdkVersion = '1.12.710'
     bouncyCastleVersion = '1.78.1'
     bootstrapVersion = '4.3.1'
