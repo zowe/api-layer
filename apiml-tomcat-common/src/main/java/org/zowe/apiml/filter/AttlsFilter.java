@@ -20,6 +20,7 @@ import org.zowe.commons.attls.InboundAttls;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -44,15 +45,19 @@ public class AttlsFilter extends OncePerRequestFilter {
     }
 
     public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {
-        byte[] encodedCert = Base64.encodeBase64(rawCertificate, false);
-        String s = new String(encodedCert);
-        s = "-----BEGIN CERTIFICATE-----\n" + s + "\n-----END CERTIFICATE-----";
-        X509Certificate certificate = (X509Certificate) CertificateFactory
+        var str = String.format("""
+            -----BEGIN CERTIFICATE-----
+            %s
+            -----END CERTIFICATE-----
+            """,
+            Base64.encodeBase64String(rawCertificate)
+        );
+
+        var certificate = (X509Certificate) CertificateFactory
             .getInstance("X509")
-            .generateCertificate(new ByteArrayInputStream(s.getBytes()));
-        X509Certificate[] certificates = new X509Certificate[1];
-        certificates[0] = certificate;
-        request.setAttribute("jakarta.servlet.request.X509Certificate", certificates);
+            .generateCertificate(new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
+        var certs = new X509Certificate[] { certificate };
+        request.setAttribute("jakarta.servlet.request.X509Certificate", certs);
     }
 
 }

@@ -83,8 +83,8 @@ public class AttlsHttpHandler implements BeanPostProcessor {
         return writeError(request, response, getMessage("org.zowe.apiml.gateway.security.attls.notSecure"));
     }
 
-    ServerHttpRequest updateCertificate(ServerHttpRequest request, HttpServletRequest nativeRequest, byte[] certificate) throws CertificateException {
-        if (ArrayUtils.isEmpty(certificate)) {
+    ServerHttpRequest updateCertificate(ServerHttpRequest request, HttpServletRequest nativeRequest, byte[] rawCertificate) throws CertificateException {
+        if (ArrayUtils.isEmpty(rawCertificate)) {
             return request;
         }
 
@@ -93,13 +93,13 @@ public class AttlsHttpHandler implements BeanPostProcessor {
             %s
             -----END CERTIFICATE-----
             """,
-            Base64.encodeBase64String(certificate)
+            Base64.encodeBase64String(rawCertificate)
         );
 
-        var cert = (X509Certificate) CertificateFactory
+        var certificate = (X509Certificate) CertificateFactory
             .getInstance("X509")
             .generateCertificate(new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
-        var certs = new X509Certificate[] { cert };
+        var certs = new X509Certificate[] { certificate };
         nativeRequest.setAttribute("jakarta.servlet.request.X509Certificate", certs);
 
         var sslInfo = AttlsSslInfo.builder().peerCertificates(certs).build();

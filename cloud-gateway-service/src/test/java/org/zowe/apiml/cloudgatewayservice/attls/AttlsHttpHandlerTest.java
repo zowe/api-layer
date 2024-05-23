@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.attls;
 
 import org.apache.catalina.connector.RequestFacade;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -67,7 +68,7 @@ class AttlsHttpHandlerTest {
         C0lqInPB7xGphhYZ6cV9/c3u/B3r9iK1IHQffhdANStogiQrzGk2yvUg0/t0qmle
         PzYuxfM=""";
 
-    byte[] SAMPLE_CERTIFICATE_DATA = Base64.getDecoder().decode(SAMPLE_CERTIFICATE);
+    byte[] SAMPLE_CERTIFICATE_DATA = Base64.getDecoder().decode(StringUtils.deleteWhitespace(SAMPLE_CERTIFICATE));
 
     private MessageService messageService = mock(MessageService.class);
     private LocaleContextResolver localeContextResolver = mock(LocaleContextResolver.class);
