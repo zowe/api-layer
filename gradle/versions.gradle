@@ -52,7 +52,7 @@ dependencyResolutionManagement {
             version('lombok', '1.18.32')
             version('netty', '4.1.110.Final')
             version('nettyReactor', '1.1.19')
-            version('nimbusJoseJwt', '9.37.3') // New minor versions TODO try
+            version('nimbusJoseJwt', '9.37.3')
             version('openApiDiff', '2.0.1')
             version('picocli', '4.7.6')
 
