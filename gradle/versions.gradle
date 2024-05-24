@@ -2,8 +2,8 @@ dependencyResolutionManagement {
     versionCatalogs {
         libs {
             // for node projects
-            version('projectNode', '18.20.3')
-            version('projectNpm', '9.6.3')
+            version('projectNode', '18.14.0')
+            version('projectNpm', '9.3.1')
 
             version('springBoot', '3.2.5')
             version('springCloudNetflix', '4.1.1')
