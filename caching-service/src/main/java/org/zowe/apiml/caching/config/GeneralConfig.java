@@ -15,7 +15,6 @@ import lombok.ToString;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
@@ -31,10 +30,5 @@ public class GeneralConfig implements WebMvcConfigurer {
     private String evictionStrategy;
     @Value("${caching.storage.size:100}")
     private int maxDataSize;
-
-    @Override
-    public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
-    }
 
 }

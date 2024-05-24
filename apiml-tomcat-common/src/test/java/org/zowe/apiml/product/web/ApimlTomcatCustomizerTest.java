@@ -148,9 +148,9 @@ class ApimlTomcatCustomizerTest {
                 fd = (FileDescriptor) ReflectionTestUtils.getField(impl, "fd");
                 // prepare parameters in awaited structure
                 Constructor<SocketChannel> constructor = ((Class<SocketChannel>) Class.forName("sun.nio.ch.SocketChannelImpl"))
-                        .getDeclaredConstructor(SelectorProvider.class, ProtocolFamily.class, FileDescriptor.class, SocketAddress.class);
+                        .getDeclaredConstructor(SelectorProvider.class, FileDescriptor.class, InetSocketAddress.class);
                 constructor.setAccessible(true);
-                sc = constructor.newInstance(null, StandardProtocolFamily.INET, fd, null);
+                sc = constructor.newInstance(null, fd, null);
             } catch (SecurityException | IllegalArgumentException e) {
                 fail("Could not get socket", e);
             }
