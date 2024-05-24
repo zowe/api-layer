@@ -31,7 +31,6 @@
 
 .swagger-ui *, .swagger-ui :after, .swagger-ui :before {
     background-color: transparent;
-    overflow: scroll;
     box-sizing: inherit
 }
 
@@ -113,7 +112,7 @@
 .swagger-ui .view-line-link {
     position: relative;
     top: 3px;
-    width: 20px;
+    width: 100%;
     margin: 0 5px;
     cursor: crosshair;
     -webkit-transition: all .5s;
@@ -232,11 +231,17 @@
     font-size: 14px;
     text-align: left;
     -webkit-box-flex: 1;
+    width: 500px;
     -ms-flex: 1;
     flex: 1;
     font-family: Open Sans, sans-serif;
     color: #3b4151
 }
+.opblock-summary-path-description-wrapper {
+    /* width: 45%; */
+    display: flex;
+}
+
 
 .swagger-ui .opblock .opblock-summary {
     display: -webkit-box;
@@ -1184,7 +1189,6 @@
     width: 100%;
     padding: 0 10px;
     border-collapse: collapse;
-    table-layout: fixed;
 }
 
 .swagger-ui table.model tbody tr td {
@@ -1748,7 +1752,11 @@ div.info > hgroup.main > a {
 }
 
 button.opblock-summary-control {
+    width: 100%;
     display: contents;
+    align-items: center;
+    border-radius: 3px;
+    cursor: pointer;
 }
 
 svg.svg-assets {

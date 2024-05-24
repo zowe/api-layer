@@ -300,7 +300,7 @@ body {
   }
 
   .content {
-    &, .main-content .dashboard-content {
+    &, .main-content dashboard-content {
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -349,7 +349,7 @@ body {
 
       .main-content2 {
         width: 100%;
-        padding: var( --contentTopPadding ) var( --contentRightPadding ) 0 var( --contentLeftPadding );
+        padding: var( --contentTopPadding ) var( --contentRightPadding ) var( --contentBottomPadding ) var( --contentLeftPadding );
         position: relative;
         overflow:auto;
 
@@ -370,11 +370,6 @@ body {
           }
         }
       }//end main-content
-      @media only screen and (min-width: 1362px) {
-        .main-content2 {
-          padding-right: 200px;
-        }
-    }
     }
   }//end content
 
@@ -416,7 +411,7 @@ body {
       font-family: var( --fontFamily00 );
       font-size: var(--spaceLarger);
       font-weight: var( --fontWeightBold);
-      line-height: var( --spaceHuge );
+      line-height: 28px;
       color: var( --text10 );
       text-align: left;
   }
@@ -452,11 +447,6 @@ body {
     &:not(.Mui-selected) {
       border-color: transparent;
     }
-  }
-
-  .registered {
-    font-size: 70%;
-    vertical-align: top;
   }
 }
 
