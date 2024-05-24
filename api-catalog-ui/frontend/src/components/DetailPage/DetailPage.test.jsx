@@ -384,7 +384,6 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should scroll into view when selectedContentAnchor prop is updated', () => {
-        process.env.REACT_APP_API_PORTAL = true;
         jest.useFakeTimers();
 
         const fetchTilesStart = jest.fn();
