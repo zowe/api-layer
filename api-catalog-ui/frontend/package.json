@@ -35,7 +35,7 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "2.3.0",
         "rxjs": "6.3.3",
-        "swagger-ui-react": "4.19.1",
+        "swagger-ui-react": "5.17.5",
         "util": "0.12.4",
         "uuid": "3.3.2"
     },
@@ -76,6 +76,7 @@
         "includeFailureMsg": true
     },
     "devDependencies": {
+        "@babel/core": "7.22.11",
         "@babel/eslint-parser": "7.18.2",
         "@babel/preset-react": "7.18.6",
         "@testing-library/dom": "8.11.1",
