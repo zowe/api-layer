@@ -41,7 +41,9 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
         --add-opens=java.base/java.util=ALL-UNNAMED
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+        --add-opens=java.base/java.io=ALL-UNNAMED"
 
 GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \

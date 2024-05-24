@@ -18,7 +18,7 @@ task packageApiGateway(type: Zip) {
     }
 
     into('bin/') {
-        from "$resourceDir/bin/gateway-service-lite.jar"
+        from "$resourceDir/bin/gateway-service.jar"
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
@@ -29,7 +29,7 @@ task downloadFile {
         // Specify the URL of the file to download
         def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-fat-jar/2.14.6/gateway-fat-jar-2.14.6-application.jar'
 
-        RegularFile gatewayJar = layout.projectDirectory.file("src/main/resources/bin/gateway-service-lite.jar")
+        RegularFile gatewayJar = layout.projectDirectory.file("src/main/resources/bin/gateway-service.jar")
 
         // Set the destination directory and file name
         def destination = gatewayJar.asFile
