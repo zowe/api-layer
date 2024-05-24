@@ -37,6 +37,7 @@ module.exports = {
             '!cypress/*',
         ];
         config.moduleNameMapper = {
+            '^#apg-lite$': '<rootDir>/node_modules/apg-lite/lib/parser.js',
             '^#swagger-ui$': '<rootDir>/node_modules/swagger-ui-react/swagger-ui.js',
             '^#buffer':
                 '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/util/polyfills/buffer/standard-import.cjs',
