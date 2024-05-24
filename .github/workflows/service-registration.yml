@@ -2,11 +2,11 @@ name: Verify that all services can register
 
 on:
     push:
-        branches: [ master, v2.x.x ]
+        branches: [ v2.x.x, v3.x.x ]
         paths-ignore:
             - '**.md'
     pull_request:
-        branches: [ master, v2.x.x ]
+        branches: [ v2.x.x, v3.x.x ]
         paths-ignore:
             - '**.md'
     workflow_dispatch:
@@ -38,12 +38,6 @@ jobs:
                 with:
                     name: CITests-${{ env.JOB_ID }}
                     path: |
-                        integration-tests/build/reports/**
-                        gateway-service/build/reports/**
-                        api-catalog-services/build/reports/**
-                        caching-service/build/reports/**
-                        cloud-gateway-service/build/reports/**
-                        discovery-service/build/reports/**
-                        metrics-service/build/reports/**
+                        */build/reports/**
 
             -   uses: ./.github/actions/teardown
