@@ -93,7 +93,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.0;
-    margin-left: 56px;
+    margin-left: 85px;
 }
 
 #description {
@@ -149,7 +149,7 @@ div.content-description-container > div > div:nth-child(2) > div {
 
 .paragraph-description-container {
     width: auto;
-    margin-left: 56px;
+    margin-left: 85px;
 }
 
 .content-description-container {

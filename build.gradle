@@ -110,6 +110,7 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         jvmArgs '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED'
+        jvmArgs '--add-opens=java.base/java.net=ALL-UNNAMED'
     }
 
     dependencies {

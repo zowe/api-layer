@@ -10,16 +10,16 @@
 
 package org.zowe.apiml.extension;
 
-import java.util.Arrays;
-
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+
+import java.util.Arrays;
 
 /**
  * Loader of extensions
@@ -34,11 +34,8 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
 
     @Override
     public void onApplicationEvent(ApplicationContextInitializedEvent event) {
-        if (!(event.getApplicationContext() instanceof BeanDefinitionRegistry)) {
-            log.error("Expected Spring context to be a BeanDefinitionRegistry. Extensions are not loaded");
-        } else {
-            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) event.getApplicationContext();
-            ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
+        if (event.getApplicationContext() instanceof BeanDefinitionRegistry registry) {
+            ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(new AnnotationConfigApplicationContext());
 
             String[] extensionsBasePackages = configReader.getBasePackages();
             log.info("Loading extensions defined in {} packages", Arrays.toString(extensionsBasePackages));
@@ -58,6 +55,9 @@ public class ExtensionsLoader implements ApplicationListener<ApplicationContextI
                     log.error("Failed loading extensions", e);
                 }
             }
+        } else {
+            log.error("Expected Spring context to be a BeanDefinitionRegistry. Extensions are not loaded");
         }
     }
+
 }

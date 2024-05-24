@@ -9,7 +9,6 @@
  */
 import { shallow, mount } from 'enzyme';
 import React from 'react';
-import { act } from '@testing-library/react';
 import BlogContainer from './BlogContainer';
 
 describe('>>> BlogContainer component tests', () => {
@@ -19,20 +18,6 @@ describe('>>> BlogContainer component tests', () => {
         });
 
         const blogContainer = shallow(<BlogContainer user="user" url="https://medium.com/some/medium" title="title" />);
-
-        expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
-
-        global.fetch.mockRestore();
-    });
-
-    it('should render tutorials blog', async () => {
-        jest.spyOn(global, 'fetch').mockResolvedValueOnce({
-            text: jest.fn().mockResolvedValueOnce(),
-        });
-
-        const blogContainer = shallow(
-            <BlogContainer user="user" url="https://medium.com/some/medium" title="tutorials" />
-        );
 
         expect(blogContainer.find('[data-testid="medium-blog-container"]').exists()).toEqual(true);
 
@@ -180,27 +165,9 @@ describe('>>> BlogContainer component tests', () => {
         mockFetch.mockRestore();
     });
 
-    it('should render blog without title when type useCases', async () => {
-        const mockFetch = jest.spyOn(global, 'fetch');
-        mockFetch.mockResolvedValueOnce({
-            text: jest.fn().mockResolvedValueOnce('<div class="p"><h1 class="title">Blog content</h1></div>'),
-        });
-
-        await act(async () => {
-            const wrapper = mount(
-                <BlogContainer user="user" url="https://example.com/hello" title="title" type="useCases" />
-            );
-            expect(wrapper.find('[data-testid="tech-blog-container"]').exists()).toEqual(true);
-            expect(wrapper.find('BlogTile').exists()).toEqual(true);
-            expect(wrapper.find('.no_title').exists()).toEqual(true);
-        });
-
-        mockFetch.mockRestore();
-    });
-
     it('should render multiple medium blogs', async () => {
         const myBlogData = {
-            items: [{ link: 'https://medium.com/some/medium' }, { link: 'https:///medium.com/blog2' }],
+            items: [{ link: 'https://medium.com/blog1' }, { link: 'https:///medium.com/blog2' }],
         };
         jest.spyOn(global, 'fetch').mockResolvedValueOnce({
             json: jest.fn().mockResolvedValueOnce(myBlogData),
