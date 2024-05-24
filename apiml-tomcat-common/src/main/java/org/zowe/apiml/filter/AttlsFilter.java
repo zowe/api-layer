@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -32,12 +33,9 @@ public class AttlsFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            if (InboundAttls.getCertificate() != null && InboundAttls.getCertificate().length > 0) {
-                try {
-                    populateRequestWithCertificate(request, InboundAttls.getCertificate());
-                } finally {
-                    InboundAttls.clean();
-                }
+            byte[] certificate = InboundAttls.getCertificate();
+            if (certificate != null && certificate.length > 0) {
+                populateRequestWithCertificate(request, certificate);
             }
         } catch (Exception e) {
             logger.error("Not possible to get certificate from AT-TLS context", e);
@@ -53,7 +51,7 @@ public class AttlsFilter extends OncePerRequestFilter {
         sb.append("\n-----END CERTIFICATE-----");
         X509Certificate certificate = (X509Certificate) CertificateFactory
             .getInstance("X509")
-            .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes()));
+            .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8)));
         X509Certificate[] certificates = new X509Certificate[1];
         certificates[0] = certificate;
         request.setAttribute("javax.servlet.request.X509Certificate", certificates);

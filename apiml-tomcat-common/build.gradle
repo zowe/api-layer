@@ -1,8 +1,8 @@
 dependencies {
-    implementation libs.spring.boot.starter.web
-    implementation libs.tomcat.embed.el
-    implementation libs.zowe.zos.utils
+    api libs.spring.boot.starter.web
+    api libs.zowe.zos.utils
 
+    implementation libs.tomcat.embed.el
     implementation libs.spring.aop
     implementation libs.spring.beans
     implementation libs.spring.context
