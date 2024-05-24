@@ -134,7 +134,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
      */
     @Bean
-    @Order(4)
+    @Order(1)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.antMatcher("/discovery/**"))
                 .authenticationProvider(gatewayLoginProvider)
