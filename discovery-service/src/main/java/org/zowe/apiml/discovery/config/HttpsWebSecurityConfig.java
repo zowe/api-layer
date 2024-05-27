@@ -94,7 +94,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      * Filter chain for protecting endpoints with MF credentials (basic or token)
      */
     @Bean
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
             "/application/**",
@@ -117,7 +117,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      * Filter chain for protecting endpoints with client certificate
      */
     @Bean
-    @Order(3)
+    @Order(2)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {

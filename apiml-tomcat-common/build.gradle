@@ -1,6 +1,6 @@
 dependencies {
-    implementation libs.spring.boot.starter.web
-    implementation libs.zowe.zos.utils
+    api libs.spring.boot.starter.web
+    api libs.zowe.zos.utils
 
     testImplementation libs.spring.boot.starter.test
 

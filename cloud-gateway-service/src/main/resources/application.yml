@@ -50,6 +50,8 @@ apiml:
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
 
 server:
+    http2:
+        enabled: false
     port: ${apiml.service.port}
     ssl:
         clientAuth: want
@@ -108,3 +110,18 @@ logging:
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
 
+---
+spring.config.activate.on-profile: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http

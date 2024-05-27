@@ -20,14 +20,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import zoweImage from '../../assets/images/zowe-horizontal-color.png';
-
-import countAdditionalContents, {
-    customUIStyle,
-    isAPIPortal,
-    closeMobileMenu,
-    findAndFormatZowe,
-} from '../../utils/utilFunctions';
+import countAdditionalContents, { customUIStyle, isAPIPortal, closeMobileMenu } from '../../utils/utilFunctions';
 
 const loadFeedbackButton = () => {
     if (isAPIPortal()) {
@@ -41,12 +34,6 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default class DetailPage extends Component {
     componentDidUpdate() {
         const { selectedContentAnchor } = this.props;
-        if (isAPIPortal()) {
-            document.title =
-                this.props.tiles?.length > 0
-                    ? `${this.props.tiles[0].title} | ${process.env.REACT_APP_API_PORTAL_SERVICE_TITLE}`
-                    : process.env.REACT_APP_API_PORTAL_SERVICE_TITLE;
-        }
         const elementToView = document.querySelector(selectedContentAnchor);
         if (elementToView) {
             setTimeout(() => {
@@ -141,7 +128,6 @@ export default class DetailPage extends Component {
         if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
-
         return (
             <div className="main">
                 {apiPortalEnabled && <FeedbackButton />}
@@ -192,95 +178,56 @@ export default class DetailPage extends Component {
                                 </IconButton>
                             )}
                             <div className="detailed-description-container">
-                                {apiPortalEnabled && !onlySwaggerPresent && (
-                                    <div id="right-resources-menu">
-                                        <Typography id="resources-menu-title" variant="subtitle1">
-                                            On this page
-                                        </Typography>
-                                        <Container>
-                                            <Link
-                                                className="links"
-                                                onClick={(e) => this.handleLinkClick(e, '#swagger-label')}
-                                            >
-                                                Swagger
-                                            </Link>
-                                            <Link
-                                                className={`links ${useCasesCounter < 1 ? 'disabled' : ''}`}
-                                                onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
-                                            >
-                                                Use cases
-                                            </Link>
-                                            <Link
-                                                className={`links ${tutorialsCounter < 1 ? 'disabled' : ''}`}
-                                                onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
-                                            >
-                                                Getting Started ({tutorialsCounter})
-                                            </Link>
-                                            <Link
-                                                className={`links ${videosCounter < 1 ? 'disabled' : ''}`}
-                                                onClick={(e) => this.handleLinkClick(e, '#videos-label')}
-                                            >
-                                                Videos ({videosCounter})
-                                            </Link>
-                                        </Container>
-                                    </div>
-                                )}
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
                                         <h2 id="title" className="text-block-11 title1">
-                                            {findAndFormatZowe(tiles[0].title)}
+                                            {tiles[0].title}
                                         </h2>
                                     )}
                                 </div>
-                                <div className="paragraph-description-container">
-                                    {tiles !== undefined && tiles.length > 0 && (
-                                        <p id="description" className="text-block-12">
-                                            {apiPortalEnabled ? tiles[0].services[0].description : tiles[0].description}
-                                        </p>
-                                    )}
-                                </div>
-                                {/* Extra Zowe information */}
-                                {apiPortalEnabled && hasTiles && tiles[0].title?.toLowerCase().indexOf('zowe') >= 0 && (
-                                    <div style={{ marginTop: '1rem' }}>
-                                        <div>
-                                            <img id="zowe" alt="Zowe" src={zoweImage} className="hover" />
-                                        </div>
-
-                                        <div>
-                                            <Link
-                                                rel="noopener noreferrer"
-                                                target="_blank"
-                                                href="https://www.zowe.org/"
-                                                className="externalLink"
-                                            >
-                                                Zowe<sup className="registered">&reg;</sup>
-                                            </Link>
-                                            &nbsp;is a project of the&nbsp;
-                                            <Link
-                                                rel="noopener noreferrer"
-                                                target="_blank"
-                                                href="https://openmainframeproject.org/ "
-                                                className="externalLink"
-                                            >
-                                                Open Mainframe Project
-                                            </Link>
-                                            &nbsp;Zowe, the Zowe logo and the Open Mainframe Project are trademarks of
-                                            &nbsp;
-                                            <Link
-                                                rel="noopener noreferrer"
-                                                target="_blank"
-                                                href="https://www.linuxfoundation.org/ "
-                                                className="externalLink"
-                                            >
-                                                The Linux Foundation.
-                                            </Link>
-                                            &nbsp;Broadcom is a Platinum member of Open Mainframe Project and a leading
-                                            contributor of several projects.
-                                        </div>
-                                        <br />
+                                {!apiPortalEnabled && (
+                                    <div className="paragraph-description-container">
+                                        {tiles !== undefined && tiles.length > 0 && (
+                                            <p id="description" className="text-block-12">
+                                                {tiles[0].description}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>
+                            {apiPortalEnabled && !onlySwaggerPresent && (
+                                <div id="right-resources-menu">
+                                    <Typography id="resources-menu-title" variant="subtitle1">
+                                        On this page
+                                    </Typography>
+                                    <Container>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#swagger-label')}
+                                        >
+                                            Swagger
+                                        </Link>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
+                                        >
+                                            Use cases ({useCasesCounter})
+                                        </Link>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
+                                        >
+                                            Getting Started ({tutorialsCounter})
+                                        </Link>
+                                        <Link
+                                            className="links"
+                                            onClick={(e) => this.handleLinkClick(e, '#videos-label')}
+                                        >
+                                            Videos ({videosCounter})
+                                        </Link>
+                                    </Container>
+                                </div>
+                            )}
                         </div>
                     )}
                     <div className="content-description-container">
