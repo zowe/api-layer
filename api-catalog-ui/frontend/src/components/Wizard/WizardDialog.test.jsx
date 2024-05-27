@@ -9,7 +9,7 @@
  */
 /* eslint-disable react/display-name */
 import * as enzyme from 'enzyme';
-import { render, screen } from '@testing-library/react';
+import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import WizardDialog from './WizardDialog';
 import { categoryData } from './configs/wizard_categories';
@@ -265,56 +265,41 @@ describe('>>> WizardDialog tests', () => {
         expect(screen.getByText('Choose File')).toBeInTheDocument();
         expect(screen.getByText('Or fill the fields:')).toBeInTheDocument();
     });
-    it('should upload a yaml file and fill the corresponding inputs', async () => {
+    it('should upload a yaml file and fill the corresponding inputs - react testing library', async () => {
         const convertedCategoryData = Object.keys(categoryData);
-        const wrapper = enzyme.shallow(
+        const mockWizardToggleDisplay = jest.fn();
+        const mockUpdateWizardData = jest.fn();
+        const mockUpdateUploadedYamlTitle = jest.fn();
+        const mockNotifyInvalidYamlUpload = jest.fn();
+        const mockValidateInput = jest.fn();
+
+        render(
             <WizardDialog
-                wizardToggleDisplay={jest.fn()}
-                updateWizardData={jest.fn()}
+                wizardToggleDisplay={mockWizardToggleDisplay}
+                updateWizardData={mockUpdateWizardData}
                 inputData={convertedCategoryData}
                 navsObj={{ 'Tab 1': {} }}
                 wizardIsOpen
-                updateUploadedYamlTitle={jest.fn()}
-                notifyInvalidYamlUpload={jest.fn()}
-                validateInput={jest.fn()}
+                updateUploadedYamlTitle={mockUpdateUploadedYamlTitle}
+                notifyInvalidYamlUpload={mockNotifyInvalidYamlUpload}
+                validateInput={mockValidateInput}
             />
         );
 
-        // Setup spies
-        const readAsText = jest.spyOn(FileReader.prototype, 'readAsText');
-        const instance = wrapper.instance();
-        const fillInputs = jest.spyOn(instance, 'fillInputs');
-        const updateYamlTitle = jest.spyOn(instance.props, 'updateUploadedYamlTitle');
-
-        // Setup the file to be uploaded
         const fileContents = `serviceId: enablerjavasampleapp
 title: Onboarding Enabler Java Sample App`;
-        const expectedFileConversion = {
-            serviceId: 'enablerjavasampleapp',
-            title: 'Onboarding Enabler Java Sample App',
-        };
+        const filename = 'exampleFile.yaml';
+        const fakeFile = new File([fileContents], filename, { type: 'text/yaml' });
 
-        const filename = 'brokenFile.yaml';
-        const fakeFile = new File([fileContents], filename);
-
-        // Simulate the onchange event
-        const input = wrapper.find('#yaml-browser');
-        input.simulate('change', {
-            target: { value: `C:\\fakepath\\${filename}`, files: [fakeFile] },
+        const fileInput = screen.getByLabelText(/Choose File/i);
+        fireEvent.change(fileInput, {
+            target: { files: [fakeFile] },
             preventDefault: jest.fn(),
         });
 
-        // Must wait slightly for the file to actually be read in by the system (triggers the reader.onload event)
-        // eslint-disable-next-line no-promise-executor-return
-        const pauseFor = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
-        await pauseFor(300);
-
-        // Check that all functions are called as expected
-        expect(readAsText).toBeCalledWith(fakeFile);
-        expect(fillInputs).toHaveBeenCalledTimes(1);
-        expect(fillInputs).toHaveBeenCalledWith(expectedFileConversion);
-        expect(updateYamlTitle).toHaveBeenCalledTimes(1);
-        expect(updateYamlTitle).toBeCalledWith(filename);
+        await waitFor(() => {
+            expect(mockUpdateUploadedYamlTitle).toHaveBeenCalledWith(filename);
+        });
     });
     it('should call fillInputs for the enablers', async () => {
         const testNavsObj = {

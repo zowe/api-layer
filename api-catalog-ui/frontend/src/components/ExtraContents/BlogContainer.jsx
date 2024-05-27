@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import BlogTile from './BlogTile';
 
-export default function BlogContainer({ user, url, title, type }) {
+export default function BlogContainer({ user, url, title }) {
     const RSSUrl = `https://medium.com/feed/@${user}`;
     const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=${RSSUrl}`;
     const [myBlog, setMyBlog] = useState([]);
@@ -39,7 +39,7 @@ export default function BlogContainer({ user, url, title, type }) {
             const blogData = {
                 content: blogContent,
                 description: blogContent,
-                title: type === 'tutorials' ? blogTitle : undefined,
+                title: blogTitle,
                 link: url,
             };
 
@@ -61,7 +61,6 @@ export default function BlogContainer({ user, url, title, type }) {
                     description: `Tutorial from the Zowe documentation related to ${title}`,
                     title,
                     link: url,
-                    isMedia: true,
                 };
                 setMyBlog(blogData);
             } else {
@@ -83,25 +82,25 @@ export default function BlogContainer({ user, url, title, type }) {
     function displayBlog() {
         if (myBlog?.items) {
             const correctBlog = myBlog.items.find((blog) => blog?.link.includes(url));
-            return correctBlog && <BlogTile blogData={{ ...correctBlog, isMedia: true }} />;
+            return correctBlog && <BlogTile blogData={correctBlog} />;
         }
     }
     if (url?.includes('medium.com')) {
-        return <div data-testid="medium-blog-container">{displayBlog()}</div>;
+        return (
+            <div data-testid="medium-blog-container" className="BlogsContainer">
+                {displayBlog()}
+            </div>
+        );
     }
 
     return (
         myBlog && (
-            <div data-testid="tech-blog-container">
+            <div data-testid="tech-blog-container" className="BlogsContainer">
                 <BlogTile blogData={myBlog} />
             </div>
         )
     );
 }
-
-BlogContainer.defaultProps = {
-    type: 'tutorials',
-};
 
 BlogContainer.propTypes = {
     url: PropTypes.shape({
@@ -109,5 +108,4 @@ BlogContainer.propTypes = {
     }).isRequired,
     user: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(['tutorials', 'useCases']),
 };

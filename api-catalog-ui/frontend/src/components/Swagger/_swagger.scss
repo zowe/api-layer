@@ -10,15 +10,10 @@ body {
     }
 
   }
-  .info__contact {
-    margin-bottom: var( --spaceMedium );
-  }
   input[type=text].operation-filter-input {
-    padding: 4px 16px 4px 36px;
-    background: url(../../assets/images/magnifying-glass.svg) 12px 50% no-repeat;
-    background-size: var( --spaceSmall );
-    font-style: italic;
-    font-size: var( --fontSmall );
+    padding-left: var( --spaceLargest );
+    background: url(../../assets/images/magnifying-glass.svg) 8px 50% no-repeat;
+    background-size: var( --spaceMedium );
 
     &:hover {
       border: 1px solid var( --linkHover );
@@ -59,7 +54,6 @@ body {
   .opblock {
     .arrow {
       transform: rotate(-90deg);
-      fill: var( --link20 );
     }
     &.is-open {
       > h3, > div {
@@ -80,10 +74,6 @@ body {
     margin-bottom: var( --spaceTiny );
     border: 1px solid var( --surface15 );
     border-radius: var( --borderRadius1 );
-
-    &:hover, &:focus{
-      box-shadow: 1px 3px 4px 0px rgba(0, 0, 0, 0.45);
-    }
 
     .opblock-summary-method {
       padding: var( --spaceSmaller );
@@ -191,19 +181,10 @@ body {
     cursor: pointer;
     width: 100%;
     font-size: var( --fontSmall );
-    padding: var( --spaceSmall ) 10px;
-    border-bottom: 1px solid var( --link20 );
+    padding: var( --spaceSmall ) 0;
+    border-bottom: 1px solid var( --divider20 );
     font-weight: var( --fontWeightNormal );
     margin-bottom: var( --spaceSmallest );
-
-    &:hover {
-      border-bottom: 1px solid var( --linkHover );
-      background-color: #F2F6FC;
-
-      svg {
-        fill: var( --linkHover );
-      }
-    }
 
     .expand-operation {
       background-color: transparent;

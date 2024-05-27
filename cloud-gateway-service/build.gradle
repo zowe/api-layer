@@ -56,11 +56,13 @@ configurations.all {
     exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-reactor-netty'
 }
 
 dependencies {
     api project(':common-service-core')
     api project(':apiml-utility')
+    api project(':apiml-tomcat-common')
 
     implementation libs.eh.cache
     implementation libs.spring.cloud.starter.gateway
@@ -75,6 +77,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
 
     implementation libs.spring.cloud.circuit.breaker
+    implementation libs.netty.reactor.http
 
     implementation libs.spring.security57.config
     implementation libs.spring.security57.core

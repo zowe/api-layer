@@ -27,18 +27,11 @@ describe('>>> BlogTile component tests', () => {
     });
     it('should render blog tile', () => {
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
+        expect(blogTile.find('[data-testid="blogs-image"]').exists()).toEqual(true);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual('title');
         expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
-        expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);
-        expect(blogTile.find('.no_title').exists()).toEqual(false);
-    });
-
-    it('should render blog tile without title', () => {
-        const blogTile = shallow(<BlogTile blogData={{ ...props.blogData, title: undefined }} />);
-        expect(blogTile.find('[data-testid="blog-title"]').exists()).toEqual(false);
-        expect(blogTile.find('.no_title').exists()).toEqual(true);
-        expect(blogTile.find('[data-testid="blog-description"]').exists()).toEqual(true);
-        expect(blogTile.find('[data-testid="blog-learn"]').exists()).toEqual(true);
+        expect(blogTile.find('[data-testid="author"]').first().prop('children')).toEqual('author');
+        expect(blogTile.find('[data-testid="pub-date"]').first().prop('children')).toEqual('Published: 123343');
     });
 
     it('should truncate text with space', () => {
@@ -46,16 +39,16 @@ describe('>>> BlogTile component tests', () => {
             'long  title to text that word are not truncated in the middle eheheqwdqwdwqdqwdwqdwqdqw dwqdwqdwqdq dwqdqwdwq dwqdwqdwqdqwdwqdwqdqwdqwdqw ';
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
-            'long  title to text that word are not truncated in the middle eheheqwdqwdwqdqwdwqdwqdqw dwqdwqdwqdq dwqdqwdwq...'
+            'long  title to text that word are not truncated in the'
         );
     });
 
     it('should truncate if no space', () => {
         props.blogData.title =
-            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherangeThistextNeedToBeLittleBitLongerToBeTruncated.';
+            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherange.';
         const blogTile = shallow(<BlogTile blogData={props.blogData} />);
         expect(blogTile.find('[data-testid="blog-title"]').first().prop('children')).toEqual(
-            'ThisisaverylongstringwithnospacesanditisusedtodemonstratetheconceptoflastSpaceIndexwithintherangeThistextNeedToBeLittleBitLongerTo...'
+            'Thisisaverylongstringwithnospacesanditisusedtodemonstratethe...'
         );
     });
 

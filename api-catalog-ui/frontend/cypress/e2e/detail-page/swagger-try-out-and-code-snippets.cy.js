@@ -35,7 +35,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             id: 'gateway',
             selectOp: '#operations-Security-RefreshTokenUsingPOST',
             auth: true,
-        },
+        }
     ].forEach((test) => {
         it('Should contain try-out button', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
