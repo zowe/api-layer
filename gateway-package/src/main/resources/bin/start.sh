@@ -31,6 +31,7 @@
 # - ZWE_configs_heap_init
 # - ZWE_configs_apiml_catalog_serviceId
 # - ZWE_configs_apiml_gateway_timeoutMillis
+# - ZWE_configs_apiml_gateway_externalProtocol
 # - ZWE_configs_apiml_security_auth_provider
 # - ZWE_configs_apiml_security_allowtokenrefresh
 # - ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration
@@ -254,7 +255,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
-    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
+    -Dapiml.service.externalUrl="${ZWE_configs_apiml_gateway_externalProtocol:-${externalProtocol}}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
