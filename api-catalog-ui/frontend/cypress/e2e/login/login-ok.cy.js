@@ -39,6 +39,8 @@ describe('>>> Login ok page test', () => {
         cy.get('li[data-testid="logout"]').click();
         cy.contains('API Catalog');
 
+        cy.contains('Version: ');
+
         cy.getCookie('apimlAuthenticationToken').should('not.exist');
     });
 });
