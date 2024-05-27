@@ -69,7 +69,7 @@ public class RequestInfoController {
     }
 
     private void setCerts(HttpServletRequest httpServletRequest, RequestInfo requestInfo) throws CertificateEncodingException {
-        X509Certificate[] certs = (X509Certificate[]) httpServletRequest.getAttribute("javax.servlet.request.X509Certificate");
+        X509Certificate[] certs = (X509Certificate[]) httpServletRequest.getAttribute("jakarta.servlet.request.X509Certificate");
         if (certs == null) return;
 
         requestInfo.signed = certs.length > 0;
