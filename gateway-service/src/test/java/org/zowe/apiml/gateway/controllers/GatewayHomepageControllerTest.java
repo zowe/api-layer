@@ -273,7 +273,7 @@ class GatewayHomepageControllerTest {
         Map<String, Object> actualModelMap = model.asMap();
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication service is running"));
+        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is running"));
     }
 
     @Test
@@ -287,7 +287,7 @@ class GatewayHomepageControllerTest {
         Map<String, Object> actualModelMap = model.asMap();
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "warning"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication service is not running"));
+        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is not running"));
     }
 
     @Test
@@ -301,7 +301,7 @@ class GatewayHomepageControllerTest {
         Map<String, Object> actualModelMap = model.asMap();
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication service is running"));
+        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is running"));
     }
 
 }
