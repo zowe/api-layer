@@ -12,8 +12,8 @@ package org.zowe.apiml.zaas.error;
 
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class ErrorUtils {
     static final String UNEXPECTED_ERROR_OCCURRED = "Unexpected error occurred";

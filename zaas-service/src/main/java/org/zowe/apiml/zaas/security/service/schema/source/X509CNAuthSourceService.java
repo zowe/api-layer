@@ -16,7 +16,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.message.core.MessageType;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 

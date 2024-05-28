@@ -24,7 +24,7 @@ import org.zowe.apiml.zaas.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;

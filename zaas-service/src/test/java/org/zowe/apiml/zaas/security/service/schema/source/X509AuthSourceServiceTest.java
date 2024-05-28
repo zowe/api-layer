@@ -24,7 +24,7 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.zaas.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;

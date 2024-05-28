@@ -30,8 +30,8 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;

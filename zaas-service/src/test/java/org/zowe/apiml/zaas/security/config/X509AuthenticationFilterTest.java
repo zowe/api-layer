@@ -24,8 +24,8 @@ import org.zowe.apiml.security.common.login.X509AuthenticationFilter;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Optional;

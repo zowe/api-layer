@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.AuthSourceType;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;

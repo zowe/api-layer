@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 

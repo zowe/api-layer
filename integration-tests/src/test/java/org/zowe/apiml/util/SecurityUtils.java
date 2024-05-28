@@ -47,7 +47,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
-import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.config.ConfigReader;

@@ -12,18 +12,12 @@ package org.zowe.apiml.zaas.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
 import org.springframework.cloud.netflix.eureka.metadata.ManagementMetadata;
 import org.springframework.cloud.netflix.eureka.metadata.ManagementMetadataProvider;
-import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
-import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
-import org.springframework.cloud.netflix.zuul.filters.route.SimpleHostRoutingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -36,7 +30,8 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
 
 @Configuration
 @RequiredArgsConstructor
@@ -57,13 +52,6 @@ public class GatewayConfig {
     @Bean
     public TransformService transformService(GatewayClient gatewayClient) {
         return new TransformService(gatewayClient);
-    }
-
-    @Bean
-    @Autowired
-    public SimpleHostRoutingFilter simpleHostRoutingFilter2(ProxyRequestHelper helper, ZuulProperties zuulProperties,
-                                                            @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore) {
-        return new SimpleHostRoutingFilter(helper, zuulProperties, secureHttpClientWithoutKeystore);
     }
 
     @Bean

@@ -26,8 +26,8 @@ import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

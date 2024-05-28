@@ -14,11 +14,13 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.impl.DefaultJwsHeader;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,18 +39,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.zaas.controllers.AuthController;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.zaas.controllers.AuthController;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 import static org.zowe.apiml.zaas.security.service.JwtUtils.getJwtClaims;
@@ -121,24 +120,24 @@ public class AuthenticationService {
 
     private String createJWT(String username, String issuer, Map<String, Object> claims, long issuedAt, long expiration) {
         return Jwts.builder()
-            .setSubject(username)
-            .setIssuedAt(new Date(issuedAt))
-            .setExpiration(new Date(expiration))
-            .setIssuer(issuer)
-            .setId(UUID.randomUUID().toString())
-            .addClaims(claims)
+            .subject(username)
+            .issuedAt(new Date(issuedAt))
+            .expiration(new Date(expiration))
+            .issuer(issuer)
+            .id(UUID.randomUUID().toString())
+            .claims(claims)
             .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
     }
 
     @SuppressWarnings("java:S5659") // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
         try {
-            Jwt<DefaultJwsHeader, DefaultClaims> parsedJwt = Jwts.parserBuilder()
-                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
+            Jwt<JwsHeader, Claims> parsedJwt = (Jwt<JwsHeader, Claims>) Jwts.parser()
+                .verifyWith(jwtSecurityInitializer.getJwtPublicKey())
                 .build()
                 .parse(jwt);
 
-            return parseQueryResponse(parsedJwt.getBody());
+            return parseQueryResponse(parsedJwt.getPayload());
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }
@@ -228,11 +227,11 @@ public class AuthenticationService {
 
     private Claims validateAndParseLocalJwtToken(String jwtToken) {
         try {
-            return Jwts.parserBuilder()
-                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
+            return Jwts.parser()
+                .verifyWith(jwtSecurityInitializer.getJwtPublicKey())
                 .build()
-                .parseClaimsJws(jwtToken)
-                .getBody();
+                .parseSignedClaims(jwtToken)
+                .getPayload();
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }

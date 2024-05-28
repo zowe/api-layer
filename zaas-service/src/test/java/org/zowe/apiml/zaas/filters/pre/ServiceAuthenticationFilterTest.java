@@ -40,7 +40,7 @@ import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 import java.util.stream.Stream;

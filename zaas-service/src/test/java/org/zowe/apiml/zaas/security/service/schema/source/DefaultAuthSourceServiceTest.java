@@ -17,7 +17,7 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
 import org.zowe.apiml.zaas.utils.CleanCurrentRequestContextTest;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Optional;

@@ -52,7 +52,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.PublicKey;

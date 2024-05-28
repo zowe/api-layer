@@ -22,7 +22,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.commons.usermap.MapperResponse;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import static org.zowe.apiml.zaas.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 

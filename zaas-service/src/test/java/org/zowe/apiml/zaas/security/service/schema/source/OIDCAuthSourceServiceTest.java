@@ -23,7 +23,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.token.*;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;

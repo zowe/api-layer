@@ -33,7 +33,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 

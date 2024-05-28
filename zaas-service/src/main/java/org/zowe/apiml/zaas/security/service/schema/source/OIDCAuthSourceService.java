@@ -26,7 +26,7 @@ import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 

@@ -28,7 +28,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

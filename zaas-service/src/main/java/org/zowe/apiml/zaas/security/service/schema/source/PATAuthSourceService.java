@@ -10,23 +10,20 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -85,11 +82,7 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     public boolean isValid(AuthSource authSource) {
         try {
             String token = (String) authSource.getRawSource();
-            RequestContext context = RequestContext.getCurrentContext();
-            String serviceId = (String) context.get(SERVICE_ID_KEY);
-            if (serviceId == null) {
-                serviceId = ((PATAuthSource) authSource).getDefaultServiceId();
-            }
+            String serviceId = ((PATAuthSource) authSource).getDefaultServiceId();
             boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
             logger.log(MessageType.DEBUG, "PAT is %s for scope: %s ", validForScopes ? "valid" : "not valid", serviceId);
             boolean invalidate = tokenProvider.isInvalidated(token);

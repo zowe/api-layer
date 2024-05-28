@@ -25,7 +25,7 @@ import org.zowe.apiml.zaas.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

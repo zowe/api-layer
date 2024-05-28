@@ -13,11 +13,12 @@ package org.zowe.apiml.zaas.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,39 +30,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.AccessTokenProvider;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
@@ -102,7 +88,6 @@ public class AuthController {
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
 
     @DeleteMapping(path = INVALIDATE_PATH)
-    @HystrixCommand
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/invalidate/";
         final String uri = request.getRequestURI();
@@ -121,7 +106,6 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
-    @HystrixCommand
     public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws IOException {
         if (tokenProvider.isInvalidated(body.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -132,7 +116,6 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
-    @HystrixCommand
     public ResponseEntity<String> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -148,7 +131,6 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
     @ResponseBody
-    @HystrixCommand
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
@@ -163,7 +145,6 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
     @ResponseBody
-    @HystrixCommand
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'READ')")
     public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
@@ -181,7 +162,6 @@ public class AuthController {
         description = "Will evict all the invalidated tokens which are not relevant anymore")
     @ResponseBody
     @PreAuthorize("hasSafServiceResourceAccess('SERVICES', 'UPDATE')")
-    @HystrixCommand
     public ResponseEntity<String> evictNonRelevantTokensAndRules() {
         tokenProvider.evictNonRelevantTokensAndRules();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -189,7 +169,6 @@ public class AuthController {
 
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
-    @HystrixCommand
     public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
@@ -201,7 +180,6 @@ public class AuthController {
     }
 
     @GetMapping(path = DISTRIBUTE_PATH)
-    @HystrixCommand
     public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/distribute/";
         final String uri = request.getRequestURI();
@@ -221,7 +199,6 @@ public class AuthController {
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @HystrixCommand
     public Map<String, Object> getAllPublicKeys() {
         List<JWK> keys;
         if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
@@ -246,7 +223,6 @@ public class AuthController {
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @HystrixCommand
     public Map<String, Object> getCurrentPublicKeys() {
         final List<JWK> keys = getCurrentKey();
         return new JWKSet(keys).toJSONObject(true);
@@ -262,7 +238,6 @@ public class AuthController {
      */
     @GetMapping(path = PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @HystrixCommand
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
         List<JWK> publicKeys = getCurrentKey();
         if (publicKeys.isEmpty()) {
@@ -303,7 +278,6 @@ public class AuthController {
     }
 
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
-    @HystrixCommand
     public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         if (oidcProvider != null && oidcProvider.isValid(token)) {
@@ -319,7 +293,6 @@ public class AuthController {
      */
     @GetMapping(path = OIDC_WEBFINGER_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @HystrixCommand
     public ResponseEntity<Object> getWebFinger(@RequestParam(name = "resource") String clientId) throws JsonProcessingException {
         if (webFingerProvider.isEnabled()) {
             try {

@@ -22,7 +22,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 

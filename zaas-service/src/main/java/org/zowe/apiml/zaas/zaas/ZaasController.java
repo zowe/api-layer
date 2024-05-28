@@ -37,8 +37,8 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import javax.management.ServiceNotFoundException;
 
-import static org.zowe.apiml.zaas.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
-import static org.zowe.apiml.zaas.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor

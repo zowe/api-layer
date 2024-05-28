@@ -17,10 +17,10 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.zaas.security.login.Providers;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
@@ -34,7 +34,7 @@ public class ZaasHealthIndicator extends AbstractHealthIndicator {
     private final Providers loginProviders;
     private String apiCatalogServiceId;
     
-    private final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class,
+    private final ApimlLogger apimlLog = ApimlLogger.of(ZaasHealthIndicator.class,
             YamlMessageServiceInstance.getInstance());
     boolean startedInformationPublished = false;
 

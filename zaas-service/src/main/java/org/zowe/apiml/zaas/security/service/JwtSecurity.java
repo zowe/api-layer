@@ -12,12 +12,15 @@ package org.zowe.apiml.zaas.security.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.awaitility.Durations;
@@ -25,16 +28,14 @@ import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.zaas.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.zaas.security.login.Providers;
 
-import javax.annotation.PostConstruct;
-import java.security.Key;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -70,7 +71,7 @@ public class JwtSecurity {
     private int timeout;
 
     private SignatureAlgorithm signatureAlgorithm;
-    private Key jwtSecret;
+    private PrivateKey jwtSecret;
     private PublicKey jwtPublicKey;
 
     private final Providers providers;
@@ -80,14 +81,14 @@ public class JwtSecurity {
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     @Autowired
-    public JwtSecurity(Providers providers, ApimlDiscoveryClient discoveryClient) {
+    public JwtSecurity(Providers providers, DiscoveryClient discoveryClient) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
         this.zosmfListener = new ZosmfListener(discoveryClient);
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, ApimlDiscoveryClient discoveryClient) {
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, DiscoveryClient discoveryClient) {
         this(providers, discoveryClient);
 
         this.keyStore = keyStore;
@@ -168,7 +169,7 @@ public class JwtSecurity {
      * Load the JWT secret. If there is a configuration issue the keys are not loaded and the error is logged.
      */
     private void loadJwtSecret() {
-        signatureAlgorithm = SignatureAlgorithm.RS256;
+        signatureAlgorithm = Jwts.SIG.RS256;
 
         HttpsConfig config = currentConfig();
         try {
@@ -224,7 +225,7 @@ public class JwtSecurity {
         return signatureAlgorithm;
     }
 
-    public Key getJwtSecret() {
+    public PrivateKey getJwtSecret() {
         return jwtSecret;
     }
 
@@ -286,9 +287,9 @@ public class JwtSecurity {
 
     class ZosmfListener {
         private boolean isZosmfReady = false;
-        private final ApimlDiscoveryClient discoveryClient;
+        private final DiscoveryClient discoveryClient;
 
-        private ZosmfListener(ApimlDiscoveryClient discoveryClient) {
+        private ZosmfListener(DiscoveryClient discoveryClient) {
             this.discoveryClient = discoveryClient;
         }
 

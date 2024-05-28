@@ -27,7 +27,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 
 import static org.zowe.apiml.zaas.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;

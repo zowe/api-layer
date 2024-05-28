@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.error.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -19,14 +20,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.zowe.apiml.zaas.error.ErrorUtils;
-import org.zowe.apiml.zaas.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.compatibility.ApimlErrorController;
+import org.zowe.apiml.zaas.error.ErrorUtils;
+import org.zowe.apiml.zaas.error.check.ErrorCheck;
+import org.zowe.apiml.zaas.error.check.SafEndpointCheck;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,12 +48,6 @@ public class InternalServerErrorController implements ApimlErrorController {
         this.messageService = messageService;
 
         errorChecks.add(new SafEndpointCheck(messageService));
-        errorChecks.add(new TlsErrorCheck(messageService));
-        errorChecks.add(new TimeoutErrorCheck(messageService));
-        errorChecks.add(new SecurityErrorCheck(messageService));
-        errorChecks.add(new ServiceErrorCheck(messageService));
-        errorChecks.add(new RibbonRetryErrorCheck(messageService));
-        errorChecks.add(new LoadBalancerErrorCheck(messageService));
     }
 
     @Override

@@ -19,8 +19,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.gzip.GZipResponseWrapper;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.*;
 

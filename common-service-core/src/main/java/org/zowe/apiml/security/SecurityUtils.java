@@ -24,7 +24,10 @@ import java.net.URL;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Enumeration;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,14 +64,14 @@ public class SecurityUtils {
      *               and optional filled: keyAlias and trustStore
      * @return {@link PrivateKey} or {@link javax.crypto.SecretKey} from keystore or key ring
      */
-    public static Key loadKey(HttpsConfig config) {
+    public static PrivateKey loadKey(HttpsConfig config) {
         if (StringUtils.isNotEmpty(config.getKeyStore())) {
             try {
                 KeyStore ks = loadKeyStore(config);
                 char[] keyPasswordInChars = config.getKeyPassword();
-                final Key key;
+                final PrivateKey key;
                 if (config.getKeyAlias() != null) {
-                    key = ks.getKey(config.getKeyAlias(), keyPasswordInChars);
+                    key = (PrivateKey) ks.getKey(config.getKeyAlias(), keyPasswordInChars);
                 } else {
                     throw new KeyStoreException("No key alias provided.");
                 }

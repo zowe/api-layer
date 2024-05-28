@@ -64,31 +64,31 @@ dependencies {
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.boot.starter.security
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.retry
 
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
-    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
     implementation libs.jjwt
     implementation libs.nimbus.jose.jwt
+    implementation libs.spring.doc
 
-    implementation libs.logback.core
     implementation libs.logback.classic
 
+    implementation libs.apache.commons.lang3
     implementation libs.commons.io
-    implementation libs.spring.aop
-    implementation libs.spring.beans
     implementation libs.spring.context
     implementation libs.spring.context.support
-    implementation libs.spring.core
-    implementation libs.spring.expression
     implementation libs.spring.web
     implementation libs.spring.webmvc
     implementation libs.spring.webflux
 
     implementation libs.eh.cache
+
+    // TODO: remove awaitility from the production code, it should be just for testing purposes
+    implementation libs.awaitility
 
     implementation libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
@@ -103,8 +103,6 @@ dependencies {
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
-    testRuntimeOnly libs.http.client
-    testRuntimeOnly libs.http.client
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path

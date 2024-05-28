@@ -33,7 +33,7 @@ public class JwtUtils {
         String withoutSign = removeJwtSign(jwt);
 
         try {
-            return Jwts.parserBuilder()
+            return Jwts.parser()
                     .build()
                     .parseClaimsJwt(withoutSign)
                     .getBody();

@@ -22,7 +22,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javax.servlet.RequestDispatcher;
+import jakarta.servlet.RequestDispatcher;
 
 class InternalServerErrorControllerTest {
     @Test

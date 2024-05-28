@@ -20,6 +20,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +36,9 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
-import java.security.Key;
+import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.Optional;
@@ -75,14 +75,14 @@ public class OIDCTokenProvider implements OIDCProvider {
     private final Clock clock;
 
     @Getter
-    private Map<String, Key> publicKeys = new ConcurrentHashMap<>();
+    private final Map<String, PublicKey> publicKeys = new ConcurrentHashMap<>();
     @Getter
     private JWKSet jwkSet;
 
     @PostConstruct
     public void afterPropertiesSet() {
         this.fetchJWKSet();
-        Executors.newSingleThreadScheduledExecutor(r -> new Thread("OIDC JWK Refresh"))
+        Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "OIDC JWK Refresh"))
             .scheduleAtFixedRate(this::fetchJWKSet, jwkRefreshInterval, jwkRefreshInterval, TimeUnit.HOURS);
     }
 
@@ -105,7 +105,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
 
-    private Map<String, Key> processKeys(JWKSet jwkKeys) {
+    private Map<String, PublicKey> processKeys(JWKSet jwkKeys) {
         return jwkKeys.getKeys().stream()
             .filter(jwkKey -> {
                 KeyUse keyUse = jwkKey.getKeyUse();
@@ -132,16 +132,16 @@ public class OIDCTokenProvider implements OIDCProvider {
         logger.log(MessageType.DEBUG, "Token signed by key {}", kid);
         return Optional.ofNullable(publicKeys.get(kid))
             .map(key -> validate(token, key))
-            .map(claims -> claims != null && !claims.isEmpty())
+            .map(claims -> !claims.isEmpty())
             .orElse(false);
     }
 
     private String getKeyId(String token) {
         try {
-            return String.valueOf(Jwts.parserBuilder()
-                .setClock(clock)
+            return String.valueOf(Jwts.parser()
+                .clock(clock)
                 .build()
-                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .parseUnsecuredClaims(token.substring(0, token.lastIndexOf('.') + 1))
                 .getHeader()
                 .get("kid"));
         } catch (JwtException e) {
@@ -150,14 +150,14 @@ public class OIDCTokenProvider implements OIDCProvider {
         }
     }
 
-    private Claims validate(String token, Key key) {
+    private Claims validate(String token, PublicKey key) {
         try {
-            return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .setClock(clock)
+            return Jwts.parser()
+                .verifyWith(key)
+                .clock(clock)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseUnsecuredClaims(token)
+                .getPayload();
         } catch (TokenNotValidException | JwtException e) {
             log.debug("OIDC Token is not valid: {}", e.getMessage());
             return null; // NOSONAR

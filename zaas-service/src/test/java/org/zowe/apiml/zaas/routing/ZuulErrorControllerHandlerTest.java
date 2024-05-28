@@ -19,7 +19,7 @@ import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
