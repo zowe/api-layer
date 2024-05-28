@@ -1,0 +1,68 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+package org.zowe.apiml.zaas.security.config;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Optional;
+
+@Slf4j
+@AllArgsConstructor
+public class JWTLogoutHandler implements LogoutHandler {
+
+    private final AuthenticationService authenticationService;
+    private final FailedAuthenticationHandler failure;
+
+    @Override
+    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        Optional<String> token = authenticationService.getJwtTokenFromRequest(request);
+        try {
+            if (token.isPresent()) {
+                invalidateJwtToken(failure, request, response, token.get());
+            } else {
+                failure.onAuthenticationFailure(request, response, new TokenNotProvidedException("The token you are trying to logout is not present in the header"));
+            }
+        } catch (ServletException e) {
+            log.error("The response cannot be written during the logout exception handler: {}", e.getMessage());
+        }
+    }
+
+    private void invalidateJwtToken(FailedAuthenticationHandler failure, HttpServletRequest request, HttpServletResponse response, String token) throws ServletException {
+        if (Boolean.TRUE.equals(authenticationService.isInvalidated(token))) {
+            failure.onAuthenticationFailure(request, response, new TokenNotValidException("The token you are trying to logout is not valid"));
+        } else {
+            try {
+                authenticationService.invalidateJwtToken(token, true);
+            } catch (TokenNotValidException e) {
+                // TokenNotValidException thrown in cases where the format is not valid
+                failure.onAuthenticationFailure(request, response, new TokenFormatNotValidException(e.getMessage()));
+            } catch (AuthenticationException e) {
+                failure.onAuthenticationFailure(request, response, e);
+            } catch (Exception e) {
+                // Catch any issue like ServiceNotAccessibleException, throw TokenNotValidException
+                // so a 401 is returned. Returning 500 gives information about the system and is thus avoided.
+                failure.onAuthenticationFailure(request, response, new TokenNotValidException("Error while logging out token"));
+            }
+        }
+    }
+}

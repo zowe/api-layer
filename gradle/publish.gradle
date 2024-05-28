@@ -26,7 +26,8 @@ ext.servicesToPublish = [
     'caching-service-package',
     'discovery-service',
     'discovery-package',
-    'gateway-package',
+    'zaas-service',
+    'zaas-package',
     'cloud-gateway-service',
     'cloud-gateway-package'
 ]
