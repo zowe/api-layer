@@ -1,5 +1,5 @@
 name: "Validate APIML Healthy"
-description: "Validates APIML health using Gateway's health status"
+description: "Validates APIML health using ZAAS Service's health status"
 
 inputs:
     caching-service:
@@ -18,7 +18,7 @@ inputs:
 runs:
     using: "composite"
 
-    # if GW and input services are not healthy after 3 minutes then exit
+    # if ZAAS Service and input services are not healthy after 3 minutes then exit
     steps:
         - name: Validate APIML setup
           shell: bash
@@ -29,27 +29,27 @@ runs:
             valid="false"
             until [ $attemptCounter -gt $maxAttempts ]; do
               sleep 10
-              gwHealth=$(curl -k -s https://localhost:10010/application/health)
+              zaasHealth=$(curl -k -s https://localhost:10010/application/health)
               echo "Polling for GW health: $attemptCounter"
-              echo $gwHealth
+              echo $zaasHealth
 
-              gatewayUp=$(echo $gwHealth | jq -r '.status')
-              authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
-              acUp="$(echo $gwHealth | jq -r '.components.gateway.details.apicatalog')"
+              zaasUp=$(echo $zaasHealth | jq -r '.status')
+              authUp=$(echo $zaasHealth | jq -r '.components.gateway.details.auth')
+              acUp="$(echo $zaasHealth | jq -r '.components.gateway.details.apicatalog')"
 
               csUp="DOWN"
-              csHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
+              csHealth="$(echo $zaasHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
               if [ "$csHealth" != "null" ]; then
                   csUp="UP"
               fi
 
               dcUp="DOWN"
-              dcHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
+              dcHealth="$(echo $zaasHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
               if [ "$dcHealth" != "null" ]; then
                   dcUp="UP"
               fi
 
-              if [ "$gatewayUp" = "UP" ] && [ "$authUp" = "UP" ] && [ "$csUp" == "UP" ]; then
+              if [ "$zaasUp" = "UP" ] && [ "$authUp" = "UP" ] && [ "$csUp" == "UP" ]; then
                 echo ">>>>>APIML is ready"
                 valid="true"
                 if [ ${{ inputs.caching-service }} != "false" ] && [ "$csUp" != "UP" ]; then

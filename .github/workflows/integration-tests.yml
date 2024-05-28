@@ -57,7 +57,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -97,7 +97,7 @@ jobs:
         container: ubuntu:latest
         timeout-minutes: 10
         services:
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
@@ -106,7 +106,7 @@ jobs:
                     APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
                     APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
+                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://zaas-service:10010/zss/api/v1/certificate/dn
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
@@ -139,15 +139,15 @@ jobs:
         services:
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://cloud-gateway-service:10023/gateway/certificates
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_APIMLID: apiml2
                     SERVER_INTERNAL_PORT: 10027
             cloud-gateway-service:
@@ -196,7 +196,7 @@ jobs:
         services:
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             cloud-gateway-service:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
@@ -241,11 +241,11 @@ jobs:
             # First group of services represents central apiml instance with central gateway registry
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: gateway-service
+                    APIML_SERVICE_HOSTNAME: zaas-service
             cloud-gateway-service:
                 image: ghcr.io/balhar-jakub/cloud-gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -254,7 +254,7 @@ jobs:
                     APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
 
-            # Second group of services represents domain apiml instance which registers it's gateway in central's discovery service
+            # Second group of services represents domain apiml instance which registers its zaas service in central's discovery service
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -262,11 +262,11 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_SERVICE_PORT: 10031
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_PORT: 10037
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
@@ -330,7 +330,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
@@ -380,7 +380,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
@@ -393,7 +393,7 @@ jobs:
                     APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
                     APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
+                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://zaas-service:10010/zss/api/v1/certificate/dn
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -416,7 +416,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address zaas-service --port 6300 --destfile ./results/zaas-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -448,7 +448,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -504,7 +504,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -556,7 +556,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -609,7 +609,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -661,7 +661,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -741,7 +741,7 @@ jobs:
 
             -   name: Output Gateway container logs
                 if: always()
-                run: docker logs gateway-service
+                run: docker logs zaas-service
 
             -   name: Output Discovery container logs
                 if: always()
@@ -809,7 +809,7 @@ jobs:
 
             -   name: Output Gateway container logs
                 if: always()
-                run: docker logs gateway-service
+                run: docker logs zaas-service
 
             -   name: Output Discovery container logs
                 if: always()
@@ -866,14 +866,14 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
@@ -942,16 +942,16 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
@@ -1030,14 +1030,14 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
@@ -1100,14 +1100,14 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
@@ -1174,14 +1174,14 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
@@ -1248,14 +1248,14 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
+            zaas-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
@@ -1337,7 +1337,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
@@ -1466,7 +1466,7 @@ jobs:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
-            gateway-service:
+            zaas-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
