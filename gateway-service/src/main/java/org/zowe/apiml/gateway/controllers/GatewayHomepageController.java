@@ -34,6 +34,9 @@ public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
+    protected static final String ERROR_TITLE = "The API Mediation Layer does not work";
+    protected static final String WARNING_TITLE = "There are limitations to how API Mediation Layer works";
+    protected static final String SUCCESS_TITLE = "The API Mediation Layer works properly";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
 
     private final DiscoveryClient discoveryClient;
@@ -43,22 +46,37 @@ public class GatewayHomepageController {
     private String buildString;
 
     private final String apiCatalogServiceId;
+    private final String metricsServiceId;
+    private final boolean metricsServiceEnabled;
 
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
-                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
-        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
+                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId,
+                                     @Value("${apiml.metrics.serviceId:}") String metricsServiceId,
+                                     @Value("${apiml.metrics.enabled:false}") boolean metricsServiceEnabled) {
+        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId, metricsServiceId, metricsServiceEnabled);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
                                      BuildInfo buildInfo,
                                      String apiCatalogServiceId) {
+        this(discoveryClient, providers, buildInfo, apiCatalogServiceId, null, false);
+    }
+
+    public GatewayHomepageController(DiscoveryClient discoveryClient,
+                                     Providers providers,
+                                     BuildInfo buildInfo,
+                                     String apiCatalogServiceId,
+                                     String metricsServiceId,
+                                     boolean metricsServiceEnabled) {
         this.discoveryClient = discoveryClient;
         this.providers = providers;
         this.buildInfo = buildInfo;
         this.apiCatalogServiceId = apiCatalogServiceId;
+        this.metricsServiceId = metricsServiceId;
+        this.metricsServiceEnabled = metricsServiceEnabled;
 
         initializeBuildInfos();
     }
@@ -67,6 +85,7 @@ public class GatewayHomepageController {
     @HystrixCommand
     public String home(Model model) {
         initializeCatalogAttributes(model);
+        initializeMetricsAttributes(model);
         initializeDiscoveryAttributes(model);
         initializeAuthenticationAttributes(model);
 
@@ -85,6 +104,7 @@ public class GatewayHomepageController {
     private void initializeDiscoveryAttributes(Model model) {
         String discoveryStatusText = null;
         String discoveryIconName = null;
+        String discoveryTitleText = ERROR_TITLE;
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances("discovery");
         if (serviceInstances != null) {
@@ -97,30 +117,36 @@ public class GatewayHomepageController {
                 case 1:
                     discoveryStatusText = "The Discovery Service is running";
                     discoveryIconName = SUCCESS_ICON_NAME;
+                    discoveryTitleText = SUCCESS_TITLE;
                     break;
                 default:
                     discoveryStatusText = discoveryCount + " Discovery Service instances are running";
                     discoveryIconName = SUCCESS_ICON_NAME;
+                    discoveryTitleText = SUCCESS_TITLE;
                     break;
             }
         }
 
         model.addAttribute("discoveryStatusText", discoveryStatusText);
         model.addAttribute("discoveryIconName", discoveryIconName);
+        model.addAttribute("discoveryTitleText", discoveryTitleText);
     }
 
     private void initializeAuthenticationAttributes(Model model) {
         String authStatusText = "The Authentication Service is not running";
         String authIconName = WARNING_ICON_NAME;
+        String authTitleText = WARNING_TITLE;
         boolean authUp = authorizationServiceUp();
 
         if (authUp) {
             authStatusText = "The Authentication Service is running";
             authIconName = SUCCESS_ICON_NAME;
+            authTitleText = SUCCESS_TITLE;
         }
 
         model.addAttribute("authStatusText", authStatusText);
         model.addAttribute("authIconName", authIconName);
+        model.addAttribute("authTitleText", authTitleText);
     }
 
     private void initializeCatalogAttributes(Model model) {
@@ -131,8 +157,9 @@ public class GatewayHomepageController {
         }
 
         String catalogLink = null;
-        String catalogStatusText = "The API Catalog is not running";
+        String catalogStatusText = "The API Catalog Service is not running";
         String catalogIconName = WARNING_ICON_NAME;
+        String catalogTitleText = WARNING_TITLE;
         boolean linkEnabled = false;
         boolean authServiceEnabled = authorizationServiceUp();
 
@@ -142,10 +169,11 @@ public class GatewayHomepageController {
             if (catalogCount > 0) {
                 linkEnabled = true;
                 catalogIconName = SUCCESS_ICON_NAME;
+                catalogTitleText = SUCCESS_TITLE;
                 catalogLink = getCatalogLink(serviceInstances.get(0));
 
                 catalogStatusText = catalogCount > 1 ?
-                    catalogCount + " API Catalog instances are running" : "The API Catalog is running";
+                    catalogCount + " API Catalog Service instances are running" : "The API Catalog Service is running";
             }
         }
 
@@ -153,12 +181,46 @@ public class GatewayHomepageController {
         model.addAttribute("catalogIconName", catalogIconName);
         model.addAttribute("catalogLinkEnabled", linkEnabled);
         model.addAttribute("catalogStatusText", catalogStatusText);
+        model.addAttribute("catalogTitleText", catalogTitleText);
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
         String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
         String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
         return serviceUrl + gatewayUrl;
+    }
+
+    private void initializeMetricsAttributes(Model model) {
+        model.addAttribute("metricsEnabled", metricsServiceEnabled);
+
+        String metricsLink = null;
+        String metricsStatusText = "The Metrics Service is not running";
+        String metricsIconName = WARNING_ICON_NAME;
+        String metricsTitleText = WARNING_TITLE;
+
+        if (metricsServiceEnabled) {
+            List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
+            boolean metricsUp = !metricsServiceInstances.isEmpty();
+
+            if (metricsUp) {
+                metricsIconName = SUCCESS_ICON_NAME;
+                metricsLink = getMetricsLink(metricsServiceInstances.get(0));
+                metricsStatusText = "The Metrics Service is running";
+                metricsTitleText = SUCCESS_TITLE;
+            }
+        }
+
+        model.addAttribute("metricsLinkEnabled", metricsLink != null);
+        model.addAttribute("metricsStatusText", metricsStatusText);
+        model.addAttribute("metricsIconName", metricsIconName);
+        model.addAttribute("metricsLink", metricsLink);
+        model.addAttribute("metricsTitleText", metricsTitleText);
+    }
+
+    private String getMetricsLink(ServiceInstance metricsInstance) {
+        String gatewayUrl = metricsInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
+        String serviceUrl = metricsInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
+        return serviceUrl + "/" + gatewayUrl;
     }
 
     private boolean authorizationServiceUp() {
@@ -168,5 +230,4 @@ public class GatewayHomepageController {
 
         return true;
     }
-
 }
