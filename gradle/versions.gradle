@@ -27,7 +27,7 @@ ext {
     hamcrestVersion = '1.3'
     httpClientVersion = '4.5.14'
     httpCoreVersion = '4.4.16'
-    infinispanVersion = '14.0.28.Final'
+    infinispanVersion = '13.0.22.Final'
     istackVersion = '3.0.12'
     jacksonCoreVersion = '2.17.1'
     jacksonDatabindVersion = '2.17.1'
