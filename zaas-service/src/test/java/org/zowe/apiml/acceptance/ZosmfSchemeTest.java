@@ -20,9 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.utils.JWTUtils;
@@ -43,14 +42,14 @@ import static org.mockito.Mockito.*;
  * This test verifies that the token or client certificate was exchanged. The input is a valid apimlJwtToken/client certificate.
  * The output to be tested is the Zosmf token.
  */
-@AcceptanceTest
+@SpringBootTest
 @TestPropertySource(properties = {
     "apiml.security.auth.provider=zosmf",
     "spring.profiles.active=debug",
     "apiml.security.x509.enabled=true",
     "apiml.security.x509.externalMapperUrl="
 })
-class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
+class ZosmfSchemeTest {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;
     @Value("${server.ssl.keyStore}")

@@ -11,6 +11,7 @@
 package org.zowe.apiml.zaas.security.service;
 
 import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
 import com.nimbusds.jose.jwk.JWK;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.zaas.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
 
@@ -40,7 +40,7 @@ class JwtSecurityTest {
     private Providers providers;
 
     @Mock
-    private ApimlDiscoveryClient discoveryClient;
+    private DiscoveryClient discoveryClient;
 
     @BeforeEach
     void setUp() {

@@ -12,7 +12,8 @@ package org.zowe.apiml.zaas.security.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,7 @@ import org.zowe.apiml.util.CacheUtils;
 
 import java.security.Key;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,9 +81,9 @@ class SuccessfulQueryHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
         AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
-        SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
+        SignatureAlgorithm algorithm = Jwts.SIG.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
-        Key privateKey = null;
+        PrivateKey privateKey = null;
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
         }

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaas.security.login.dummy;
 
-import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,7 +27,6 @@ class InMemoryUserDetailsServiceTest {
 
     @BeforeAll
     static void setup() {
-        MonitoringHelper.initMocks();
         encoder = Mockito.mock(BCryptPasswordEncoder.class);
         inMemoryUserDetailsService = new InMemoryUserDetailsService(encoder);
     }

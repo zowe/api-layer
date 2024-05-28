@@ -31,7 +31,6 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
         "org.zowe.apiml.security.common"
     }
 )
-@EnableAspectJAutoProxy
 public class ZaasApplication {
 
     public static void main(String[] args) {

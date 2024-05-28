@@ -10,7 +10,9 @@
 
 package org.zowe.apiml.zaas.controllers;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +24,7 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import static javax.servlet.http.HttpServletResponse.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -89,4 +91,5 @@ class SafResourceAccessControllerTest {
                 .content(invalidRequestBody)
         ).andExpect(status().is(SC_BAD_REQUEST));
     }
+
 }

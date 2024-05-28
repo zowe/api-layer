@@ -16,8 +16,9 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.security.SignatureAlgorithm;
+import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -39,9 +40,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.zaas.config.CacheConfig;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -51,10 +49,12 @@ import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.zaas.config.CacheConfig;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import jakarta.servlet.http.Cookie;
-import java.security.Key;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
@@ -71,9 +71,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     private Set<String> scopes;
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
-    private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
+    private static final SignatureAlgorithm ALGORITHM = Jwts.SIG.RS256;
 
-    private static Key privateKey;
+    private static PrivateKey privateKey;
     private static PublicKey publicKey;
 
     @Mock
@@ -376,15 +376,15 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     }
 
-    private String createExpiredJwtToken(Key secretKey) {
-        return createJwtTokenWithExpiry(secretKey, System.currentTimeMillis() - 1000);
+    private String createExpiredJwtToken(PrivateKey privateKey) {
+        return createJwtTokenWithExpiry(privateKey, System.currentTimeMillis() - 1000);
     }
 
-    private String createJwtTokenWithExpiry(Key secretKey, long expireAt) {
+    private String createJwtTokenWithExpiry(PrivateKey privateKey, long expireAt) {
         return Jwts.builder()
             .setExpiration(new Date(expireAt))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(ALGORITHM, secretKey)
+            .signWith(privateKey, ALGORITHM)
             .compact();
     }
 
@@ -496,8 +496,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenReturnCorrectOrigin() {
-            final Claims tokenClaims = new DefaultClaims();
-            tokenClaims.setIssuer("APIML_PAT");
+            final Map<String, String> map = new HashMap<>();
+            map.put(Claims.ISSUER, "APIML_PAT");
+            final Claims tokenClaims = new DefaultClaims(map);
 
             AuthSource.Origin originResult;
             try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {

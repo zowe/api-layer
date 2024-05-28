@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.filters.pre;
+package org.zowe.apiml.zaas.zaas;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -26,6 +26,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;

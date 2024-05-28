@@ -56,8 +56,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.zowe.apiml.zaas.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
-import static org.zowe.apiml.zaas.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 @ExtendWith(SpringExtension.class)
 class ZaasControllerTest {

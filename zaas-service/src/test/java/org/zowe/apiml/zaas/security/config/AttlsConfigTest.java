@@ -16,11 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
 import javax.net.ssl.SSLException;
 
@@ -34,7 +33,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 /**
  * Simple Spring Context test to verify attls filter chain setup is in place with the right properties being sent
  */
-@AcceptanceTest
+@SpringBootTest
 @TestPropertySource(
     properties = {
         "server.internal.ssl.enabled=false",
@@ -45,7 +44,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 )
 @ActiveProfiles({"acceptance", "AttlsConfigTest"})
 @TestInstance(Lifecycle.PER_CLASS)
-public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
+public class AttlsConfigTest {
 
     @Autowired
     HttpSecurity http;

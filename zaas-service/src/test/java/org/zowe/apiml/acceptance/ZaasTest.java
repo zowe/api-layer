@@ -12,20 +12,19 @@ package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
-import org.zowe.apiml.zaas.utils.JWTUtils;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.zaas.utils.JWTUtils;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
-@AcceptanceTest
+@SpringBootTest
 @TestPropertySource(properties = {
     "apiml.security.auth.provider=dummy" // To simulate SAF auth provider that does not run outside of mainframe
 })
-class ZaasTest extends AcceptanceTestWithBasePath {
+class ZaasTest {
 
     private static final String COOKIE = "apimlAuthenticationToken";
 
@@ -47,7 +46,7 @@ class ZaasTest extends AcceptanceTestWithBasePath {
         given()
             .cookie(COOKIE, zosmfJwt)
         .when()
-            .post(basePath + "/gateway/zaas/zoweJwt")
+            .post("/gateway/zaas/zoweJwt")
         .then()
             .statusCode(SC_UNAUTHORIZED);
         //@formatter:on

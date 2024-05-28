@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
-import org.zowe.apiml.zaas.utils.CleanCurrentRequestContextTest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
@@ -27,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DefaultAuthSourceServiceTest extends CleanCurrentRequestContextTest {
+public class DefaultAuthSourceServiceTest {
     private X509Certificate x509Certificate;
 
     private JwtAuthSourceService jwtAuthSourceService;

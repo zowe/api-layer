@@ -15,8 +15,7 @@ import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.login.LoginRequest;
 
@@ -28,8 +27,8 @@ import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
 
-@AcceptanceTest
-public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
+@SpringBootTest
+public class RefreshEndpointTest {
 
     private final static String USERNAME = "USER";
     private final static char[] PASSWORD = "validPassword".toCharArray();
@@ -52,7 +51,7 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
 
             given().config(RestAssuredConfig.newConfig().sslConfig(new SSLConfig()))
                 .when()
-                .post(basePath + "/gateway/api/v1/auth/refresh") //REFRESH_URL
+                .post("/zaas/api/v1/auth/refresh") //REFRESH_URL
                 .then()
                 .statusCode(is(SC_FORBIDDEN));
         }
@@ -65,7 +64,7 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
                 .when()
                 .contentType(JSON)
                 .body(loginRequest)
-                .post(basePath + "/gateway/api/v1/auth/refresh")
+                .post( "/gateway/api/v1/auth/refresh")
                 .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
@@ -78,6 +77,5 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
             restAssuredConfig =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
         }
     }
-
 
 }
