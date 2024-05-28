@@ -15,10 +15,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
+import org.zowe.apiml.zaas.utils.JWTUtils;
 import org.zowe.apiml.zaas.utils.JWTUtils;
 
 import static io.restassured.RestAssured.given;
