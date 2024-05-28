@@ -34,7 +34,7 @@ public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
-    protected static final String ERROR_TITLE = "The API Mediation Layer doesn't work";
+    protected static final String ERROR_TITLE = "The API Mediation Layer does not work";
     protected static final String WARNING_TITLE = "There are limitations to how API Mediation Layer works";
     protected static final String SUCCESS_TITLE = "The API Mediation Layer works properly";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
