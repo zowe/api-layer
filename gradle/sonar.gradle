@@ -132,7 +132,7 @@ project(":cloud-gateway-package") {
 }
 
 // Packaging project: sonar does not apply
-project(":gateway-package") {
+project(":zaas-package") {
     sonar {
         skipProject = true
     }
