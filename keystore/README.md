@@ -50,6 +50,7 @@ The last section of this README describes how to import and trust the local CA c
     - public certificate of local CA
   
   * `keystore/local_ca/localca.keystore.p12`
+    - password: ``local_ca_password``
     - private key of the local CA 
 
 ### Client certificates:
