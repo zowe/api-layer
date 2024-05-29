@@ -65,8 +65,7 @@ server:
         trustStoreType: PKCS12
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 apiml:
     service:

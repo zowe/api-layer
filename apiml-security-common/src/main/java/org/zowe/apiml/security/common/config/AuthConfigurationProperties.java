@@ -102,6 +102,7 @@ public class AuthConfigurationProperties {
         private String cookieNamePAT = ApimlConstants.PAT_COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";
+        @Deprecated(since = "Servlet 6.0", forRemoval = true)
         private String cookieComment = "API Mediation Layer security token";
         private Integer cookieMaxAge = null;
         private SameSiteCookies cookieSameSite = SameSiteCookies.STRICT;
