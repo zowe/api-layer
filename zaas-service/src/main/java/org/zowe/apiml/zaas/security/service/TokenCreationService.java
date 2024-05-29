@@ -34,6 +34,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class TokenCreationService {
+
     private final Providers providers;
     private final Optional<ZosmfAuthenticationProvider> zosmfAuthenticationProvider;
     private final ZosmfService zosmfService;
@@ -108,6 +109,7 @@ public class TokenCreationService {
         } catch (IRRPassTicketGenerationException e) {
             throw new AuthenticationTokenException("Generation of PassTicket failed", e);
         }
+
     }
 
 }

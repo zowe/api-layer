@@ -18,8 +18,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
-import org.zowe.apiml.zaas.security.login.Providers;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
 import java.util.*;
 
@@ -32,9 +30,7 @@ import java.util.*;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
-    private final Providers providers;
     private final RestTemplate restTemplate;
-    private final TokenCreationService tokenCreationService;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -71,7 +67,6 @@ public class VerificationOnboardService {
         }
         return Optional.empty();
     }
-
 
     /**
      * Retrieves swagger from the url
@@ -156,7 +151,7 @@ public class VerificationOnboardService {
         try {
             response = restTemplate.exchange(url, method, request, String.class);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            response = ResponseEntity.status(e.getRawStatusCode())
+            response = ResponseEntity.status(e.getStatusCode())
                 .headers(e.getResponseHeaders())
                 .body(e.getResponseBodyAsString());
         }
@@ -187,12 +182,12 @@ public class VerificationOnboardService {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
 
-
     private String getAuthenticationCookie(String passedAuthenticationToken) {
-        final String message = "Cannot verify SSO functionality, apimlAuthenticationToken cookie wasn't provided and a passticket can't be generate with the zOSMF provider";
         if (passedAuthenticationToken.equals("dummy")) {
-            if (providers.isZosfmUsed()) throw new ValidationException(message, ValidateAPIController.NON_CONFORMANT_KEY);
-            return tokenCreationService.createJwtTokenWithoutCredentials("validate");
+            ResponseEntity<String> validationResponse = restTemplate.exchange("", HttpMethod.GET, null, String.class);
+            if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
+                throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);
+            }
         }
         return passedAuthenticationToken;
     }
