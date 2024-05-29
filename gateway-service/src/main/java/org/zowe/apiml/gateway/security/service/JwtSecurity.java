@@ -19,7 +19,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.awaitility.Duration;
+import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,11 +36,12 @@ import javax.annotation.PostConstruct;
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 
@@ -251,9 +252,9 @@ public class JwtSecurity {
                 events.add("Started waiting for zOSMF to be registered and known by the discovery service");
                 log.debug("Waiting for zOSMF to be registered and known by the Discovery Service.");
                 await()
-                    .atMost(new Duration(timeout, TimeUnit.MINUTES))
+                    .atMost(Duration.of(timeout, ChronoUnit.MINUTES))
                     .with()
-                    .pollInterval(Duration.ONE_MINUTE)
+                    .pollInterval(Durations.ONE_MINUTE)
                     .until(zosmfListener::isZosmfReady);
             } catch (ConditionTimeoutException e) {
                 apimlLog.log("org.zowe.apiml.gateway.jwtProducerConfigError", StringUtils.join(events, "\n"));

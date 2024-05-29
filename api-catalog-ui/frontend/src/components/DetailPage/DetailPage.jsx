@@ -8,10 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Component, Suspense } from 'react';
-import { NavTab } from 'react-router-tabs';
 import { Button, Text, Tooltip } from 'mineral-ui';
 import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
-import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import { Redirect, Route, Router, Switch, NavLink } from 'react-router-dom';
 
 import './DetailPage.css';
 import './ReactRouterTabs.css';
@@ -160,17 +159,23 @@ export default class DetailPage extends Component {
                                                             >
                                                                 <div>
                                                                     {status === 'UP' && (
-                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                        <NavLink
+                                                                            className="nav-tab"
+                                                                            to={`${match.url}/${serviceId}`}
+                                                                        >
                                                                             <Text element="h4">{serviceId}</Text>
-                                                                        </NavTab>
+                                                                        </NavLink>
                                                                     )}
                                                                     {status === 'DOWN' && (
-                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                        <NavLink
+                                                                            className="nav-tab"
+                                                                            to={`${match.url}/${serviceId}`}
+                                                                        >
                                                                             <Text element="h4" color="#de1b1b">
                                                                                 {serviceId}
                                                                             </Text>
                                                                             <IconSuccessSimple color="#de1b1b" />
-                                                                        </NavTab>
+                                                                        </NavLink>
                                                                     )}
                                                                 </div>
                                                             </Tooltip>
