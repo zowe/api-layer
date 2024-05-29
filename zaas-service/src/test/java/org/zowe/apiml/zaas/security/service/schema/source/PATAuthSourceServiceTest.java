@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
-import org.junit.jupiter.api.AfterAll;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,14 +18,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 
@@ -79,17 +78,6 @@ class PATAuthSourceServiceTest {
             when(authenticationService.getTokenOrigin(TOKEN)).thenReturn(AuthSource.Origin.ZOWE);
 
             assertFalse(patAuthSourceService.getToken(request).isPresent());
-        }
-
-        @Test
-        void givenTokenInAuthSource_thenReturnValid() {
-            String serviceId = "gateway";
-            //when(context.get(SERVICE_ID_KEY)).thenReturn(serviceId);
-            when(tokenProvider.isValidForScopes(TOKEN, serviceId)).thenReturn(true);
-            when(tokenProvider.isInvalidated(TOKEN)).thenReturn(false);
-            PATAuthSource authSource = new PATAuthSource(TOKEN);
-
-            assertTrue(patAuthSourceService.isValid(authSource));
         }
 
         @Test

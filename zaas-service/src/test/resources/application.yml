@@ -60,10 +60,12 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    profiles:
+        #include: diag
+        group:
+            dev: debug, diag
     config:
         useLegacyProcessing: true
-    profiles:
-        include: diag
     application:
         name: ${apiml.service.id}
     cloud:
@@ -87,19 +89,6 @@ spring:
 server:
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
-    internal:
-        port: 10017
-        enabled: true
-        ssl:
-            keyStore: ../keystore/localhost/localhost.keystore.p12
-            keyStorePassword: password
-            keyPassword: password
-            keyAlias: localhost
-            trustStore: ../keystore/localhost/localhost.truststore.p12
-            trustStorePassword: password
-            keyStoreType: PKCS12
-            trustStoreType: PKCS12
-            clientAuth: want
     ssl:
         enabled: true
         clientAuth: want
@@ -114,58 +103,13 @@ server:
         keyAlias: localhost
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
-    max-http-header-size: 40000
-
-zuul:
-    sslHostnameValidationEnabled: false
-    addProxyHeaders: true
-    traceRequestBody: true
-    ignoreSecurityHeaders: false
-    includeDebugHeader: false
-    sensitiveHeaders: Expires,Date
-    ignoredPatterns:
-        - /ws/**
-        - /sse/**
-    host:
-        connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
-    forceOriginalQueryStringEncoding: true
-    retryable: true
-
-ribbon:
-    ConnectTimeout: ${apiml.gateway.timeoutMillis}
-    ReadTimeout: ${apiml.gateway.timeoutMillis}
-    ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
-    MaxAutoRetries: 0
-    MaxAutoRetriesNextServer: 5
-    retryableStatusCodes: 503
-    OkToRetryOnAllOperations: false
-    GZipPayload: false # this stops Gateway from deflating gzip responses from services
-    client:
-        name: testClient
+    max-http-request-header-size: 40000
 
 http:
     connection:
         timeout: ${apiml.gateway.timeoutMillis}
     socket:
         timeout: ${apiml.gateway.timeoutMillis}
-
-hystrix:
-    command:
-        default:
-            fallback:
-                enabled: false
-            circuitBreaker:
-                enabled: false
-            execution:
-                timeout:
-                    enabled: false
-                isolation:
-                    thread:
-                        timeoutInMilliseconds: ${apiml.gateway.timeoutMillis}
-                    strategy: SEMAPHORE
-                    semaphore:
-                        maxConcurrentRequests: 100000
 
 management:
     endpoints:
@@ -221,7 +165,7 @@ eureka:
 
 ---
 spring:
-    profiles: debug
+    config.activate.on-profile: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -246,8 +190,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -255,13 +198,8 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-zuul.debug.request: true
----
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
 
+---
+spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEAGW1

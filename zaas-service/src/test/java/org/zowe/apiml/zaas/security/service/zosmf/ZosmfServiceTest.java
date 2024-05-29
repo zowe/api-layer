@@ -863,7 +863,7 @@ class ZosmfServiceTest {
                 assertFalse(values.isEmpty());
                 assertTrue(values.contains("ResourceAccessException accessing"), values);
 
-                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError", "resource access exception; nested exception is javax.net.ssl.SSLHandshakeException: handshake exception");
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError", "resource access exception");
             }
 
             @Test
@@ -876,7 +876,7 @@ class ZosmfServiceTest {
                 )).thenThrow(new RestClientException("resource access exception", new ConnectException("connection exception")));
 
                 assertThat(underTest.isAccessible(), is(false));
-                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception; nested exception is java.net.ConnectException: connection exception");
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception");
             }
 
             @Test

@@ -10,53 +10,66 @@
 
 package org.zowe.apiml.zaas.security.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Deserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Map;
+
 @Slf4j
 @UtilityClass
 public class JwtUtils {
 
+    private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("""
+        {"typ":"JWT","alg":"none"}""".getBytes(StandardCharsets.UTF_8));
+
+    private static final Deserializer<Map<String, ?>> JACKSON_DESERIALIZER = new JacksonDeserializer<>();
     private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
+    /**
+     * The method just read the claims without any validation of token itself. It could be use just in the case if
+     * validity is check in the related code.
+     *
+     * @param jwt token to be parsed
+     * @return parsed claims or empty object if the jwt is null
+     * @throws TokenNotValidException in case of invalid input, or TokenExpireException if JWT is expired
+     */
     public static Claims getJwtClaims(String jwt) {
         /*
          * Removes signature, because we don't have key to verify z/OS tokens, and we just need to read claim.
          * Verification is done by SAF itself. JWT library doesn't parse signed key without verification.
          */
-        String withoutSign = removeJwtSign(jwt);
-
         try {
-            return Jwts.parser()
-                    .build()
-                    .parseClaimsJwt(withoutSign)
-                    .getBody();
+            String withoutSign = removeJwtSign(jwt);
+            return Jwts.parser().unsecured().build()
+                .parseUnsecuredClaims(withoutSign)
+                .getPayload();
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }
     }
 
     /**
-     * This method removes the token signature. Each JWT token is concatenated of three parts (header, body, sign) joined
-     * with ".". JWT library used for parsing contains also validation. A public key is needed for validation, but
-     * we are also using JWT tokens from another application (z/OSMF) and we don't have it.
+     * This method removes the token signature and replace algorithm with none. It allows to parse payload without
+     * public kez.
      *
      * @param jwtToken token to modify
-     * @return jwt token without sign part
+     * @return unsigned jwt token
      */
     public static String removeJwtSign(String jwtToken) {
         if (jwtToken == null) return null;
 
-        final int index = jwtToken.lastIndexOf('.');
-        if (index > 0) return jwtToken.substring(0, index + 1);
+        int firstDot = jwtToken.indexOf('.');
+        int lastDot = jwtToken.lastIndexOf('.');
+        if ((firstDot < 0) || (firstDot >= lastDot)) throw new MalformedJwtException("Invalid JWT format");
 
-        return jwtToken;
+        return HEADER_NONE_SIGNATURE + jwtToken.substring(firstDot, lastDot + 1);
     }
 
     /**
@@ -66,8 +79,7 @@ public class JwtUtils {
      * @return translated exception (better messaging and allow subsequent handling)
      */
     public static RuntimeException handleJwtParserException(RuntimeException exception) {
-        if (exception instanceof ExpiredJwtException) {
-            final ExpiredJwtException expiredJwtException = (ExpiredJwtException) exception;
+        if (exception instanceof ExpiredJwtException expiredJwtException) {
             log.debug("Token with id '{}' for user '{}' is expired.", expiredJwtException.getClaims().getId(), expiredJwtException.getClaims().getSubject());
             return new TokenExpireException("Token is expired.");
         }
