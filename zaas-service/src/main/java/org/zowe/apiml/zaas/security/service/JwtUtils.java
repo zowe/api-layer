@@ -11,10 +11,17 @@
 package org.zowe.apiml.zaas.security.service;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Deserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
+import io.jsonwebtoken.*;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Map;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -52,7 +59,7 @@ public class JwtUtils {
 
     /**
      * This method removes the token signature and replace algorithm with none. It allows to parse payload without
-     * public kez.
+     * public key.
      *
      * @param jwtToken token to modify
      * @return unsigned jwt token
