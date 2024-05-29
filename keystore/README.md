@@ -27,21 +27,21 @@ The last section of this README describes how to import and trust the local CA c
     - contains the exported server certificate in PEM format for use with http clients
 
   * `keystore/local/localhost.keystore.p12` 
-    - password: ``password``
+    - password: `password`
     - used for the HTTPS server(s) 
     - contains the server certificate signed by the local CA and private key for the server
     
   * `keystore/local/localhost.truststore.p12` 
-    - password: ``password``
+    - password: `password`
     - used for HTTPS clients (e.g. integration tests, services using the gateway) 
     - contains the root certificate of the local CA (not the server certificate)
 
   * `keystore/local/localhost2.keystore.p12` 
-    - password: ``password``
+    - password: `password`
     - used for tests only, please refer to the particular tests for detils
     
   * `keystore/local/localhost2.truststore.p12` 
-    - password: ``password``
+    - password: `password`
     - used for tests only, please refer to the particular tests for detils
 
 ### Local CA:
@@ -50,7 +50,7 @@ The last section of this README describes how to import and trust the local CA c
     - public certificate of local CA
   
   * `keystore/local_ca/localca.keystore.p12`
-    - password: ``local_ca_password``
+    - password: `local_ca_password`
     - private key of the local CA 
 
 ### Client certificates:
