@@ -30,6 +30,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import WarningIcon from '@material-ui/icons/Warning';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
+import Footer from '../Footer/Footer';
 
 function Login(props) {
     const [username, setUsername] = useState('');
@@ -422,6 +423,9 @@ function Login(props) {
                             </div>
                         )}
                     </form>
+                </div>
+                <div id="loginFooter">
+                    <Footer />
                 </div>
             </div>
         </div>

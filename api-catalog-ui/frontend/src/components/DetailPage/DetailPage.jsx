@@ -271,13 +271,14 @@ export default class DetailPage extends Component {
                                             )}
                                         />
                                     </Switch>
+                                    <div id="detailFooter">
+                                        <Footer />
+                                    </div>
                                 </Router>
                             </Suspense>
                         )}
                         {apiPortalEnabled && <Divider light id="footer-divider" />}
                     </div>
-
-                    <Footer />
                 </div>
 
                 {showSideBar && <div className="side-bar" />}

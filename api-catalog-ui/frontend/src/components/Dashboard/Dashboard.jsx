@@ -231,7 +231,11 @@ export default class Dashboard extends Component {
                                         No services found matching search criteria
                                     </Typography>
                                 )}
-                                <Footer />
+                                {hasTiles && (
+                                    <div id="dashboardFooter">
+                                        <Footer />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

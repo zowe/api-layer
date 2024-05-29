@@ -39,6 +39,8 @@ describe('>>> Detail page test', () => {
         cy.contains(
             'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.'
         );
+
+        cy.contains('Version: ');
     });
 
     it('Should display the API Catalog service title, URL and description in Swagger', () => {

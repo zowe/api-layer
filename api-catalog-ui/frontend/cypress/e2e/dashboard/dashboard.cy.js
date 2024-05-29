@@ -23,6 +23,8 @@ function login() {
     cy.get('input[name="password"]').type(password);
 
     cy.get('@submitButton').click();
+
+    cy.contains('Version: ');
 }
 
 describe('>>> Dashboard test', () => {
