@@ -78,8 +78,6 @@ dependencies {
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
-    implementation libs.swagger.models
-    implementation libs.swagger.inflector
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.commons.io

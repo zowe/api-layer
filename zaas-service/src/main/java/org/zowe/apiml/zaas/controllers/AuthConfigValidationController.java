@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,13 +31,16 @@ public class AuthConfigValidationController {
     private final Providers providers;
     private final TokenCreationService tokenCreationService;
 
-    @GetMapping(path = "")
-    @Operation
-    public ResponseEntity<String> validateAuth() {
+    @GetMapping(path = "auth")
+    @Operation(summary = "Provides information for service conformance validation")
+    public ResponseEntity<String> validateAuth(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() != null) {
+            return ResponseEntity.ok().build();
+        }
         if (providers.isZosfmUsed()) {
             return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body("apimlAuthenticationToken cookie was not provided");
+                .body("apimlAuthenticationToken cookie was not provided and a PassTicket cannot be generated with the z/OSMF provider");
         }
         try {
             tokenCreationService.createJwtTokenWithoutCredentials("validate");
@@ -44,7 +48,7 @@ public class AuthConfigValidationController {
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body("PassTicket cannot be generated with the z/OSMF provider");
+                .body("Failed creating a PassTicket " + e.getMessage());
         }
     }
 }

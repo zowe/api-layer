@@ -34,7 +34,6 @@ import java.security.cert.CertificateEncodingException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.cloudgatewayservice.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
@@ -234,7 +233,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         clientRequestbuilder
             .headers(headers -> {
                 // get all current cookies
-                List<HttpCookie> cookies = readCookies(headers).collect(Collectors.toList());
+                List<HttpCookie> cookies = readCookies(headers).toList();
 
                 // set in the request to ZAAS all cookies and headers that contain credentials
                 headers.entrySet().stream()

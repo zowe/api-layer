@@ -147,7 +147,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         return getRoutedService(serviceInstance)
             .map(routedService ->
                 routeDefinitionProducers.stream()
-                    .sorted(Comparator.comparingInt(x -> x.getOrder()))
+                    .sorted(Comparator.comparingInt(RouteDefinitionProducer::getOrder))
                     .map(rdp -> {
                         // generate a new routing rule by a specific produces
                         RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);

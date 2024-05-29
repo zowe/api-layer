@@ -12,13 +12,16 @@ package org.zowe.apiml.cloudgatewayservice.conformance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 
+import java.net.URI;
 import java.util.*;
 
 /**
@@ -31,6 +34,7 @@ public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
     private final RestTemplate restTemplate;
+    private final RouteLocator routeLocator;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -183,11 +187,23 @@ public class VerificationOnboardService {
     }
 
     private String getAuthenticationCookie(String passedAuthenticationToken) {
+        // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
-            ResponseEntity<String> validationResponse = restTemplate.exchange("", HttpMethod.GET, null, String.class);
+            URI uri = routeLocator.getRouteDefinitions()
+                .filter(def -> def.getId().equals("zaas"))
+                .map(RouteDefinition::getUri)
+                .blockFirst();
+
+            if (uri == null) {
+                throw new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY);
+            }
+
+            String zaasAuthValidateUri = String.format("%s://%s:%d/%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
+            ResponseEntity<String> validationResponse = restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
             if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);
             }
+
         }
         return passedAuthenticationToken;
     }

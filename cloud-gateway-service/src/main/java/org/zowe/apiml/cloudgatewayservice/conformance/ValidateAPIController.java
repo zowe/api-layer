@@ -36,22 +36,18 @@ public class ValidateAPIController {
     private static final int MAXIMUM_SERVICE_ID_LENGTH = 64;
     private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
+    private static final String REGISTRATION_PROBLEMS = "Registration problems";
+    private static final String METADATA_PROBLEMS = "Metadata problems";
+    private static final String CONFORMANCE_PROBLEMS = "Conformance problems";
 
     static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.zaas.verifier.wrongServiceId";
     static final String NO_METADATA_KEY = "org.zowe.apiml.zaas.verifier.noMetadata";
     static final String NON_CONFORMANT_KEY = "org.zowe.apiml.zaas.verifier.nonConformant";
 
-
-    private static final String REGISTRATION_PROBLEMS = "Registration problems";
-    private static final String METADATA_PROBLEMS = "Metadata problems";
-    private static final String CONFORMANCE_PROBLEMS = "Conformance problems";
-
-
     private final MessageService messageService;
     private final VerificationOnboardService verificationOnboardService;
     private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
-
 
     /**
      * Accepts serviceID and checks conformance criteria
@@ -103,7 +99,7 @@ public class ValidateAPIController {
     }
 
     private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
-        if (!swaggerUrl.isPresent()) {
+        if (swaggerUrl.isEmpty()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
         }
 
@@ -199,7 +195,6 @@ public class ValidateAPIController {
             throw new ValidationException("Cannot retrieve metadata - no active instance of the service", WRONG_SERVICE_ID_KEY);
         }
     }
-
 
     /**
      * Accept serviceId and checks if it is Zowe conformant according to the specification,
