@@ -30,7 +30,7 @@
 # - ZWE_components_gateway_apiml_security_authorization_provider
 # - ZWE_components_gateway_apiml_security_authorization_resourceClass
 # - ZWE_components_gateway_port - the port the api gateway service will use
-# - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
@@ -44,6 +44,7 @@
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_GATEWAY_HOST
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
@@ -126,15 +127,22 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 ATTLS_ENABLED="false"
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-    ATTLS_ENABLED="true"
-    ZWE_configs_server_ssl_enabled="false"
+# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+  ATTLS_ENABLED="true"
+fi
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  ZWE_configs_server_ssl_enabled="false"
+  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
 fi
 
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
-    httpProtocol="https"
+    externalProtocol="https"
 else
-    httpProtocol="http"
+    externalProtocol="http"
 fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
@@ -163,8 +171,11 @@ if [ $JAVA_VERSION -ge 61 ]; then
                 --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
                 --add-opens=java.base/java.util=ALL-UNNAMED
                 --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                --add-opens=java.base/java.io=ALL-UNNAMED"
 fi
+
 # NOTE: these are moved from below
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.service.preferIpAddress=false \
@@ -183,7 +194,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
-    -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
+    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
@@ -203,8 +214,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
-    -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
-    -Dserver.ssl.protocol=${ZWE_components_gateway_server_ssl_protocol:-"TLSv1.2"}  \
+    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
+    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
