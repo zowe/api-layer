@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -49,6 +51,12 @@ public class AttlsConfigTest {
     @Autowired
     HttpSecurity http;
 
+    @LocalServerPort
+    protected int port;
+
+    @Value("${apiml.service.hostname:localhost}")
+    protected String hostname;
+
     @Nested
     class GivenAttlsModeEnabled {
 
@@ -61,7 +69,7 @@ public class AttlsConfigTest {
                         .log().all()
                         .cookie(COOKIE_AUTH_NAME, "jwttoken")
                     .when()
-                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                        .get(String.format("http://%s:%d", hostname, port))
                     .then()
                         .log().all()
                         .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
@@ -77,13 +85,16 @@ public class AttlsConfigTest {
                     .log().all()
                     .cookie(COOKIE_AUTH_NAME, "jwttoken")
                 .when()
-                    .get(String.format("http://localhost:%d%s", port, serviceWithDefaultConfiguration.getPath()))
+                    .get(String.format("http://%s:%d", hostname, port))
                 .then()
                     .log().all()
                     .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
                     .body(containsString("Connection is not secure."))
                     .body(containsString("AttlsContext.getStatConn"));
             }
+
         }
+
     }
+
 }
