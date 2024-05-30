@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.controllers;
 
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthConfigValidationControllerTest {
@@ -32,10 +39,8 @@ public class AuthConfigValidationControllerTest {
     @Mock
     private Providers providers;
 
-    @BeforeEach
-    void setUp() {
-
-    }
+    @Mock
+    private Authentication authentication;
 
     @Nested
     class GivenRequestToValidateAuthConfig {
@@ -43,18 +48,48 @@ public class AuthConfigValidationControllerTest {
         @Nested
         class GivenUnauthenticated {
 
-            @Test
-            void whenZosmf_thenConflict() {
-
+            @BeforeEach
+            void setUp() {
+                when(authentication.getPrincipal()).thenReturn(null);
             }
 
+            @Test
+            void whenZosmf_thenConflict() {
+                when(providers.isZosfmUsed()).thenReturn(Boolean.TRUE);
+                ResponseEntity<String> entity = authConfigValidationController.validateAuth(authentication);
+                assertEquals(HttpStatusCode.valueOf(409), entity.getStatusCode());
+                assertEquals("apimlAuthenticationToken cookie was not provided and a PassTicket cannot be generated with the z/OSMF provider", entity.getBody());
+            }
+
+            @Test
+            void whenNotZosmf_thenTokenOk() {
+                when(providers.isZosfmUsed()).thenReturn(Boolean.FALSE);
+                when(tokenCreationService.createJwtTokenWithoutCredentials("validate")).thenReturn("token");
+                ResponseEntity<String> entity = authConfigValidationController.validateAuth(authentication);
+                assertEquals(HttpStatusCode.valueOf(200), entity.getStatusCode());
+            }
+
+            @Test
+            void whenNotZosmf_thenTokenFail() {
+                when(providers.isZosfmUsed()).thenReturn(Boolean.FALSE);
+                when(tokenCreationService.createJwtTokenWithoutCredentials("validate")).thenThrow(new RuntimeException());
+                ResponseEntity<String> entity = authConfigValidationController.validateAuth(authentication);
+                assertEquals(HttpStatusCode.valueOf(409), entity.getStatusCode());
+            }
         }
 
         @Nested
         class GivenAuthenticated {
 
-            void whenNotZosmf_thenToken() {
+            @BeforeEach
+            void setUp() {
+                when(authentication.getPrincipal()).thenReturn(new Object());
+            }
 
+            @Test
+            void whenAuthConfigValidate_thenOk() {
+                ResponseEntity<String> entity = authConfigValidationController.validateAuth(authentication);
+                assertEquals(HttpStatusCode.valueOf(200), entity.getStatusCode());
             }
 
         }
