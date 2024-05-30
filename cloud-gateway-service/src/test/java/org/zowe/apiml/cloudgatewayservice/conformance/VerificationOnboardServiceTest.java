@@ -25,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
-import reactor.core.publisher.Flux;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -139,12 +138,11 @@ class VerificationOnboardServiceTest {
 
         private void setUpZaasService() throws URISyntaxException {
             ServiceInstance serviceInstance = mock(ServiceInstance.class);
-            when(serviceInstance.getServiceId()).thenReturn("zaas");
             when(serviceInstance.getUri()).thenReturn(new URI("https://localhost:1000/zaas"));
+            when(serviceInstance.getServiceId()).thenReturn("zaas");
 
-            when(routeLocator.getServiceInstances()).thenReturn(Flux.fromIterable(asList(
-                asList(serviceInstance)
-            )));
+            when(discoveryClient.getServices()).thenReturn(asList("zaas"));
+            when(discoveryClient.getInstances("zaas")).thenReturn(asList(serviceInstance));
         }
 
         @Test

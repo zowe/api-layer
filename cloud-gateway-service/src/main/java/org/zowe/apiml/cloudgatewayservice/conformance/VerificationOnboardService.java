@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 
 import java.net.URI;
@@ -42,7 +41,6 @@ public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
     private final RestTemplate restTemplate;
-    private final RouteLocator routeLocator;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -197,13 +195,15 @@ public class VerificationOnboardService {
     private String getAuthenticationCookie(String passedAuthenticationToken) {
         // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
-            URI uri = routeLocator.getServiceInstances()
+            URI uri = discoveryClient.getServices().stream()
+                .map(service -> discoveryClient.getInstances(service))
                 .map(services -> services.stream()
-                    .filter(service -> "zaas".equals(service.getServiceId()))
+                    .filter(service -> "zaas".equalsIgnoreCase(service.getServiceId()))
                     .findFirst()
                     .map(service -> service.getUri())
-                    .orElseThrow(() -> new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY)))
-                .blockFirst();
+                    .orElse(null))
+                .findFirst()
+                .orElseThrow(() -> new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY));
 
             if (uri == null) {
                 throw new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY);

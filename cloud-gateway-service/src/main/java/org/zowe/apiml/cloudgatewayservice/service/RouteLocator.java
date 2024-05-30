@@ -78,7 +78,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         }
     }
 
-    public Flux<List<ServiceInstance>> getServiceInstances() {
+    Flux<List<ServiceInstance>> getServiceInstances() {
         return discoveryClient.getServices()
             .flatMap(service -> discoveryClient.getInstances(service)
             .collectList());
