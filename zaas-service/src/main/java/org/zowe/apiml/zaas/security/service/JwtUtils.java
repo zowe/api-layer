@@ -33,8 +33,7 @@ public class JwtUtils {
     private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
     /**
-     * The method just read the claims without any validation of token itself. It could be use just in the case if
-     * validity is check in the related code.
+     * This method reads the claims without validating the token signature. It should be used only if the validity was checked in the calling code.
      *
      * @param jwt token to be parsed
      * @return parsed claims or empty object if the jwt is null
