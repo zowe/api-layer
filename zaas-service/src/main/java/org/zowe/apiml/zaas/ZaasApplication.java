@@ -12,18 +12,21 @@ package org.zowe.apiml.zaas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.zowe.apiml.extension.ExtensionConfigReader;
 import org.zowe.apiml.extension.ExtensionsLoader;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.version.BuildInfo;
+import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
 import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 
 @EnableWebSecurity
 @SpringBootApplication
+@EnableDiscoveryClient
 @ComponentScan(
     value = {
         "org.zowe.apiml.zaas",
@@ -31,6 +34,7 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
         "org.zowe.apiml.security.common"
     }
 )
+@EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class ZaasApplication {
 
     public static void main(String[] args) {

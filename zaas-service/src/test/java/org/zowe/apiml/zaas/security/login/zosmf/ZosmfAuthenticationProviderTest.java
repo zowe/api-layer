@@ -12,8 +12,8 @@ package org.zowe.apiml.zaas.security.login.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.EurekaClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,8 +22,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,17 +40,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 
@@ -67,7 +71,10 @@ class ZosmfAuthenticationProviderTest {
     private static final String INVALID_RESPONSE = "{\"saf_realm\": \"" + DOMAIN + "\"}";
 
     @Mock
-    private DiscoveryClient discovery;
+    private EurekaClientConfig clientConfig;
+
+    @Mock
+    private EurekaClient eurekaClient;
 
     @Mock
     private AuthenticationService authenticationService;
@@ -78,12 +85,10 @@ class ZosmfAuthenticationProviderTest {
     @Mock
     private TokenCreationService tokenCreationService;
 
-
     private UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
     private AuthConfigurationProperties authConfigurationProperties;
     private InstanceInfo zosmfInstance;
     private final ObjectMapper securityObjectMapper = new ObjectMapper();
-
 
     private ZosmfService.ZosmfInfo getZosmfResponse() {
         ZosmfService.ZosmfInfo info = new ZosmfService.ZosmfInfo();
@@ -99,16 +104,10 @@ class ZosmfAuthenticationProviderTest {
         return out;
     }
 
-    private Application createApplication(InstanceInfo... instanceInfos) {
-        Application out = mock(Application.class);
-        when(out.getInstances()).thenReturn(Arrays.asList(instanceInfos));
-        return out;
-    }
-
     private ZosmfService createZosmfService() {
         ApplicationContext applicationContext = mock(ApplicationContext.class);
         ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
-            discovery,
+            new CompositeDiscoveryClient(Collections.singletonList(new EurekaDiscoveryClient(eurekaClient, clientConfig))),
             restTemplate,
             securityObjectMapper,
             applicationContext,
@@ -143,8 +142,7 @@ class ZosmfAuthenticationProviderTest {
     void loginWithExistingUser() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -171,8 +169,7 @@ class ZosmfAuthenticationProviderTest {
     void loginWithBadUser() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         when(restTemplate.exchange(eq("http://localhost:0/zosmf/info"),
@@ -195,8 +192,7 @@ class ZosmfAuthenticationProviderTest {
     void noZosmfInstance() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication();
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.emptyList());
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
@@ -224,8 +220,7 @@ class ZosmfAuthenticationProviderTest {
     void notValidZosmfResponse() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -251,8 +246,7 @@ class ZosmfAuthenticationProviderTest {
     void noDomainInResponse() throws IOException {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         ZosmfService.ZosmfInfo zosmfInfoNoDomain =
             securityObjectMapper.reader().forType(ZosmfService.ZosmfInfo.class).readValue(INVALID_RESPONSE);
@@ -283,8 +277,7 @@ class ZosmfAuthenticationProviderTest {
 
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -310,8 +303,7 @@ class ZosmfAuthenticationProviderTest {
 
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -336,8 +328,7 @@ class ZosmfAuthenticationProviderTest {
     void shouldThrowNewExceptionIfRestClientException() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         when(restTemplate.exchange(eq("http://localhost:0/zosmf/info"),
@@ -359,8 +350,7 @@ class ZosmfAuthenticationProviderTest {
     void shouldThrowNewExceptionIfResourceAccessException() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        final Application application = createApplication(zosmfInstance);
-        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         when(restTemplate.exchange(eq("http://localhost:0/zosmf/info"),
@@ -517,5 +507,7 @@ class ZosmfAuthenticationProviderTest {
             authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
         }
+
     }
+
 }

@@ -13,17 +13,22 @@ package org.zowe.apiml.acceptance;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.zaas.ZaasApplication;
+import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.utils.JWTUtils;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 
-@SpringBootTest
+@SpringBootTest(classes = ZaasApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {
     "apiml.security.auth.provider=dummy" // To simulate SAF auth provider that does not run outside of mainframe
 })
+@MockBean(name = "x509Mapper", classes = AuthenticationMapper.class)
 class ZaasTest {
 
     private static final String COOKIE = "apimlAuthenticationToken";
@@ -37,8 +42,14 @@ class ZaasTest {
     @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
+    @LocalServerPort
+    private int port;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
     @Test
-    void givenZosmfCookieAndDummyAuthProvider_whenZoweJwtRequest_thenUnauthorized() {
+    void givenZosmfCookieAndDummyAuthProvider_whenZoweJwtRequest_thenUnavailable() {
         HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyPassword(keystorePassword).keyStore(keystore).build();
         String zosmfJwt = JWTUtils.createZosmfJwtToken("user", "z/OS", "Ltpa", config);
 
@@ -46,9 +57,9 @@ class ZaasTest {
         given()
             .cookie(COOKIE, zosmfJwt)
         .when()
-            .post("/gateway/zaas/zoweJwt")
+            .post(String.format("https://%s:%d/gateway/zaas/zoweJwt", hostname, port))
         .then()
-            .statusCode(SC_UNAUTHORIZED);
+            .statusCode(SC_SERVICE_UNAVAILABLE);
         //@formatter:on
     }
 

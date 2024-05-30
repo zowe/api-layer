@@ -10,7 +10,10 @@
 
 package org.zowe.apiml.zaas.config;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -22,11 +25,13 @@ import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.util.CacheUtils;
+import org.zowe.apiml.zaas.cache.CachingServiceClient;
 
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 
 /**
@@ -35,6 +40,7 @@ import java.io.IOException;
 @Slf4j
 @EnableCaching
 @Configuration
+@RequiredArgsConstructor
 public class CacheConfig {
 
     public static final String COMPOSITE_KEY_GENERATOR = "compositeKeyGenerator";
@@ -45,6 +51,8 @@ public class CacheConfig {
 
     @Value("${apiml.caching.enabled:true}")
     private boolean cacheEnabled;
+
+    private final GatewayConfigProperties gatewayConfigProperties;
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -97,6 +105,12 @@ public class CacheConfig {
     @Bean
     public CacheUtils cacheUtils() {
         return new CacheUtils();
+    }
+
+    @Bean
+    public CachingServiceClient cachingServiceClient(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
+        String gatewayUri = String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname());
+        return new CachingServiceClient(restTemplate, gatewayUri);
     }
 
 }

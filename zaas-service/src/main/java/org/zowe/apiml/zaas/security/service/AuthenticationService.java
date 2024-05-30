@@ -76,7 +76,7 @@ public class AuthenticationService {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final JwtSecurity jwtSecurityInitializer;
     private final ZosmfService zosmfService;
-    private final EurekaClient discoveryClient;
+    private final EurekaClient eurekaClient;
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
@@ -191,13 +191,13 @@ public class AuthenticationService {
     }
 
     private boolean invalidateTokenOnAnotherInstance(String jwtToken) {
-        final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
+        final Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
         // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
         if (application == null) {
             return Boolean.FALSE;
         }
 
-        final String myInstanceId = discoveryClient.getApplicationInfoManager().getInfo().getInstanceId();
+        final String myInstanceId = eurekaClient.getApplicationInfoManager().getInfo().getInstanceId();
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
@@ -302,7 +302,7 @@ public class AuthenticationService {
      * @return true if all token were sent, otherwise false
      */
     public boolean distributeInvalidate(String toInstanceId) {
-        final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
+        final Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
         if (application == null) return false;
 
         final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);

@@ -12,7 +12,7 @@ package org.zowe.apiml.zaas.security.service;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -29,6 +29,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
@@ -38,9 +39,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -91,7 +92,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Mock
     private ZosmfService zosmfService;
     @Mock
-    private DiscoveryClient discoveryClient;
+    private EurekaClient eurekaClient;
     @Mock
     private CacheUtils cacheUtils;
     @Mock
@@ -114,7 +115,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            zosmfService, discoveryClient, restTemplate, cacheManager, cacheUtils
+            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils
         );
         scopes = new HashSet<>();
         scopes.add("Service1");
@@ -407,7 +408,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void givenNoInstancesAvailable_thenReturnFalse() {
 
-            when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+            when(eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
 
         }
@@ -434,8 +435,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
             InstanceInfo instanceInfo = mock(InstanceInfo.class);
             InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
-            when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
-            when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+            when(eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+            when(eurekaClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
             when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getInstanceId()).thenReturn("instanceId");
             when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo2));
@@ -536,14 +537,13 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
     }
 
-
     @Nested
     @ExtendWith(SpringExtension.class)
-    @ContextConfiguration(classes = {
-        CacheConfig.class,
-        MockedAuthenticationServiceContext.class
-    })
+    @ContextConfiguration(classes = { CacheConfig.class, AuthenticationService.class, AuthConfigurationProperties.class })
+    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, GatewayConfigProperties.class })
+    @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class GivenCacheJWTTest {
+
         @Autowired
         private AuthenticationService authService;
 
@@ -601,7 +601,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void whenNoServiceAvailable_thenReturnFailure() {
-            when(discoveryClient.getApplication("gateway")).thenReturn(null);
+            when(eurekaClient.getApplication("gateway")).thenReturn(null);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
@@ -610,7 +610,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(null);
 
-            when(discoveryClient.getApplication("gateway")).thenReturn(application);
+            when(eurekaClient.getApplication("gateway")).thenReturn(application);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
@@ -621,7 +621,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
-            when(discoveryClient.getApplication("gateway")).thenReturn(application);
+            when(eurekaClient.getApplication("gateway")).thenReturn(application);
 
             List<Object> elementsInCache = new ArrayList<>();
             elementsInCache.add("a");
