@@ -10,7 +10,7 @@ on:
                 type: choice
                 options:
                     - all
-                    - gateway-service
+                    - zaas-service
                     - discovery-service
                     - api-catalog-services
                     - caching-service

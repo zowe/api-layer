@@ -1,5 +1,5 @@
 name: "Validate APIML Healthy"
-description: "Validates APIML health using Gateway's health status"
+description: "Validates APIML health using Gateway, Caching Service and Authentication Service health status"
 
 inputs:
     caching-service:
@@ -18,7 +18,7 @@ inputs:
 runs:
     using: "composite"
 
-    # if GW and input services are not healthy after 3 minutes then exit
+    # if ZAAS Service and input services are not healthy after 3 minutes then exit
     steps:
         - name: Validate APIML setup
           shell: bash
