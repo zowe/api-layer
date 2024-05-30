@@ -209,7 +209,7 @@ public class VerificationOnboardService {
                 throw new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY);
             }
 
-            String zaasAuthValidateUri = String.format("%s://%s:%d/%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
+            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/validate/auth");
             ResponseEntity<String> validationResponse = restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
             if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);

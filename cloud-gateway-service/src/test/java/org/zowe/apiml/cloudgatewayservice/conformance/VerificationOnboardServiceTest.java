@@ -27,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
 import reactor.core.publisher.Flux;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -130,13 +133,14 @@ class VerificationOnboardServiceTest {
     class GivenEndpoint {
 
         @BeforeEach
-        void setup() {
+        void setup() throws URISyntaxException {
             setUpZaasService();
         }
 
-        private void setUpZaasService() {
+        private void setUpZaasService() throws URISyntaxException {
             ServiceInstance serviceInstance = mock(ServiceInstance.class);
             when(serviceInstance.getServiceId()).thenReturn("zaas");
+            when(serviceInstance.getUri()).thenReturn(new URI("https://localhost:1000/zaas"));
 
             when(routeLocator.getServiceInstances()).thenReturn(Flux.fromIterable(asList(
                 asList(serviceInstance)
@@ -171,8 +175,8 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("400")));
 
-
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
@@ -191,7 +195,8 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("200")));
 
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
