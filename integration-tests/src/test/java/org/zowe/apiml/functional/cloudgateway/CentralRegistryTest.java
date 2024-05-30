@@ -48,7 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @DiscoverableClientDependentTest
 @Tag("CloudGatewayCentralRegistry")
 class CentralRegistryTest implements TestWithStartedInstances {
-    static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId() + "/api/v1/registry";
+    static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.GATEWAY.getServiceId() + "/api/v1/registry";
 
     static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();

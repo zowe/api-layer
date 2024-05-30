@@ -27,7 +27,7 @@ def debugPort = 5120
 def componentName = "zaas-service"
 
 setJib(componentName, javaAgentPort, debugPort)
-jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
+jib.container.mainClass = 'org.zowe.apiml.zaas.ZaasApplication'
 
 ext['netty.version'] = libs.versions.netty.get()
 

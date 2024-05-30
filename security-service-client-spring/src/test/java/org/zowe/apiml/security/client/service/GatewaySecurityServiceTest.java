@@ -26,7 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
@@ -60,7 +60,7 @@ class GatewaySecurityServiceTest {
     @Mock
     private CloseableHttpClient closeableHttpClient;
 
-    private GatewayConfigProperties gatewayConfigProperties;
+    private ServiceAddress gatewayConfigProperties;
     private AuthConfigurationProperties authConfigurationProperties;
     private GatewaySecurityService securityService;
     private String cookie;
@@ -69,7 +69,7 @@ class GatewaySecurityServiceTest {
 
     @BeforeEach
     void setup() {
-        gatewayConfigProperties = GatewayConfigProperties.builder()
+        gatewayConfigProperties = ServiceAddress.builder()
             .scheme(GATEWAY_SCHEME)
             .hostname(GATEWAY_HOST)
             .build();

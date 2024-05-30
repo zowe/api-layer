@@ -26,7 +26,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
@@ -60,7 +60,7 @@ public class GatewaySecurityService {
      * @return Valid JWT token for the supplied credentials
      */
     public Optional<String> login(String username, char[] password, char[] newPassword) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
@@ -102,7 +102,7 @@ public class GatewaySecurityService {
      * @return JWT token data as {@link QueryResponse}
      */
     public QueryResponse query(String token) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);

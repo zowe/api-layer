@@ -29,7 +29,7 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
@@ -63,7 +63,7 @@ class ApiDocV3ServiceTest {
 
     @BeforeEach
     void setUp() {
-        GatewayConfigProperties gatewayConfigProperties = getProperties();
+        ServiceAddress gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         apiDocV3Service = new ApiDocV3Service(gatewayClient);
         ReflectionTestUtils.setField(apiDocV3Service, "scheme", "https");
@@ -227,7 +227,7 @@ class ApiDocV3ServiceTest {
 
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
-            GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder().scheme("https").hostname("localhost").build();
+            ServiceAddress gatewayConfigProperties = ServiceAddress.builder().scheme("https").hostname("localhost").build();
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
             AtomicReference<OpenAPI> openApiHolder = new AtomicReference<>();
@@ -321,8 +321,8 @@ class ApiDocV3ServiceTest {
         return openAPI;
     }
 
-    private GatewayConfigProperties getProperties() {
-        return GatewayConfigProperties.builder()
+    private ServiceAddress getProperties() {
+        return ServiceAddress.builder()
             .scheme("https")
             .hostname("localhost:10010")
             .build();

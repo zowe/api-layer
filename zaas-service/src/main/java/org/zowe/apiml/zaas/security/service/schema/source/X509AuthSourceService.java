@@ -152,7 +152,7 @@ public class X509AuthSourceService implements AuthSourceService {
             try {
                 return tokenService.createJwtTokenWithoutCredentials(userId);
             } catch (Exception e) {
-                logger.log(MessageType.DEBUG, "Gateway service failed to obtain token - authentication request to get token failed.", e.getLocalizedMessage());
+                logger.log(MessageType.DEBUG, "ZAAS failed to obtain token - authentication request to get token failed.", e.getLocalizedMessage());
                 throw new AuthSchemeException("org.zowe.apiml.zaas.security.token.authenticationFailed");
             }
         }

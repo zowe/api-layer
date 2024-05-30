@@ -19,6 +19,6 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 public class MessageServiceConfiguration {
     @Bean
     public MessageService messageService() {
-    return new YamlMessageService("/gateway-messages.yml");
+    return new YamlMessageService("/zaas-messages.yml");
 }
 }

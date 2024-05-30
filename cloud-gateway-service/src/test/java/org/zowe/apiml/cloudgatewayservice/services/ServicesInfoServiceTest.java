@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.services;
+package org.zowe.apiml.cloudgatewayservice.services;
 
 
 import com.netflix.appinfo.InstanceInfo;
@@ -26,7 +26,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.services.ServiceInfo;
 
@@ -99,17 +99,17 @@ class ServicesInfoServiceTest {
     @Mock
     private EurekaClient eurekaClient;
 
-    private final GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
+    private final ServiceAddress zaasAddress = ServiceAddress.builder()
             .scheme(GW_SCHEME).hostname(GW_HOSTNAME + ":" + GW_PORT).build();
 
     private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
-    private final TransformService transformService = new TransformService(new GatewayClient(gatewayConfigProperties));
+    private final TransformService transformService = new TransformService(new GatewayClient(zaasAddress));
 
     private ServicesInfoService servicesInfoService;
 
     @BeforeEach
     void setUp() {
-        servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayConfigProperties, transformService);
+        servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, zaasAddress, transformService);
     }
 
     @Test

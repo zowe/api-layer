@@ -35,8 +35,8 @@ public class ServiceStartupEventHandler {
             public void run() {
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 String[] names = new String[] { "com.netflix.discovery.DiscoveryClient",
-                        "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient",
-                        "org.zowe.apiml.discovery.GatewayNotifier" };
+                        "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient"
+                };
                 for (String name : names) {
                     Logger logger = loggerContext.getLogger(name);
                     logger.setLevel(Level.ERROR);

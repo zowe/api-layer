@@ -203,6 +203,9 @@ class InstanceRetrievalServiceTest {
         InstanceInfo instanceInfo = getStandardInstance(CoreService.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
+        instanceInfo = getStandardInstance(CoreService.ZAAS.getServiceId(), InstanceInfo.InstanceStatus.UP);
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
         instanceInfo = getStandardInstance(CoreService.API_CATALOG.getServiceId(), InstanceInfo.InstanceStatus.UP);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 

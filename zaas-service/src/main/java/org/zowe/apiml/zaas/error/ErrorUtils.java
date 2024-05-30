@@ -32,7 +32,7 @@ public class ErrorUtils {
         return exc != null ? exc.getMessage() : UNEXPECTED_ERROR_OCCURRED;
     }
 
-    public static String getGatewayUri(HttpServletRequest request) {
+    public static String getForwardUri(HttpServletRequest request) {
         return (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
     }
 }

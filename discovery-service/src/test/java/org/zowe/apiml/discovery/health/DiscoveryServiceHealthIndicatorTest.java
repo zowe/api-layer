@@ -35,9 +35,9 @@ class DiscoveryServiceHealthIndicatorTest {
     class GivenGatewayStatus {
         @Test
         void statusIsUpWhenGatewayIsAvailable() {
-            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
                 Collections.singletonList(
-                    new DefaultServiceInstance(null, CoreService.GATEWAY.getServiceId(), "host", 10010, true)));
+                    new DefaultServiceInstance(null, CoreService.ZAAS.getServiceId(), "host", 10010, true)));
 
             discoverServiceHealthIndicator.doHealthCheck(builder);
 
@@ -47,7 +47,7 @@ class DiscoveryServiceHealthIndicatorTest {
 
         @Test
         void statusIsPartialWhenGatewayIsNotAvailable() {
-            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(Collections.emptyList());
 
             discoverServiceHealthIndicator.doHealthCheck(builder);
 

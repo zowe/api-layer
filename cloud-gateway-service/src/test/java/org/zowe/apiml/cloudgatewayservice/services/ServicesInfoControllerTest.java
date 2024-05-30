@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.services;
+package org.zowe.apiml.cloudgatewayservice.services;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.Test;
@@ -24,9 +24,9 @@ import java.util.Collections;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.zaas.services.ServicesInfoController.SERVICES_URL;
-import static org.zowe.apiml.zaas.services.ServicesInfoService.CURRENT_VERSION;
-import static org.zowe.apiml.zaas.services.ServicesInfoService.VERSION_HEADER;
+import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoController.SERVICES_URL;
+import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoService.CURRENT_VERSION;
+import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoService.VERSION_HEADER;
 
 @ExtendWith(MockitoExtension.class)
 class ServicesInfoControllerTest {

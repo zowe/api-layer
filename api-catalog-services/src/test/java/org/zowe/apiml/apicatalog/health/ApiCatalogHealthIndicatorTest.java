@@ -31,11 +31,11 @@ class ApiCatalogHealthIndicatorTest {
 
     @Test
     void testStatusIsUpWhenGatewayIsAvailable() {
-        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+        when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
             Collections.singletonList(
                 new DefaultServiceInstance(
-                    "host:" + CoreService.GATEWAY.getServiceId() + ":10010",
-                    CoreService.GATEWAY.getServiceId(), "host", 10010, true)
+                    "host:" + CoreService.ZAAS.getServiceId() + ":10010",
+                    CoreService.ZAAS.getServiceId(), "host", 10010, true)
                 )
             );
 
@@ -46,7 +46,7 @@ class ApiCatalogHealthIndicatorTest {
 
     @Test
     void testStatusIsDownWhenGatewayIsNotAvailable() {
-        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
+        when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(Collections.emptyList());
 
         apiCatalogHealthIndicator.doHealthCheck(builder);
 

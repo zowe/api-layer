@@ -13,7 +13,7 @@ package org.zowe.apiml.product.routing.transform;
 import lombok.RequiredArgsConstructor;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -81,7 +81,7 @@ public class TransformService {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }
 
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
 
         String scheme = httpsScheme ? "https" : gatewayConfigProperties.getScheme();
         return String.format("%s://%s/%s/%s%s",

@@ -30,7 +30,7 @@ import static org.zowe.apiml.security.SecurityUtils.readPassword;
 /**
  * Authentication provider for development purposes
  * <p>
- * Allows Gateway to run without mainframe (z/OSMF service)
+ * Allows ZAAS to run without mainframe (z/OSMF service)
  */
 @Component
 @ConditionalOnProperty(value = "apiml.security.auth.provider", havingValue = "dummy")

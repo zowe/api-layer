@@ -83,7 +83,7 @@ class PATAuthSourceServiceTest {
 
         @Test
         void givenScopeFromHeader_whenIsValid_thenReturnTheToken() {
-            String serviceId = "gateway";
+            String serviceId = "service1";
             when(tokenProvider.isValidForScopes(TOKEN, serviceId)).thenReturn(true);
             PATAuthSource authSource = new PATAuthSource(TOKEN);
             authSource.setDefaultServiceId(serviceId);
@@ -93,7 +93,7 @@ class PATAuthSourceServiceTest {
 
         @Test
         void whenGetAuthSourceFromRequest_thenReturnAuthSource() {
-            String serviceId = "gateway";
+            String serviceId = "service2";
 
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addHeader(SERVICE_ID_HEADER, serviceId);
@@ -115,7 +115,7 @@ class PATAuthSourceServiceTest {
     class GivenInvalidTokenTest {
         @Test
         void whenExceptionIsThrown_thenReturnTokenInvalid() {
-            String serviceId = "gateway";
+            String serviceId = "service3";
             //when(context.get(SERVICE_ID_KEY)).thenReturn(serviceId);
             when(tokenProvider.isValidForScopes(TOKEN, serviceId)).thenThrow(new RuntimeException());
             PATAuthSource authSource = new PATAuthSource(TOKEN);

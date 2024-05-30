@@ -79,7 +79,7 @@ public class InternalServerErrorController implements ApimlErrorController {
     private ResponseEntity<ApiMessageView> createResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         Message message = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
-            ErrorUtils.getGatewayUri(request),
+            ErrorUtils.getForwardUri(request),
             ExceptionUtils.getMessage(exc),
             ExceptionUtils.getRootCauseMessage(exc));
 

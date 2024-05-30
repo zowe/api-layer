@@ -13,18 +13,19 @@ package org.zowe.apiml.product.gateway;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 /**
- * Container object for {@link GatewayConfigProperties}
+ * Container object for {@link ServiceAddress}
  */
 @Component
 @SuppressWarnings("squid:S3077")
 public class GatewayClient {
 
     @Setter
-    private volatile GatewayConfigProperties gatewayConfigProperties;
+    private volatile ServiceAddress gatewayConfigProperties;
 
-    public GatewayClient(@Autowired(required = false) GatewayConfigProperties gatewayConfigProperties) {
+    public GatewayClient(@Autowired(required = false) ServiceAddress gatewayConfigProperties) {
         this.gatewayConfigProperties = gatewayConfigProperties;
     }
 
@@ -34,7 +35,7 @@ public class GatewayClient {
      *
      * @return GatewayConfigProperties object
      */
-    public GatewayConfigProperties getGatewayConfigProperties() {
+    public ServiceAddress getGatewayConfigProperties() {
         if (gatewayConfigProperties == null) {
             throw new GatewayNotAvailableException("No Gateway Instance is available at the moment");
         }

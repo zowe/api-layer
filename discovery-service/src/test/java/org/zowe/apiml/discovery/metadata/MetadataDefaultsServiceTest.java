@@ -15,15 +15,13 @@ import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.zowe.apiml.discovery.EurekaInstanceRegisteredListener;
-import org.zowe.apiml.discovery.GatewayNotifier;
 import org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor;
 import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
@@ -59,9 +57,6 @@ class MetadataDefaultsServiceTest {
 
     @Spy
     private ServiceDefinitionProcessorMock serviceDefinitionProcessor;
-
-    @Mock
-    private GatewayNotifier gatewayNotifier;
 
     private PeerAwareInstanceRegistry mockRegistry;
 

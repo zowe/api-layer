@@ -168,7 +168,7 @@
     },
     "servers": [
         {
-            "url": "/gateway/api/v1/auth"
+            "url": "/zaas/api/v1/auth"
         }
     ],
     "components": {

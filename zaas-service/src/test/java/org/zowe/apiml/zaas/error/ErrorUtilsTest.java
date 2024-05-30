@@ -38,12 +38,12 @@ class ErrorUtilsTest {
     }
 
     @Test
-    void testGetGatewayUri() {
+    void testGetForwardUri() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
-        assertEquals(null, ErrorUtils.getGatewayUri(request));
+        assertEquals(null, ErrorUtils.getForwardUri(request));
 
         request.setAttribute(RequestDispatcher.FORWARD_REQUEST_URI, "/uri");
-        assertEquals("/uri", ErrorUtils.getGatewayUri(request));
+        assertEquals("/uri", ErrorUtils.getForwardUri(request));
     }
 }

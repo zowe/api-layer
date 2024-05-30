@@ -51,7 +51,7 @@ public class NotFoundErrorController implements ApimlErrorController {
     @ResponseBody
     public ResponseEntity<ApiMessageView> notFound400HttpResponse(HttpServletRequest request) {
         Message message = messageService.createMessage("org.zowe.apiml.common.endPointNotFound",
-            ErrorUtils.getGatewayUri(request));
+            ErrorUtils.getForwardUri(request));
         return ResponseEntity.status(ErrorUtils.getErrorStatus(request)).body(message.mapToView());
     }
 }

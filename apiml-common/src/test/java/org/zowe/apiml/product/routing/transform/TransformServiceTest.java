@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
@@ -35,7 +35,7 @@ class TransformServiceTest {
 
     @BeforeEach
     void setup() {
-        GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
+        ServiceAddress gatewayConfigProperties = ServiceAddress.builder()
             .scheme("https")
             .hostname("localhost")
             .build();

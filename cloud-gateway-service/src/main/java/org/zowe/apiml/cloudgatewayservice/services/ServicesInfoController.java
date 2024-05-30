@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.services;
+package org.zowe.apiml.cloudgatewayservice.services;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,8 @@ import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.List;
 
-import static org.zowe.apiml.zaas.services.ServicesInfoService.CURRENT_VERSION;
-import static org.zowe.apiml.zaas.services.ServicesInfoService.VERSION_HEADER;
+import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoService.CURRENT_VERSION;
+import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoService.VERSION_HEADER;
 
 
 @RestController

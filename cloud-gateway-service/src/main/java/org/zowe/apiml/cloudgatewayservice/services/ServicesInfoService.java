@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.services;
+package org.zowe.apiml.cloudgatewayservice.services;
 
 import com.fasterxml.jackson.core.Version;
 import com.netflix.appinfo.InstanceInfo;
@@ -21,7 +21,7 @@ import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
@@ -56,7 +56,7 @@ public class ServicesInfoService {
 
     private final EurekaClient eurekaClient;
     private final EurekaMetadataParser eurekaMetadataParser;
-    private final GatewayConfigProperties gatewayConfigProperties;
+    private final ServiceAddress zaasAddress;
     private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
@@ -97,7 +97,7 @@ public class ServicesInfoService {
 
     private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
         return String.format("%s://%s%s",
-                gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), getBasePath(apiInfo, instanceInfo));
+                zaasAddress.getScheme(), zaasAddress.getHostname(), getBasePath(apiInfo, instanceInfo));
     }
 
     private ServiceInfo getServiceInfo(Application application) {

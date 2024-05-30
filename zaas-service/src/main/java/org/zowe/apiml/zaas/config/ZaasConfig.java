@@ -25,7 +25,7 @@ import org.springframework.core.env.PropertyResolver;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.util.StringUtils;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
@@ -37,16 +37,16 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL
 @RequiredArgsConstructor
 @EnableRetry
 @Slf4j
-public class GatewayConfig {
+public class ZaasConfig {
 
     private static final String SEPARATOR = ":";
 
     private final ConfigurableEnvironment env;
 
     @Bean
-    public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
-                                                              @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
-        return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    public ServiceAddress getZaasAddress(@Value("${apiml.zaas.hostname}") String hostname,
+                                         @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
+        return ServiceAddress.builder().scheme(scheme).hostname(hostname + ":" + port).build();
     }
 
     @Bean

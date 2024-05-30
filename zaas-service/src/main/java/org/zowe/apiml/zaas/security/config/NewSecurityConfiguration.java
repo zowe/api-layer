@@ -66,7 +66,6 @@ import org.zowe.apiml.zaas.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.ticket.SuccessfulTicketHandler;
-import org.zowe.apiml.zaas.services.ServicesInfoController;
 import org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter;
 import org.zowe.apiml.zaas.zaas.ZaasAuthenticationFilter;
 
@@ -76,7 +75,7 @@ import java.util.Set;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
- * Main configuration place for Gateway endpoint security
+ * Main configuration place for ZAAS endpoint security
  * <p>
  * Security is configured with separate filterchains per groups of endpoints
  * The main theme is to keep the filterchains independent and isolated
@@ -495,16 +494,14 @@ public class NewSecurityConfiguration {
 
             private final String[] protectedEndpoints = {
                 "/application",
-                SafResourceAccessController.FULL_CONTEXT_PATH,
-                ServicesInfoController.SERVICES_URL
+                SafResourceAccessController.FULL_CONTEXT_PATH
             };
 
             @Bean
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
-                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                        .requestMatchers(ServicesInfoController.SERVICES_URL + "/**"))
+                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH))
                 ).authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
                         .logout(logout -> logout.disable());  // logout filter in this chain not needed

@@ -50,7 +50,7 @@ import java.util.*;
 import static org.apache.http.HttpStatus.*;
 
 /**
- * Controller offer method to control security. It can contains method for user and also method for calling services
+ * Controller offer method to control security. It can contain method for user and also method for calling services
  * by gateway to distribute state of authentication between nodes.
  */
 @RequiredArgsConstructor
@@ -74,7 +74,7 @@ public class AuthController {
     private static final String TOKEN_KEY = "token";
     private static final ObjectWriter writer = new ObjectMapper().writer();
 
-    public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
+    public static final String CONTROLLER_PATH = "/zaas/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
@@ -190,10 +190,10 @@ public class AuthController {
     }
 
     /**
-     * Return all public keys involved at the moment in the Gateway as well as in zOSMF. Keys used for verification of
+     * Return all public keys involved at the moment in the ZAAS as well as in zOSMF. Keys used for verification of
      * tokens
      *
-     * @return List of keys composed of zOSMF and Gateway ones
+     * @return List of keys composed of zOSMF and ZAAS ones
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

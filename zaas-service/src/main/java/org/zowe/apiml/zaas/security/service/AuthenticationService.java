@@ -146,7 +146,7 @@ public class AuthenticationService {
     /**
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
-     * - from another gateway instance to notify about change (distribute = false)
+     * - from another ZAAS instance to notify about change (distribute = false)
      *
      * @param jwtToken   token to invalidate
      * @param distribute distribute invalidation to another instances?
@@ -191,8 +191,8 @@ public class AuthenticationService {
     }
 
     private boolean invalidateTokenOnAnotherInstance(String jwtToken) {
-        final Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
-        // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
+        final Application application = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+        // wrong state, ZAAS have to exists (at least this current instance), return false like unsuccessful
         if (application == null) {
             return Boolean.FALSE;
         }
@@ -294,15 +294,15 @@ public class AuthenticationService {
     }
 
     /**
-     * This method get all invalidated JWT token in the cache and distributes them to instance of Gateway with name
+     * This method get all invalidated JWT token in the cache and distributes them to instance of ZAAS with name
      * in argument toInstanceId. If instance cannot be find it return false. A notification can throw an runtime
      * exception. In all other cases all invalidated token are distributed and method returns true.
      *
-     * @param toInstanceId instanceId of Gateway where invalidated JWT token should be sent
+     * @param toInstanceId instanceId of ZAAS where invalidated JWT token should be sent
      * @return true if all token were sent, otherwise false
      */
     public boolean distributeInvalidate(String toInstanceId) {
-        final Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
+        final Application application = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
         if (application == null) return false;
 
         final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);

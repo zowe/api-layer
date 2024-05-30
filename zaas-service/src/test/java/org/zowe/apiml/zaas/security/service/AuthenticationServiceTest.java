@@ -41,7 +41,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -407,10 +407,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenNoInstancesAvailable_thenReturnFalse() {
-
-            when(eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId())).thenReturn(null);
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
-
         }
 
         @Test
@@ -435,7 +433,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
             InstanceInfo instanceInfo = mock(InstanceInfo.class);
             InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
-            when(eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId())).thenReturn(application);
             when(eurekaClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
             when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getInstanceId()).thenReturn("instanceId");
@@ -447,7 +445,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
-            doNothing().when(restTemplate).delete("http://localhost:0/gateway/auth/invalidate/" + token);
+            doNothing().when(restTemplate).delete("http://localhost:0/zaas/auth/invalidate/" + token);
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
@@ -540,7 +538,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Nested
     @ExtendWith(SpringExtension.class)
     @ContextConfiguration(classes = { CacheConfig.class, AuthenticationService.class, AuthConfigurationProperties.class })
-    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, GatewayConfigProperties.class })
+    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, ServiceAddress.class })
     @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class GivenCacheJWTTest {
 
@@ -601,7 +599,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void whenNoServiceAvailable_thenReturnFailure() {
-            when(eurekaClient.getApplication("gateway")).thenReturn(null);
+            when(eurekaClient.getApplication("zaas")).thenReturn(null);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
@@ -610,7 +608,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(null);
 
-            when(eurekaClient.getApplication("gateway")).thenReturn(application);
+            when(eurekaClient.getApplication("zaas")).thenReturn(application);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
@@ -621,7 +619,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
-            when(eurekaClient.getApplication("gateway")).thenReturn(application);
+            when(eurekaClient.getApplication("zaas")).thenReturn(application);
 
             List<Object> elementsInCache = new ArrayList<>();
             elementsInCache.add("a");
@@ -630,8 +628,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "b");
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/auth/invalidate/{}", "a");
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/auth/invalidate/{}", "b");
         }
 
     }

@@ -13,12 +13,12 @@ package org.zowe.apiml.zaas.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-class GatewayConfigTest {
+class ZaasConfigTest {
 
     private static final String HOST = "hostA";
     private static final String PORT = "8888";
@@ -32,9 +32,10 @@ class GatewayConfigTest {
     }
 
     @Test
-    void shouldReturnGatewayProperties() {
-        GatewayConfigProperties gatewayConfigProperties = new GatewayConfig(env).getGatewayConfigProperties(HOST, PORT, SCHEME);
-        assertEquals(HOST + ":" + PORT, gatewayConfigProperties.getHostname());
-        assertEquals(SCHEME, gatewayConfigProperties.getScheme());
+    void shouldReturnZaasAddress() {
+        ServiceAddress zaasAddress = new ZaasConfig(env).getZaasAddress(HOST, PORT, SCHEME);
+        assertEquals(HOST + ":" + PORT, zaasAddress.getHostname());
+        assertEquals(SCHEME, zaasAddress.getScheme());
     }
+
 }

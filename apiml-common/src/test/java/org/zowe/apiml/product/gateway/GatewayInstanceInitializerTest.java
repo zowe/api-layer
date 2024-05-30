@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 
 import java.util.Collections;
@@ -69,7 +70,7 @@ class GatewayInstanceInitializerTest {
             while (!gatewayClient.isInitialized()) ;
         });
 
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         assertNotNull(gatewayConfigProperties);
         assertEquals("https", gatewayConfigProperties.getScheme());
         assertEquals("localhost:9090", gatewayConfigProperties.getHostname());

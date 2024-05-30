@@ -37,7 +37,7 @@ class SafResourceAccessControllerTest {
 
     private MockMvc mockMvc;
     private SafResourceAccessVerifying safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
-    MessageService messageService = new YamlMessageService("/gateway-messages.yml");
+    MessageService messageService = new YamlMessageService("/zaas-messages.yml");
 
     private final String validRequestBody = "{\n" +
         "\t\"resourceClass\": \"ZOWE\",\n" +
