@@ -189,9 +189,12 @@ public class VerificationOnboardService {
     private String getAuthenticationCookie(String passedAuthenticationToken) {
         // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
-            URI uri = routeLocator.getRouteDefinitions()
-                .filter(def -> def.getId().equals("zaas"))
-                .map(RouteDefinition::getUri)
+            URI uri = routeLocator.getServiceInstances()
+                .map(services -> services.stream()
+                    .filter(service -> "zaas".equals(service.getServiceId()))
+                    .findFirst()
+                    .map(service -> service.getUri())
+                    .orElseThrow(() -> new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY)))
                 .blockFirst();
 
             if (uri == null) {

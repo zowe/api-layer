@@ -18,16 +18,32 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.cloudgatewayservice.service.RouteLocator;
+import reactor.core.publisher.Flux;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +60,9 @@ class VerificationOnboardServiceTest {
 
     @Mock
     private ResponseEntity<String> responseEntity;
+
+    @Mock
+    private RouteLocator routeLocator;
 
     @Test
     void whenCheckingOnboardedService_thenCorrectResults() {
@@ -112,7 +131,16 @@ class VerificationOnboardServiceTest {
 
         @BeforeEach
         void setup() {
+            setUpZaasService();
+        }
 
+        private void setUpZaasService() {
+            ServiceInstance serviceInstance = mock(ServiceInstance.class);
+            when(serviceInstance.getServiceId()).thenReturn("zaas");
+
+            when(routeLocator.getServiceInstances()).thenReturn(Flux.fromIterable(asList(
+                asList(serviceInstance)
+            )));
         }
 
         @Test
