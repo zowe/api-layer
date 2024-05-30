@@ -21,7 +21,6 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.utils.JWTUtils;
-import org.zowe.apiml.zaas.utils.JWTUtils;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
@@ -59,7 +58,7 @@ class ZaasTest {
         given()
             .cookie(COOKIE, zosmfJwt)
         .when()
-            .post(String.format("https://%s:%d/gateway/zaas/zoweJwt", hostname, port))
+            .post(String.format("https://%s:%d/zaas/zaas/zoweJwt", hostname, port))
         .then()
             .statusCode(SC_SERVICE_UNAVAILABLE);
         //@formatter:on

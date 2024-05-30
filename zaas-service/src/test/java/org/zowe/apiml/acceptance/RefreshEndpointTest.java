@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -70,7 +70,7 @@ public class RefreshEndpointTest {
         void noClientCertificateGivesForbidden() {
             //@formatter:off
             given().config(RestAssuredConfig.newConfig().sslConfig(new SSLConfig()))
-                .when().post(getBasePath() + "/gateway/api/v1/auth/refresh") //REFRESH_URL
+                .when().post(getBasePath() + "/zaas/api/v1/auth/refresh") //REFRESH_URL
                 .then().statusCode(is(SC_FORBIDDEN));
             //@formatter:on
         }
@@ -84,7 +84,7 @@ public class RefreshEndpointTest {
                 .when()
                     .contentType(JSON)
                     .body(loginRequest)
-                    .post( getBasePath() + "/gateway/api/v1/auth/refresh")
+                    .post( getBasePath() + "/zaas/api/v1/auth/refresh")
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED));
             //@formatter:on
