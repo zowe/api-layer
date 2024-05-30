@@ -31,8 +31,7 @@ public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
         {
             "messageAction": "${messageAction}",
             "messageContent": {
-                "The service ${serviceId} is not conformant":
-                "${messageContent}"
+                "The service ${serviceId} is not conformant": ${messageContent}
             },
             "messageKey": "${messageKey}",
             "messageNumber": "${messageNumber}",

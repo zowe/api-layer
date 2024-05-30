@@ -40,9 +40,9 @@ public class ValidateAPIController {
     private static final String METADATA_PROBLEMS = "Metadata problems";
     private static final String CONFORMANCE_PROBLEMS = "Conformance problems";
 
-    static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.zaas.verifier.wrongServiceId";
-    static final String NO_METADATA_KEY = "org.zowe.apiml.zaas.verifier.noMetadata";
-    static final String NON_CONFORMANT_KEY = "org.zowe.apiml.zaas.verifier.nonConformant";
+    static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
+    static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
     private final MessageService messageService;
     private final VerificationOnboardService verificationOnboardService;
@@ -146,7 +146,6 @@ public class ValidateAPIController {
         return new ResponseEntity<>(foundNonConformanceIssues.createBadRequestAPIResponseBody(key, message.mapToApiMessage()), HttpStatus.BAD_REQUEST);
     }
 
-
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
      * If it's not than it doesn't fulfill Item 1 of conformance criteria
@@ -160,7 +159,6 @@ public class ValidateAPIController {
         }
     }
 
-
     /**
      * Retrieves metadata
      *
@@ -170,7 +168,6 @@ public class ValidateAPIController {
     private Map<String, String> getMetadata(ServiceInstance serviceInstance) {
         return serviceInstance.getMetadata();
     }
-
 
     /**
      * Checks if metadata was retrieved.
