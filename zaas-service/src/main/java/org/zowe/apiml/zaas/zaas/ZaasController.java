@@ -91,7 +91,6 @@ public class ZaasController {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build());
-
     }
 
     /**
@@ -126,6 +125,7 @@ public class ZaasController {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(ZaasTokenResponse.builder().token(safIdToken).build());
+
     }
 
 }

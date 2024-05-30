@@ -12,16 +12,24 @@ package org.zowe.apiml.cloudgatewayservice.conformance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
-import org.zowe.apiml.zaas.security.login.Providers;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
@@ -32,9 +40,7 @@ import java.util.*;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
-    private final Providers providers;
     private final RestTemplate restTemplate;
-    private final TokenCreationService tokenCreationService;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -71,7 +77,6 @@ public class VerificationOnboardService {
         }
         return Optional.empty();
     }
-
 
     /**
      * Retrieves swagger from the url
@@ -156,7 +161,7 @@ public class VerificationOnboardService {
         try {
             response = restTemplate.exchange(url, method, request, String.class);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            response = ResponseEntity.status(e.getRawStatusCode())
+            response = ResponseEntity.status(e.getStatusCode())
                 .headers(e.getResponseHeaders())
                 .body(e.getResponseBodyAsString());
         }
@@ -187,12 +192,29 @@ public class VerificationOnboardService {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
 
-
     private String getAuthenticationCookie(String passedAuthenticationToken) {
-        final String message = "Cannot verify SSO functionality, apimlAuthenticationToken cookie wasn't provided and a passticket can't be generate with the zOSMF provider";
+        // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
-            if (providers.isZosfmUsed()) throw new ValidationException(message, ValidateAPIController.NON_CONFORMANT_KEY);
-            return tokenCreationService.createJwtTokenWithoutCredentials("validate");
+            URI uri = discoveryClient.getServices().stream()
+                .map(service -> discoveryClient.getInstances(service))
+                .map(services -> services.stream()
+                    .filter(service -> "zaas".equalsIgnoreCase(service.getServiceId())) // TODO: replace "zaas" with CoreService.ZAAS.getServiceId() once is ready
+                    .findFirst()
+                    .map(service -> service.getUri())
+                    .orElse(null))
+                .findFirst()
+                .orElseThrow(() -> new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY));
+
+            if (uri == null) {
+                throw new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY);
+            }
+
+            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/validate/auth");
+            ResponseEntity<String> validationResponse = restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
+            if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
+                throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);
+            }
+
         }
         return passedAuthenticationToken;
     }

@@ -70,7 +70,6 @@ public class ValidateAPIControllerTest {
 
     ResponseEntity<String> result;
 
-
     private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.zaas.verifier.wrongServiceId";
     private static final String NO_METADATA_KEY = "org.zowe.apiml.zaas.verifier.noMetadata";
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.zaas.verifier.nonConformant";
@@ -210,20 +209,22 @@ public class ValidateAPIControllerTest {
 
     }
 
-
     @Nested
     class GivenInstanceList {
+
         @Test
         void whenEmpty_thenCorrectResponse() {
             List<ServiceInstance> list = new ArrayList<>();
             ValidationException exception = assertThrows(ValidationException.class, () -> validateAPIController.checkInstanceCanBeRetrieved(list));
             assertTrue(exception.getMessage().contains("Cannot retrieve metadata"));
         }
+
     }
 
 
     @Nested
     class GivenDifferentMetadata {
+
         @AfterEach
         void checkValidJson() {
             ObjectMapper mapper = new ObjectMapper()

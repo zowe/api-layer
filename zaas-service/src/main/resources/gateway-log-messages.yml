@@ -155,27 +155,6 @@ messages:
       reason: "Typically z/OSMF is either unavailable or offline."
       action: "Verify that z/OSMF is available, accessible by the Gateway service, and online."
 
-    - key: org.zowe.apiml.zaas.verifier.wrongServiceId
-      number: ZWEAG717
-      type: ERROR
-      text: "The service id provided is invalid: '%s'"
-      reason: "The provided id is not valid under the conformance criteria."
-      action: "Verify the conformance criteria, provide valid service id."
-
-    - key: org.zowe.apiml.zaas.verifier.noMetadata
-      number: ZWEAG718
-      type: ERROR
-      text: "Cannot retrieve metadata: '%s'"
-      reason: "Metadata aren't accessible"
-      action: "Verify that the metadata are accessible and not empty"
-
-    - key: org.zowe.apiml.zaas.verifier.nonConformant
-      number: ZWEAG719
-      type: INFO
-      text: "The service is not conformant: %s"
-      reason: "The provided service does not satisfy the conformance criteria and is therefore not valid."
-      action: "Verify the conformance criteria."
-
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic

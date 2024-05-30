@@ -112,20 +112,20 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
 
 
     private io.swagger.models.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
-        switch (input) {
-            case GET:
+        switch (input.name()) {
+            case "GET":
                 return io.swagger.models.HttpMethod.GET;
-            case HEAD:
+            case "HEAD":
                 return io.swagger.models.HttpMethod.HEAD;
-            case OPTIONS:
+            case "OPTIONS":
                 return io.swagger.models.HttpMethod.OPTIONS;
-            case PATCH:
+            case "PATCH":
                 return io.swagger.models.HttpMethod.PATCH;
-            case POST:
+            case "POST":
                 return io.swagger.models.HttpMethod.POST;
-            case DELETE:
+            case "DELETE":
                 return io.swagger.models.HttpMethod.DELETE;
-            case PUT:
+            case "PUT":
                 return io.swagger.models.HttpMethod.PUT;
             default:
                 return null;
