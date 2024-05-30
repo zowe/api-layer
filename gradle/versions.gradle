@@ -62,7 +62,6 @@ dependencyResolutionManagement {
             version('restAssured', '5.4.0')
             version('springDoc', '2.5.0')
             version('spring4', '5.3.35') // Used within PJE in tests
-            version('swaggerCore', '1.6.14')
             version('swaggerInflector', '2.0.12')
             version('swagger2Parser', '1.0.71')
             version('swagger3Parser', '2.1.22')
@@ -189,7 +188,6 @@ dependencyResolutionManagement {
             library('swagger2_parser', 'io.swagger', 'swagger-parser').versionRef('swagger2Parser')
             library('swagger3_parser', 'io.swagger.parser.v3', 'swagger-parser-v3').versionRef('swagger3Parser')
             library('swagger_inflector', 'io.swagger', 'swagger-inflector').versionRef('swaggerInflector')
-            library('swagger_models', 'io.swagger', 'swagger-models').versionRef('swaggerCore')
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')

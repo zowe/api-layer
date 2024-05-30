@@ -11,14 +11,20 @@
 package org.zowe.apiml.zaas.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class AuthConfigValidationControllerTest {
+
+    @InjectMocks
+    private AuthConfigValidationController authConfigValidationController;
 
     @Mock
     private TokenCreationService tokenCreationService;
@@ -28,6 +34,30 @@ public class AuthConfigValidationControllerTest {
 
     @BeforeEach
     void setUp() {
+
+    }
+
+    @Nested
+    class GivenRequestToValidateAuthConfig {
+
+        @Nested
+        class GivenUnauthenticated {
+
+            @Test
+            void whenZosmf_thenConflict() {
+
+            }
+
+        }
+
+        @Nested
+        class GivenAuthenticated {
+
+            void whenNotZosmf_thenToken() {
+
+            }
+
+        }
 
     }
 
