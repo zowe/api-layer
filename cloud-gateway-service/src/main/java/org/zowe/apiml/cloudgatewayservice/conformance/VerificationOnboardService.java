@@ -198,7 +198,7 @@ public class VerificationOnboardService {
             URI uri = discoveryClient.getServices().stream()
                 .map(service -> discoveryClient.getInstances(service))
                 .map(services -> services.stream()
-                    .filter(service -> "zaas".equalsIgnoreCase(service.getServiceId()))
+                    .filter(service -> "zaas".equalsIgnoreCase(service.getServiceId())) // TODO: replace "zaas" with CoreService.ZAAS.getServiceId() once is ready
                     .findFirst()
                     .map(service -> service.getUri())
                     .orElse(null))
