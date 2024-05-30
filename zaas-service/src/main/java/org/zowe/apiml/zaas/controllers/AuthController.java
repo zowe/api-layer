@@ -100,8 +100,6 @@ public class AuthController {
         } catch (TokenNotValidException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
-
-
     }
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)

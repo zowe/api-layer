@@ -16,8 +16,12 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.springframework.http.HttpMethod;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class OpenApiV3Validator extends AbstractSwaggerValidator {
     private final SwaggerParseResult swagger;
@@ -100,20 +104,20 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
     }
 
     private PathItem.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
-        switch (input) {
-            case GET:
+        switch (input.name()) {
+            case "GET":
                 return PathItem.HttpMethod.GET;
-            case HEAD:
+            case "HEAD":
                 return PathItem.HttpMethod.HEAD;
-            case OPTIONS:
+            case "OPTIONS":
                 return PathItem.HttpMethod.OPTIONS;
-            case PATCH:
+            case "PATCH":
                 return PathItem.HttpMethod.PATCH;
-            case POST:
+            case "POST":
                 return PathItem.HttpMethod.POST;
-            case DELETE:
+            case "DELETE":
                 return PathItem.HttpMethod.DELETE;
-            case PUT:
+            case "PUT":
                 return PathItem.HttpMethod.PUT;
             default:
                 return null;

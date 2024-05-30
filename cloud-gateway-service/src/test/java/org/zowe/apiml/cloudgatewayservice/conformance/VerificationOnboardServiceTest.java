@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.conformance;
+package org.zowe.apiml.cloudgatewayservice.conformance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -18,18 +18,33 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.zaas.security.login.Providers;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import java.util.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,14 +60,7 @@ class VerificationOnboardServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private TokenCreationService tokenCreationService;
-
-
-    @Mock
     private ResponseEntity<String> responseEntity;
-
-    @Mock
-    private Providers providers;
 
     @Test
     void whenCheckingOnboardedService_thenCorrectResults() {
@@ -94,7 +102,6 @@ class VerificationOnboardServiceTest {
             assertFalse(verificationOnboardService.findSwaggerUrl(metadata).isPresent());
         }
 
-
         @Test
         void whenRetrievingEmptySwaggerUrl_thenEmptyMetadata() {
             HashMap<String, String> metadata = new HashMap<>();
@@ -117,16 +124,22 @@ class VerificationOnboardServiceTest {
         }
     }
 
-
     @Nested
     class GivenEndpoint {
 
         @BeforeEach
-        void setup() {
-            when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("mockCookie");
-            when(providers.isZosfmUsed()).thenReturn(false);
+        void setup() throws URISyntaxException {
+            setUpZaasService();
         }
 
+        private void setUpZaasService() throws URISyntaxException {
+            ServiceInstance serviceInstance = mock(ServiceInstance.class);
+            when(serviceInstance.getUri()).thenReturn(new URI("https://localhost:1000/zaas"));
+            when(serviceInstance.getServiceId()).thenReturn("zaas");
+
+            when(discoveryClient.getServices()).thenReturn(asList("zaas"));
+            when(discoveryClient.getInstances("zaas")).thenReturn(asList(serviceInstance));
+        }
 
         @Test
         void whenEndpointNotFound_thenReturnCorrectError() {
@@ -138,7 +151,8 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("404")));
 
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
@@ -156,15 +170,14 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("400")));
 
-
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
             List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
 
             assertTrue(result.isEmpty());
-
         }
 
         @Test
@@ -177,14 +190,14 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("200")));
 
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
             List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
 
             assertTrue(result.isEmpty());
-
         }
 
         @Test
@@ -197,7 +210,8 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("0")));
 
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
 
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
@@ -205,8 +219,7 @@ class VerificationOnboardServiceTest {
             List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, "dummy");
             assertTrue(result.get(0).contains("returns undocumented"));
         }
+
     }
 
-
 }
-

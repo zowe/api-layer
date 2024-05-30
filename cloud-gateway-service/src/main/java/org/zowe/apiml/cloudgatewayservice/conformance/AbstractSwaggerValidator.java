@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.conformance;
 
-
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.ArrayList;

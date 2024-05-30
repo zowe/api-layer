@@ -27,7 +27,6 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
@@ -101,7 +100,6 @@ class RouteLocatorTest {
     }
 
     private static RouteDefinitionProducer createRouteDefinitionProducer(int order, String id) {
-        EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         RouteDefinitionProducer rdp = mock(RouteDefinitionProducer.class);
         doReturn(order).when(rdp).getOrder();
         doAnswer(answer -> {
