@@ -157,7 +157,8 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("404")));
 
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
@@ -215,7 +216,8 @@ class VerificationOnboardServiceTest {
             HashMap<String, Set<String>> responses = new HashMap<>();
             responses.put("GET", new HashSet<>(Collections.singleton("0")));
 
-            when(restTemplate.exchange(eq(url), any(), any(), eq(String.class))).thenReturn(response);
+            doReturn(response).when(restTemplate).exchange(eq("https://localhost:1000/zaas/validate/auth"), any(), any(), eq(String.class));
+            doReturn(response).when(restTemplate).exchange(eq(url), any(), any(), eq(String.class));
 
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
