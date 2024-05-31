@@ -1,5 +1,5 @@
 ext {
-    artifactName = 'gateway-package'
+    artifactName = 'zaas-package'
     pullNo = project.hasProperty("pullRequest") && project.getProperty("pullRequest") != null ? "-" + project.getProperty("pullRequest") : ""
 }
 
@@ -14,43 +14,15 @@ task packageApiGateway(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/gateway-schema.json"
+        from "../schemas/zaas-schema.json"
     }
 
     into('bin/') {
-        from "$resourceDir/bin/gateway-service.jar"
+        from "$resourceDir/bin/zaas-service.jar"
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
 }
-
-task downloadFile {
-    doLast {
-        // Specify the URL of the file to download
-        def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-fat-jar/2.14.6/gateway-fat-jar-2.14.6-application.jar'
-
-        RegularFile gatewayJar = layout.projectDirectory.file("src/main/resources/bin/gateway-service.jar")
-
-        // Set the destination directory and file name
-        def destination = gatewayJar.asFile
-        if (!destination.exists()) {
-            // Make sure the directory exists
-            destination.parentFile.mkdirs()
-
-            // Download the file
-            new URL(fileURL).withInputStream { i ->
-                destination.withOutputStream {
-                    it << i
-                }
-            }
-            println "Downloaded file to ${destination.absolutePath}"
-        } else {
-            println "File already exists ${destination.absolutePath}"
-        }
-    }
-}
-
-packageApiGateway.dependsOn downloadFile
 
 // save build information to manifest
 packageApiGateway.doFirst {
