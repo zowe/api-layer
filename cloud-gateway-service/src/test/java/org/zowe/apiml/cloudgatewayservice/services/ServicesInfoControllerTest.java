@@ -21,9 +21,9 @@ import org.zowe.apiml.services.ServiceInfo;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
+import static io.restassured.module.webtestclient.RestAssuredWebTestClient.given;
 import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoController.SERVICES_URL;
 import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoService.CURRENT_VERSION;
 import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoService.VERSION_HEADER;

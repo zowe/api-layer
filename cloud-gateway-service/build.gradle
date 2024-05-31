@@ -61,7 +61,6 @@ configurations.all {
 
 dependencies {
     api project(':apiml-utility')
-    api project(':apiml-common')
     api project(':apiml-tomcat-common')
     api project(':apiml-security-common')
 
@@ -85,6 +84,7 @@ dependencies {
     testImplementation libs.commons.io
     testImplementation libs.reactor.test
     testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.web.test.client
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
