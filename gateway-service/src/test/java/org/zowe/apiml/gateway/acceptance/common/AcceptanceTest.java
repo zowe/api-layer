@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.zowe.apiml.gateway.acceptance.config.gatewayTestApplication;
+import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.gateway.acceptance.config.DiscoveryClientTestConfig;
 
 import java.lang.annotation.ElementType;
@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ComponentScan(basePackages = "org.zowe.apiml.gateway")
-@SpringBootTest(classes = gatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"management.server.port=10091","server.internal.enabled=false"})
 @Import(DiscoveryClientTestConfig.class)
 @DirtiesContext
