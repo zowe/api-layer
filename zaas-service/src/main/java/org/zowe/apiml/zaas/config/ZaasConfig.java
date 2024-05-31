@@ -24,9 +24,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.util.StringUtils;
-import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
-import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.Map;
 
@@ -47,11 +45,6 @@ public class ZaasConfig {
     public ServiceAddress getZaasAddress(@Value("${apiml.zaas.hostname}") String hostname,
                                          @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
         return ServiceAddress.builder().scheme(scheme).hostname(hostname + ":" + port).build();
-    }
-
-    @Bean
-    public TransformService transformService(GatewayClient gatewayClient) {
-        return new TransformService(gatewayClient);
     }
 
     @Bean

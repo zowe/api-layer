@@ -30,9 +30,9 @@ class DiscoveryServiceHealthIndicatorTest {
     private final DiscoveryServiceHealthIndicator discoverServiceHealthIndicator = new DiscoveryServiceHealthIndicator(discoveryClient);
     private final Health.Builder builder = new Health.Builder();
 
-
     @Nested
     class GivenGatewayStatus {
+
         @Test
         void statusIsUpWhenGatewayIsAvailable() {
             when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
@@ -42,7 +42,7 @@ class DiscoveryServiceHealthIndicatorTest {
             discoverServiceHealthIndicator.doHealthCheck(builder);
 
             Assertions.assertEquals(Status.UP, builder.build().getStatus());
-            Assertions.assertEquals(Status.UP, builder.build().getDetails().get("gateway"));
+            Assertions.assertEquals(Status.UP, builder.build().getDetails().get("zaas"));
         }
 
         @Test
@@ -53,8 +53,9 @@ class DiscoveryServiceHealthIndicatorTest {
 
             Assertions.assertEquals(new Status("PARTIAL"), builder.build().getStatus());
             Assertions.assertEquals("Authenticated endpoints not available.", builder.build().getStatus().getDescription());
-            Assertions.assertEquals(Status.DOWN, builder.build().getDetails().get("gateway"));
+            Assertions.assertEquals(Status.DOWN, builder.build().getDetails().get("zaas"));
         }
+
     }
 
 }
