@@ -48,11 +48,9 @@ apiml:
         conn-pool:
             requestConnectionTimeout: ${apiml.zaas.timeoutMillis}
 
-    catalog:
-        serviceId: apicatalog
     zaas:
-        # The `apiml.zaas` node contains zaas-service only configuration
-        hostname: ${apiml.service.hostname}  # The hostname for other services to access the ZAAS. For example Catalog uses
+        # The `apiml.gateway` node contains gateway-service only configuration
+        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
                                              # for transforming the URLs in DVIPA mode.
                                              # In Zowe, this is the same as apiml.service.hostname. Zowe has one ZAAS
                                              # and is all run from single host.

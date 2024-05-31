@@ -29,6 +29,8 @@ spring:
                         redirectUri: "{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}"
 
 apiml:
+    catalog:
+        serviceId: apicatalog
     gateway:
         timeout: 60
     service:

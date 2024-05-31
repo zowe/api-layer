@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.cloudgatewayservice.controller;
+package org.zowe.apiml.cloudgatewayservice.controllers;
 
 
 import org.apache.groovy.util.Maps;
