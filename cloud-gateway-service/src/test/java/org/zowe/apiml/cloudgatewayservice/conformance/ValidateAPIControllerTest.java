@@ -32,7 +32,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -253,7 +253,7 @@ public class ValidateAPIControllerTest {
             when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singleton(serviceInstance)));
             when(serviceInstance.getMetadata()).thenReturn(mockMetadata);
             when(verificationOnboardService.findSwaggerUrl(mockMetadata)).thenReturn(Optional.of("a"));
-            when(gatewayClient.getGatewayConfigProperties()).thenReturn(GatewayConfigProperties.builder().build());
+            when(gatewayClient.getGatewayConfigProperties()).thenReturn(ServiceAddress.builder().build());
 
             when(swaggerValidator.getMessages()).thenReturn(new ArrayList<>());
             when(swaggerValidator.getAllEndpoints()).thenReturn(new HashSet<>(Collections.singletonList(new Endpoint(null, null, null, null))));

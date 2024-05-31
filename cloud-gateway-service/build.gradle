@@ -81,6 +81,7 @@ dependencies {
     implementation libs.swagger3.parser
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.mock.mvc
     testImplementation libs.commons.io
     testImplementation libs.reactor.test
     testImplementation libs.rest.assured
