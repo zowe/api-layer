@@ -1,5 +1,5 @@
 apiml:
-    cloudGateway.registry.enabled: true
+    gateway.registry.enabled: true
     security.x509.registry.allowedUsers: Zowe Service
     service:
         forwardClientCertEnabled: true

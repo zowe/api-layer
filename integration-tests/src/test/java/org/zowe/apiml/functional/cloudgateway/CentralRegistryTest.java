@@ -24,7 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.CloudGatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.SslContext;
@@ -46,11 +46,11 @@ import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @DiscoverableClientDependentTest
-@Tag("CloudGatewayCentralRegistry")
+@Tag("GatewayCentralRegistry")
 class CentralRegistryTest implements TestWithStartedInstances {
     static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.GATEWAY.getServiceId() + "/api/v1/registry";
 
-    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
     @BeforeAll
@@ -102,7 +102,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
         ArrayList<LinkedHashMap<Object, Object>> metadata = listEurekaApps()
             .extract()
             .jsonPath()
-            .getObject("applications.application.findAll { it.name == 'CLOUD-GATEWAY' }.instance.metadata", typeRef).get(0);
+            .getObject("applications.application.findAll { it.name == 'gateway' }.instance.metadata", typeRef).get(0);
 
         assertThat(metadata).hasSize(2);
 

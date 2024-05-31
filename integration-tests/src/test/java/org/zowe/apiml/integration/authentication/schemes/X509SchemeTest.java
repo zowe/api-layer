@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.X509Test;
-import org.zowe.apiml.util.config.CloudGatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -42,7 +42,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     private static final String CLIENT_CN = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientCN();
 
     private static URI URL;
-    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
 
     @BeforeAll
@@ -52,7 +52,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     }
 
     @Test
-    @Tag("CloudGatewayServiceRouting")
+    @Tag("GatewayServiceRouting")
     void givenValidClientCert_thenForwardDetailsInHeader() {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given().config(SslContext.clientCertValid)
@@ -64,7 +64,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     }
 
     @Test
-    @Tag("CloudGatewayServiceRouting")
+    @Tag("GatewayServiceRouting")
     void givenNoCert_thenForwardErrorMessageInHeader() {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
         given().config(SslContext.tlsWithoutCert)

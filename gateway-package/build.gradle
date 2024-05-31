@@ -1,0 +1,49 @@
+ext {
+    artifactName = 'gateway-package'
+    pullNo = project.hasProperty("pullRequest") && project.getProperty("pullRequest") != null ? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    cloudGatewayServiceJar
+    zip
+}
+
+dependencies {
+    cloudGatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
+}
+
+task packageCloudGateway(type: Zip) {
+    archiveFileName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+        from "../schemas/gateway-schema.json"
+    }
+
+    into('bin/') {
+        from configurations.cloudGatewayServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/validate.sh"
+    }
+}
+
+jar.dependsOn(packageCloudGateway)
+build.dependsOn(packageCloudGateway)
+
+artifacts {
+    zip packageCloudGateway
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
+
+jar {
+    enabled false
+}

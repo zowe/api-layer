@@ -28,8 +28,8 @@ ext.servicesToPublish = [
     'discovery-package',
     'zaas-service',
     'zaas-package',
-    'cloud-gateway-service',
-    'cloud-gateway-package'
+    'gateway-service',
+    'gateway-package'
 ]
 
 ext.sdksToPublish = ext.enablers + ext.javaLibraries

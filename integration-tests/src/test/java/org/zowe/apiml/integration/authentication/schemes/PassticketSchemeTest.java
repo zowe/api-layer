@@ -29,7 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.CloudGatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -56,7 +56,7 @@ import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
-    static CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(
@@ -94,9 +94,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     }
 
     @Nested
-    class GivenCloudGatewayUrlTests {
+    class GivenGatewayUrlTests {
         @Test
-        @Tag("CloudGatewayServiceRouting")
+        @Tag("GatewayServiceRouting")
         void givenValidJWT_thenTranslateToPassticket() {
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             verifyPassTicketHeaders(
@@ -108,7 +108,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         }
 
         @Test
-        @Tag("CloudGatewayServiceRouting")
+        @Tag("GatewayServiceRouting")
         void givenNoJWT_thenErrorHeaderIsCreated() {
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             given()

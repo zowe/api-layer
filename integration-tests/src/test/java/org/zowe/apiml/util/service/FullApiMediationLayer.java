@@ -92,7 +92,7 @@ public class FullApiMediationLayer {
     }
 
     public void prepareCloudGateway() {
-        cloudGatewayService = new RunningService("cloud-gateway", "cloud-gateway-service/build/libs", null, null);
+        cloudGatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null);
     }
 
     private void prepareMockServices() {
@@ -136,7 +136,7 @@ public class FullApiMediationLayer {
             cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
             Map<String, String> cloudGWEnv = new HashMap<>(env);
             cloudGWEnv.put("ZWE_configs_port", "10023");
-            cloudGatewayService.startWithScript("cloud-gateway-package/src/main/resources/bin", cloudGWEnv);
+            cloudGatewayService.startWithScript("gateway-package/src/main/resources/bin", cloudGWEnv);
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }

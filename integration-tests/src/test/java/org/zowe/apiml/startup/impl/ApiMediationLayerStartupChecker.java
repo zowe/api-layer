@@ -95,7 +95,7 @@ public class ApiMediationLayerStartupChecker {
             }
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
             boolean isTestApplicationUp = allComponents.contains("discoverableclient");
-            boolean isCloudGatewayUp = allComponents.contains("cloud-gateway");
+            boolean isCloudGatewayUp = allComponents.contains("gateway");
             log.debug("Discoverable Client is {}", isTestApplicationUp);
             log.debug("Cloud gateway is {}", isCloudGatewayUp);
 

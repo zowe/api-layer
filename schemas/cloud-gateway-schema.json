@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "$id": "https://zowe.org/schema/cloud-gateway-config",
+    "$id": "https://zowe.org/schema/gateway-config",
     "allOf": [
         { "$ref": "https://zowe.org/schemas/v2/server-base" },
         {
@@ -10,7 +10,7 @@
                     "type": "object",
                     "additionalProperties": true,
                     "properties": {
-                        "cloud-gateway-service": {
+                        "gateway-service": {
                             "allOf": [
                                 {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
                                 {

@@ -79,7 +79,7 @@ public class ConfigReader {
                             new ApiCatalogServiceConfiguration(),
                             new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
-                            new CloudGatewayConfiguration(),
+                            new GatewayConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
@@ -125,9 +125,9 @@ public class ConfigReader {
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
 
-                    configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("cloud-gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
-                    configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
-                    configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
+                    configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
+                    configuration.getCloudGatewayConfiguration().setHost(System.getProperty("gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
+                    configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
 
                     configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
                     configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));

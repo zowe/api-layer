@@ -14,7 +14,7 @@ module.exports = defineConfig({
     env: {
         catalogHomePage: 'https://localhost:10010/apicatalog/ui/v1',
         gatewayOktaRedirect:
-            'https://localhost:10023/cloud-gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Flocalhost%3A10023%2Fapplication',
+            'https://localhost:10023/gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Flocalhost%3A10023%2Fapplication',
         viewportWidth: 1400,
         viewportHeight: 980,
         username: 'USER',
