@@ -23,27 +23,6 @@ messages:
     # Service specific messages
     # 700-999
 
-    - key: org.zowe.apiml.zaas.instanceNotFound
-      number: ZWEAG700
-      type: ERROR
-      text: "No instance of the service '%s' found. Routing will not be available."
-      reason: "The Gateway could not find an instance of the service from the Discovery Service."
-      action: "Check that the service was successfully registered to the Discovery Service and wait for Spring Cloud to refresh the routes definitions."
-
-    - key: org.zowe.apiml.zaas.requestContainEncodedCharacter
-      number: ZWEAG701
-      type: ERROR
-      text: "Service '%s' does not allow encoded characters in the request path: '%s'."
-      reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
-      action: "Contact the system administrator and request enablement of encoded characters in the service."
-
-    - key: org.zowe.apiml.zaas.requestContainEncodedSlash
-      number: ZWEAG702
-      type: ERROR
-      text: "Gateway does not allow encoded slashes in request: '%s'."
-      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
-      action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
-
     - key: org.zowe.apiml.zaas.jwtInitConfigError
       number: ZWEAG704
       type: ERROR
@@ -54,7 +33,7 @@ messages:
     - key: org.zowe.apiml.zaas.jwtKeyMissing
       number: ZWEAG705
       type: ERROR
-      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. Gateway is shutting down."
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. ZAAS is shutting down."
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
@@ -161,9 +140,9 @@ messages:
     - key: org.zowe.apiml.security.zosmfInstanceNotFound
       number: ZWEAG108
       type: ERROR
-      text: "z/OSMF instance '%s' not found or incorrectly configured. Gateway is shutting down."
-      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
-      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with provided z/OSMF instance."
+      text: "z/OSMF instance '%s' not found or incorrectly configured. ZAAS is shutting down."
+      reason: "The ZAAS could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with the provided z/OSMF instance. The default timeout is 5 minutes. On a slower system, add the variable components.zaas.apiml.security.jwtInitializerTimeout:... and the value in minutes into Zowe's configuration to override this value."
 
     - key: org.zowe.apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109
@@ -263,7 +242,7 @@ messages:
     - key: org.zowe.apiml.zaas.security.token.authenticationFailed
       number: ZWEAG162
       type: ERROR
-      text: "Gateway service failed to obtain token."
+      text: "ZAAS failed to obtain token."
       reason: "Authentication request to get token failed."
       action: "Contact your administrator."
 
@@ -322,7 +301,7 @@ messages:
       type: ERROR
       text: "There was an error while reading webfinger configuration"
       reason: "Webfinger provider contains incorrect configuration."
-      action: "Contact the administrator to validate webfinger configuration in gateway service."
+      action: "Contact the administrator to validate webfinger configuration in ZAAS."
 
     - key: org.zowe.apiml.security.auth.zosmf.sslError
       number: ZWEAG182

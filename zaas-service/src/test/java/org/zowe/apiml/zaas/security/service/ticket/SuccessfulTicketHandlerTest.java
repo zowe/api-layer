@@ -40,7 +40,7 @@ class SuccessfulTicketHandlerTest {
     private final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
     private final MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
     private final ObjectMapper mapper = new ObjectMapper();
-    private final MessageService messageService = new YamlMessageService("/gateway-messages.yml");
+    private final MessageService messageService = new YamlMessageService("/zaas-messages.yml");
     private final PassTicketService passTicketService = new PassTicketService();
     private final SuccessfulTicketHandler successfulTicketHandlerHandler = new SuccessfulTicketHandler(mapper, passTicketService, messageService);
     private final TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, TOKEN);

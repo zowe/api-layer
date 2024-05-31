@@ -11,13 +11,14 @@
 package org.zowe.apiml.product.gateway;
 
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 class GatewayClientTest {
 
-    private final GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
+    private final ServiceAddress gatewayConfigProperties = ServiceAddress.builder()
         .scheme("https")
         .hostname("localhost")
         .build();

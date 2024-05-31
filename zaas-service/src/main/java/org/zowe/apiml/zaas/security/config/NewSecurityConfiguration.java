@@ -37,11 +37,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
-import org.springframework.security.web.util.matcher.RegexRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
-import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
-import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
@@ -52,7 +50,9 @@ import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
+import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.*;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.controllers.AuthController;
@@ -66,7 +66,6 @@ import org.zowe.apiml.zaas.security.refresh.SuccessfulRefreshHandler;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.ticket.SuccessfulTicketHandler;
-import org.zowe.apiml.zaas.services.ServicesInfoController;
 import org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter;
 import org.zowe.apiml.zaas.zaas.ZaasAuthenticationFilter;
 
@@ -76,7 +75,7 @@ import java.util.Set;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
- * Main configuration place for Gateway endpoint security
+ * Main configuration place for ZAAS endpoint security
  * <p>
  * Security is configured with separate filterchains per groups of endpoints
  * The main theme is to keep the filterchains independent and isolated
@@ -132,21 +131,17 @@ public class NewSecurityConfiguration {
         @Bean
         public SecurityFilterChain authenticationFunctionalityFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                    authConfigurationProperties.getGatewayLoginEndpoint(),
-                    authConfigurationProperties.getGatewayLoginEndpointOldFormat(),
-                    authConfigurationProperties.getGatewayLogoutEndpoint(),
-                    authConfigurationProperties.getGatewayLogoutEndpointOldFormat()
+                authConfigurationProperties.getZaasLoginEndpoint(),
+                authConfigurationProperties.getZaasLogoutEndpoint()
             )))
                 .authorizeRequests(requests -> requests
                         .anyRequest().permitAll())
 
                 .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                 .logout(logout -> logout
-                        .logoutRequestMatcher(new RegexRequestMatcher(
-                                String.format("(%s|%s)",
-                                        authConfigurationProperties.getGatewayLogoutEndpoint(),
-                                        authConfigurationProperties.getGatewayLogoutEndpointOldFormat())
-                        , HttpMethod.POST.name()))
+                        .logoutRequestMatcher(new AntPathRequestMatcher(
+                                authConfigurationProperties.getZaasLogoutEndpoint(), HttpMethod.POST.name()
+                        ))
                         .addLogoutHandler(logoutHandler())
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
 
@@ -204,7 +199,7 @@ public class NewSecurityConfiguration {
         @Bean
         public SecurityFilterChain accessTokenFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                    authConfigurationProperties.getGatewayAccessTokenEndpoint()
+                authConfigurationProperties.getZaasAccessTokenEndpoint()
             )))
                     .authorizeRequests(requests -> requests
                             .anyRequest().permitAll())
@@ -256,8 +251,8 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                        authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
-                        authConfigurationProperties.getEvictAccessTokensAndRules()
+                        authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
+                        authConfigurationProperties.getZaasEvictAccessTokensAndRules()
                 )))
                         .authorizeRequests(requests -> requests
                                 .anyRequest().authenticated())
@@ -302,9 +297,9 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                        authConfigurationProperties.getRevokeMultipleAccessTokens() + "/**",
-                        authConfigurationProperties.getEvictAccessTokensAndRules(),
-                        "/gateway/zaas/**"
+                        authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
+                        authConfigurationProperties.getZaasEvictAccessTokensAndRules(),
+                        "/zaas/zaas/**"
                 )))
                         .authorizeRequests(requests -> requests
                                 .anyRequest().authenticated())
@@ -333,9 +328,8 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-                    authConfigurationProperties.getGatewayQueryEndpoint(),
-                    authConfigurationProperties.getGatewayQueryEndpointOldFormat()))
-                )
+                    authConfigurationProperties.getZaasQueryEndpoint()
+                )))
                 .authorizeRequests(requests -> requests.anyRequest().authenticated())
                 .authenticationProvider(tokenAuthenticationProvider)
                 .logout(logout -> logout.disable()) // logout filter in this chain not needed
@@ -379,8 +373,7 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-                        authConfigurationProperties.getGatewayTicketEndpoint(),
-                        authConfigurationProperties.getGatewayTicketEndpointOldFormat()
+                        authConfigurationProperties.getZaasTicketEndpoint()
                 ))).authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
                         .authenticationProvider(tokenAuthenticationProvider)
@@ -427,8 +420,7 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-                        authConfigurationProperties.getGatewayRefreshEndpoint(),
-                        authConfigurationProperties.getGatewayRefreshEndpointOldFormat()
+                        authConfigurationProperties.getZaasRefreshEndpoint()
                 ))).authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
                         .authenticationProvider(tokenAuthenticationProvider)
@@ -495,16 +487,14 @@ public class NewSecurityConfiguration {
 
             private final String[] protectedEndpoints = {
                 "/application",
-                SafResourceAccessController.FULL_CONTEXT_PATH,
-                ServicesInfoController.SERVICES_URL
+                SafResourceAccessController.FULL_CONTEXT_PATH
             };
 
             @Bean
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
-                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                        .requestMatchers(ServicesInfoController.SERVICES_URL + "/**"))
+                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH))
                 ).authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
                         .logout(logout -> logout.disable());  // logout filter in this chain not needed

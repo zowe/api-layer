@@ -31,9 +31,8 @@ class EurekaInstanceRegisteredListenerTest {
     void getServiceId() {
         MetadataTranslationService metadataTranslationService = Mockito.mock(MetadataTranslationService.class);
         MetadataDefaultsService metadataDefaultsService = Mockito.mock(MetadataDefaultsService.class);
-        GatewayNotifier gatewayNotifier = mock(GatewayNotifier.class);
 
-        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService, gatewayNotifier);
+        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService);
 
         doAnswer(
             x -> {
@@ -53,7 +52,6 @@ class EurekaInstanceRegisteredListenerTest {
 
         verify(metadataTranslationService, times(1)).translateMetadata("serviceName", metadata);
         verify(metadataDefaultsService, times(1)).updateMetadata("serviceName", metadata);
-        verify(gatewayNotifier, times(1)).serviceUpdated("serviceName", "1:serviceName:2");
     }
 
     private EurekaInstanceRegisteredEvent createEvent(String instanceId) {
@@ -68,17 +66,12 @@ class EurekaInstanceRegisteredListenerTest {
 
     @Test
     void registeredInstanceListen() {
-        GatewayNotifier notifier = mock(GatewayNotifier.class);
-        EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class), notifier);
+        EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class));
 
         listener.listen(createEvent("host:service:instance"));
-        verify(notifier, times(1)).serviceUpdated("service", "host:service:instance");
         listener.listen(createEvent("unknown format"));
-        verify(notifier, times(1)).serviceUpdated(null, "unknown format");
 
-        verify(notifier, never()).distributeInvalidatedCredentials(anyString());
         listener.listen(createEvent("host:GATEWAY:instance"));
-        verify(notifier, times(1)).distributeInvalidatedCredentials("host:GATEWAY:instance");
     }
 
 }

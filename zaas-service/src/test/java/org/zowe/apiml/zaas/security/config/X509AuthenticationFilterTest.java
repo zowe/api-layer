@@ -55,7 +55,7 @@ class X509AuthenticationFilterTest {
         authenticationProvider = mock(AuthenticationProvider.class);
         filterChain = mock(FilterChain.class);
         authenticationService = mock(AuthenticationService.class);
-        x509AuthenticationFilter = new X509AuthenticationFilter("/api/v1/gateway/auth/login", successHandler, authenticationProvider);
+        x509AuthenticationFilter = new X509AuthenticationFilter("/api/v1/zaas/auth/login", successHandler, authenticationProvider);
 
         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
     }
@@ -77,7 +77,7 @@ class X509AuthenticationFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
-        httpServletRequest.setServletPath("/api/v1/gateway/auth/login");
+        httpServletRequest.setServletPath("/api/v1/zaas/auth/login");
 
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))

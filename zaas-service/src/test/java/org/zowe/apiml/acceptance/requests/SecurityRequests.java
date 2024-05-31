@@ -31,7 +31,7 @@ public class SecurityRequests {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(basePath + "/gateway/api/v1/auth/login")
+            .post(basePath + "/zaas/api/v1/auth/login")
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .extract()

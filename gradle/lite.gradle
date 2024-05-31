@@ -53,8 +53,10 @@ task liteLibJarAll(type: Jar) {
     }.collect() }
 }
 
+liteLibJarAll.dependsOn(":zaas-service:build")
 liteLibJarAll.dependsOn(":discovery-service:build")
 liteLibJarAll.dependsOn(":api-catalog-services:build")
 
+liteLibJarAll.dependsOn(":zaas-service:liteLibJar")
 liteLibJarAll.dependsOn(":discovery-service:liteLibJar")
 liteLibJarAll.dependsOn(":api-catalog-services:liteLibJar")

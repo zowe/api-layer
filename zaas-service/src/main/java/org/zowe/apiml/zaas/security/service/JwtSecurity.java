@@ -45,7 +45,7 @@ import java.util.*;
 import static org.awaitility.Awaitility.await;
 
 /**
- * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by API Gateway.
+ * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by ZAAS.
  * Loads proper keys and stops the service if there is no valid configuration available.
  */
 @Slf4j
@@ -112,7 +112,7 @@ public class JwtSecurity {
      * When the class is constructed and fully set, understand the zOSMF configuration and/or API ML configuration to
      * load the key used to sign the JWT token.
      * <p>
-     * In case the configuration is altogether invalid, stop the Gateway Service with the appropriate ERROR. This could
+     * In case the configuration is altogether invalid, stop the ZAAS with the appropriate ERROR. This could
      * take a while as we are waiting in certain scenarios for the zOSMF to properly start.
      */
     @PostConstruct
@@ -181,7 +181,7 @@ public class JwtSecurity {
     }
 
     /**
-     * Validate JWT secret. If there is an issue fail the Gateway startup. Should only validate the JWT secret
+     * Validate JWT secret. If there is an issue fail the ZAAS startup. Should only validate the JWT secret
      * when the secret is required.
      */
     private void validateJwtSecret() {

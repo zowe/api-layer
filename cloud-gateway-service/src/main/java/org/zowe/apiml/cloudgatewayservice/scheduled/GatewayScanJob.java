@@ -83,7 +83,6 @@ public class GatewayScanJob {
      * reactive entry point  for the external gateways index refresh
      */
     protected Flux<List<ServiceInfo>> doScanExternalGateway() {
-
         Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(CoreService.GATEWAY.getServiceId())
                 .map(gateways -> gateways.stream().filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId)).collect(Collectors.toList()));
 

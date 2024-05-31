@@ -26,7 +26,7 @@ import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 @RequestMapping(AuthProviderController.CONTROLLER_PATH)
 public class AuthProviderController {
 
-    public static final String CONTROLLER_PATH = "/gateway/authentication"; // NOSONAR
+    public static final String CONTROLLER_PATH = "/zaas/authentication"; // NOSONAR
 
     private CompoundAuthProvider compoundAuthProvider;
 

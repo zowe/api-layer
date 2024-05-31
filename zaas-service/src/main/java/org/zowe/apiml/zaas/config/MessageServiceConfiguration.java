@@ -27,7 +27,7 @@ public class MessageServiceConfiguration {
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
         messageService.loadMessages("/security-common-log-messages.yml");
-        messageService.loadMessages("/gateway-log-messages.yml");
+        messageService.loadMessages("/zaas-log-messages.yml");
         return messageService;
     }
 }

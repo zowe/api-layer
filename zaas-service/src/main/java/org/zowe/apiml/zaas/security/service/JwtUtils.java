@@ -52,7 +52,7 @@ public class JwtUtils {
 
     /**
      * This method removes the token signature and replace algorithm with none. It allows to parse payload without
-     * public kez.
+     * public key.
      *
      * @param jwtToken token to modify
      * @return unsigned jwt token

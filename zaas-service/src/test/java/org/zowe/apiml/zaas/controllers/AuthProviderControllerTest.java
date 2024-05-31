@@ -47,7 +47,7 @@ class AuthProviderControllerTest {
     class GivenAuthenticationProviderRequest {
         @Test
         void whenCalling_thenReturnNoContent() throws Exception {
-            mockMvc.perform(post("/gateway/authentication")
+            mockMvc.perform(post("/zaas/authentication")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body.toString()))
                 .andExpect(status().isNoContent());

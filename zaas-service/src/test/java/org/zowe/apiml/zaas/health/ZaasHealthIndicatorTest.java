@@ -52,9 +52,9 @@ class ZaasHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
-        gatewayHealthIndicator.doHealthCheck(builder);
+        zaasHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
     }
 
@@ -66,9 +66,9 @@ class ZaasHealthIndicatorTest {
             Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
-        gatewayHealthIndicator.doHealthCheck(builder);
+        zaasHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
     }
 
@@ -82,9 +82,9 @@ class ZaasHealthIndicatorTest {
             Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
-        gatewayHealthIndicator.doHealthCheck(builder);
+        zaasHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
     }
 
@@ -99,9 +99,9 @@ class ZaasHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
-        gatewayHealthIndicator.doHealthCheck(builder);
+        zaasHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
     }
 
@@ -117,9 +117,9 @@ class ZaasHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, customCatalogServiceId);
+        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, customCatalogServiceId);
         Health.Builder builder = new Health.Builder();
-        gatewayHealthIndicator.doHealthCheck(builder);
+        zaasHealthIndicator.doHealthCheck(builder);
 
         String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
         assertThat(code, is("UP"));
@@ -136,10 +136,10 @@ class ZaasHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
-        gatewayHealthIndicator.doHealthCheck(builder);
+        zaasHealthIndicator.doHealthCheck(builder);
 
-        assertThat(gatewayHealthIndicator.startedInformationPublished, is(true));
+        assertThat(zaasHealthIndicator.startedInformationPublished, is(true));
     }
 }

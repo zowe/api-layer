@@ -50,7 +50,7 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
     }
 
     private void notifyStartup() {
-        new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
+        new ServiceStartupEventHandler().onServiceStartup("ZAAS",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

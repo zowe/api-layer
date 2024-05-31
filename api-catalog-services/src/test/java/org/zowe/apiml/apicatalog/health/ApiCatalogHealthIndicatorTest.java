@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.apicatalog.health;
 
-import org.zowe.apiml.product.constants.CoreService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
 
@@ -35,7 +35,7 @@ class ApiCatalogHealthIndicatorTest {
             Collections.singletonList(
                 new DefaultServiceInstance(
                     "host:" + CoreService.GATEWAY.getServiceId() + ":10010",
-                    CoreService.GATEWAY.getServiceId(), "host", 10010, true)
+                    CoreService.ZAAS.getServiceId(), "host", 10010, true)
                 )
             );
 
@@ -52,4 +52,5 @@ class ApiCatalogHealthIndicatorTest {
 
         Assertions.assertEquals(Status.DOWN, builder.build().getStatus());
     }
+
 }

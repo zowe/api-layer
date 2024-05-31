@@ -79,10 +79,10 @@ class ZaasControllerTest {
     private AuthSource authSource;
     private AuthSource.Parsed authParsedSource;
 
-    private static final String PASSTICKET_URL = "/gateway/zaas/ticket";
-    private static final String ZOSMF_TOKEN_URL = "/gateway/zaas/zosmf";
-    private static final String ZOWE_TOKEN_URL = "/gateway/zaas/zoweJwt";
-    private static final String SAFIDT_URL = "/gateway/zaas/safIdt";
+    private static final String PASSTICKET_URL = "/zaas/zaas/ticket";
+    private static final String ZOSMF_TOKEN_URL = "/zaas/zaas/zosmf";
+    private static final String ZOWE_TOKEN_URL = "/zaas/zaas/zoweJwt";
+    private static final String SAFIDT_URL = "/zaas/zaas/safIdt";
 
     private static final String USER = "test_user";
     private static final String PASSTICKET = "test_passticket";
@@ -94,7 +94,7 @@ class ZaasControllerTest {
     void setUp() throws IRRPassTicketGenerationException, JSONException {
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
         ZaasController zaasController = new ZaasController(authSourceService, passTicketService, zosmfService, tokenCreationService);
-        MessageService messageService = new YamlMessageService("/gateway-messages.yml");
+        MessageService messageService = new YamlMessageService("/zaas-messages.yml");
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         ticketBody = new JSONObject()
             .put("applicationName", APPLID);

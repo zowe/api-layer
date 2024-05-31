@@ -1,15 +1,15 @@
 ---
-name: gateway
+name: zaas
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.gateway-package
+id: org.zowe.apiml.zaas-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
-title: API Gateway
+title: ZAAS
 # Human readable component description
-description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+description: Zowe Authentication and Authorization Service.
 license: EPL-2.0
 schemas:
-    configs: gateway-schema.json
+    configs: zaas-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
@@ -27,7 +27,7 @@ autoEncoding:
   - "."
 apimlServices:
   dynamic:
-    - serviceId: gateway
+    - serviceId: zaas
 configs:
   port: 7554
   debug: false
@@ -57,8 +57,6 @@ configs:
         externalMapperUser:
         # Enables consumption of forwarded client certificate from proxy gateway in a special request header
         acceptForwardedCert: false
-        # full URL to proxy gateway endpoint which provides certificate chain (/gateway/certificates)
-        certificatesUrl:
       oidc:
         enabled: false
         clientId:
@@ -75,13 +73,6 @@ configs:
               verify:
 
   server:
-    internal:
-      enabled: false
-      port: 10017
-      ssl:
-        enabled: true
-        # you can customize certificate for internal usage
-        # certificate:
     maxConnectionsPerRoute: 100
     maxTotalConnections: 1000
     ssl:

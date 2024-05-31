@@ -10,5 +10,5 @@
 # Copyright IBM Corporation 2021
 ################################################################################
 
-print_formatted_debug "ZWELS" "gateway,bin/validate.sh:${LINENO}" "- Checking Gateway port ${ZWE_configs_port}"
-validate_this "is_port_available \"${ZWE_configs_port}\" 2>&1" "gateway,bin/validate.sh:${LINENO}"
+print_formatted_debug "ZWELS" "zaas,bin/validate.sh:${LINENO}" "- Checking Gateway port ${ZWE_configs_port}"
+validate_this "is_port_available \"${ZWE_configs_port}\" 2>&1" "zaas,bin/validate.sh:${LINENO}"

@@ -28,7 +28,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 
@@ -52,7 +52,7 @@ public class CacheConfig {
     @Value("${apiml.caching.enabled:true}")
     private boolean cacheEnabled;
 
-    private final GatewayConfigProperties gatewayConfigProperties;
+    private final ServiceAddress zaasAddress;
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -64,7 +64,7 @@ public class CacheConfig {
                 System.setProperty(EHCACHE_STORAGE_ENV_PARAM_NAME, location);
             }
         } else {
-            log.warn("Gateway Service is running in NoOp Cache mode. Do not use in production. " +
+            log.warn("ZAAS is running in NoOp Cache mode. Do not use in production. " +
                "To enable caching set configuration property apiml.caching.enabled to true."
             );
         }
@@ -109,8 +109,8 @@ public class CacheConfig {
 
     @Bean
     public CachingServiceClient cachingServiceClient(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
-        String gatewayUri = String.format("%s://%s", gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname());
-        return new CachingServiceClient(restTemplate, gatewayUri);
+        String zaasUri = String.format("%s://%s", zaasAddress.getScheme(), zaasAddress.getHostname());
+        return new CachingServiceClient(restTemplate, zaasUri);
     }
 
 }

@@ -36,7 +36,7 @@ import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -352,7 +352,7 @@ public class APIDocRetrievalService {
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
                                                         RoutedServices routes,
                                                         ApiInfo apiInfo) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String response = swaggerGenerator.generateSubstituteSwaggerForService(
             instanceInfo,
             apiInfo,

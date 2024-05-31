@@ -1,9 +1,9 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "description": "REST API for the API Gateway service, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
+        "description": "REST API for the ZAAS, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
         "version": "1.3.0",
-        "title": "API Gateway"
+        "title": "ZAAS"
     },
     "tags": [
         {
@@ -12,7 +12,7 @@
         },
         {
             "name": "Services",
-            "description": "Information about services running behind the API Gateway"
+            "description": "Information about services running behind ZAAS"
         },
         {
             "name": "Diagnostic",
@@ -262,7 +262,7 @@
             "get": {
                 "tags": ["Security"],
                 "summary": "Returns all public keys to verify JWT tokens validity",
-                "description": "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF.",
+                "description": "This endpoint return all possible JWKs, which can verify sign outside ZAAS. It can contain public keys of Zowe and z/OSMF.",
                 "operationId": "GetAllPublicKeysUsingGET",
                 "security": [
                     {
@@ -293,7 +293,7 @@
             "get": {
                 "tags": ["Security"],
                 "summary": "Returns public keys to verify JWT tokens, which can be generated now",
-                "description": "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
+                "description": "This endpoint return all possible JWKs, which can verify sign outside ZAAS for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
                 "operationId": "GetCurrentPublicKeysUsingGET",
                 "security": [
                     {
@@ -335,7 +335,7 @@
                         },
                         "description": "The API ID of requested services",
                         "required": false,
-                        "example": "zowe.apiml.gateway"
+                        "example": "zowe.apiml.zaas"
                     }
                 ],
                 "security": [
@@ -431,7 +431,7 @@
     },
     "servers": [
         {
-            "url": "/gateway"
+            "url": "/zaas"
         }
     ],
     "components": {
@@ -526,7 +526,7 @@
                     },
                     "applicationName": {
                         "type": "string",
-                        "description": "Specifies the application name associated with the passticket. Note that the Gateway user must be authorized to generate passtickets for this application name."
+                        "description": "Specifies the application name associated with the passticket. Note that the ZAAS user must be authorized to generate passtickets for this application name."
                     },
                     "ticket": {
                         "type": "string",
@@ -561,12 +561,12 @@
                                         },
                                         "basePath": {
                                             "type": "string",
-                                            "description": "Specifies the URL prefix for all API paths, relative to the gateway host. It must start with a leading slash `/`",
+                                            "description": "Specifies the URL prefix for all API paths, relative to the ZAAS host. It must start with a leading slash `/`",
                                             "example": "/zowesample/api/v1"
                                         },
                                         "baseUrl": {
                                             "type": "string",
-                                            "description": "Specifies an absolute URL prefix that is used to access the API service via the API Gateway",
+                                            "description": "Specifies an absolute URL prefix that is used to access the API service via the ZAAS",
                                             "example": "https://sys1.acme.net:7554/zowesample/api/v1"
                                         },
                                         "defaultApi": {

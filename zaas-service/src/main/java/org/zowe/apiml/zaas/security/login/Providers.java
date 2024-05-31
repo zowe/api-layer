@@ -51,7 +51,7 @@ public class Providers {
                 if (!isZosmfRegisteredAndPropagated) {
                     apimlLog.log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
                 }
-                log.debug("z/OSMF registered with the Discovery Service and propagated to Gateway: {}", isZosmfRegisteredAndPropagated);
+                log.debug("z/OSMF registered with the Discovery Service and propagated to ZAAS: {}", isZosmfRegisteredAndPropagated);
                 return isZosmfRegisteredAndPropagated;
             } else {
                 throw new ServiceNotAccessibleException("No registered services");
@@ -63,7 +63,7 @@ public class Providers {
     }
 
     /**
-     * Provide configured z/OSMF service ID from the Gateway auth configuration.
+     * Provide configured z/OSMF service ID from the ZAAS configuration.
      *
      * @return service ID of z/OSMF instance
      */
@@ -85,7 +85,7 @@ public class Providers {
 
             return isAvailable && isAccessible;
         } catch (ServiceNotAccessibleException e) {
-            log.debug("z/OSMF is not registered to the Gateway yet: {}", e.getMessage());
+            log.debug("z/OSMF is not registered to the ZAAS yet: {}", e.getMessage());
 
             return false;
         }

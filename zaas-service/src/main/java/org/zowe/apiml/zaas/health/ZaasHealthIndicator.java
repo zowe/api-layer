@@ -26,7 +26,7 @@ import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
 
 /**
- * Gateway health information (/application/health)
+ * ZAAS health information (/application/health)
  */
 @Component
 public class ZaasHealthIndicator extends AbstractHealthIndicator {
@@ -65,12 +65,12 @@ public class ZaasHealthIndicator extends AbstractHealthIndicator {
             }
         }
 
-        int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+        int zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
 
         builder.status(toStatus(discoveryUp))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryUp).getCode())
             .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode())
-            .withDetail("gatewayCount", gatewayCount);
+            .withDetail("zaasCount", zaasCount);
 
         if (anyCatalogIsAvailable) {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());

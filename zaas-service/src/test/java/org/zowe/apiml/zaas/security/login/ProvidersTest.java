@@ -99,7 +99,7 @@ class ProvidersTest {
         @Nested
         class thenFalseIsReturned {
             @Test
-            void givenZosmfIsntRegisteredToTheGatewayYet() {
+            void givenZosmfIsntRegisteredToTheZaasYet() {
                 when(discovery.getInstances(ZOSMF_ID)).thenReturn(Collections.emptyList());
                 when(zosmfService.isAccessible()).thenThrow(ServiceNotAccessibleException.class);
 

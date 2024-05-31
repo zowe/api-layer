@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.product.gateway;
+package org.zowe.apiml.product.instance;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +18,7 @@ import lombok.Getter;
  */
 @Builder
 @Getter
-public class GatewayConfigProperties {
+public class ServiceAddress {
 
     private String scheme;
 

@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.conformance;
 
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +22,12 @@ import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 public abstract class AbstractSwaggerValidator {
 
     protected final Map<String, String> metadata;
-    protected final GatewayConfigProperties gatewayConfigProperties;
+    protected final ServiceAddress gatewayServiceAddress;
     protected final String serviceId;
 
-    protected AbstractSwaggerValidator(Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
+    protected AbstractSwaggerValidator(Map<String, String> metadata, ServiceAddress gatewayServiceAddress, String serviceId) {
         this.metadata = metadata;
-        this.gatewayConfigProperties = gatewayConfigProperties;
+        this.gatewayServiceAddress = gatewayServiceAddress;
         this.serviceId = serviceId;
     }
 

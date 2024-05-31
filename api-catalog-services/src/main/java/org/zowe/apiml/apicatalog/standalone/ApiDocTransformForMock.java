@@ -15,7 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 @Configuration
 @ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "true")
@@ -35,10 +35,10 @@ public class ApiDocTransformForMock {
 
     @Bean
     @Primary
-    public GatewayConfigProperties gatewayConfigPropertiesForMock() {
+    public ServiceAddress gatewayConfigPropertiesForMock() {
         String path = this.contextPath.endsWith("/") ? this.contextPath.substring(0, this.contextPath.lastIndexOf('/')) : this.contextPath;
 
-        return GatewayConfigProperties.builder()
+        return ServiceAddress.builder()
             .scheme(schema)
             .hostname(String.format("%s:%s%s/mock", hostname, port, path))
             .build();

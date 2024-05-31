@@ -10,8 +10,7 @@ logging:
         org.springframework.cloud.client.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.web.socket: WARN
-        org.zowe.apiml.gateway.ws: INFO
-        org.zowe.apiml.gateway.error: INFO
+        org.zowe.apiml.zaas.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
         org.ehcache: WARN
@@ -35,10 +34,10 @@ apiml:
         distribute: false
     service:
         # The `apiml.service` node contains information required by any APIML service
-        id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
+        id: zaas  # Service ID of this service. It is fixed for ZAAS
         hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
                              # Default is valid only for localhost
-        port: 10010  # Default port name for gateway service
+        port: 10010  # Default port name for ZAAS
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
@@ -47,13 +46,13 @@ apiml:
 
     httpclient:
         conn-pool:
-            requestConnectionTimeout: ${apiml.gateway.timeoutMillis}
+            requestConnectionTimeout: ${apiml.zaas.timeoutMillis}
 
-    gateway:
+    zaas:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
                                              # for transforming the URLs in DVIPA mode.
-                                             # In Zowe, this is the same as apiml.service.hostname. Zowe has one Gateway
+                                             # In Zowe, this is the same as apiml.service.hostname. Zowe has one ZAAS
                                              # and is all run from single host.
                                              # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
                                              # properly.
@@ -141,9 +140,9 @@ server:
 
 http:
     connection:
-        timeout: ${apiml.gateway.timeoutMillis}
+        timeout: ${apiml.zaas.timeoutMillis}
     socket:
-        timeout: ${apiml.gateway.timeoutMillis}
+        timeout: ${apiml.zaas.timeoutMillis}
 
 management:
     endpoints:
@@ -166,7 +165,7 @@ eureka:
         ipAddress: ${apiml.service.ipAddress}
         #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
-        homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
+        homePageUrl: ${apiml.service.scheme}://${apiml.zaas.hostname}:${apiml.service.port}/
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
         secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
@@ -181,16 +180,16 @@ eureka:
                 routes:
                     api_v1:
                         gatewayUrl: /api/v1
-                        serviceUrl: /gateway
+                        serviceUrl: /zaas
                 apiInfo:
-                    - apiId: zowe.apiml.gateway
+                    - apiId: zowe.apiml.zaas
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
                       documentationUrl: https://zowe.github.io/docs-site/
                 service:
-                    title: API Gateway
-                    description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+                    title: ZAAS
+                    description: Zowe Authentication and Authorization Service.
                     supportClientCertForwarding: true
                 authentication:
                     sso: true
@@ -234,7 +233,6 @@ logging:
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        org.zowe.apiml.gateway.ws: DEBUG
 
 ---
 spring.config.activate.on-profile: diag
@@ -278,7 +276,7 @@ eureka:
         metadata-map:
             apiml:
                 apiInfo:
-                    -   apiId: zowe.apiml.gateway
+                    -   apiId: zowe.apiml.zaas
                         gatewayUrl: api/v1
                         swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
                         documentationUrl: https://zowe.github.io/docs-site/
@@ -290,7 +288,7 @@ logging:
     level:
         org.springframework.security: DEBUG
         org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
-        org.zowe.apiml.gateway.security: DEBUG
+        org.zowe.apiml.zaas.security: DEBUG
 
 ---
 spring.config.activate.on-profile: zosmfDebug
@@ -298,4 +296,4 @@ spring.config.activate.on-profile: zosmfDebug
 logging:
     level:
         root: INFO
-        org.zowe.apiml.gateway.security.service.zosmf: DEBUG
+        org.zowe.apiml.zaas.security.service.zosmf: DEBUG

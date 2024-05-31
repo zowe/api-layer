@@ -13,7 +13,7 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import lombok.experimental.UtilityClass;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 @UtilityClass
 public class OpenApiUtil {
@@ -24,7 +24,7 @@ public class OpenApiUtil {
     public static final String SEPARATOR = "/";
     public static final String URL_ENCODED_SPACE = "%20";
 
-    public static String getOpenApiLink(String serviceId, ApiInfo apiInfo, GatewayConfigProperties gatewayConfigProperties, String scheme) {
+    public static String getOpenApiLink(String serviceId, ApiInfo apiInfo, ServiceAddress gatewayConfigProperties, String scheme) {
         String link = scheme + "://" + gatewayConfigProperties.getHostname()
             + SEPARATOR + CoreService.API_CATALOG.getServiceId() + CATALOG_VERSION
             + CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId;

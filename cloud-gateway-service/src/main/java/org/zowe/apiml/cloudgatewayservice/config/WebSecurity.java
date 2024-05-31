@@ -62,6 +62,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.zowe.apiml.cloudgatewayservice.services.ServicesInfoController.SERVICES_URL;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 
@@ -69,7 +70,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 @RequiredArgsConstructor
 public class WebSecurity {
 
-    public static final String CONTEXT_PATH = "/" + CoreService.CLOUD_GATEWAY.getServiceId();
+    public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry/**";
 
     public static final String COOKIE_NONCE = "oidc_nonce";
@@ -294,7 +295,7 @@ public class WebSecurity {
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers(REGISTRY_PATH).authenticated()
+                    .pathMatchers(REGISTRY_PATH, SERVICES_URL + "/**").authenticated()
                     .anyExchange().permitAll()
             )
             .csrf(ServerHttpSecurity.CsrfSpec::disable)

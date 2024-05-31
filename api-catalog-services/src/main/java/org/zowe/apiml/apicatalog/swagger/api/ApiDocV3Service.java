@@ -32,7 +32,7 @@ import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 
 import jakarta.validation.UnexpectedTypeException;
@@ -83,7 +83,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     }
 
     private void updateServerAndLink(OpenAPI openAPI, String serviceId, ApiInfo apiInfo, boolean hidden) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
 
         if (openAPI.getServers() != null) {

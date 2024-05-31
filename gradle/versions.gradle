@@ -181,6 +181,7 @@ dependencyResolutionManagement {
             library('rest_assured', 'io.rest-assured', 'rest-assured').versionRef('restAssured')
             library('rest_assured_json_path', 'io.rest-assured', 'json-path').versionRef('restAssured')
             library('rest_assured_xml_path', 'io.rest-assured', 'xml-path').versionRef('restAssured')
+            library('rest_assured_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('restAssured')
             library('ribbon_eureka', 'com.netflix.ribbon', 'ribbon-eureka').versionRef('ribbon')
             library('spring4_test', 'org.springframework', 'spring-test').versionRef('spring4')
             library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')

@@ -27,7 +27,7 @@ import org.zowe.apiml.security.common.auth.saf.AccessLevel;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 
 @RestController
-@RequestMapping("/gateway")
+@RequestMapping("/zaas")
 @RequiredArgsConstructor
 @SuppressWarnings("squid:S1075") // CONTEXT_PATH and FULL_CONTEXT_PATH don't need to be parametrized
 public class SafResourceAccessController {
@@ -35,7 +35,7 @@ public class SafResourceAccessController {
     private final SafResourceAccessVerifying safResourceAccessVerifying;
     private final MessageService messageService;
     public static final String CONTEXT_PATH = "/auth/check";
-    public static final String FULL_CONTEXT_PATH = "/gateway/auth/check";
+    public static final String FULL_CONTEXT_PATH = "/zaas/auth/check";
 
     @PostMapping(path = CONTEXT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiMessageView> hasSafAccess(@RequestBody CheckRequestModel request) {
