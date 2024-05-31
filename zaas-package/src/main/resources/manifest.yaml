@@ -6,7 +6,7 @@ id: org.zowe.apiml.zaas-package
 # Human readable component name
 title: ZAAS
 # Human readable component description
-description: Zowe Authorization and Authentication Service.
+description: Zowe Authentication and Authorization Service.
 license: EPL-2.0
 schemas:
     configs: zaas-schema.json

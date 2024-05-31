@@ -137,7 +137,7 @@ eureka:
                       documentationUrl: https://zowe.github.io/docs-site/
                 service:
                     title: ZAAS
-                    description: Zowe Authorization and Authentication Service.
+                    description: Zowe Authentication and Authorization Service.
     client:
         fetchRegistry: false
         registerWithEureka: false

@@ -29,13 +29,13 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
-        String zaasServiceId = CoreService.ZAAS.getServiceId();
+        String gatewayServiceId = CoreService.GATEWAY.getServiceId();
 
-        boolean gatewayUp = !this.discoveryClient.getInstances(zaasServiceId).isEmpty();
+        boolean gatewayUp = !this.discoveryClient.getInstances(gatewayServiceId).isEmpty();
         Status healthStatus = gatewayUp ? Status.UP : Status.DOWN;
 
         builder
             .status(healthStatus)
-            .withDetail(zaasServiceId, healthStatus.getCode());
+            .withDetail(gatewayServiceId, healthStatus.getCode());
     }
 }

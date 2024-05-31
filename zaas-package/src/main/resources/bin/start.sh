@@ -163,6 +163,12 @@ else
     externalProtocol="http"
 fi
 
+# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
+if [ -n "${ZWE_ZAAS_SHARED_LIBS}" ]
+then
+    ZAAS_LOADER_PATH=${ZWE_ZAAS_SHARED_LIBS},${ZAAS_LOADER_PATH}
+fi
+
 echo "Setting loader path: "${ZAAS_LOADER_PATH}
 
 LIBPATH="$LIBPATH":"/lib"
