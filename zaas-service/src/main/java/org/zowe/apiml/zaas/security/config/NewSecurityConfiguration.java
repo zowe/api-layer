@@ -299,7 +299,7 @@ public class NewSecurityConfiguration {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                         authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
                         authConfigurationProperties.getZaasEvictAccessTokensAndRules(),
-                        "/gateway/zaas/**"
+                        "/zaas/zaas/**"
                 )))
                         .authorizeRequests(requests -> requests
                                 .anyRequest().authenticated())

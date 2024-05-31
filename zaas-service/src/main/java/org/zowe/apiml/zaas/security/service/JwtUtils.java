@@ -11,17 +11,10 @@
 package org.zowe.apiml.zaas.security.service;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Deserializer;
-import io.jsonwebtoken.jackson.io.JacksonDeserializer;
-import io.jsonwebtoken.*;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Map;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
