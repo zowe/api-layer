@@ -23,10 +23,10 @@ import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfigu
     },
     exclude = {ReactiveOAuth2ClientAutoConfiguration.class, GatewayReactiveOAuth2AutoConfiguration.class}
 )
-public class gatewayApplication {
+public class GatewayServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(gatewayApplication.class, args);
+        SpringApplication.run(GatewayServiceApplication.class, args);
     }
 
 }
