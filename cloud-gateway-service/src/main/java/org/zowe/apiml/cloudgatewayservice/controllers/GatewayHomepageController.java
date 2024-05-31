@@ -105,7 +105,6 @@ public class GatewayHomepageController {
     private void initializeAuthenticationAttributes(Model model) {
         String authStatusText = "The Authentication Service is not running";
         String authIconName = WARNING_ICON_NAME;
-        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(ZAAS_SERVICEID);
         long zaasCount = authorizationServiceCount();
 
         if (zaasCount > 0) {
