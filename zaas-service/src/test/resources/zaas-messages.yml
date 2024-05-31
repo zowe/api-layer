@@ -301,7 +301,7 @@ messages:
       type: ERROR
       text: "There was an error while reading webfinger configuration"
       reason: "Webfinger provider contains incorrect configuration."
-      action: "Contact the administrator to validate webfinger configuration in the ZAAS."
+      action: "Contact the administrator to validate webfinger configuration in ZAAS."
 
     - key: org.zowe.apiml.security.auth.zosmf.sslError
       number: ZWEAG182
