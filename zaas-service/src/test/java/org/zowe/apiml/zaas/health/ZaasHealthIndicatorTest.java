@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class GatewayHealthIndicatorTest {
+class ZaasHealthIndicatorTest {
 
     private Providers providers;
 
@@ -52,7 +52,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
@@ -66,7 +66,7 @@ class GatewayHealthIndicatorTest {
             Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
@@ -82,7 +82,7 @@ class GatewayHealthIndicatorTest {
             Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
@@ -99,7 +99,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
@@ -117,7 +117,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, customCatalogServiceId);
+        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, customCatalogServiceId);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
 
@@ -136,7 +136,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
+        ZaasHealthIndicator gatewayHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
 

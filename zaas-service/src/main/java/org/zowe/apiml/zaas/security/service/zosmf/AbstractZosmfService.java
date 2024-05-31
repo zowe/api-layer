@@ -11,9 +11,10 @@
 package org.zowe.apiml.zaas.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.DiscoveryClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,6 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.EurekaUtils;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;
@@ -101,6 +101,20 @@ public abstract class AbstractZosmfService {
     }
 
     /**
+     * TODO: move to a library such as EurekaUtils
+     * Construct base URL for specific InstanceInfo
+     * @param serviceInstance Instance of service, for which we want to get an URL
+     * @return URL to the instance
+     */
+    public static final String getUrl(ServiceInstance serviceInstance) {
+        if (serviceInstance.isSecure()) {
+            return "https://" + serviceInstance.getHost() + ":" + serviceInstance.getPort();
+        } else {
+            return "http://" + serviceInstance.getHost() + ":" + serviceInstance.getPort();
+        }
+    }
+
+    /**
      * Return z/OSMF instance uri
      *
      * @param zosmf the z/OSMF service id
@@ -113,13 +127,12 @@ public abstract class AbstractZosmfService {
             return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 
-        return Optional.ofNullable(discovery.getApplication(zosmf))
+        return Optional.ofNullable(discovery.getInstances(zosmf))
             .orElseThrow(authenticationServiceExceptionSupplier)
-            .getInstances()
             .stream()
             .filter(Objects::nonNull)
             .findFirst()
-            .map(EurekaUtils::getUrl)
+            .map(AbstractZosmfService::getUrl)
             .orElseThrow(authenticationServiceExceptionSupplier);
     }
 

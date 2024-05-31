@@ -70,7 +70,6 @@ public class ValidateAPIControllerTest {
 
     ResponseEntity<String> result;
 
-
     private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
     private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";

@@ -10,7 +10,7 @@ messages:
 
     # TLS,Certificate messages
     # 500-599
-    - key: org.zowe.apiml.gateway.security.x509.missingCertificate
+    - key: org.zowe.apiml.zaas.security.x509.missingCertificate
       number: ZWEAG500
       type: ERROR
       text: "Client certificate is missing in request."
@@ -23,70 +23,70 @@ messages:
     # Service specific messages
     # 700-999
 
-    - key: org.zowe.apiml.gateway.instanceNotFound
+    - key: org.zowe.apiml.zaas.instanceNotFound
       number: ZWEAG700
       type: ERROR
       text: "No instance of the service '%s' found. Routing will not be available."
       reason: "The Gateway could not find an instance of the service from the Discovery Service."
       action: "Check that the service was successfully registered to the Discovery Service and wait for Spring Cloud to refresh the routes definitions."
 
-    - key: org.zowe.apiml.gateway.requestContainEncodedCharacter
+    - key: org.zowe.apiml.zaas.requestContainEncodedCharacter
       number: ZWEAG701
       type: ERROR
       text: "Service '%s' does not allow encoded characters in the request path: '%s'."
       reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
       action: "Contact the system administrator and request enablement of encoded characters in the service."
 
-    - key: org.zowe.apiml.gateway.requestContainEncodedSlash
+    - key: org.zowe.apiml.zaas.requestContainEncodedSlash
       number: ZWEAG702
       type: ERROR
       text: "Gateway does not allow encoded slashes in request: '%s'."
       reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
       action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
 
-    - key: org.zowe.apiml.gateway.jwtInitConfigError
+    - key: org.zowe.apiml.zaas.jwtInitConfigError
       number: ZWEAG704
       type: ERROR
       text: "Configuration error '%s' when trying to read the public and private key for signing JWT: %s"
       reason: "A problem occurred while trying to read the certificate-key pair from the keystore."
       action: "Review the mandatory fields used in the configuration such as the keystore location path, the keystore and key password, and the keystore type."
 
-    - key: org.zowe.apiml.gateway.jwtKeyMissing
+    - key: org.zowe.apiml.zaas.jwtKeyMissing
       number: ZWEAG705
       type: ERROR
       text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. Gateway is shutting down."
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
-    - key: org.zowe.apiml.gateway.contextNotPrepared
+    - key: org.zowe.apiml.zaas.contextNotPrepared
       number: ZWEAG706
       type: ERROR
       text: "RequestContext is not prepared for load balancing."
       reason: "Custom Ribbon load balancing is not in place before calling Ribbon."
       action: "Contact Broadcom support."
 
-    - key: org.zowe.apiml.gateway.requestAborted
+    - key: org.zowe.apiml.zaas.requestAborted
       number: ZWEAG707
       type: ERROR
       text: "The request to the URL '%s' aborted without retrying on another instance. Caused by: %s"
       reason: "The request to the server instance failed and will not be retried on another instance."
       action: "Refer to 'Caused by' details for troubleshooting."
 
-    - key: org.zowe.apiml.gateway.connectionRefused
+    - key: org.zowe.apiml.zaas.connectionRefused
       number: ZWEAG708
       type: ERROR
       text: "The request to the URL '%s' failed after retrying on all known service instances. Caused by: %s"
       reason: "Request to the server instance could not be executed on any known service instance."
       action: "Verify the status of the requested instance."
 
-    - key: org.zowe.apiml.gateway.serviceUnavailable
+    - key: org.zowe.apiml.zaas.serviceUnavailable
       number: ZWEAG709
       type: ERROR
       text: "Service is not available at URL '%s'. Error returned: '%s'"
       reason: "The service is not available."
       action: "Make sure that the service is running and is accessible by the URL provided in the message."
 
-    - key: org.zowe.apiml.gateway.loadBalancerDoesNotHaveAvailableServer
+    - key: org.zowe.apiml.zaas.loadBalancerDoesNotHaveAvailableServer
       number: ZWEAG710
       type: ERROR
       text: "Load balancer does not have available server for client: %s"
@@ -100,14 +100,14 @@ messages:
       reason: "The principal does not have the queried access to the resource name within the resource class."
       action: "No action is needed."
 
-    - key: org.zowe.apiml.gateway.invalidRoute
+    - key: org.zowe.apiml.zaas.invalidRoute
       number: ZWEAG712
       type: ERROR
       text: "The URI '%s' is an invalid format"
       reason: "The URI does not follow the format /{serviceId}/{type}/{version}/{endpoint} or /{type}/{version}/{serviceId}/{endpoint}."
       action: "Use a properly formatted URI."
 
-    - key: org.zowe.apiml.gateway.jwtProducerConfigError
+    - key: org.zowe.apiml.zaas.jwtProducerConfigError
       number: ZWEAG713
       type: ERROR
       text: "Configuration error when trying to establish JWT producer. Events: %s"
@@ -134,21 +134,21 @@ messages:
         * **ltpa**
           Signifies that z/OSMF does not support JWT
 
-    - key: org.zowe.apiml.gateway.keys.unknown
+    - key: org.zowe.apiml.zaas.keys.unknown
       number: ZWEAG714
       type: ERROR
       text: "Unknown error occurred while retrieving the used public key"
       reason: "An unknown problem occurred when retrieving the used public key. This should never occur."
       action: "Try again later."
 
-    - key: org.zowe.apiml.gateway.keys.wrongAmount
+    - key: org.zowe.apiml.zaas.keys.wrongAmount
       number: ZWEAG715
       type: ERROR
       text: "The wrong amount of keys retrieved. The amount of retrieved keys is: %s"
       reason: "There are too many keys in the JWK set. As such, it is not possible to choose the correct one."
       action: "Verify the configuration of the z/OSMF to make sure that z/OSMF provides only one used key."
 
-    - key: org.zowe.apiml.gateway.keys.unknownState
+    - key: org.zowe.apiml.zaas.keys.unknownState
       number: ZWEAG716
       type: ERROR
       text: "The system does not know what key should be used."
@@ -171,14 +171,14 @@ messages:
       reason: "The HTTP request method is not supported by the URL."
       action: "Use the correct HTTP request method supported by the URL."
 
-    - key: org.zowe.apiml.gateway.security.invalidToken
+    - key: org.zowe.apiml.zaas.security.invalidToken
       number: ZWEAG102
       type: ERROR
       text: "Token is not valid"
       reason: "The JWT token is not valid."
       action: "Provide a valid token."
 
-    - key: org.zowe.apiml.gateway.security.expiredToken
+    - key: org.zowe.apiml.zaas.security.expiredToken
       number: ZWEAG103
       type: ERROR
       text: "The token has expired"
@@ -286,84 +286,84 @@ messages:
       reason: "The user credentials were rejected during SAF verification. Review the reason in the error message."
       action: "Provide a valid username and password."
 
-    - key: org.zowe.apiml.gateway.security.schema.missingAuthentication
+    - key: org.zowe.apiml.zaas.security.schema.missingAuthentication
       number: ZWEAG160
       type: ERROR
       text: "No authentication provided in the request"
       reason: "The JWT token or client certificate was not provided with the request"
       action: "Configure your client to provide valid authentication."
 
-    - key: org.zowe.apiml.gateway.security.schema.x509.mappingFailed
+    - key: org.zowe.apiml.zaas.security.schema.x509.mappingFailed
       number: ZWEAG161
       type: ERROR
       text: "No user was found"
       reason: "It was not possible to map provided token or certificate to the mainframe identity."
       action: "Ask your security administrator to connect your token or client certificate with your mainframe user."
 
-    - key: org.zowe.apiml.gateway.security.token.authenticationFailed
+    - key: org.zowe.apiml.zaas.security.token.authenticationFailed
       number: ZWEAG162
       type: ERROR
       text: "Gateway service failed to obtain token."
       reason: "Authentication request to get token failed."
       action: "Contact your administrator."
 
-    - key: org.zowe.apiml.gateway.security.scheme.x509ParsingError
+    - key: org.zowe.apiml.zaas.security.scheme.x509ParsingError
       number: ZWEAG163
       type: ERROR
       text: "Error occurred while parsing X509 certificate."
       reason: "%s"
       action: "Configure your client to provide valid x509 certificate."
 
-    - key: org.zowe.apiml.gateway.security.scheme.x509ValidationError
+    - key: org.zowe.apiml.zaas.security.scheme.x509ValidationError
       number: ZWEAG164
       type: ERROR
       text: "Error occurred while validating X509 certificate. %s"
       reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
       action: "Configure your client to provide valid x509 certificate."
 
-    - key: org.zowe.apiml.gateway.security.scheme.x509ExtendedKeyUsageError
+    - key: org.zowe.apiml.zaas.security.scheme.x509ExtendedKeyUsageError
       number: ZWEAG165
       type: ERROR
       text: "X509 certificate is missing the client certificate extended usage definition"
       reason: "X509 certificate cannot be used for client authentication."
       action: "Configure your client to provide valid x509 certificate."
 
-    - key: org.zowe.apiml.gateway.security.scheme.zosmfSchemeNotSupported
+    - key: org.zowe.apiml.zaas.security.scheme.zosmfSchemeNotSupported
       number: ZWEAG166
       type: ERROR
       text: "ZOSMF authentication scheme is not supported for this API ML instance."
       reason: "z/OSMF is not used as security provider for API ML."
       action: "Contact your administrator."
 
-    - key: org.zowe.apiml.gateway.security.schema.missingX509Authentication
+    - key: org.zowe.apiml.zaas.security.schema.missingX509Authentication
       number: ZWEAG167
       type: ERROR
       text: "No client certificate provided in the request"
       reason: "The X509 client certificate was not provided with the request"
       action: "Configure your client to provide valid certificate."
 
-    - key: org.zowe.apiml.gateway.security.invalidAuthentication
+    - key: org.zowe.apiml.zaas.security.invalidAuthentication
       number: ZWEAG168
       type: ERROR
       text: "Invalid authentication provided in request"
       reason: "The JWT token or client certificate is not valid"
       action: "Configure your client to provide valid authentication."
 
-    - key: org.zowe.apiml.gateway.security.unexpectedMappingResponse
+    - key: org.zowe.apiml.zaas.security.unexpectedMappingResponse
       number: ZWEAG169
       type: ERROR
       text: "Unexpected response from the external identity mapper. Status: %s body: %s"
       reason: "The external identity mapper request failed with Internal Error"
       action: "Verify that ZSS is responding."
 
-    - key: org.zowe.apiml.gateway.security.InvalidMappingResponse
+    - key: org.zowe.apiml.zaas.security.InvalidMappingResponse
       number: ZWEAG170
       type: ERROR
       text: "Error occurred while trying to parse the response from the external identity mapper. Reason: %s"
       reason: "The external identity mapper failed when trying to parse the response"
       action: "Verify that the response is valid."
 
-    - key: org.zowe.apiml.gateway.security.InvalidMapperUrl
+    - key: org.zowe.apiml.zaas.security.InvalidMapperUrl
       number: ZWEAG171
       type: ERROR
       text: "Configuration error. Failed to construct the external identity mapper URI. Reason: %s"

@@ -67,7 +67,7 @@ class SuccessfulRefreshHandlerTest {
             verify(authenticationService, atLeastOnce()).invalidateJwtToken("TOKEN", true);
             assertThat(response.getStatus(), is(HttpStatus.NO_CONTENT.value()));
             assertThat(response.getHeader(HttpHeaders.SET_COOKIE),
-                is("apimlAuthenticationToken=NEWTOKEN; Path=/; Secure; HttpOnly; SameSite=Strict; Comment=API Mediation Layer security token"));
+                is("apimlAuthenticationToken=NEWTOKEN; Path=/; Secure; HttpOnly; SameSite=Strict"));
         }
     }
 

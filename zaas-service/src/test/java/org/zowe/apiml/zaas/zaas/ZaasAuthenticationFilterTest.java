@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.zaas.zaas;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,19 +22,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.security.common.error.AuthExceptionHandler;
-import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.zaas.filters.pre.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 
 @ExtendWith(MockitoExtension.class)
 class ZaasAuthenticationFilterTest {

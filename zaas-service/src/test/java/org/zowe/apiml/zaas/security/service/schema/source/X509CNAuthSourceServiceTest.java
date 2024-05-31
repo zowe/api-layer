@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
+import jakarta.servlet.http.HttpServletRequest;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,14 +20,13 @@ import org.zowe.apiml.zaas.security.mapping.X509CommonNameUserMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
 class X509CNAuthSourceServiceTest {
-    private RequestContext context;
+
     private HttpServletRequest request;
     private X509CommonNameUserMapper mapper;
     private X509AuthSourceService serviceUnderTest;
@@ -37,9 +36,7 @@ class X509CNAuthSourceServiceTest {
     class GivenValidAuthSource {
         @BeforeEach
         void init() {
-            context = spy(RequestContext.class);
             request = mock(HttpServletRequest.class);
-            RequestContext.testSetCurrentContext(context);
             x509Certificate = mock(X509Certificate.class);
             mapper = mock(X509CommonNameUserMapper.class);
             serviceUnderTest = new X509CNAuthSourceService(mapper, mock(TokenCreationService.class), mock(AuthenticationService.class));
@@ -47,7 +44,6 @@ class X509CNAuthSourceServiceTest {
 
         @Test
         void whenClientCertInRequestInCustomAttribute_thenAuthSourceIsPresent() {
-            when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("client.auth.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
@@ -63,7 +59,6 @@ class X509CNAuthSourceServiceTest {
 
         @Test
         void whenInternalApimlCertInRequestInStandardAttribute_thenAuthSourceIsPresent() {
-            when(context.getRequest()).thenReturn(request);
             when(request.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(Arrays.array(x509Certificate));
 
             Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
@@ -75,5 +70,7 @@ class X509CNAuthSourceServiceTest {
             Assertions.assertTrue(authSource.get() instanceof X509AuthSource);
             Assertions.assertEquals(x509Certificate, authSource.get().getRawSource());
         }
+
     }
+
 }

@@ -16,7 +16,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
@@ -86,20 +86,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -876,7 +863,7 @@ class ZosmfServiceTest {
                 assertFalse(values.isEmpty());
                 assertTrue(values.contains("ResourceAccessException accessing"), values);
 
-                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError", "resource access exception; nested exception is javax.net.ssl.SSLHandshakeException: handshake exception");
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.sslError", "resource access exception");
             }
 
             @Test
@@ -889,7 +876,7 @@ class ZosmfServiceTest {
                 )).thenThrow(new RestClientException("resource access exception", new ConnectException("connection exception")));
 
                 assertThat(underTest.isAccessible(), is(false));
-                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception; nested exception is java.net.ConnectException: connection exception");
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception");
             }
 
             @Test

@@ -16,10 +16,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Clock;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.UnsupportedKeyException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,14 +28,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.Key;
 import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.Map;
@@ -52,6 +49,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
+
+    private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
 
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -104,7 +103,6 @@ public class OIDCTokenProvider implements OIDCProvider {
         }
     }
 
-
     private Map<String, PublicKey> processKeys(JWKSet jwkKeys) {
         return jwkKeys.getKeys().stream()
             .filter(jwkKey -> {
@@ -124,44 +122,52 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Override
     public boolean isValid(String token) {
-        if (StringUtils.isBlank(token)) {
-            log.debug("No token has been provided.");
+        try {
+            return !getClaims(token).isEmpty();
+        } catch (JwtException jwte) {
             return false;
         }
-        String kid = getKeyId(token);
-        logger.log(MessageType.DEBUG, "Token signed by key {}", kid);
-        return Optional.ofNullable(publicKeys.get(kid))
-            .map(key -> validate(token, key))
-            .map(claims -> !claims.isEmpty())
-            .orElse(false);
     }
 
-    private String getKeyId(String token) {
-        try {
-            return String.valueOf(Jwts.parser()
-                .clock(clock)
-                .build()
-                .parseUnsecuredClaims(token.substring(0, token.lastIndexOf('.') + 1))
-                .getHeader()
-                .get("kid"));
-        } catch (JwtException e) {
-            log.error("OIDC Token is not valid: {}", e.getMessage());
-            return "";
+    Claims getClaims(String token) {
+        if (jwkSet == null || jwkSet.isEmpty()) {
+            fetchJWKSet();
         }
+
+        if (StringUtils.isBlank(token)) {
+            throw new JwtException("Empty string provided instead of a token.");
+        }
+
+        return Jwts.parser()
+            .clock(clock)
+            .keyLocator(keyLocator)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
     }
 
-    private Claims validate(String token, PublicKey key) {
-        try {
-            return Jwts.parser()
-                .verifyWith(key)
-                .clock(clock)
-                .build()
-                .parseUnsecuredClaims(token)
-                .getPayload();
-        } catch (TokenNotValidException | JwtException e) {
-            log.debug("OIDC Token is not valid: {}", e.getMessage());
-            return null; // NOSONAR
+    class LocatorAdapterKid extends LocatorAdapter<Key> {
+
+        @Override
+        protected Key locate(ProtectedHeader header) {
+            if (jwkSet == null) {
+                throw new JwtException("Could not validate the token due to missing public key.");
+            }
+            String kid = header.getKeyId();
+            if (kid == null) {
+                throw new UnsupportedKeyException("Token does not provide kid. It uses an unsupported type of signature.");
+            }
+            return Optional.ofNullable(jwkSet.getKeyByKeyId(header.getKeyId()))
+                .map(key -> {
+                    try {
+                        return key.toRSAKey().toPublicKey();
+                    } catch (JOSEException e) {
+                        throw new JwtException("Could not validate the token due to either an invalid token or an invalid public key.", e);
+                    }
+                })
+                .orElseThrow(() -> new UnsupportedKeyException("Key with id " + header.getKeyId() + " is null in JWK"));
         }
+
     }
 
 }

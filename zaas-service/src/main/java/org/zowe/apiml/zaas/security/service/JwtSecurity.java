@@ -12,7 +12,7 @@ package org.zowe.apiml.zaas.security.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.discovery.CacheRefreshedEvent;
-import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.nimbusds.jose.jwk.JWK;
@@ -81,15 +81,15 @@ public class JwtSecurity {
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     @Autowired
-    public JwtSecurity(Providers providers, DiscoveryClient discoveryClient) {
+    public JwtSecurity(Providers providers, EurekaClient eurekaClient) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
-        this.zosmfListener = new ZosmfListener(discoveryClient);
+        this.zosmfListener = new ZosmfListener(eurekaClient);
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, DiscoveryClient discoveryClient) {
-        this(providers, discoveryClient);
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, EurekaClient eurekaClient) {
+        this(providers, eurekaClient);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;
@@ -287,10 +287,10 @@ public class JwtSecurity {
 
     class ZosmfListener {
         private boolean isZosmfReady = false;
-        private final DiscoveryClient discoveryClient;
+        private final EurekaClient eurekaClient;
 
-        private ZosmfListener(DiscoveryClient discoveryClient) {
-            this.discoveryClient = discoveryClient;
+        private ZosmfListener(EurekaClient eurekaClient) {
+            this.eurekaClient = eurekaClient;
         }
 
         // instance variable so can create an accessor for unit testing purposes
@@ -307,7 +307,7 @@ public class JwtSecurity {
                     events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
                     log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
 
-                    discoveryClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
+                    eurekaClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
                     isZosmfReady = true;
 
                     try {
@@ -325,7 +325,7 @@ public class JwtSecurity {
         };
 
         public void register() {
-            discoveryClient.registerEventListener(zosmfRegisteredListener);
+            eurekaClient.registerEventListener(zosmfRegisteredListener);
         }
 
         public boolean isZosmfReady() {

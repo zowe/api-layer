@@ -32,24 +32,6 @@
         <heap unit="entries">1000</heap>
     </cache>
 
-    <cache alias="serviceAuthenticationByServiceId">
-        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.cache.CompositeKey</key-type>
-        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand</value-type>
-        <expiry>
-            <ttl unit="days">1</ttl>
-        </expiry>
-        <heap unit="entries">1000</heap>
-    </cache>
-
-    <cache alias="serviceAuthenticationByAuthentication">
-        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.springframework.cache.interceptor.SimpleKey</key-type>
-        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand</value-type>
-        <expiry>
-            <ttl unit="days">1</ttl>
-        </expiry>
-        <heap unit="entries">1000</heap>
-    </cache>
-
     <cache alias="zosmfInfo">
         <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
         <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</value-type>
@@ -78,7 +60,7 @@
     </cache>
 
     <cache alias="validationOIDCToken">
-        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.source.AuthSource</key-type>
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.zaas.security.service.schema.source.AuthSource</key-type>
         <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.Boolean</value-type>
         <expiry>
             <ttl unit="seconds">20</ttl>
@@ -87,8 +69,8 @@
     </cache>
 
     <cache alias="parseOIDCToken">
-        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.source.AuthSource</key-type>
-        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.gateway.security.service.schema.source.AuthSource.Parsed</value-type>
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.zaas.security.service.schema.source.AuthSource</key-type>
+        <value-type copier="org.ehcache.impl.copy.IdentityCopier">org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed</value-type>
         <expiry>
             <ttl unit="seconds">20</ttl>
         </expiry>

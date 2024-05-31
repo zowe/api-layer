@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,7 +20,6 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
-import org.zowe.apiml.zaas.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,12 +33,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
-    private RequestContext context;
+class X509AuthSourceServiceTest {
+
+
     private HttpServletRequest request;
     private X509Certificate x509Certificate;
     private final X509Certificate[] x509Certificates = new X509Certificate[1];
-
 
     @BeforeEach
     void init() {
@@ -49,6 +47,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
 
     @Nested
     class GivenX509SourceTest {
+
         TokenCreationService tokenCreationService;
         X509AuthSourceService service;
         AuthenticationService authenticationService;
@@ -76,11 +75,13 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             when(tokenCreationService.createJwtTokenWithoutCredentials(any())).thenThrow(new ResourceAccessException("I/O exception"));
             assertThrows(AuthSchemeException.class, () -> service.getJWT(source));
         }
+
     }
 
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class X509MFAuthSourceServiceTest {
+
         private AuthenticationMapper mapper;
         private X509AuthSourceService serviceUnderTest;
 
@@ -92,6 +93,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
 
         @Nested
         class GivenNullAuthSource {
+
             @Test
             void whenNoClientCertInRequest_thenThrows() {
                 request = mock(HttpServletRequest.class);
@@ -117,10 +119,12 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             void whenGetLTPA_thenNull() {
                 assertNull(serviceUnderTest.getLtpaToken(null));
             }
+
         }
 
         @Nested
         class GiveNullRawSource {
+
             @Test
             void whenValidate_thenFalse() {
                 assertFalse(serviceUnderTest.isValid(new X509AuthSource(null)));
@@ -130,15 +134,15 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             void whenParse_thenNull() {
                 assertNull(serviceUnderTest.parse(new X509AuthSource(null)));
             }
+
         }
 
         @Nested
         class GivenValidAuthSource {
+
             @BeforeEach
             void setup() {
-                context = spy(RequestContext.class);
                 request = mock(HttpServletRequest.class);
-                RequestContext.testSetCurrentContext(context);
             }
 
             @Test
@@ -186,11 +190,10 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
 
         @Nested
         class GivenIncorrectAuthSource {
+
             @BeforeEach
             void setup() {
-                context = spy(RequestContext.class);
                 request = mock(HttpServletRequest.class);
-                RequestContext.testSetCurrentContext(context);
             }
 
             @Test
@@ -232,5 +235,7 @@ class X509AuthSourceServiceTest extends CleanCurrentRequestContextTest {
             }
 
         }
+
     }
+
 }

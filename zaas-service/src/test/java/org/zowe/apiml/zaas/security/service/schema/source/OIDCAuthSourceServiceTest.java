@@ -10,20 +10,18 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
-import com.netflix.zuul.context.RequestContext;
-import org.junit.jupiter.api.AfterAll;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.security.common.token.*;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
@@ -33,7 +31,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
-    private RequestContext context;
+
+
     private TokenCreationService tokenCreationService;
     private OIDCAuthSourceService service;
     private AuthenticationService authenticationService;
@@ -51,13 +50,6 @@ class OIDCAuthSourceServiceTest {
         provider = mock(OIDCProvider.class);
         mapper = mock(AuthenticationMapper.class);
         service = new OIDCAuthSourceService(mapper, authenticationService, provider, tokenCreationService);
-        context = mock(RequestContext.class);
-        RequestContext.testSetCurrentContext(context);
-    }
-
-    @AfterAll
-    static void cleanUp() {
-        RequestContext.testSetCurrentContext(null);
     }
 
     @Test

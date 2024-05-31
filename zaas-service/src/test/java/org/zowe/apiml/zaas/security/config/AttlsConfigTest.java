@@ -16,11 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.acceptance.common.AcceptanceTest;
-import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 
 import javax.net.ssl.SSLException;
 
@@ -32,9 +34,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 /**
- * Simple Spring Context test to verify attls filter chain setup is in place with the right properties being sent
+ * Simple Spring Context test to verify AT-TLS filter chain setup is in place with the right properties being sent
  */
-@AcceptanceTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(
     properties = {
         "server.internal.ssl.enabled=false",
@@ -43,18 +45,25 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
         "server.service.scheme=http"
     }
 )
-@ActiveProfiles({"acceptance", "AttlsConfigTest"})
 @TestInstance(Lifecycle.PER_CLASS)
-public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
+@MockBean(name = "x509Mapper", classes = AuthenticationMapper.class)
+public class AttlsConfigTest {
 
     @Autowired
     HttpSecurity http;
+
+    @LocalServerPort
+    private int port;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
 
     @Nested
     class GivenAttlsModeEnabled {
 
         @Nested
         class WhenContextLoads {
+
             @Test
             void requestFailsWithHttps() {
                 try {
@@ -62,7 +71,7 @@ public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
                         .log().all()
                         .cookie(COOKIE_AUTH_NAME, "jwttoken")
                     .when()
-                        .get(basePath + serviceWithDefaultConfiguration.getPath())
+                        .get(String.format("https://%s:%d", hostname, port))
                     .then()
                         .log().all()
                         .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
@@ -78,13 +87,16 @@ public class AttlsConfigTest extends AcceptanceTestWithTwoServices {
                     .log().all()
                     .cookie(COOKIE_AUTH_NAME, "jwttoken")
                 .when()
-                    .get(String.format("http://localhost:%d%s", port, serviceWithDefaultConfiguration.getPath()))
+                    .get(String.format("http://%s:%d", hostname, port))
                 .then()
                     .log().all()
                     .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
                     .body(containsString("Connection is not secure."))
                     .body(containsString("AttlsContext.getStatConn"));
             }
+
         }
+
     }
+
 }

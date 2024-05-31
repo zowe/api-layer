@@ -31,6 +31,7 @@ import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import java.io.IOException;
 import java.net.URL;
 import java.security.Key;
+import java.security.PublicKey;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.*;
@@ -73,7 +74,7 @@ class OIDCTokenProviderTest {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet);
                 oidcTokenProvider.afterPropertiesSet();
             }
-            Map<String, Key> publicKeys = oidcTokenProvider.getPublicKeys();
+            Map<String, PublicKey> publicKeys = oidcTokenProvider.getPublicKeys();
 
             assertFalse(publicKeys.isEmpty());
             assertTrue(publicKeys.containsKey("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));

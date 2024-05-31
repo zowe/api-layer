@@ -13,7 +13,7 @@ package org.zowe.apiml.zaas.security.service.zosmf;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.AllArgsConstructor;
 import lombok.Data;

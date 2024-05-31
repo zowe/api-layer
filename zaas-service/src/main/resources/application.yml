@@ -7,7 +7,7 @@ logging:
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.cloud.client.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.web.socket: WARN
         org.zowe.apiml.gateway.ws: INFO
@@ -96,6 +96,9 @@ apiml:
                 verify: https://localhost:10013/zss/saf/verify
 
 spring:
+    profiles:
+        group:
+            dev: debug, diag
     config:
         useLegacyProcessing: true
     application:
@@ -122,20 +125,6 @@ spring:
         allow-circular-references: true
 
 server:
-    internal:
-        enabled: false
-        port: ${server.port}
-        ssl:
-            keyAlias: ${server.ssl.keyAlias:localhost}
-            keyPassword: ${server.ssl.keyPassword:password}
-            keyStoreType: ${server.ssl.keyStoreType:PKCS12}
-            keyStore: ${server.ssl.keyStore:keystore}
-            trustStoreType: ${server.ssl.trustStoreType:PKCS12}
-            trustStore: ${server.ssl.trustStore:truststore}
-            keyStorePassword: ${server.ssl.keyStorePassword:password}
-            trustStorePassword: ${server.ssl.trustStorePassword:password}
-            clientAuth: ${server.ssl.clientAuth}
-    max-http-header-size: 48000
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
@@ -150,65 +139,13 @@ server:
     maxTotalConnections: 1000
     webSocket:
         supportedProtocols: v12.stomp,v11.stomp
-
-zuul:
-    sslHostnameValidationEnabled: false
-    addProxyHeaders: true
-    traceRequestBody: true
-    ignoreSecurityHeaders: false
-    includeDebugHeader: false
-    sensitiveHeaders: Expires,Date
-    semaphore:
-        maxSemaphores: ${server.maxTotalConnections}
-    ignoredPatterns:
-        - /ws/**
-        - /*/ws/**
-        - /sse/**
-        - /*/sse/**
-    host:
-        connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        maxTotalConnections: ${server.maxTotalConnections}
-        maxPerRouteConnections: ${server.maxConnectionsPerRoute}
-    forceOriginalQueryStringEncoding: true
-    retryable: true
-    decodeUrl: false # Flag to indicate whether to decode the matched URL or use it as is
-    ignoredServices: discovery # to disable routing to the Discovery service, see a potential security issue with AT-TLS enabled
-
-ribbon:
-    ConnectTimeout: ${apiml.gateway.timeoutMillis}
-    ReadTimeout: ${apiml.gateway.timeoutMillis}
-    ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
-    MaxAutoRetries: 0
-    retryableStatusCodes: 503
-    MaxAutoRetriesNextServer: 5
-    OkToRetryOnAllOperations: false
-    GZipPayload: false # this stops Gateway from deflating gzip responses from services
-    MaxConnectionsPerHost: ${server.maxConnectionsPerRoute}
-    MaxTotalConnections: ${server.maxTotalConnections}
+    max-http-request-header-size: 48000
 
 http:
     connection:
         timeout: ${apiml.gateway.timeoutMillis}
     socket:
         timeout: ${apiml.gateway.timeoutMillis}
-
-hystrix:
-    command:
-        default:
-            fallback:
-                enabled: false
-            circuitBreaker:
-                enabled: false
-            execution:
-                timeout:
-                    enabled: false
-                isolation:
-                    thread:
-                        timeoutInMilliseconds: ${apiml.gateway.timeoutMillis}
-                    strategy: SEMAPHORE
-                    semaphore:
-                        maxConcurrentRequests: ${server.maxTotalConnections}
 
 management:
     endpoints:
@@ -271,7 +208,7 @@ eureka:
 
 ---
 spring:
-    profiles: debug
+    config.activate.on-profile: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -302,8 +239,7 @@ logging:
         org.zowe.apiml.gateway.ws: DEBUG
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -314,22 +250,15 @@ management:
                 include: "*"
 
 server:
-    max-http-header-size: 40000
-
-zuul.debug.request: true
+    max-http-request-header-size: 40000
 
 ---
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEAGW1
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
     internal:
@@ -357,8 +286,7 @@ eureka:
                         documentationUrl: https://zowe.github.io/docs-site/
 
 ---
-spring:
-    profiles: securityFilterchainDebug
+spring.config.activate.on-profile: securityFilterchainDebug
 
 logging:
     level:
@@ -367,8 +295,7 @@ logging:
         org.zowe.apiml.gateway.security: DEBUG
 
 ---
-spring:
-    profiles: zosmfDebug
+spring.config.activate.on-profile: zosmfDebug
 
 logging:
     level:

@@ -12,12 +12,13 @@ package org.zowe.apiml.zaas.security.service;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.security.SignatureAlgorithm;
+import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -28,6 +29,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
@@ -37,12 +39,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.zaas.config.CacheConfig;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -51,10 +50,12 @@ import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.zaas.config.CacheConfig;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import jakarta.servlet.http.Cookie;
-import java.security.Key;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
@@ -71,9 +72,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     private Set<String> scopes;
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
-    private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
+    private static final SignatureAlgorithm ALGORITHM = Jwts.SIG.RS256;
 
-    private static Key privateKey;
+    private static PrivateKey privateKey;
     private static PublicKey publicKey;
 
     @Mock
@@ -91,7 +92,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Mock
     private ZosmfService zosmfService;
     @Mock
-    private DiscoveryClient discoveryClient;
+    private EurekaClient eurekaClient;
     @Mock
     private CacheUtils cacheUtils;
     @Mock
@@ -114,7 +115,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            zosmfService, discoveryClient, restTemplate, cacheManager, cacheUtils
+            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils
         );
         scopes = new HashSet<>();
         scopes.add("Service1");
@@ -132,6 +133,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreatePersonalAccessToken() {
+            when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             QueryResponse parsedPAT = authService.parseJwtWithSignature(pat);
             assertEquals(QueryResponse.Source.ZOWE_PAT, parsedPAT.getSource());
@@ -376,15 +378,15 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     }
 
-    private String createExpiredJwtToken(Key secretKey) {
-        return createJwtTokenWithExpiry(secretKey, System.currentTimeMillis() - 1000);
+    private String createExpiredJwtToken(PrivateKey privateKey) {
+        return createJwtTokenWithExpiry(privateKey, System.currentTimeMillis() - 1000);
     }
 
-    private String createJwtTokenWithExpiry(Key secretKey, long expireAt) {
+    private String createJwtTokenWithExpiry(PrivateKey privateKey, long expireAt) {
         return Jwts.builder()
             .setExpiration(new Date(expireAt))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(ALGORITHM, secretKey)
+            .signWith(privateKey, ALGORITHM)
             .compact();
     }
 
@@ -406,7 +408,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void givenNoInstancesAvailable_thenReturnFalse() {
 
-            when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+            when(eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
 
         }
@@ -433,8 +435,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
             InstanceInfo instanceInfo = mock(InstanceInfo.class);
             InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
-            when(discoveryClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
-            when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+            when(eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+            when(eurekaClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
             when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getInstanceId()).thenReturn("instanceId");
             when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo2));
@@ -496,8 +498,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenReturnCorrectOrigin() {
-            final Claims tokenClaims = new DefaultClaims();
-            tokenClaims.setIssuer("APIML_PAT");
+            final Map<String, String> map = new HashMap<>();
+            map.put(Claims.ISSUER, "APIML_PAT");
+            final Claims tokenClaims = new DefaultClaims(map);
 
             AuthSource.Origin originResult;
             try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
@@ -534,14 +537,13 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
     }
 
-
     @Nested
     @ExtendWith(SpringExtension.class)
-    @ContextConfiguration(classes = {
-        CacheConfig.class,
-        MockedAuthenticationServiceContext.class
-    })
+    @ContextConfiguration(classes = { CacheConfig.class, AuthenticationService.class, AuthConfigurationProperties.class })
+    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, GatewayConfigProperties.class })
+    @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class GivenCacheJWTTest {
+
         @Autowired
         private AuthenticationService authService;
 
@@ -599,7 +601,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void whenNoServiceAvailable_thenReturnFailure() {
-            when(discoveryClient.getApplication("gateway")).thenReturn(null);
+            when(eurekaClient.getApplication("gateway")).thenReturn(null);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
@@ -608,7 +610,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(null);
 
-            when(discoveryClient.getApplication("gateway")).thenReturn(application);
+            when(eurekaClient.getApplication("gateway")).thenReturn(application);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
@@ -619,7 +621,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             Application application = mock(Application.class);
             when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
-            when(discoveryClient.getApplication("gateway")).thenReturn(application);
+            when(eurekaClient.getApplication("gateway")).thenReturn(application);
 
             List<Object> elementsInCache = new ArrayList<>();
             elementsInCache.add("a");

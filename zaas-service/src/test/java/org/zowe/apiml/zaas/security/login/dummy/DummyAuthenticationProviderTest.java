@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.security.login.dummy;
 
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +35,6 @@ class DummyAuthenticationProviderTest {
 
     @BeforeAll
     static void setup() {
-        MonitoringHelper.initMocks();
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
         UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
         AuthenticationService authenticationService = mock(AuthenticationService.class);

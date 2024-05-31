@@ -89,9 +89,12 @@ dependencies {
 
     // TODO: remove awaitility from the production code, it should be just for testing purposes
     implementation libs.awaitility
+    // TODO: move to the libraries.gradle definition once finished
+    implementation "javax.xml.bind:jaxb-api:2.3.1"
+    implementation 'com.sun.xml.bind:jaxb-impl:2.3.9!!'
 
     implementation libs.jjwt.impl
-    runtimeOnly libs.jjwt.jackson
+    implementation libs.jjwt.jackson
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

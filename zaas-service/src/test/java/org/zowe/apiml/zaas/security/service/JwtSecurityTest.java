@@ -11,6 +11,7 @@
 package org.zowe.apiml.zaas.security.service;
 
 import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
 import com.nimbusds.jose.jwk.JWK;
@@ -21,9 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.zaas.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.zaas.security.login.Providers;
 
 import java.util.Optional;
 
@@ -40,7 +40,7 @@ class JwtSecurityTest {
     private Providers providers;
 
     @Mock
-    private ApimlDiscoveryClient discoveryClient;
+    private EurekaClient eurekaClient;
 
     @BeforeEach
     void setUp() {
@@ -54,7 +54,7 @@ class JwtSecurityTest {
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
         }
 
         @Test
@@ -86,7 +86,7 @@ class JwtSecurityTest {
     class WhenInitializedWithoutValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
         }
 
         @Test
@@ -124,7 +124,7 @@ class JwtSecurityTest {
 
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
         }
 
         @Test
@@ -134,7 +134,7 @@ class JwtSecurityTest {
                 .thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(true);
             underTest.loadAppropriateJwtKeyOrFail();
-            verify(discoveryClient, times(1)).registerEventListener(any());
+            verify(eurekaClient, times(1)).registerEventListener(any());
             assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
@@ -142,7 +142,7 @@ class JwtSecurityTest {
 
             assertTrue(underTest.getZosmfListener().isZosmfReady());
             verify(providers, times(2)).isZosmfAvailableAndOnline();
-            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            verify(eurekaClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
         }
 
@@ -154,7 +154,7 @@ class JwtSecurityTest {
             when(providers.zosmfSupportsJwt()).thenReturn(true);
 
             underTest.loadAppropriateJwtKeyOrFail();
-            verify(discoveryClient, times(1)).registerEventListener(any());
+            verify(eurekaClient, times(1)).registerEventListener(any());
             assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
@@ -162,7 +162,7 @@ class JwtSecurityTest {
             zosmfEventListener.onEvent(new StatusChangeEvent(null, null));
 
             assertTrue(underTest.getZosmfListener().isZosmfReady());
-            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            verify(eurekaClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
         }
 
@@ -174,7 +174,7 @@ class JwtSecurityTest {
                 .thenReturn(true);
             when(providers.zosmfSupportsJwt()).thenReturn(true);
             underTest.loadAppropriateJwtKeyOrFail();
-            verify(discoveryClient, times(1)).registerEventListener(any());
+            verify(eurekaClient, times(1)).registerEventListener(any());
             assertFalse(underTest.getZosmfListener().isZosmfReady());
 
             EurekaEventListener zosmfEventListener = underTest.getZosmfListener().getZosmfRegisteredListener();
@@ -183,7 +183,7 @@ class JwtSecurityTest {
 
             assertTrue(underTest.getZosmfListener().isZosmfReady());
             verify(providers, times(3)).isZosmfAvailableAndOnline();
-            verify(discoveryClient, times(1)).unregisterEventListener(any());
+            verify(eurekaClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
         }
     }
@@ -192,7 +192,7 @@ class JwtSecurityTest {
     class GetJwkPublicKey {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), discoveryClient);
+            underTest = new JwtSecurity(providers, keyAlias, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
 
             when(providers.isZosfmUsed()).thenReturn(false);
         }
