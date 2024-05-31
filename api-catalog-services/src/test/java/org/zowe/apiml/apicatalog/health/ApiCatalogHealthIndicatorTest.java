@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.apicatalog.health;
 
-import org.zowe.apiml.product.constants.CoreService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
 
@@ -31,10 +31,10 @@ class ApiCatalogHealthIndicatorTest {
 
     @Test
     void testStatusIsUpWhenGatewayIsAvailable() {
-        when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
+        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
             Collections.singletonList(
                 new DefaultServiceInstance(
-                    "host:" + CoreService.ZAAS.getServiceId() + ":10010",
+                    "host:" + CoreService.GATEWAY.getServiceId() + ":10010",
                     CoreService.ZAAS.getServiceId(), "host", 10010, true)
                 )
             );
@@ -46,10 +46,11 @@ class ApiCatalogHealthIndicatorTest {
 
     @Test
     void testStatusIsDownWhenGatewayIsNotAvailable() {
-        when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(Collections.emptyList());
+        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
 
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
         Assertions.assertEquals(Status.DOWN, builder.build().getStatus());
     }
+
 }
