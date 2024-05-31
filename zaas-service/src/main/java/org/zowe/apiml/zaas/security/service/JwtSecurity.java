@@ -81,15 +81,15 @@ public class JwtSecurity {
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     @Autowired
-    public JwtSecurity(Providers providers, EurekaClient EurekaClient) {
+    public JwtSecurity(Providers providers, EurekaClient eurekaClient) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
-        this.zosmfListener = new ZosmfListener(EurekaClient);
+        this.zosmfListener = new ZosmfListener(eurekaClient);
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, EurekaClient EurekaClient) {
-        this(providers, EurekaClient);
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, EurekaClient eurekaClient) {
+        this(providers, eurekaClient);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;

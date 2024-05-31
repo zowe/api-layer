@@ -11,8 +11,6 @@
 package org.zowe.apiml.zaas.security.service;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Deserializer;
-import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -20,7 +18,6 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Map;
 
 @Slf4j
 @UtilityClass
@@ -29,7 +26,6 @@ public class JwtUtils {
     private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("""
         {"typ":"JWT","alg":"none"}""".getBytes(StandardCharsets.UTF_8));
 
-    private static final Deserializer<Map<String, ?>> JACKSON_DESERIALIZER = new JacksonDeserializer<>();
     private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
     /**

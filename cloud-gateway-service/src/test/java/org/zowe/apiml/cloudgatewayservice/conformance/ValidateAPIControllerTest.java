@@ -70,13 +70,13 @@ public class ValidateAPIControllerTest {
 
     ResponseEntity<String> result;
 
-    private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.zaas.verifier.wrongServiceId";
-    private static final String NO_METADATA_KEY = "org.zowe.apiml.zaas.verifier.noMetadata";
-    private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.zaas.verifier.nonConformant";
+    private static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
+    private static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
+    private static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
-    private static final Message WRONG_SERVICE_ID_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved");
-    private static final Message NO_METADATA_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NO_METADATA_KEY, "ThisWillBeRemoved");
-    private static final Message NON_CONFORMANT_MESSAGE = new YamlMessageService("/gateway-log-messages.yml").createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved");
+    private static final Message WRONG_SERVICE_ID_MESSAGE = new YamlMessageService("/cloud-gateway-log-messages.yml").createMessage(WRONG_SERVICE_ID_KEY, "ThisWillBeRemoved");
+    private static final Message NO_METADATA_MESSAGE = new YamlMessageService("/cloud-gateway-log-messages.yml").createMessage(NO_METADATA_KEY, "ThisWillBeRemoved");
+    private static final Message NON_CONFORMANT_MESSAGE = new YamlMessageService("/cloud-gateway-log-messages.yml").createMessage(NON_CONFORMANT_KEY, "ThisWillBeRemoved");
 
     @AfterEach
     void cleanup() {
