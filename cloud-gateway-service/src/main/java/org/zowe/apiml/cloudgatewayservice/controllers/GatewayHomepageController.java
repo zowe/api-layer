@@ -32,7 +32,7 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
-    private static final String ZAAS_SERVICEID = "zaas";
+    private static final String ZAAS_SERVICEID = "zaas"; // TODO: update with CoreService.ZAAS.getServiceId() once merged
 
     private final DiscoveryClient discoveryClient;
 
