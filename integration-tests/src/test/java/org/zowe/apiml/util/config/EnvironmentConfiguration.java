@@ -22,6 +22,7 @@ import java.util.Map;
 public class EnvironmentConfiguration {
     private Credentials credentials;
     private GatewayServiceConfiguration gatewayServiceConfiguration;
+    private ZaasConfiguration zaasConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoverableClientConfiguration discoverableClientConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
