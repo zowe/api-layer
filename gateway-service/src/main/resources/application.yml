@@ -92,11 +92,16 @@ management:
     endpoint:
       gateway:
           enabled: false
+      health:
+          showDetails: always
     endpoints:
         web:
             base-path: /application
             exposure:
                 include: health,gateway
+    health:
+        defaults:
+            enabled: false
 ---
 spring.config.activate.on-profile: debug
 

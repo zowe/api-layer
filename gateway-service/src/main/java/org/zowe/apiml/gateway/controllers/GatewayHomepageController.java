@@ -9,6 +9,7 @@
  */
 
 package org.zowe.apiml.gateway.controllers;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -16,6 +17,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -32,7 +34,7 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
-    private static final String ZAAS_SERVICEID = "zaas"; // TODO: update with CoreService.ZAAS.getServiceId() once merged
+    private static final String ZAAS_SERVICEID = CoreService.ZAAS.getServiceId();
 
     private final DiscoveryClient discoveryClient;
 

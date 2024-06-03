@@ -27,16 +27,16 @@ import static org.springframework.boot.actuate.health.Status.UP;
  * Gateway health information (/application/health)
  */
 @Component
-public class HealthIndicator extends AbstractHealthIndicator {
+public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
     private String apiCatalogServiceId;
 
-    private final ApimlLogger apimlLog = ApimlLogger.of(HealthIndicator.class,
+    private final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class,
             YamlMessageServiceInstance.getInstance());
     boolean startedInformationPublished = false;
 
-    public HealthIndicator(DiscoveryClient discoveryClient,
-                           @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
+    public GatewayHealthIndicator(DiscoveryClient discoveryClient,
+                                  @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
         this.apiCatalogServiceId = apiCatalogServiceId;
     }

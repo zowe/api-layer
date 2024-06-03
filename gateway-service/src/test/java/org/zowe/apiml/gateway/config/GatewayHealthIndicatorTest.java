@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class HealthIndicatorTest {
+class GatewayHealthIndicatorTest {
 
     private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
         return new DefaultServiceInstance(
@@ -45,9 +45,9 @@ class HealthIndicatorTest {
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-            HealthIndicator HealthIndicator = new HealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
+            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
-            HealthIndicator.doHealthCheck(builder);
+            healthIndicator.doHealthCheck(builder);
             assertEquals(Status.UP, builder.build().getStatus());
         }
     }
@@ -61,9 +61,9 @@ class HealthIndicatorTest {
                 Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-            HealthIndicator HealthIndicator = new HealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
+            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
-            HealthIndicator.doHealthCheck(builder);
+            healthIndicator.doHealthCheck(builder);
             assertEquals(Status.DOWN, builder.build().getStatus());
         }
     }
@@ -80,9 +80,9 @@ class HealthIndicatorTest {
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-            HealthIndicator HealthIndicator = new HealthIndicator(discoveryClient, customCatalogServiceId);
+            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, customCatalogServiceId);
             Health.Builder builder = new Health.Builder();
-            HealthIndicator.doHealthCheck(builder);
+            healthIndicator.doHealthCheck(builder);
 
             String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
             assertThat(code, is("UP"));
@@ -100,11 +100,11 @@ class HealthIndicatorTest {
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-            HealthIndicator HealthIndicator = new HealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
+            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
-            HealthIndicator.doHealthCheck(builder);
+            healthIndicator.doHealthCheck(builder);
 
-            assertThat(HealthIndicator.startedInformationPublished, is(true));
+            assertThat(healthIndicator.startedInformationPublished, is(true));
         }
     }
 }
