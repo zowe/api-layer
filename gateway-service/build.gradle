@@ -75,7 +75,6 @@ dependencies {
     implementation libs.netty.reactor.http
 
     implementation libs.bcpkix
-    implementation libs.janino
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser

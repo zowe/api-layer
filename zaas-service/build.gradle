@@ -87,11 +87,7 @@ dependencies {
 
     implementation libs.eh.cache
 
-    // TODO: remove awaitility from the production code, it should be just for testing purposes
-    implementation libs.awaitility
-    // TODO: move to the libraries.gradle definition once finished
-    implementation "javax.xml.bind:jaxb-api:2.3.1"
-    implementation 'com.sun.xml.bind:jaxb-impl:2.3.9!!'
+    implementation libs.bundles.jaxb
 
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
@@ -105,11 +101,9 @@ dependencies {
     testImplementation libs.mockito.inline
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path
-    testImplementation libs.jakarta.inject
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
