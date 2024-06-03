@@ -120,8 +120,9 @@ public class AdditionalRegistrationTest {
 
             InstanceInfo instanceInfo = new EurekaFactory().createInstanceInfo(config);
 
-            assertThat(instanceInfo.getAppName()).isEqualTo("gateway");
+            assertThat(instanceInfo.getAppName()).isEqualTo("GATEWAY");
         }
+
     }
 
     @Nested

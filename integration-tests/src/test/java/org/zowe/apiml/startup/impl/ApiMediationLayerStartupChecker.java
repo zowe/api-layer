@@ -95,9 +95,9 @@ public class ApiMediationLayerStartupChecker {
             }
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
             boolean isTestApplicationUp = allComponents.contains("discoverableclient");
-            boolean isGatewayUp = allComponents.contains("gateway");
+            boolean isZaasUp = allComponents.contains("zaas");
             log.debug("Discoverable Client is {}", isTestApplicationUp);
-            log.debug("Gateway is {}", isGatewayUp);
+            log.debug("ZAAS is {}", isZaasUp);
 
             Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
@@ -116,7 +116,7 @@ public class ApiMediationLayerStartupChecker {
             }
 
             return areAllServicesUp &&
-                isTestApplicationUp && isGatewayUp;
+                isTestApplicationUp && isZaasUp;
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;

@@ -23,5 +23,5 @@ DNS.17 = mock-services-2
 DNS.18 = reverse-proxy
 DNS.19 = gateway-service
 DNS.20 = gateway-service-2
-DNS.21 = gateway-service
-DNS.22 = gateway-service-2
+DNS.21 = central-gateway-service
+DNS.22 = central-gateway-service-2
