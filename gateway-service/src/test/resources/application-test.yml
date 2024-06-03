@@ -7,7 +7,7 @@ eureka:
 apiml:
     service:
         id: gateway
-        port: 10023
+        port: 10010
         hostname: localhost
 server:
     port: ${apiml.service.port}
