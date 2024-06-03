@@ -23,8 +23,6 @@ import io.jsonwebtoken.security.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.awaitility.Durations;
-import org.awaitility.core.ConditionTimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,10 +37,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-import static org.awaitility.Awaitility.await;
 
 /**
  * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by ZAAS.
@@ -259,22 +254,21 @@ public class JwtSecurity {
      */
     private void validateInitializationWhenZosmfIsAvailable() {
         zosmfListener.register();
-        new Thread(() -> {
-            try {
-                events.add("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
-                log.debug("Waiting for z/OSMF instance {} to be registered and known by the Discovery Service.", zosmfServiceId);
-                await()
-                    .atMost(Duration.of(timeout, ChronoUnit.MINUTES))
-                    .with()
-                    .pollInterval(Durations.ONE_MINUTE)
-                    .until(zosmfListener::isZosmfReady);
-            } catch (ConditionTimeoutException e) {
-                synchronized (events) {
-                    apimlLog.log("org.zowe.apiml.zaas.jwtProducerConfigError", StringUtils.join(events, "\n"));
+        events.add("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
+        log.debug("Waiting for z/OSMF instance {} to be registered and known by the Discovery Service.", zosmfServiceId);
+
+        new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (!zosmfListener.isZosmfReady()) {
+                        synchronized (events) {
+                            apimlLog.log("org.zowe.apiml.zaas.jwtProducerConfigError", StringUtils.join(events, "\n"));
+                        }
+                        apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
+                    }
                 }
-                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
-            }
-        }).start();
+            }, Duration.ofMinutes(1).toMillis()
+        );
     }
 
     /**
