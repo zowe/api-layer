@@ -44,7 +44,7 @@ class GatewayProxyTest {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
-        conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+        conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
     }
 
     @Test

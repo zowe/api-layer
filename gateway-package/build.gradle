@@ -4,15 +4,15 @@ ext {
 }
 
 configurations {
-    cloudGatewayServiceJar
+    gatewayServiceJar
     zip
 }
 
 dependencies {
-    cloudGatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
+    gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
 }
 
-task packageCloudGateway(type: Zip) {
+task packageGateway(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
@@ -23,17 +23,17 @@ task packageCloudGateway(type: Zip) {
     }
 
     into('bin/') {
-        from configurations.cloudGatewayServiceJar
+        from configurations.gatewayServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
 }
 
-jar.dependsOn(packageCloudGateway)
-build.dependsOn(packageCloudGateway)
+jar.dependsOn(packageGateway)
+build.dependsOn(packageGateway)
 
 artifacts {
-    zip packageCloudGateway
+    zip packageGateway
 }
 
 publishing {

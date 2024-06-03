@@ -179,7 +179,7 @@ public class ConnectionsConfig {
      * There is no simple way how to override this specific bean, but bean processing could handle that.
      *
      * @param httpClient             default http client
-     * @param headersFiltersProvider header filter for spring cloud gateway router
+     * @param headersFiltersProvider header filter for spring gateway router
      * @param properties             client HTTP properties
      * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
      */

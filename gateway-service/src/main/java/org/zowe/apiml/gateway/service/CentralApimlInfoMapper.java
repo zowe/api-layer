@@ -30,7 +30,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 @Component
 public class CentralApimlInfoMapper {
 
-    @Value("${apiml.cloudGateway.registry.metadata-key-allow-list:}")
+    @Value("${apiml.gateway.registry.metadata-key-allow-list:}")
     Set<String> metadataKeysAllowList = new HashSet<>();
 
     public ApimlInfo buildApimlServiceInfo(@NonNull String apimlId, List<ServiceInfo> gatewayServices) {

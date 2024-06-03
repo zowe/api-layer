@@ -50,7 +50,7 @@ public class GatewayIndexService {
 
     public GatewayIndexService(
         @Qualifier("webClientClientCert") WebClient webClient,
-        @Value("${apiml.cloudGateway.cachePeriodSec:120}") int cachePeriodSec
+        @Value("${apiml.gateway.cachePeriodSec:120}") int cachePeriodSec
     ) {
         this.webClient = webClient;
 

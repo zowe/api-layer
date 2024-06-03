@@ -349,7 +349,7 @@ task runRegistrationTests(type: Test) {
 
 task runGatewayProxyTest(type: Test) {
     group "integration tests"
-    description "Run tests verifying cloud gateway can route to correct gateway"
+    description "Run tests verifying central gateway can route to correct gateway"
 
     outputs.cacheIf { false }
 
@@ -362,7 +362,7 @@ task runGatewayProxyTest(type: Test) {
 }
 task runGatewayServiceRoutingTest(type: Test) {
     group "integration tests"
-    description "Run tests verifying cloud gateway can locate service and translate auth scheme"
+    description "Run tests verifying central gateway can locate service and translate auth scheme"
 
     outputs.cacheIf { false }
 
@@ -376,7 +376,7 @@ task runGatewayServiceRoutingTest(type: Test) {
 
 task runGatewayCentralRegistryTest(type: Test) {
     group "integration tests"
-    description "Run tests verifying cloud gateway central registry endpoint"
+    description "Run tests verifying central gateway central registry endpoint"
 
     outputs.cacheIf { false }
 

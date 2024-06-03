@@ -56,7 +56,7 @@ import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
-    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(

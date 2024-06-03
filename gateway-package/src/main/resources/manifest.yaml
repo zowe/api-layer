@@ -4,7 +4,7 @@ name: gateway
 id: org.zowe.apiml.gateway-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
-title: Cloud Gateway
+title: Gateway
 # Human readable component description
 description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
 license: EPL-2.0

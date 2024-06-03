@@ -42,7 +42,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     private static final String CLIENT_CN = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientCN();
 
     private static URI URL;
-    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
 
 
     @BeforeAll

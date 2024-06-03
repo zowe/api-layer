@@ -33,6 +33,9 @@ apiml:
         serviceId: apicatalog
     gateway:
         timeout: 60
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
     service:
         apimlId: apiml1
         corsEnabled: true
@@ -46,10 +49,6 @@ apiml:
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
-    cloudGateway:
-        registry:
-            enabled: false
-            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
 
 server:
     http2:
@@ -73,7 +72,7 @@ server:
                     enabled: false
                     lowerCaseServiceId: true
     application:
-        name: cloudGateway
+        name: gateway
     main:
         allow-circular-references: true
 

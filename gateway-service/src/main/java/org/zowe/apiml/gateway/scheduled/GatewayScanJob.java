@@ -39,7 +39,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
  * Behaviour of the job can  be configured by the following settings:
  * <pre>
  *   apiml:
- *     cloudGateway:
+ *     gateway:
  *       cachePeriodSec: - default value 120 seconds
  *       maxSimultaneousRequests:  - default value 20
  *       clientKeystore: - default value null
@@ -61,10 +61,10 @@ public class GatewayScanJob {
     private final InstanceInfoService instanceInfoService;
     @Value("${apiml.service.apimlId:#{null}}")
     private String currentApimlId;
-    @Value("${apiml.cloudGateway.maxSimultaneousRequests:20}")
+    @Value("${apiml.gateway.maxSimultaneousRequests:20}")
     private int maxSimultaneousRequests;
 
-    @Scheduled(initialDelay = 5000, fixedDelayString = "${apiml.cloudGateway.refresh-interval-ms:30000}")
+    @Scheduled(initialDelay = 5000, fixedDelayString = "${apiml.gateway.refresh-interval-ms:30000}")
     public void startScanExternalGatewayJob() {
 
         log.debug("Scan gateways job start");

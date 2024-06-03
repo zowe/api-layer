@@ -35,7 +35,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     private static final String NON_EXISTING_SERVICE_ENDPOINT = "/noservice/api/v1/something";
     private static final String WRONG_VERSION_ENPOINT = "/discoverableclient/api/v10/greeting";
 
-    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
 
     @BeforeAll
     static void setup() {

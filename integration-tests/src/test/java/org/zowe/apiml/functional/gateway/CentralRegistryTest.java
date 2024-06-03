@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.functional.cloudgateway;
+package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
@@ -50,7 +50,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 class CentralRegistryTest implements TestWithStartedInstances {
     static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.GATEWAY.getServiceId() + "/api/v1/registry";
 
-    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
     @BeforeAll
@@ -95,7 +95,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     }
 
     @Test
-    void shouldFindTwoRegisteredCloudGatewaysInTheEurekaApps() {
+    void shouldFindTwoRegisteredGatewaysInTheEurekaApps() {
         TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>> typeRef = new TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>>() {
         };
 
@@ -113,30 +113,30 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
     @Test
     void shouldRejectUnauthorizedAccessToCentralRegistry() {
-        URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
+        URI gatewayEndpoint = buildRegistryURI(null, null, null);
         given()
-            .get(cloudGatewayEndpoint)
+            .get(gatewayEndpoint)
             .then()
             .statusCode(HttpStatus.UNAUTHORIZED.value());
     }
 
     @Test
     void shouldRejectUntrustedX509CertificateToAccessCentralRegistry() {
-        URI cloudGatewayEndpoint = buildRegistryURI(null, null, null);
+        URI gatewayEndpoint = buildRegistryURI(null, null, null);
         given()
             .config(SslContext.selfSignedUntrusted)
-            .get(cloudGatewayEndpoint)
+            .get(gatewayEndpoint)
             .then()
             .statusCode(HttpStatus.UNAUTHORIZED.value());
     }
 
     private ValidatableResponse listCentralRegistry(String apimlId, String apiId, String serviceId) {
 
-        URI cloudGatewayEndpoint = buildRegistryURI(apimlId, apiId, serviceId);
+        URI gatewayEndpoint = buildRegistryURI(apimlId, apiId, serviceId);
 
         return with().given()
             .config(SslContext.clientCertUser)
-            .get(cloudGatewayEndpoint)
+            .get(gatewayEndpoint)
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON);

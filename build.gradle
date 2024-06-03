@@ -180,7 +180,7 @@ task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]
 }
 
 task runGatewayProxyTest(dependsOn: [":integration-tests:runGatewayProxyTest"]) {
-    description "Run tests verifying cloud gateway can route to correct gateway"
+    description "Run tests verifying central gateway can route to correct gateway"
     group "Integration tests"
 }
 

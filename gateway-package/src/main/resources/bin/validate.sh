@@ -10,5 +10,5 @@
 # Copyright IBM Corporation 2021
 ################################################################################
 
-print_formatted_debug "ZWELS" "gateway-service,bin/validate.sh:${LINENO}" "- Checking Cloud Gateway Service port ${ZWE_configs_port}"
+print_formatted_debug "ZWELS" "gateway-service,bin/validate.sh:${LINENO}" "- Checking Gateway Service port ${ZWE_configs_port}"
 validate_this "is_port_available \"${ZWE_configs_port}\" 2>&1" "gateway-service,bin/validate.sh:${LINENO}"

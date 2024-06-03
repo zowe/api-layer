@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * Register the route to all components that need the information for the request to pass properly through the
- * Cloud Gateway. This class is heavily depended upon from the Stubs in this package.
+ * Gateway. This class is heavily depended upon from the Stubs in this package.
  */
 public class ApplicationRegistry {
 

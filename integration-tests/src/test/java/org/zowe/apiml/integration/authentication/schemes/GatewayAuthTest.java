@@ -22,11 +22,7 @@ import org.springframework.util.CollectionUtils;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.ZaasTest;
-import org.zowe.apiml.util.config.GatewayConfiguration;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.ItSslConfigFactory;
-import org.zowe.apiml.util.config.SafIdtConfiguration;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,12 +36,11 @@ import static io.restassured.RestAssured.when;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.*;
-import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 
 @ZaasTest
 public class GatewayAuthTest implements TestWithStartedInstances {
 
-    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
     private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     static Stream<Arguments> validToBeTransformed() {
@@ -106,7 +101,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
     class ValidAuthScheme {
 
         @ParameterizedTest(name = "givenValidRequest_thenCredentialsAreTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#validToBeTransformed")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenCredentialsAreTransformed(String title, String basePath, Consumer<Response> assertions) {
             String gatewayToken = SecurityUtils.gatewayToken(
                 ConfigReader.environmentConfiguration().getCredentials().getUser(),
@@ -122,7 +117,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#validToBeTransformed")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenPatIsTransformed(String title, String basePath, Consumer<Response> assertions) {
             String serviceId = basePath.substring(1, basePath.indexOf('/', 1));
             String pat = personalAccessToken(Collections.singleton(serviceId));
@@ -136,7 +131,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#validToBeTransformed")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenClientCertIsTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .config(SslContext.clientCertValid)
@@ -147,7 +142,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenValidRequest_thenOidcIsTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#validToBeTransformed")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenOidcIsTransformed(String title, String basePath, Consumer<Response> assertions) {
             String oAuthToken = validOktaAccessToken(true);
 
@@ -165,7 +160,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
     class InvalidAuthScheme {
 
         @ParameterizedTest(name = "givenInvalidPatRequest_thenPatIsNotTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#noAuthTransformation")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
         void givenInvalidPatRequest_thenPatIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
             String pat = personalAccessToken(Collections.singleton("anotherService"));
 
@@ -178,7 +173,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenInvalidRequest_thenClientCertIsNotTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#noAuthTransformation")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
         void givenInvalidRequest_thenClientCertIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .config(SslContext.selfSignedUntrusted)
@@ -189,7 +184,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenInvalidRequest_thenOidcIsNotTransformed {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#noAuthTransformation")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
         void givenInvalidRequest_thenOidcIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
             String oAuthToken = generateJwtWithRandomSignature("https://localhost:10010");
 
@@ -202,7 +197,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#noAuthTransformation")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
         void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = when()
                 .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
@@ -211,7 +206,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         }
 
         @ParameterizedTest(name = "givenInvalidCredentials_thenNoCredentialsAreProvided {0} [{index}]")
-        @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#noAuthTransformation")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
         void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")

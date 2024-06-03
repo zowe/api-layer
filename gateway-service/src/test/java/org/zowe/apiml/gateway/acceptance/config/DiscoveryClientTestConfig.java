@@ -37,7 +37,7 @@ import reactor.core.publisher.Flux;
  * This configuration provides the bean for the ApplicationRegistry and overrides bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
  * <p>
  * Configuration also add listeners to call other beans waiting for fetch new registry. It speeds up distribution of
- * changes in whole cloud gateway.
+ * changes in whole central gateway.
  */
 @TestConfiguration
 @RequiredArgsConstructor
