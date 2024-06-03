@@ -114,7 +114,7 @@ dependencies {
 bootJar {
     archiveFileName = "zaas-service.jar"
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
     archiveClassifier = "application"
 }
