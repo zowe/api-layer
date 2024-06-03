@@ -82,7 +82,7 @@ class WebSecurityTest {
         @Test
         void whenAccessTokenIsAvailable_thenAddItAsCookie() {
             var token = "thisIsToken";
-            var location = "localhost:10023";
+            var location = "localhost:10010";
             var webFilterExchange = mock(WebFilterExchange.class);
             var exchange = mock(ServerWebExchange.class);
             when(webFilterExchange.getExchange()).thenReturn(exchange);
