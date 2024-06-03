@@ -134,7 +134,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CloudGatewayProxy:
+    GatewayProxy:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
@@ -147,7 +147,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://cloud-gateway-service:10023/gateway/certificates
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
@@ -157,7 +157,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/zaas-service:latest-v2
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            cloud-gateway-service:
+            central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
                 env:
                     APIML_GATEWAY_TIMEOUT: 2
@@ -176,25 +176,25 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runCloudGatewayProxyTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runGatewayProxyTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CloudGatewayProxy-${{ env.JOB_ID }}
+                    name: GatewayProxy-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
 
             -   uses: ./.github/actions/teardown
 
-    CloudGatewayServiceRouting:
+    GatewayServiceRouting:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
@@ -207,7 +207,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:latest-v2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:latest-v2
-            cloud-gateway-service:
+            central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
@@ -222,25 +222,25 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runCloudGatewayServiceRoutingTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runGatewayServiceRoutingTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
+                    name: GatewayServiceRouting-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
 
             -   uses: ./.github/actions/teardown
 
-    CloudGatewayCentralRegistry:
+    GatewayCentralRegistry:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
@@ -257,12 +257,12 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:latest-v2
-            cloud-gateway-service:
+            central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: cloud-gateway-service
-                    APIML_CLOUDGATEWAY_REGISTRY_ENABLED: true
+                    APIML_SERVICE_HOSTNAME: gateway-service
+                    APIML_GATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
 
             # Second group of services represents domain apiml instance which registers it's gateway in central's discovery service
@@ -285,12 +285,12 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_SERVICEURL: /
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:latest-v2
-            cloud-gateway-service-2:
+            central-gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
-                    APIML_SERVICE_HOSTNAME: cloud-gateway-service-2
-                    APIML_CLOUDGATEWAY_REGISTRY_ENABLED: false
+                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_GATEWAY_REGISTRY_ENABLED: false
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
@@ -306,18 +306,18 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runCloudGatewayCentralRegistryTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CloudGatewayCentralRegistry-${{ env.JOB_ID }}
+                    name: GatewayCentralRegistry-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -387,7 +387,7 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
                     JGROUPS_BIND_PORT: "7099"
-            cloud-gateway-service:
+            central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
@@ -403,7 +403,7 @@ jobs:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10023/gateway/certificates
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
                     APIML_SECURITY_OIDC_ENABLED: true
@@ -433,7 +433,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6300 --destfile ./results/zaas-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/zaas-gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1448,7 +1448,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            cloud-gateway-service:
+            central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
@@ -1492,7 +1492,7 @@ jobs:
                     npm run cy:e2e:ci
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1559,7 +1559,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,CITestsInternalPort,CloudGatewayProxy,CloudGatewayServiceRouting ]
+        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,CITestsInternalPort,GatewayProxy,GatewayServiceRouting ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1589,20 +1589,20 @@ jobs:
                     path: containercitestsinternalport
             -   uses: actions/download-artifact@v4
                 with:
-                    name: CloudGatewayProxy-${{ env.JOB_ID }}
-                    path: cloudgatewayproxy
+                    name: GatewayProxy-${{ env.JOB_ID }}
+                    path: GatewayProxy
             -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: citestswebsocketchaoticha
             -   uses: actions/download-artifact@v4
                 with:
-                    name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
-                    path: cloudgatewayservicerouting
+                    name: GatewayServiceRouting-${{ env.JOB_ID }}
+                    path: GatewayServiceRouting
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestsinternalport/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,containercitestszaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

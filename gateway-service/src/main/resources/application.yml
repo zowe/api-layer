@@ -1,0 +1,128 @@
+eureka:
+    instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+        #ports are computed in code
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        metadata-map:
+            apiml:
+                service:
+                    apimlId:  ${apiml.service.apimlId}
+                    supportClientCertForwarding: true
+    client:
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        healthcheck:
+            enabled: true
+
+spring:
+    application:
+        name: gateway
+    security:
+        oauth2:
+            client:
+                registration:
+                    okta:
+                        redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
+
+apiml:
+    catalog:
+        serviceId: apicatalog
+    gateway:
+        timeout: 60
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    service:
+        apimlId: apiml1
+        corsEnabled: true
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 10010
+        scheme: https  # "https" or "http"
+    security:
+        ssl:
+            nonStrictVerifySslCertificatesOfServices: true
+
+server:
+    http2:
+        enabled: false
+    port: ${apiml.service.port}
+    ssl:
+        clientAuth: want
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: false
+                    lowerCaseServiceId: true
+    application:
+        name: gateway
+    main:
+        allow-circular-references: true
+
+logbackServiceName: ZWEACG1
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: WARN
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support: WARN
+        reactor.netty.http.client: INFO
+        reactor.netty.http.client.HttpClientConnect: OFF
+
+management:
+    endpoint:
+      gateway:
+          enabled: false
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,gateway
+---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        org.zowe.apiml: DEBUG
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.web.reactive: DEBUG
+        reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
+        com.netflix: DEBUG
+
+---
+spring.config.activate.on-profile: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http

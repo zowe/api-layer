@@ -33,7 +33,7 @@ public class FullApiMediationLayer {
     private RunningService cachingService;
     private RunningService mockZosmfService;
     private RunningService discoverableClientService;
-    private RunningService cloudGatewayService;
+    private RunningService zaasService;
 
     private ProcessBuilder nodeJsBuilder;
     private Process nodeJsSampleApp;
@@ -54,7 +54,7 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockServices();
         prepareDiscovery();
-        prepareCloudGateway();
+        prepareZaas();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
         }
@@ -91,8 +91,8 @@ public class FullApiMediationLayer {
         cachingService = new RunningService("cachingservice", "caching-service/build/libs", null, null);
     }
 
-    public void prepareCloudGateway() {
-        cloudGatewayService = new RunningService("cloud-gateway", "cloud-gateway-service/build/libs", null, null);
+    public void prepareZaas() {
+        zaasService = new RunningService("zaas", "zaas-service/build/libs", null, null);
     }
 
     private void prepareMockServices() {
@@ -134,9 +134,9 @@ public class FullApiMediationLayer {
             Map<String, String> cachingEnv = new HashMap<>(env);
             cachingEnv.put("ZWE_configs_port", "10016");
             cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
-            Map<String, String> cloudGWEnv = new HashMap<>(env);
-            cloudGWEnv.put("ZWE_configs_port", "10023");
-            cloudGatewayService.startWithScript("cloud-gateway-package/src/main/resources/bin", cloudGWEnv);
+            Map<String, String> zaasEnv = new HashMap<>(env);
+            zaasEnv.put("ZWE_configs_port", "10023");
+            zaasService.startWithScript("gateway-package/src/main/resources/bin", zaasEnv);
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
@@ -158,7 +158,7 @@ public class FullApiMediationLayer {
             discoverableClientService.stop();
 
             cachingService.stop();
-            cloudGatewayService.stop();
+            zaasService.stop();
             if (!attlsEnabled && !runsOffPlatform()) {
                 nodeJsSampleApp.destroy();
             }

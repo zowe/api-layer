@@ -1,0 +1,130 @@
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
+    }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
+}
+
+normalization {
+    runtimeClasspath {
+        ignore("**/*git.properties*")
+        ignore("**/*build-info.properties*")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def javaAgentPort = 6310
+def debugPort = 5130
+def componentName = "gateway-service"
+
+setJib(componentName, javaAgentPort, debugPort)
+jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayServiceApplication'
+
+ext['netty.version'] = libs.versions.netty.get()
+ext['reactor-bom.version'] = libs.versions.reactorBom.get()
+springBoot {
+    // This statement tells the Gradle Spring Boot plugin to generate a file
+    // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
+    // via /info endpoint
+    buildInfo {
+        properties {
+            // Generate extra build info:
+            additional = [
+                by             : System.properties['user.name'],
+                operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
+                number         : System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine        : InetAddress.localHost.hostName
+            ]
+        }
+    }
+}
+
+gitProperties {
+    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
+}
+
+configurations.all {
+    exclude group: "org.springframework", module: "spring-webmvc"
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-reactor-netty'
+}
+
+dependencies {
+    api project(':apiml-utility')
+    api project(':apiml-tomcat-common')
+    api project(':apiml-security-common')
+
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.cloud.circuit.breaker
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.oauth2.client
+    implementation libs.spring.boot.starter.thymeleaf
+    implementation libs.spring.doc
+    implementation libs.netty.reactor.http
+
+    implementation libs.bcpkix
+    implementation libs.janino
+
+    implementation libs.swagger2.parser
+    implementation libs.swagger3.parser
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.mock.mvc
+    testImplementation libs.commons.io
+    testImplementation libs.reactor.test
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.web.test.client
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}
+
+bootJar {
+    archiveFileName = "gateway-service.jar"
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
+    }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
+    archiveClassifier = ""
+}
+
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+    systemProperties = System.properties
+}
+
+publishing {
+    publications {
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml'
+            artifactId = 'gateway-fat-jar'
+
+            artifact bootJar
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = libs.versions.gradle.get()
+}

@@ -144,7 +144,7 @@ task updateCatalogVersion {
 }
 
 task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
-                           ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':cloud-gateway-service:build']) {
+                           ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':gateway-service:build']) {
     description "Build core components"
     group "build"
 }
@@ -179,13 +179,13 @@ task runRegistrationTests(dependsOn: [":integration-tests:runRegistrationTests"]
     group "Integration tests"
 }
 
-task runCloudGatewayProxyTest(dependsOn: [":integration-tests:runCloudGatewayProxyTest"]) {
-    description "Run tests verifying cloud gateway can route to correct gateway"
+task runGatewayProxyTest(dependsOn: [":integration-tests:runGatewayProxyTest"]) {
+    description "Run tests verifying central gateway can route to correct gateway"
     group "Integration tests"
 }
 
-task runCloudGatewayServiceRoutingTest(dependsOn: [":integration-tests:runCloudGatewayServiceRoutingTest"]) {
-    description "Run tests verifying cloud gateway can locate service and translate auth scheme"
+task runGatewayServiceRoutingTest(dependsOn: [":integration-tests:runGatewayServiceRoutingTest"]) {
+    description "Run tests verifying gateway can locate service and translate auth scheme"
     group "Integration tests"
 }
 

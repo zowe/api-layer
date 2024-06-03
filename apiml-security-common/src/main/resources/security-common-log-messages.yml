@@ -113,7 +113,7 @@ messages:
       number: ZWEAT503
       type: ERROR
       text: "An error occurred during retrieval of trusted certificates from the central Gateway. Error message: %s"
-      reason: "The communication with the cloud gateway got interrupted or an error occurred during processing the response."
+      reason: "The communication with the gateway got interrupted or an error occurred during processing the response."
       action: "Check the provided error message. Contact the support."
 
     - key: org.zowe.apiml.security.common.verify.errorParsingCertificates

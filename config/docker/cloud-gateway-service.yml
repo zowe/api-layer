@@ -1,6 +1,6 @@
 apiml:
     service:
-        hostname: cloud-gateway-service
+        hostname: gateway-service
 eureka:
     client:
         serviceUrl:

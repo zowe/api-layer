@@ -9,7 +9,7 @@ on:
                 default: false
                 required: false
             service:
-                description: 'Enter a service name for which to create an image. The name must match a directory in /containers. E.g. cloud-gateway-service or discovery-service. If skipped, images will be created for all services.'
+                description: 'Enter a service name for which to create an image. The name must match a directory in /containers. E.g. gateway-service or discovery-service. If skipped, images will be created for all services.'
                 type: string
                 default: 'all'
                 required: false
@@ -45,7 +45,7 @@ jobs:
     create-image-all-services-amd64:
         strategy:
             matrix:
-                service: [ discovery-service, api-catalog-services, caching-service, cloud-gateway-service, zaas-service ]
+                service: [ discovery-service, api-catalog-services, caching-service, gateway-service, zaas-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -91,7 +91,7 @@ jobs:
         strategy:
             max-parallel: 1
             matrix:
-                service: [ discovery-service, api-catalog-services, caching-service, cloud-gateway-service, zaas-service ]
+                service: [ discovery-service, api-catalog-services, caching-service, gateway-service, zaas-service ]
                 os: [ ubuntu, ubi ]
                 include:
                     -   os: ubuntu
@@ -147,7 +147,7 @@ jobs:
             - create-image-all-services-s390x
         strategy:
             matrix:
-                service: [ discovery-service, api-catalog-services, caching-service, cloud-gateway-service, zaas-service ]
+                service: [ discovery-service, api-catalog-services, caching-service, gateway-service, zaas-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}

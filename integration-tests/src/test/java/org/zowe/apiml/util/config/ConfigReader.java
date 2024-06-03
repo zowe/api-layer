@@ -50,6 +50,7 @@ public class ConfigReader {
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
+                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
                         DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
 
@@ -74,12 +75,13 @@ public class ConfigReader {
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
+                            zaasConfiguration,
                             discoveryServiceConfiguration,
                             discoverableClientConfiguration,
                             new ApiCatalogServiceConfiguration(),
                             new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
-                            new CloudGatewayConfiguration(),
+                            new GatewayConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
@@ -100,6 +102,11 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setInternalPorts(System.getProperty("gateway.internalPorts", String.valueOf(configuration.getGatewayServiceConfiguration().getInternalPorts())));
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
+
+                    configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
+                    configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
+                    configuration.getZaasConfiguration().setPort(Integer.parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
+
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
                     configuration.getDiscoveryServiceConfiguration().setPassword(System.getProperty("discovery.password", configuration.getDiscoveryServiceConfiguration().getPassword()));
@@ -125,9 +132,9 @@ public class ConfigReader {
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
 
-                    configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("cloud-gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
-                    configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
-                    configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
+                    configuration.getGatewayConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayConfiguration().getScheme()));
+                    configuration.getGatewayConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayConfiguration().getHost()));
+                    configuration.getGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayConfiguration().getPort()))));
 
                     configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
                     configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));

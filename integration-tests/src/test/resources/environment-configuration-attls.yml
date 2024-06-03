@@ -11,6 +11,10 @@ gatewayServiceConfiguration:
     externalPort: 10030
     instances: 1
     servicesEndpoint: gateway/api/v1/services
+zaasConfiguration:
+    scheme: https
+    host: zaas-service
+    port: 10023
 discoveryServiceConfiguration:
     scheme: http
     user: user
@@ -34,10 +38,6 @@ apiCatalogServiceConfiguration:
     instances: 1
 cachingServiceConfiguration:
     url:
-cloudGatewayConfiguration:
-    scheme: https
-    host: cloud-gateway-service
-    port: 10023
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

@@ -18,7 +18,7 @@ import lombok.Getter;
 @Getter
 public enum CoreService {
 
-    GATEWAY("cloud-gateway"),
+    GATEWAY("gateway"),
     ZAAS("zaas"),
     DISCOVERY("discovery"),
     API_CATALOG("apicatalog"),
