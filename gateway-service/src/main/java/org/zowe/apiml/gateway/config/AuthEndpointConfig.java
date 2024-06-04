@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collections;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.*;
+import static org.springframework.web.reactive.function.server.RequestPredicates.path;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.zowe.apiml.gateway.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 
@@ -41,24 +41,25 @@ public class AuthEndpointConfig {
 
     private final WebClient webClient;
     private final WebClient webClientClientCert;
-    private final ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory;
 
     public AuthEndpointConfig(
         WebClient webClient,
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
         ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory
     ) {
-        this.webClient = webClient;
-        this.webClientClientCert = webClientClientCert;
-        this.serviceInstanceFactory = serviceInstanceFactory;
+        this.webClient = createLoadBalanced(webClient, serviceInstanceFactory);
+        this.webClientClientCert = createLoadBalanced(webClientClientCert, serviceInstanceFactory);
+    }
+
+    private WebClient createLoadBalanced(WebClient webClient, ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
+        return webClient.mutate()
+            .filter(new ReactorLoadBalancerExchangeFilterFunction(serviceInstanceFactory, Collections.emptyList()))
+            .build();
     }
 
     private WebClient.RequestBodySpec getWebclient(ServerRequest serverRequest, String path) {
         var sslInfo = serverRequest.exchange().getRequest().getSslInfo();
         var webClient = sslInfo == null ? this.webClient : this.webClientClientCert;
-        webClient = webClient.mutate()
-            .filter(new ReactorLoadBalancerExchangeFilterFunction(serviceInstanceFactory, Collections.emptyList()))
-            .build();
 
         var request = webClient
             .method(serverRequest.method())
@@ -104,21 +105,21 @@ public class AuthEndpointConfig {
 
     @Bean
     public RouterFunction<ServerResponse> routes() {
-        return route(POST("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
-            .andRoute(POST("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
-            .andRoute(GET("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
-            .andRoute(POST("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
-            .andRoute(DELETE("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
-            .andRoute(POST("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
-            .andRoute(POST("/gateway/api/v1/auth/access-token/generate"), resendTo("/api/v1/auth/access-token/generate"))
-            .andRoute(DELETE("/gateway/auth/access-token/revoke/tokens/user"), resendTo("/auth/access-token/revoke/tokens/user"))
-            .andRoute(DELETE("/gateway/auth/access-token/revoke/tokens"), resendTo("/auth/access-token/revoke/tokens"))
-            .andRoute(DELETE("/gateway/auth/access-token/revoke/tokens/scope"), resendTo("/auth/access-token/revoke/tokens/scope"))
-            .andRoute(DELETE("/gateway/auth/access-token/evict"), resendTo("/auth/access-token/evict"))
-            .andRoute(GET("/gateway/api/v1//keys/public/all"), resendTo("/api/v1//keys/public/all"))
-            .andRoute(GET("/gateway/api/v1/keys/public/current"), resendTo("/api/v1/keys/public/current"))
-            .andRoute(POST("/gateway/api/v1/oidc-token/validate"), resendTo("/api/v1/oidc-token/validate"))
-            .andRoute(GET("/gateway/api/v1/oidc/webfinger"), resendTo("/api/v1/oidc/webfinger"));
+        return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
+            .andRoute(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
+            .andRoute(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
+            .andRoute(path("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/generate"), resendTo("/api/v1/auth/access-token/generate"))
+            .andRoute(path("/gateway/auth/access-token/revoke/tokens/user"), resendTo("/auth/access-token/revoke/tokens/user"))
+            .andRoute(path("/gateway/auth/access-token/revoke/tokens"), resendTo("/auth/access-token/revoke/tokens"))
+            .andRoute(path("/gateway/auth/access-token/revoke/tokens/scope"), resendTo("/auth/access-token/revoke/tokens/scope"))
+            .andRoute(path("/gateway/auth/access-token/evict"), resendTo("/auth/access-token/evict"))
+            .andRoute(path("/gateway/api/v1//keys/public/all"), resendTo("/api/v1//keys/public/all"))
+            .andRoute(path("/gateway/api/v1/keys/public/current"), resendTo("/api/v1/keys/public/current"))
+            .andRoute(path("/gateway/api/v1/oidc-token/validate"), resendTo("/api/v1/oidc-token/validate"))
+            .andRoute(path("/gateway/api/v1/oidc/webfinger"), resendTo("/api/v1/oidc/webfinger"));
     }
 
 }
