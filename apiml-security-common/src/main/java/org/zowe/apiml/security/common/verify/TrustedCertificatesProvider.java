@@ -57,7 +57,7 @@ public class TrustedCertificatesProvider {
      * @param certificatesEndpoint Given full URL to the remote proxy gateway certificates endpoint
      * @return List of certificates or empty list
      */
-    @Cacheable(value = "trustedCertificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
+    @Cacheable(value = "trustedCertificates", unless = "#result.isEmpty()")
     public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
         List<Certificate> trustedCerts = new ArrayList<>();
         String pem = callCertificatesEndpoint(certificatesEndpoint);
