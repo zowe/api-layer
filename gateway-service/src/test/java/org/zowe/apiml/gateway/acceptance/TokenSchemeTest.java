@@ -257,7 +257,7 @@ public abstract class TokenSchemeTest {
         @Test
         void givenInvalidCredentials_whenCallingAService_thenDontPropagateCredentials() {
             given()
-                .header(HttpHeaders.AUTHORIZATION, "Baerer nonSense")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer nonSense")
                 .when()
                 .get(getServiceUrl())
                 .then()
