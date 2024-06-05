@@ -170,7 +170,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     protected abstract R getResponseFor401();
 
     private Mono<List<ServiceInstance>> getZaasInstances() {
-        return instanceInfoService.getServiceInstance("gateway");
+        return instanceInfoService.getServiceInstance("zaas");
     }
 
     private Mono<R> requestWithHa(
