@@ -99,6 +99,8 @@ class GatewayHealthIndicatorTest {
                 Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
+                Collections.singletonList(getDefaultServiceInstance(CoreService.ZAAS.getServiceId(), "host", 10023)));
 
             GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();

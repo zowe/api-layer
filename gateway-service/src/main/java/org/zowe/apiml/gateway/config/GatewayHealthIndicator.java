@@ -54,11 +54,13 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         boolean authUp = true;
 
         int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+        int zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
 
         builder.status(toStatus(discoveryUp))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryUp).getCode())
             .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode())
-            .withDetail("gatewayCount", gatewayCount);
+            .withDetail("gatewayCount", gatewayCount)
+            .withDetail("zaasCount", zaasCount);
 
         if (anyCatalogIsAvailable) {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());

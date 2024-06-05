@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.zaas.health;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.constants.CoreService;
@@ -25,14 +25,12 @@ import static org.springframework.boot.actuate.health.Status.UP;
 /**
  * ZAAS health information (/application/health)
  */
+@Slf4j
 @Component
 public class ZaasHealthIndicator extends AbstractHealthIndicator {
-    private final DiscoveryClient discoveryClient;
     private final Providers loginProviders;
 
-    public ZaasHealthIndicator(DiscoveryClient discoveryClient,
-                               Providers providers) {
-        this.discoveryClient = discoveryClient;
+    public ZaasHealthIndicator(Providers providers) {
         this.loginProviders = providers;
     }
 
@@ -45,15 +43,13 @@ public class ZaasHealthIndicator extends AbstractHealthIndicator {
             try {
                 authUp = loginProviders.isZosmfAvailableAndOnline();
             } catch (AuthenticationServiceException ex) {
+                log.error("The authentication service is not registered. Verify that it's properly configured and available.");
                 System.exit(-1);
             }
         }
 
-        int zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
-
         builder.status(toStatus(authUp))
-            .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode())
-            .withDetail("zaasCount", zaasCount);
+            .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode());
 
     }
 

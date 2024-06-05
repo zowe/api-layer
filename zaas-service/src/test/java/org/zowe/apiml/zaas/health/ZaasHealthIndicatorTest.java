@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.zaas.security.login.Providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,9 +37,7 @@ class ZaasHealthIndicatorTest {
             when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.isZosmfAvailableAndOnline()).thenReturn(false);
 
-            DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-
-            ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers);
+            ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(providers);
             Health.Builder builder = new Health.Builder();
             zaasHealthIndicator.doHealthCheck(builder);
             assertEquals(Status.DOWN, builder.build().getStatus());
@@ -54,9 +51,7 @@ class ZaasHealthIndicatorTest {
             when(providers.isZosfmUsed()).thenReturn(true);
             when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
 
-            DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-
-            ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers);
+            ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(providers);
             Health.Builder builder = new Health.Builder();
             zaasHealthIndicator.doHealthCheck(builder);
             assertEquals(Status.UP, builder.build().getStatus());
