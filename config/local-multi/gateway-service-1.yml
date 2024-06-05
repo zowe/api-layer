@@ -5,19 +5,6 @@ apiml:
         ipAddress: 0.0.0.0
         port: 10010
         discoveryServiceUrls: https://localhost:10011/eureka/,https://localhost2:10021/eureka/
-    security:
-        personalAccessToken:
-            enabled: true
-        oidc:
-            enabled: false
-        auth:
-            provider: zosmf
-            zosmf:
-                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
-        ssl:
-            verifySslCertificatesOfServices: true
-        x509:
-            enabled: true
     banner: console
 
 eureka:
@@ -30,12 +17,6 @@ spring:
             enabled: always
 
 server:
-    internal:
-        enabled: true
-        port: 10017
-        ssl:
-            keyAlias: localhost-multi
-            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
         keyAlias: localhost-multi
         keyPassword: password

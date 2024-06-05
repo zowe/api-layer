@@ -1,0 +1,41 @@
+spring.profiles.include: diag
+apiml:
+  service:
+    hostname: localhost
+    ipAddress: 0.0.0.0
+    port: 10023
+    discoveryServiceUrls: https://localhost:10011/eureka/,https://localhost2:10021/eureka/
+  security:
+    personalAccessToken:
+      enabled: true
+    oidc:
+      enabled: false
+    auth:
+      provider: zosmf
+      zosmf:
+        serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+    ssl:
+      verifySslCertificatesOfServices: true
+    x509:
+      enabled: true
+  banner: console
+
+eureka:
+  client:
+    initialInstanceInfoReplicationIntervalSeconds: 1
+    registryFetchIntervalSeconds: 1
+spring:
+  output:
+    ansi:
+      enabled: always
+
+server:
+  ssl:
+    keyAlias: localhost-multi
+    keyPassword: password
+    keyStore: keystore/localhost/localhost-multi.keystore.p12
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: keystore/localhost/localhost-multi.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12
