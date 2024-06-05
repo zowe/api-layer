@@ -50,7 +50,7 @@ public class ConfigReader {
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
-                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023);
+                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
                         DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
 
