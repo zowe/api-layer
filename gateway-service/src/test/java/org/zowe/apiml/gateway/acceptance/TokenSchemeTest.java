@@ -81,15 +81,15 @@ public abstract class TokenSchemeTest {
         @BeforeAll
         void createAllZaasServices() throws IOException {
             // on the beginning prepare all as zombie, each test will decide
-            zaasError = mockService("gateway").scope(MockService.Scope.CLASS)
+            zaasError = mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                 .responseCode(500)
                 .and().build();
-            zaasZombie = mockService("gateway").scope(MockService.Scope.CLASS)
+            zaasZombie = mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                 .bodyJson(new ZaasTokenResponse())
                 .and().build();
-            zaasOk = mockService("gateway").scope(MockService.Scope.CLASS)
+            zaasOk = mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                 .bodyJson(OK_RESPONSE)
                 .assertion(he -> assertEquals("service", he.getRequestHeaders().getFirst("x-service-id")))
@@ -186,7 +186,7 @@ public abstract class TokenSchemeTest {
 
         @BeforeAll
         void init() throws IOException {
-            zaas = mockService("gateway").scope(MockService.Scope.CLASS)
+            zaas = mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                 .responseCode(401)
                 .and().start();
@@ -227,7 +227,7 @@ public abstract class TokenSchemeTest {
 
         @BeforeAll
         void init() throws IOException {
-            zaas = mockService("gateway").scope(MockService.Scope.CLASS)
+            zaas = mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                 .responseCode(200)
                 .bodyJson(new ZaasTokenResponse())
@@ -283,7 +283,7 @@ public abstract class TokenSchemeTest {
         }
 
         MockService createZaas() throws IOException {
-            return mockService("gateway").scope(MockService.Scope.CLASS)
+            return mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint(getTokenEndpoint())
                 .bodyJson(OK_RESPONSE)
                 .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
