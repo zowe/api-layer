@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -40,10 +41,10 @@ public class X509ExternalMapper extends ExternalMapper implements Authentication
 
     public X509ExternalMapper(@Value("${apiml.security.x509.externalMapperUrl:}") String mapperUrl,
                               @Value("${apiml.security.x509.externalMapperUser:}") String mapperUser,
-                              CloseableHttpClient httpClientProxy,
+                              @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
                               TokenCreationService tokenCreationService,
                               AuthConfigurationProperties authConfigurationProperties) {
-        super(mapperUrl, mapperUser, httpClientProxy, tokenCreationService, authConfigurationProperties);
+        super(mapperUrl, mapperUser, secureHttpClientWithoutKeystore, tokenCreationService, authConfigurationProperties);
     }
 
     /**

@@ -20,6 +20,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
@@ -43,7 +45,9 @@ public abstract class ExternalMapper {
 
     private final String mapperUrl;
     private final String mapperUser;
-    private final CloseableHttpClient httpClientProxy;
+    @Autowired
+    @Qualifier("secureHttpClientWithoutKeystore")
+    private final CloseableHttpClient secureHttpClientWithoutKeystore;
     private final TokenCreationService tokenCreationService;
     private final AuthConfigurationProperties authConfigurationProperties;
     protected static final ObjectMapper objectMapper = new ObjectMapper();
@@ -69,7 +73,7 @@ public abstract class ExternalMapper {
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             log.debug("Executing request against external identity mapper API: {}", httpPost);
 
-            HttpResponse httpResponse = httpClientProxy.execute(httpPost);
+            HttpResponse httpResponse = secureHttpClientWithoutKeystore.execute(httpPost);
 
             final int statusCode = httpResponse.getStatusLine() != null ? httpResponse.getStatusLine().getStatusCode() : 0;
             String response = "";

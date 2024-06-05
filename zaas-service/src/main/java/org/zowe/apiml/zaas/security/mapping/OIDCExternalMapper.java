@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -54,10 +55,10 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
 
     public OIDCExternalMapper(@Value("${apiml.security.oidc.identityMapperUrl:}") String mapperUrl,
                               @Value("${apiml.security.oidc.identityMapperUser:}") String mapperUser,
-                              CloseableHttpClient httpClientProxy,
+                              @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
                               TokenCreationService tokenCreationService,
                               AuthConfigurationProperties authConfigurationProperties) {
-        super(mapperUrl, mapperUser, httpClientProxy, tokenCreationService, authConfigurationProperties);
+        super(mapperUrl, mapperUser, secureHttpClientWithoutKeystore, tokenCreationService, authConfigurationProperties);
     }
 
     public String mapToMainframeUserId(AuthSource authSource) {
