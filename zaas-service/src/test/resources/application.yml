@@ -13,7 +13,6 @@ apiml:
         scheme: https  # "https" or "http"
         preferIpAddress: false
         discoveryServiceUrls: https://localhost:10011/eureka/
-        preferIpAddress: false
     zaas:
         # The `apiml.zaas` node contains zaas-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the zaas. For example Catalog uses
