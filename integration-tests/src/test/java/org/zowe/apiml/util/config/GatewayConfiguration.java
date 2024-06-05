@@ -21,4 +21,8 @@ public class GatewayConfiguration {
     private String scheme;
     private String host;
     private int port;
+    private int externalPort;
+    private int instances;
+    private String internalPorts;
+    private String servicesEndpoint;
 }

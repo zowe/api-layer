@@ -21,4 +21,5 @@ public class ZaasConfiguration {
     private String scheme;
     private String host;
     private int port;
+    private int instances;
 }
