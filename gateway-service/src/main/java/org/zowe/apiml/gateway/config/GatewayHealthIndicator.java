@@ -50,15 +50,14 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         // When DS goes 'down' after it was already 'up', the new status is not shown. This is probably feature of
         // Eureka client which caches the status of services. When DS is down the cache is not refreshed.
         boolean discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
-
-        boolean authUp = true;
+        boolean zaasUp = !this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).isEmpty();
 
         int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
         int zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
 
         builder.status(toStatus(discoveryUp))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryUp).getCode())
-            .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode())
+            .withDetail(CoreService.ZAAS.getServiceId(), toStatus(zaasUp).getCode())
             .withDetail("gatewayCount", gatewayCount)
             .withDetail("zaasCount", zaasCount);
 
@@ -66,7 +65,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
         }
 
-        if (!startedInformationPublished && discoveryUp && apiCatalogUp && authUp) {
+        if (!startedInformationPublished && discoveryUp && apiCatalogUp && zaasUp) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
             startedInformationPublished = true;
         }
