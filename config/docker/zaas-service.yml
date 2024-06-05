@@ -1,0 +1,50 @@
+spring.profiles.include: diag
+apiml:
+  service:
+    hostname: zaas-service
+    discoveryServiceUrls: https://discovery-service:10011/eureka/
+  security:
+    allowTokenRefresh: true
+    personalAccessToken:
+      enabled: true
+    oidc:
+      enabled: true
+      clientId:
+      clientSecret:
+      registry:
+      identityMapperUrl:
+      identityMapperUser:
+      jwks:
+        uri:
+    auth:
+      zosmf:
+        serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+    ssl:
+      verifySslCertificatesOfServices: true
+    x509:
+      enabled: true
+    saf:
+      urls:
+        authenticate: https://mock-services:10013/zss/saf/authenticate
+        verify: https://mock-services:10013/zss/saf/verify
+  banner: console
+eureka:
+  client:
+    initialInstanceInfoReplicationIntervalSeconds: 1
+    registryFetchIntervalSeconds: 1
+spring:
+  output:
+    ansi:
+      enabled: always
+
+
+server:
+  address: ${apiml.service.hostname}
+  max-http-header-size: 40000
+  ssl:
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: /docker/all-services.keystore.p12
+    keyStorePassword: password
+    trustStore: /docker/all-services.truststore.p12
+    trustStorePassword: password

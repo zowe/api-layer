@@ -26,12 +26,6 @@ logging:
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
 apiml:
-    # The `apiml` node contains API Mediation Layer specific configuration
-    routing:
-        mode: new
-        instanceIdHeader: false
-    loadBalancer:
-        distribute: false
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: zaas  # Service ID of this service. It is fixed for ZAAS
@@ -41,8 +35,6 @@ apiml:
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
-        additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
 
     httpclient:
         conn-pool:
@@ -59,7 +51,6 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
-        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         allowTokenRefresh: false
         jwtInitializerTimeout: 5
         personalAccessToken:
@@ -74,12 +65,6 @@ apiml:
             identityMapperUser:
             jwks:
                 uri:
-        auth:
-            jwt:
-                customAuthHeader:
-            passticket:
-                customUserHeader:
-                customAuthHeader:
             provider: zosmf
         x509:
             enabled: false
@@ -96,8 +81,6 @@ spring:
     profiles:
         group:
             dev: debug, diag
-    config:
-        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:
@@ -161,8 +144,10 @@ management:
             enabled: true
 eureka:
     instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
+        securePortEnabled: true
         #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.zaas.hostname}:${apiml.service.port}/
@@ -227,7 +212,7 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
-        com.netflix: INFO
+        com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
@@ -271,8 +256,11 @@ apiml:
     service:
         corsEnabled: true
         scheme: http
+
+
 eureka:
     instance:
+        securePortEnabled: false
         metadata-map:
             apiml:
                 apiInfo:

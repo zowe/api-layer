@@ -3,7 +3,6 @@ logging:
         ROOT: TRACE
 
 apiml:
-    # The `apiml` node contains API Mediation Layer specific configuration
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: zaas  # Service ID of this service. It is fixed for ZAAS
@@ -13,12 +12,7 @@ apiml:
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
-        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
-        additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
-    loadBalancer:
-        distribute: false
     zaas:
         # The `apiml.zaas` node contains zaas-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the zaas. For example Catalog uses
@@ -64,8 +58,6 @@ spring:
         #include: diag
         group:
             dev: debug, diag
-    config:
-        useLegacyProcessing: true
     application:
         name: ${apiml.service.id}
     cloud:

@@ -7,7 +7,6 @@ dependencyResolutionManagement {
 
             version('springBoot', '3.2.5')
             version('springCloudNetflix', '4.1.1')
-            version('springCloudZuulNetflix', '2.2.10.RELEASE')
             version('springCloudCommons', '4.1.2')
             version('springCloudCB', '3.1.1')
             version('springCloudGateway', '4.1.2')
@@ -37,6 +36,14 @@ dependencyResolutionManagement {
             version('jakartaValidation', '3.1.0')
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0-M2')
+            version('jaxbApi') {
+                strictly '[2.3.3,3.0.0['
+                prefer '2.3.3'
+            }
+            version('jaxbImpl') {
+                strictly '[2.3.9,3.0.0['
+                prefer '2.3.9'
+            }
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.54.v20240208')
             version('jettison', '1.5.4')
@@ -56,8 +63,6 @@ dependencyResolutionManagement {
             version('openApiDiff', '2.0.1')
             version('picocli', '4.7.6')
 
-            // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
-            version('ribbon', '2.3.0')
             version('reactor', '3.6.6')
             version('restAssured', '5.4.0')
             version('springDoc', '2.5.0')
@@ -106,10 +111,8 @@ dependencyResolutionManagement {
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
             library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
 
-            library('spring_cloud_starter_zuul', 'org.springframework.cloud', 'spring-cloud-starter-netflix-zuul').versionRef('springCloudZuulNetflix')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
-            library('spring_cloud_starter_ribbon', 'org.springframework.cloud', 'spring-cloud-starter-netflix-ribbon').versionRef('springCloudZuulNetflix')
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')
             library('spring_cloud_circuit_breaker', 'org.springframework.cloud', 'spring-cloud-starter-circuitbreaker-reactor-resilience4j').versionRef('springCloudCB')
@@ -149,6 +152,8 @@ dependencyResolutionManagement {
             library('jakarta_validation', 'jakarta.validation', 'jakarta.validation-api').versionRef('jakartaValidation')
             library('jakarta_inject', 'jakarta.inject', 'jakarta.inject-api').versionRef('jakartaInject')
             library('jakarta_servlet_api', 'jakarta.servlet', 'jakarta.servlet-api').versionRef('jakartaServlet')
+            library('jaxbApi', 'jakarta.xml.bind', 'jakarta.xml.bind-api').versionRef('jaxbApi')
+            library('jaxbImpl', 'com.sun.xml.bind', 'jaxb-impl').versionRef('jaxbImpl')
             library('jetty_client', 'org.eclipse.jetty', 'jetty-client').versionRef('jettyWebSocketClient')
             library('jetty_http', 'org.eclipse.jetty', 'jetty-http').versionRef('jettyWebSocketClient')
             library('jetty_io', 'org.eclipse.jetty', 'jetty-io').versionRef('jettyWebSocketClient')
@@ -182,7 +187,6 @@ dependencyResolutionManagement {
             library('rest_assured_json_path', 'io.rest-assured', 'json-path').versionRef('restAssured')
             library('rest_assured_xml_path', 'io.rest-assured', 'xml-path').versionRef('restAssured')
             library('rest_assured_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('restAssured')
-            library('ribbon_eureka', 'com.netflix.ribbon', 'ribbon-eureka').versionRef('ribbon')
             library('spring4_test', 'org.springframework', 'spring-test').versionRef('spring4')
             library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')
             library('spring_mock_mvc', 'io.rest-assured', 'spring-mock-mvc').versionRef('restAssured')
@@ -228,6 +232,12 @@ dependencyResolutionManagement {
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
+
+
+            bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
+
         }
+
     }
+
 }

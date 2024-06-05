@@ -333,7 +333,7 @@ public class ConnectionsConfig {
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
         httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
-        return webClient(httpClient);
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
     }
 
     @Bean

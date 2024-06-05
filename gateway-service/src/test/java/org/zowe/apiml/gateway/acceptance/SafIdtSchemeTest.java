@@ -66,8 +66,8 @@ public class SafIdtSchemeTest {
             ZaasTokenResponse response = new ZaasTokenResponse();
             response.setToken(SAF_IDT);
 
-            zaas = mockService("gateway").scope(MockService.Scope.TEST)
-                .addEndpoint("/gateway/zaas/safIdt")
+            zaas = mockService("zaas").scope(MockService.Scope.TEST)
+                .addEndpoint("/zaas/zaas/safIdt")
                 .responseCode(200)
                 .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                 .assertion(he -> {
@@ -79,9 +79,9 @@ public class SafIdtSchemeTest {
                 })
                 .bodyJson(response)
                 .and().start();
-            service = mockService("service").scope(MockService.Scope.TEST)
+            service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
                 .authenticationScheme(AuthenticationScheme.SAF_IDT).applid("IZUDFLT")
-                .addEndpoint("/service/test")
+                .addEndpoint("/" + SERVICE_ID + "/test")
                 .assertion(he -> assertEquals(SAF_IDT, getHeaderValue(he, "x-saf-token")))
                 .and().start();
         }
@@ -107,14 +107,14 @@ public class SafIdtSchemeTest {
         @BeforeEach
         void setup() throws IOException {
 
-            zaas = mockService("gateway").scope(MockService.Scope.CLASS)
-                .addEndpoint("/gateway/zaas/safIdt")
+            zaas = mockService("zaas").scope(MockService.Scope.CLASS)
+                .addEndpoint("/zaas/zaas/safIdt")
                 .responseCode(401)
                 .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                 .and().start();
-            service = mockService("service").scope(MockService.Scope.CLASS)
+            service = mockService(SERVICE_ID).scope(MockService.Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.SAF_IDT).applid("IZUDFLT")
-                .addEndpoint("/service/test")
+                .addEndpoint("/" + SERVICE_ID + "/test")
                 .assertion(he -> assertNull(getHeaderValue(he, "x-saf-token")))
                 .assertion(he -> assertEquals("Invalid or missing authentication", getHeaderValue(he, ApimlConstants.AUTH_FAIL_HEADER)))
                 .and().start();
@@ -130,6 +130,5 @@ public class SafIdtSchemeTest {
                 .statusCode(Matchers.is(SC_OK));
         }
     }
-
 
 }
