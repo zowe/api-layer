@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.zaas;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
@@ -27,7 +26,6 @@ import java.util.Optional;
 
 
 @RequiredArgsConstructor
-@Slf4j
 public class ExtractAuthSourceFilter extends OncePerRequestFilter {
 
     public static final String AUTH_SOURCE_ATTR = "zaas.auth.source";
