@@ -11,9 +11,10 @@
 package org.zowe.apiml.zaas.security.mapping;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -59,7 +60,7 @@ public class X509ExternalMapper extends ExternalMapper implements Authentication
             X509Certificate certificate = (X509Certificate) authSource.getRawSource();
             if (certificate != null) {
                 try {
-                    HttpEntity payload = new ByteArrayEntity(certificate.getEncoded());
+                    HttpEntity payload = new ByteArrayEntity(certificate.getEncoded(), ContentType.TEXT_PLAIN);
                     MapperResponse mapperResponse = callExternalMapper(payload);
                     if (mapperResponse != null) {
                         return mapperResponse.getUserId().trim();

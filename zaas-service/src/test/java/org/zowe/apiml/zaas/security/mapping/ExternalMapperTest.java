@@ -10,12 +10,11 @@
 
 package org.zowe.apiml.zaas.security.mapping;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.NullEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,17 +22,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ExternalMapperTest {
 
@@ -47,7 +51,6 @@ class ExternalMapperTest {
     private TokenCreationService tokenCreationService;
 
     private CloseableHttpResponse httpResponse;
-    private StatusLine statusLine;
     private HttpEntity responseEntity;
     private AuthConfigurationProperties authConfigurationProperties;
     private CloseableHttpClient closeableHttpClient;
@@ -57,9 +60,7 @@ class ExternalMapperTest {
     void setup() throws IOException {
         closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
-        statusLine = mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(httpResponse.getCode()).thenReturn(HttpStatus.SC_OK);
         when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
         tokenCreationService = mock(TokenCreationService.class);
         when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("validJwtToken");
@@ -83,7 +84,7 @@ class ExternalMapperTest {
 
             @Test
             void thenMFUserIsReturned() {
-                HttpEntity payload = new BasicHttpEntity();
+                HttpEntity payload = NullEntity.INSTANCE;
                 MapperResponse response = mapper.callExternalMapper(payload);
                 assertNotNull(response);
                 assertEquals("ZOSUSER", response.getUserId());
@@ -105,7 +106,7 @@ class ExternalMapperTest {
 
             @Test
             void thenMFUserIsEmpty() {
-                HttpEntity payload = new BasicHttpEntity();
+                HttpEntity payload = NullEntity.INSTANCE;
                 MapperResponse response = mapper.callExternalMapper(payload);
                 assertNotNull(response);
                 assertEquals("", response.getUserId());
@@ -123,11 +124,11 @@ class ExternalMapperTest {
         class WhenStatusCode400 {
             @BeforeEach
             void setup() {
-                when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
+                when(httpResponse.getCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
             }
             @Test
             void thenResponseIsNull() {
-                HttpEntity payload = new BasicHttpEntity();
+                HttpEntity payload = NullEntity.INSTANCE;
                 MapperResponse response = mapper.callExternalMapper(payload);
                 assertNull(response);
             }
@@ -137,25 +138,11 @@ class ExternalMapperTest {
         class WhenStatusCode102 {
             @BeforeEach
             void setup() {
-                when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_PROCESSING);
+                when(httpResponse.getCode()).thenReturn(HttpStatus.SC_PROCESSING);
             }
             @Test
             void thenResponseIsNull() {
-                HttpEntity payload = new BasicHttpEntity();
-                MapperResponse response = mapper.callExternalMapper(payload);
-                assertNull(response);
-            }
-        }
-
-        @Nested
-        class WhenStatusLineIsNull {
-            @BeforeEach
-            void setup() {
-                when(httpResponse.getStatusLine()).thenReturn(null);
-            }
-            @Test
-            void thenResponseIsNull() {
-                HttpEntity payload = new BasicHttpEntity();
+                HttpEntity payload = NullEntity.INSTANCE;
                 MapperResponse response = mapper.callExternalMapper(payload);
                 assertNull(response);
             }
@@ -169,7 +156,7 @@ class ExternalMapperTest {
             }
             @Test
             void thenResponseIsNull() {
-                HttpEntity payload = new BasicHttpEntity();
+                HttpEntity payload = NullEntity.INSTANCE;
                 MapperResponse response = mapper.callExternalMapper(payload);
                 assertNull(response);
             }
@@ -183,7 +170,7 @@ class ExternalMapperTest {
             }
             @Test
             void thenResponseIsNull() {
-                HttpEntity payload = new BasicHttpEntity();
+                HttpEntity payload = NullEntity.INSTANCE;
                 MapperResponse response = mapper.callExternalMapper(payload);
                 assertNull(response);
             }
@@ -199,7 +186,7 @@ class ExternalMapperTest {
         @EmptySource
         void whenMapperUrlInvalid_thenResponseIsNull(String url) {
             mapper = new TestExternalMapper(url, "mapper_user", closeableHttpClient, tokenCreationService);
-            HttpEntity payload = new BasicHttpEntity();
+            HttpEntity payload = NullEntity.INSTANCE;
             MapperResponse response = mapper.callExternalMapper(payload);
             assertNull(response);
             verify(tokenCreationService, times(0)).createJwtTokenWithoutCredentials(anyString());
@@ -210,7 +197,7 @@ class ExternalMapperTest {
         @EmptySource
         void whenMapperUserInvalid_thenResponseIsNull(String user) {
             mapper = new TestExternalMapper("http://localhost/test", user, closeableHttpClient, tokenCreationService);
-            HttpEntity payload = new BasicHttpEntity();
+            HttpEntity payload = NullEntity.INSTANCE;
             MapperResponse response = mapper.callExternalMapper(payload);
             assertNull(response);
             verify(tokenCreationService, times(0)).createJwtTokenWithoutCredentials(anyString());

@@ -11,25 +11,23 @@
 package org.zowe.apiml.zaas.security.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
 import org.zowe.apiml.zaas.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-
-import jakarta.annotation.PostConstruct;
-import java.io.UnsupportedEncodingException;
 
 import static org.zowe.apiml.zaas.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 
@@ -89,10 +87,6 @@ public class OIDCExternalMapper extends ExternalMapper implements Authentication
                 return StringUtils.isNotEmpty(userId) ? userId : null;
             }
 
-        } catch (UnsupportedEncodingException e) {
-            apimlLog.log("org.zowe.apiml.security.common.OIDCMappingError",
-                "Unable to encode payload for identity mapping request",
-                e.getMessage());
         } catch (JsonProcessingException e) {
             apimlLog.log("org.zowe.apiml.security.common.OIDCMappingError",
                 "Unable to generate JSON payload for identity mapping request",

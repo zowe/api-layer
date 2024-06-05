@@ -14,12 +14,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -73,9 +74,11 @@ public abstract class ExternalMapper {
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             log.debug("Executing request against external identity mapper API: {}", httpPost);
 
-            HttpResponse httpResponse = secureHttpClientWithoutKeystore.execute(httpPost);
 
-            final int statusCode = httpResponse.getStatusLine() != null ? httpResponse.getStatusLine().getStatusCode() : 0;
+
+            CloseableHttpResponse httpResponse = secureHttpClientWithoutKeystore.execute(httpPost);
+
+            final int statusCode = httpResponse.getCode();
             String response = "";
             if (httpResponse.getEntity() != null) {
                 response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
@@ -95,7 +98,7 @@ public abstract class ExternalMapper {
             if (StringUtils.isNotEmpty(response)) {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             apimlLog.log("org.zowe.apiml.zaas.security.InvalidMappingResponse", e);
         } catch (URISyntaxException e) {
             apimlLog.log("org.zowe.apiml.zaas.security.InvalidMapperUrl", e);
