@@ -29,7 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.GatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -56,7 +56,7 @@ import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 public class PassticketSchemeTest implements TestWithStartedInstances {
     private final static URI requestUrl = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
     private final static URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT);
-    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
+    static GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(

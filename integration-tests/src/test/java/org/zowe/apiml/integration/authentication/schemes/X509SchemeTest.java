@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.X509Test;
-import org.zowe.apiml.util.config.GatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -42,7 +42,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     private static final String CLIENT_CN = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientCN();
 
     private static URI URL;
-    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
+    static GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
 
     @BeforeAll

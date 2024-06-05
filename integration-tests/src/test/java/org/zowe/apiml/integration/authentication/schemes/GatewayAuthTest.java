@@ -40,7 +40,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @ZaasTest
 public class GatewayAuthTest implements TestWithStartedInstances {
 
-    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
+    private static final GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     static Stream<Arguments> validToBeTransformed() {

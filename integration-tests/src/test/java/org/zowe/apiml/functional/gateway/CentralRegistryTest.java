@@ -24,7 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.GatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.SslContext;
@@ -50,7 +50,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 class CentralRegistryTest implements TestWithStartedInstances {
     static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.GATEWAY.getServiceId() + "/api/v1/registry";
 
-    static GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
+    static GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
     @BeforeAll

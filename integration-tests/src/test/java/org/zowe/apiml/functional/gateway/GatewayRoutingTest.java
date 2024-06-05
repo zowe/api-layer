@@ -17,7 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.GatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import java.net.URI;
@@ -35,7 +35,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     private static final String NON_EXISTING_SERVICE_ENDPOINT = "/noservice/api/v1/something";
     private static final String WRONG_VERSION_ENPOINT = "/discoverableclient/api/v10/greeting";
 
-    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
+    private static final GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     @BeforeAll
     static void setup() {
