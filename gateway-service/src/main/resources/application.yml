@@ -92,6 +92,8 @@ management:
     endpoint:
       gateway:
           enabled: false
+      health:
+          showDetails: always
     endpoints:
         web:
             base-path: /application

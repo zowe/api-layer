@@ -10,15 +10,12 @@
 
 package org.zowe.apiml.zaas.health;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.zaas.security.login.Providers;
 
@@ -28,58 +25,32 @@ import static org.springframework.boot.actuate.health.Status.UP;
 /**
  * ZAAS health information (/application/health)
  */
+@Slf4j
 @Component
 public class ZaasHealthIndicator extends AbstractHealthIndicator {
-    private final DiscoveryClient discoveryClient;
     private final Providers loginProviders;
-    private String apiCatalogServiceId;
-    
-    private final ApimlLogger apimlLog = ApimlLogger.of(ZaasHealthIndicator.class,
-            YamlMessageServiceInstance.getInstance());
-    boolean startedInformationPublished = false;
 
-    public ZaasHealthIndicator(DiscoveryClient discoveryClient,
-                               Providers providers,
-                               @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
-        this.discoveryClient = discoveryClient;
+    public ZaasHealthIndicator(Providers providers) {
         this.loginProviders = providers;
-        this.apiCatalogServiceId = apiCatalogServiceId;
     }
 
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
-        boolean anyCatalogIsAvailable = apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty();
-        boolean apiCatalogUp = !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty();
-
-        // When DS goes 'down' after it was already 'up', the new status is not shown. This is probably feature of
-        // Eureka client which caches the status of services. When DS is down the cache is not refreshed.
-        boolean discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
 
         boolean authUp = true;
         if (loginProviders.isZosfmUsed()) {
             try {
                 authUp = loginProviders.isZosmfAvailableAndOnline();
             } catch (AuthenticationServiceException ex) {
+                log.error("The authentication service is not registered. Verify that it's properly configured and available.");
                 System.exit(-1);
             }
         }
 
-        int zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
+        builder.status(toStatus(authUp))
+            .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode());
 
-        builder.status(toStatus(discoveryUp))
-            .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryUp).getCode())
-            .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode())
-            .withDetail("zaasCount", zaasCount);
-
-        if (anyCatalogIsAvailable) {
-            builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
-        }
-
-        if (!startedInformationPublished && discoveryUp && apiCatalogUp && authUp) {
-            apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
-            startedInformationPublished = true;
-        }
     }
 
     private Status toStatus(boolean up) {

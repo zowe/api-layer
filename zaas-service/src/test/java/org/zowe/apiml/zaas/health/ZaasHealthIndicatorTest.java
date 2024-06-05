@@ -11,18 +11,12 @@
 package org.zowe.apiml.zaas.health;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.cloud.client.DefaultServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.zaas.security.login.Providers;
-import org.zowe.apiml.product.constants.CoreService;
 
-import java.util.Collections;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -36,110 +30,31 @@ class ZaasHealthIndicatorTest {
         providers = mock(Providers.class);
     }
 
-    private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
-        return new DefaultServiceInstance(
-            hostname + ":" + serviceId + ":" + port,
-            serviceId, hostname, port, true
-        );
+    @Nested
+    class GivenZosmfIsUsedAnfZosmfIsUnavailable {
+        @Test
+        void whenHealthIsRequested_thenStatusIsDown() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.isZosmfAvailableAndOnline()).thenReturn(false);
+
+            ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(providers);
+            Health.Builder builder = new Health.Builder();
+            zaasHealthIndicator.doHealthCheck(builder);
+            assertEquals(Status.DOWN, builder.build().getStatus());
+        }
     }
 
-    @Test
-    void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
-        when(providers.isZosfmUsed()).thenReturn(false);
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
+    @Nested
+    class GivenZosmfIsUsedAndAvailable {
+        @Test
+        void whenHealthIsRequested_thenStatusIsUp() {
+            when(providers.isZosfmUsed()).thenReturn(true);
+            when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
 
-        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
-        Health.Builder builder = new Health.Builder();
-        zaasHealthIndicator.doHealthCheck(builder);
-        assertEquals(Status.UP, builder.build().getStatus());
-    }
-
-    @Test
-    void testStatusIsDownWhenDiscoveryIsNotAvailable() {
-        when(providers.isZosfmUsed()).thenReturn(false);
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
-
-        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
-        Health.Builder builder = new Health.Builder();
-        zaasHealthIndicator.doHealthCheck(builder);
-        assertEquals(Status.DOWN, builder.build().getStatus());
-    }
-
-    @Test
-    void givenZosmfIsUsedAnfZosmfIsUnavailable_whenHealthIsRequested_thenStatusIsDown() {
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailableAndOnline()).thenReturn(false);
-
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
-
-        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
-        Health.Builder builder = new Health.Builder();
-        zaasHealthIndicator.doHealthCheck(builder);
-        assertEquals(Status.DOWN, builder.build().getStatus());
-    }
-
-    @Test
-    void givenZosmfIsUsedAndAvailable_whenHealthIsRequested_thenStatusIsUp() {
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
-
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
-
-        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
-        Health.Builder builder = new Health.Builder();
-        zaasHealthIndicator.doHealthCheck(builder);
-        assertEquals(Status.UP, builder.build().getStatus());
-    }
-
-    @Test
-    void givenCustomCatalogProvider_whenHealthIsRequested_thenStatusIsUp() {
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
-        String customCatalogServiceId = "customCatalog";
-
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(customCatalogServiceId)).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(customCatalogServiceId, "host", 10014)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
-
-        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, customCatalogServiceId);
-        Health.Builder builder = new Health.Builder();
-        zaasHealthIndicator.doHealthCheck(builder);
-
-        String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
-        assertThat(code, is("UP"));
-    }
-
-    @Test
-    void givenEverythingIsHealthy_whenHealthRequested_onceLogMessageAboutStartup() {
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
-        
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-            Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
-
-        ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(discoveryClient, providers, CoreService.API_CATALOG.getServiceId());
-        Health.Builder builder = new Health.Builder();
-        zaasHealthIndicator.doHealthCheck(builder);
-
-        assertThat(zaasHealthIndicator.startedInformationPublished, is(true));
+            ZaasHealthIndicator zaasHealthIndicator = new ZaasHealthIndicator(providers);
+            Health.Builder builder = new Health.Builder();
+            zaasHealthIndicator.doHealthCheck(builder);
+            assertEquals(Status.UP, builder.build().getStatus());
+        }
     }
 }

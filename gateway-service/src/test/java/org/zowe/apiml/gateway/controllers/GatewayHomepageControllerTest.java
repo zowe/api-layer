@@ -247,7 +247,7 @@ class GatewayHomepageControllerTest {
         ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true);
 
-        when(discoveryClient.getInstances("discovery")).thenReturn(Arrays.asList(serviceInstance));
+        when(discoveryClient.getInstances("discovery")).thenReturn(List.of(serviceInstance));
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
