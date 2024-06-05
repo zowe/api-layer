@@ -11,6 +11,10 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
@@ -28,10 +32,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -198,11 +199,16 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
-        try {
-            if (request.getInputStream().available() == 0) {
+        // method available could return 0 even there are some data, depends on the implementation
+        try (var is = new BufferedInputStream(request.getInputStream())) {
+            is.mark(1);
+            if (is.read() < 0) {
+                // no data available
                 return Optional.empty();
             }
-            return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
+            // return to the beginning (to do not skip first character: '{')
+            is.reset();
+            return Optional.of(mapper.readValue(is, LoginRequest.class));
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
