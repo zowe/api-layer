@@ -11,7 +11,7 @@
 package org.zowe.apiml.zaas.security.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
