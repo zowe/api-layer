@@ -24,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -410,13 +411,14 @@ public class MockService implements AutoCloseable {
                     });
                 }
 
-                httpExchange.sendResponseHeaders(responseCode, 0);
+                byte[] bodyBytes = body == null ? null : body.getBytes(StandardCharsets.UTF_8);
+                httpExchange.sendResponseHeaders(responseCode, bodyBytes == null ? 0 : bodyBytes.length);
 
-                if (body != null) {
-                    httpExchange.getResponseBody().write(body.getBytes(StandardCharsets.UTF_8));
+                if (bodyBytes != null) {
+                    try (OutputStream os = httpExchange.getResponseBody()) {
+                        os.write(bodyBytes);
+                    }
                 }
-
-                httpExchange.getResponseBody().close();
             } finally {
                 counter.getAndIncrement();
             }
