@@ -13,7 +13,7 @@ package org.zowe.apiml.gateway.config;
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpHeaders;
@@ -37,9 +37,9 @@ class AuthEndpointConfigTest extends AcceptanceTestWithMockServices {
 
     MockService zaas;
 
-    @BeforeEach
+    @BeforeAll
     void setup() throws IOException {
-        zaas = mockService("zaas").scope(MockService.Scope.TEST)
+        zaas = mockService("zaas").scope(MockService.Scope.CLASS)
             .addEndpoint("/zaas/api/v1/auth/login")
                 .responseCode(204)
                 .assertion(he -> assertEquals("Basic dXNlcjpwYXNz", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))

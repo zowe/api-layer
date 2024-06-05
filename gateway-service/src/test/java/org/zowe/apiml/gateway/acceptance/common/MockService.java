@@ -421,6 +421,7 @@ public class MockService implements AutoCloseable {
                 }
             } finally {
                 counter.getAndIncrement();
+                httpExchange.close();
             }
         }
 

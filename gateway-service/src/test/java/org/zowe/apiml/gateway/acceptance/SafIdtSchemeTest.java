@@ -81,7 +81,7 @@ public class SafIdtSchemeTest {
                 .and().start();
             service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
                 .authenticationScheme(AuthenticationScheme.SAF_IDT).applid("IZUDFLT")
-                .addEndpoint("/service/test")
+                .addEndpoint("/" + SERVICE_ID + "/test")
                 .assertion(he -> assertEquals(SAF_IDT, getHeaderValue(he, "x-saf-token")))
                 .and().start();
         }
@@ -112,9 +112,9 @@ public class SafIdtSchemeTest {
                 .responseCode(401)
                 .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                 .and().start();
-            service = mockService("service").scope(MockService.Scope.CLASS)
+            service = mockService(SERVICE_ID).scope(MockService.Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.SAF_IDT).applid("IZUDFLT")
-                .addEndpoint("/service/test")
+                .addEndpoint("/" + SERVICE_ID + "/test")
                 .assertion(he -> assertNull(getHeaderValue(he, "x-saf-token")))
                 .assertion(he -> assertEquals("Invalid or missing authentication", getHeaderValue(he, ApimlConstants.AUTH_FAIL_HEADER)))
                 .and().start();
