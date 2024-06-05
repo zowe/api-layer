@@ -11,8 +11,8 @@ apiml:
         port: 10010  # Default port name for zaas service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
-        discoveryServiceUrls: https://localhost:10011/eureka/
         preferIpAddress: false
+        discoveryServiceUrls: https://localhost:10011/eureka/
     zaas:
         # The `apiml.zaas` node contains zaas-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the zaas. For example Catalog uses

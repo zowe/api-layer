@@ -327,15 +327,14 @@ public class NewSecurityConfiguration {
 
             @Bean
             public SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
-                baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-                    authConfigurationProperties.getZaasQueryEndpoint()
-                )))
-                .authorizeRequests(requests -> requests.anyRequest().authenticated())
-                .authenticationProvider(tokenAuthenticationProvider)
-                .logout(logout -> logout.disable()) // logout filter in this chain not needed
-                .with(new CustomSecurityFilters(), Customizer.withDefaults());
-
-                return http.build();
+                return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
+                        authConfigurationProperties.getZaasQueryEndpoint()
+                    )))
+                    .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+                    .authenticationProvider(tokenAuthenticationProvider)
+                    .logout(AbstractHttpConfigurer::disable) // logout filter in this chain not needed
+                    .with(new CustomSecurityFilters(), Customizer.withDefaults())
+                    .build();
             }
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
@@ -372,16 +371,16 @@ public class NewSecurityConfiguration {
 
             @Bean
             public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
-                baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
+                return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasTicketEndpoint()
-                ))).authorizeRequests(requests -> requests
-                        .anyRequest().authenticated())
-                        .authenticationProvider(tokenAuthenticationProvider)
-                        .logout(logout -> logout.disable()) // logout filter in this chain not needed
-                        .x509(x509 -> x509 //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
-                                .userDetailsService(new SimpleUserDetailService())).with(new CustomSecurityFilters(), Customizer.withDefaults());
-
-                return http.build();
+                    ))).authorizeRequests(requests -> requests.anyRequest().authenticated())
+                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .authenticationProvider(tokenAuthenticationProvider)
+                    .logout(logout -> logout.disable()) // logout filter in this chain not needed
+                    .x509(x509 -> x509 //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
+                        .userDetailsService(new SimpleUserDetailService())
+                    ).with(new CustomSecurityFilters(), Customizer.withDefaults())
+                    .build();
             }
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {

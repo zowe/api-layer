@@ -4,7 +4,7 @@ apiml:
         apimlId: apiml1
         hostname: localhost
         ipAddress: 127.0.0.1
-        port: 10010
+        port: 10023
         discoveryServiceUrls: https://localhost:10011/eureka/
 
     security:

@@ -46,8 +46,8 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
         response.setApplicationName("IZUDFLT");
         response.setTicket(PASSTICKET);
 
-        mockService("gateway").scope(MockService.Scope.CLASS)
-            .addEndpoint("/gateway/zaas/ticket")
+        mockService("zaas").scope(MockService.Scope.CLASS)
+            .addEndpoint("/zaas/zaas/ticket")
                 .assertion(he -> assertEquals(SERVICE_ID, he.getRequestHeaders().getFirst("X-Service-Id")))
                 .assertion(he -> assertEquals(COOKIE_NAME + "=" + JWT, he.getRequestHeaders().getFirst("Cookie")))
                 .bodyJson(response)
