@@ -18,7 +18,6 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,6 @@ public class TrustedCertificatesProvider {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-    @Autowired
     public TrustedCertificatesProvider(@Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
     }
@@ -57,7 +55,7 @@ public class TrustedCertificatesProvider {
      * @param certificatesEndpoint Given full URL to the remote proxy gateway certificates endpoint
      * @return List of certificates or empty list
      */
-    @Cacheable(value = "trustedCertificates", key = "#certificatesEndpoint", unless = "#result.isEmpty()")
+    @Cacheable(value = "trustedCertificates", unless = "#result.isEmpty()")
     public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
         List<Certificate> trustedCerts = new ArrayList<>();
         String pem = callCertificatesEndpoint(certificatesEndpoint);

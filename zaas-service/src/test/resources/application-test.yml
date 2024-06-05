@@ -18,6 +18,7 @@ apiml:
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         corsEnabled: true
+        preferIpAddress: false
     loadBalancer:
         distribute: false
     zaas:
