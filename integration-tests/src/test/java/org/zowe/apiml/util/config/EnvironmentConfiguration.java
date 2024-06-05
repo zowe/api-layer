@@ -28,7 +28,6 @@ public class EnvironmentConfiguration {
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
     private CachingServiceConfiguration cachingServiceConfiguration;
-    private GatewayConfiguration gatewayConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;

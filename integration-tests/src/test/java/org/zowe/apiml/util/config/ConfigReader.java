@@ -81,7 +81,6 @@ public class ConfigReader {
                             new ApiCatalogServiceConfiguration(),
                             new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
-                            new GatewayConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
@@ -100,7 +99,6 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
                     configuration.getGatewayServiceConfiguration().setExternalPort(Integer.parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
                     configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
-                    configuration.getGatewayServiceConfiguration().setInternalPorts(System.getProperty("gateway.internalPorts", String.valueOf(configuration.getGatewayServiceConfiguration().getInternalPorts())));
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
 
                     configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
@@ -131,10 +129,6 @@ public class ConfigReader {
                     configuration.getDiscoverableClientConfiguration().setPort(Integer.parseInt(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
-
-                    configuration.getGatewayConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayConfiguration().getScheme()));
-                    configuration.getGatewayConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayConfiguration().getHost()));
-                    configuration.getGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayConfiguration().getPort()))));
 
                     configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
                     configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
