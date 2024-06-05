@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.zaas.security.login.saf;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +25,6 @@ import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.login.LoginRequest;
 
 @Component
-@Slf4j
 @ConditionalOnExpression("#{('${apiml.security.auth.provider:zosmf}' == 'zosmf') or ('${apiml.security.auth.provider:zosmf}' == 'dummy') or ('${apiml.security.auth.provider:zosmf}' == 'saf')}")
 public class ZosAuthenticationProvider implements AuthenticationProvider, InitializingBean {
     private PlatformUser platformUser = null;
