@@ -134,7 +134,7 @@ public class NewSecurityConfiguration {
                 authConfigurationProperties.getZaasLoginEndpoint(),
                 authConfigurationProperties.getZaasLogoutEndpoint()
             )))
-                .authorizeRequests(requests -> requests
+                .authorizeHttpRequests(requests -> requests
                         .anyRequest().permitAll())
 
                 .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
@@ -201,7 +201,7 @@ public class NewSecurityConfiguration {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getZaasAccessTokenEndpoint()
             )))
-                    .authorizeRequests(requests -> requests
+                    .authorizeHttpRequests(requests -> requests
                             .anyRequest().permitAll())
                     .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                     .authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -254,7 +254,7 @@ public class NewSecurityConfiguration {
                         authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
                         authConfigurationProperties.getZaasEvictAccessTokensAndRules()
                 )))
-                        .authorizeRequests(requests -> requests
+                        .authorizeHttpRequests(requests -> requests
                                 .anyRequest().authenticated())
                         .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                         .authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -301,7 +301,7 @@ public class NewSecurityConfiguration {
                         authConfigurationProperties.getZaasEvictAccessTokensAndRules(),
                         "/zaas/zaas/**"
                 )))
-                        .authorizeRequests(requests -> requests
+                        .authorizeHttpRequests(requests -> requests
                                 .anyRequest().authenticated())
                         .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                         .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
@@ -373,7 +373,7 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
                 return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasTicketEndpoint()
-                    ))).authorizeRequests(requests -> requests.anyRequest().authenticated())
+                    ))).authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                     .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .authenticationProvider(tokenAuthenticationProvider)
                     .logout(logout -> logout.disable()) // logout filter in this chain not needed
@@ -420,7 +420,7 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasRefreshEndpoint()
-                ))).authorizeRequests(requests -> requests
+                ))).authorizeHttpRequests(requests -> requests
                         .anyRequest().authenticated())
                         .authenticationProvider(tokenAuthenticationProvider)
                         .logout(logout -> logout.disable()) // logout filter in this chain not needed
@@ -463,7 +463,7 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
                 return baseConfigure(http.securityMatchers(matchers -> matchers
                         .requestMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH))
-                ).authorizeRequests(requests -> requests
+                ).authorizeHttpRequests(requests -> requests
                         .anyRequest().authenticated())
                         .logout(AbstractHttpConfigurer::disable) // logout filter in this chain not needed
                         .x509(x509 -> x509 // default x509 filter, authenticates trusted cert
@@ -491,12 +491,16 @@ public class NewSecurityConfiguration {
 
             @Bean
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
-                baseConfigure(http.securityMatchers(matchers -> matchers
+                baseConfigure(
+                    http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
-                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH))
-                ).authorizeRequests(requests -> requests
-                        .anyRequest().authenticated())
-                        .logout(logout -> logout.disable());  // logout filter in this chain not needed
+                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
+                    )
+                ).authorizeHttpRequests(requests -> requests
+                    .anyRequest()
+                    .authenticated()
+                )
+                .logout(logout -> logout.disable());  // logout filter in this chain not needed
 
                 if (isAttlsEnabled) {
                     http.x509(withDefaults())
@@ -605,7 +609,7 @@ public class NewSecurityConfiguration {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers("/**", "/gateway/version")))
-                    .authorizeRequests(requests -> requests
+                    .authorizeHttpRequests(requests -> requests
                             .anyRequest()
                             .permitAll()).logout(logout -> logout.disable())
                     // sort out client and apiml internal certificates
