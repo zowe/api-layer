@@ -122,6 +122,17 @@ if [ $JAVA_VERSION -ge 61 ]; then
                 --add-opens=java.base/java.util=ALL-UNNAMED
                 --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
                 --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+
+    if [ "${keystore_type}" = "JCERACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    fi
 fi
 
 METRICS_CODE=MS
