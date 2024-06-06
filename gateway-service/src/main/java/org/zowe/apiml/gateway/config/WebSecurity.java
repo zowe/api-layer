@@ -313,7 +313,6 @@ public class WebSecurity {
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers(ACTUATOR).authenticated()
                     .pathMatchers(REGISTRY_PATH, SERVICES_URL + "/**").authenticated()
                     .anyExchange().permitAll()
             )

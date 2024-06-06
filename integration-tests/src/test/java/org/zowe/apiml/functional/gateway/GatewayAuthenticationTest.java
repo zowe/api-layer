@@ -71,7 +71,7 @@ class GatewayAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                  .body(
-                    "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                    "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage) // FIXME response is 401 but empty, possibly missing exception handler
                 );
             }
         }
