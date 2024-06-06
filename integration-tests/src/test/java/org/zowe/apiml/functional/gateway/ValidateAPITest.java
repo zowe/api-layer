@@ -51,11 +51,11 @@ class ValidateAPITest implements TestWithStartedInstances {
             .log().all()
             .param("serviceID", "discoverableclient")
             .header("Cookie", "apimlAuthenticationToken=" + token)
-            .when()
+        .when()
             .post(getLegacyEndpointURLPost())
             .then()
             .assertThat()
-            .statusCode(HttpStatus.SC_BAD_REQUEST);
+            .statusCode(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
 
     }
 
