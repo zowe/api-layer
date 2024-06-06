@@ -6,9 +6,28 @@ eureka:
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
         metadata-map:
             apiml:
+                catalog:
+                    tile:
+                        id: apimediationlayer
+                        title:  API Mediation Layer API
+                        description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                        version: 1.0.0
+                routes:
+                    api_v1:
+                        gatewayUrl: /api/v1
+                        serviceUrl: /gateway
+                apiInfo:
+                    - apiId: zowe.apiml.gateway
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      documentationUrl: https://zowe.github.io/docs-site/
                 service:
-                    apimlId:  ${apiml.service.apimlId}
+                    title: API Gateway
+                    description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                     supportClientCertForwarding: true
+                authentication:
+                    sso: true
     client:
         fetchRegistry: true
         registerWithEureka: true
