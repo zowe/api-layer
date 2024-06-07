@@ -123,6 +123,12 @@ bootRun {
         '--add-opens=java.base/java.net=ALL-UNNAMED'
     ])
 
+    debugOptions {
+        port = 5010
+        suspend = false
+        server = true
+    }
+
     systemProperties = System.properties
 }
 
