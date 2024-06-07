@@ -261,20 +261,22 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
         @Nested
         class StorePassTicketInHeader {
+
             @Test
             void givenCustomHeader() {
                 given()
                     .cookie(COOKIE_NAME, jwt)
-                    .when()
+                .when()
                     .get(requestUrl)
-                    .then()
+                .then()
                     .body("headers.custompassticketheader", Matchers.notNullValue())
                     .body("headers.customuserheader", Matchers.notNullValue())
                     .statusCode(200);
             }
-        }
-    }
 
+        }
+
+    }
 
     private <T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>>
     void verifyPassTicketHeaders(T v) {

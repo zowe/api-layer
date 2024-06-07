@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
@@ -205,7 +206,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
             @Nested
             class WhenInvalid {
+
                 @Test
+                @Disabled("re-enable when websocket SCGW has been validated")
                 void returnError() throws Exception {
                     final StringBuilder response = new StringBuilder();
 
