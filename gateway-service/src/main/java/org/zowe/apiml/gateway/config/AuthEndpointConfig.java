@@ -28,16 +28,26 @@ import org.zowe.apiml.gateway.x509.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.security.cert.CertificateEncodingException;
+import java.util.Arrays;
 import java.util.Collections;
 
+import static org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.hc.core5.http.HttpHeaders.SET_COOKIE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.path;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 import static org.zowe.apiml.gateway.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 
 
 @Slf4j
 @Configuration
 public class AuthEndpointConfig {
+
+    private String[] HEADERS_TO_RESEND = {
+        SET_COOKIE,
+        CONTENT_TYPE,
+        AUTH_FAIL_HEADER
+    };
 
     private final WebClient webClient;
     private final WebClient webClientClientCert;
@@ -86,7 +96,9 @@ public class AuthEndpointConfig {
             .body(bodyInserter)
             .exchangeToMono(clientResponse -> {
                 var response = ServerResponse.status(clientResponse.statusCode());
-                response.headers(httpHeaders -> httpHeaders.addAll(clientResponse.headers().asHttpHeaders()));
+                response.headers(httpHeaders -> Arrays.stream(HEADERS_TO_RESEND).forEach(headerName ->
+                    httpHeaders.addAll(headerName, clientResponse.headers().header(headerName))
+                ));
                 return clientResponse.bodyToMono(String.class).flatMap(responseBody -> {
                     if (!responseBody.isEmpty()) {
                         return response.bodyValue(responseBody);
