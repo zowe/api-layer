@@ -24,7 +24,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
-import java.net.HttpCookie;
+import java.util.Optional;
 
 
 public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<TokenFilterFactory.Config, ZaasTokenResponse, Object> {
@@ -70,9 +70,16 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
         ServerHttpRequest request = null;
         if (response.getToken() != null) {
             if (!StringUtils.isEmpty(response.getCookieName())) {
-                request = exchange.getRequest().mutate().headers(headers ->
-                    headers.add(HttpHeaders.COOKIE, new HttpCookie(response.getCookieName(), response.getToken()).toString())
-                ).build();
+                request = exchange.getRequest().mutate().headers(headers -> {
+                    // FIXME add util
+                    String cookieValue = response.getCookieName() + "=" + response.getToken();
+                    String currentCookies = Optional.ofNullable(headers.get(HttpHeaders.COOKIE))
+                        .filter(cookie -> !cookie.isEmpty())
+                        .map(cookie -> cookie.get(0))
+                        .map(currentCookieValue -> currentCookieValue + "; " + cookieValue)
+                        .orElse(cookieValue);
+                    headers.set(HttpHeaders.COOKIE, currentCookies);
+                }).build();
             }
             if (!StringUtils.isEmpty(response.getHeaderName())) {
                 request = exchange.getRequest().mutate().headers(headers ->

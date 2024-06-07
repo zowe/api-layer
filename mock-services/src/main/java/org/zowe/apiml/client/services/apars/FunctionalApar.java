@@ -195,13 +195,13 @@ public class FunctionalApar implements Apar {
         throw new IllegalArgumentException("Headers did not have cookie or authorization field");
     }
 
-    protected boolean noLtpaCookie(Map<String, String> headers) {
+    protected boolean ltpaIsPresent(Map<String, String> headers) {
         String cookie = getAuthCookie(headers);
-        return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
+        return cookie != null && cookie.contains(LTPA_TOKEN_NAME);
     }
 
     protected boolean validLtpaCookie(Map<String, String> headers) {
-        if (noLtpaCookie(headers)) {
+        if (!ltpaIsPresent(headers)) {
             return false;
         }
         String token = jwtTokenService.extractLtpaToken(headers);

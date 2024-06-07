@@ -73,9 +73,9 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             given()
                 .config(SslContext.clientCertValid)
                 .header("X-CSRF-ZOSMF-HEADER", "")
-                .when()
+            .when()
                 .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-                .then()
+            .then()
                 .statusCode(is(SC_OK))
                 .body(
                     "items.dsname", hasItems(dsname1, dsname2)
