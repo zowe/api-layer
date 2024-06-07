@@ -27,11 +27,12 @@ import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(ServicesInfoController.SERVICES_URL)
+@RequestMapping({ServicesInfoController.SERVICES_SHORT_URL, ServicesInfoController.SERVICES_FULL_URL})
 @PreAuthorize("hasAuthority('TRUSTED_CERTIFICATE') or hasSafServiceResourceAccess('SERVICES', 'READ')")
 public class ServicesInfoController {
 
-    public static final String SERVICES_URL = "/gateway/services";
+    public static final String SERVICES_SHORT_URL = "/gateway/services";
+    public static final String SERVICES_FULL_URL = "/gateway/api/v1/services";
 
     private final ServicesInfoService servicesInfoService;
 
