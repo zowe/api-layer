@@ -55,10 +55,11 @@ class X509SchemeTest implements TestWithStartedInstances {
     @Tag("GatewayServiceRouting")
     void givenValidClientCert_thenForwardDetailsInHeader() {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
-        given().config(SslContext.clientCertValid)
-            .when()
+        given()
+            .config(SslContext.clientCertValid)
+        .when()
             .get(scgUrl)
-            .then()
+        .then()
             .body("dn", startsWith("CN=" + CLIENT_CN))
             .body("cn", is(CLIENT_CN)).statusCode(200);
     }
@@ -67,10 +68,11 @@ class X509SchemeTest implements TestWithStartedInstances {
     @Tag("GatewayServiceRouting")
     void givenNoCert_thenForwardErrorMessageInHeader() {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
-        given().config(SslContext.tlsWithoutCert)
-            .when()
+        given()
+            .config(SslContext.tlsWithoutCert)
+        .when()
             .get(scgUrl)
-            .then()
+        .then()
             .header("X-Zowe-Auth-Failure", is("ZWEAG167E No client certificate provided in the request")).statusCode(200);
     }
 
@@ -82,9 +84,9 @@ class X509SchemeTest implements TestWithStartedInstances {
             void givenCorrectClientCertificateInRequest() {
                 given()
                     .config(SslContext.clientCertValid)
-                    .when()
+                .when()
                     .get(X509SchemeTest.URL)
-                    .then()
+                .then()
                     .body("dn", startsWith("CN=" + CLIENT_CN))
                     .body("cn", is(CLIENT_CN)).statusCode(200);
             }
@@ -93,9 +95,9 @@ class X509SchemeTest implements TestWithStartedInstances {
             void givenApimlCertificateInRequest() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .when()
+                .when()
                     .get(X509SchemeTest.URL)
-                    .then()
+                .then()
                     .body("dn", startsWith("CN="))
                     .statusCode(200);
             }
@@ -108,9 +110,9 @@ class X509SchemeTest implements TestWithStartedInstances {
                 .header(new Header("X-Certificate-CommonName", "evil common name"))
                 .header(new Header("X-Certificate-Public", "evil public key"))
                 .header(new Header("X-Certificate-DistinguishedName", "evil distinguished name"))
-                .when()
+            .when()
                 .get(X509SchemeTest.URL)
-                .then()
+            .then()
                 .body("publicKey", is(""))
                 .body("dn", is(""))
                 .body("cn", is("")).statusCode(200);
@@ -119,10 +121,10 @@ class X509SchemeTest implements TestWithStartedInstances {
         @Test
         void givenNoCertificate_thenEmptyBodyIsReturned() {
             given()
-                .when()
+            .when()
                 .config(SslContext.tlsWithoutCert)
                 .get(X509SchemeTest.URL)
-                .then()
+            .then()
                 .header("X-Zowe-Auth-Failure", is("ZWEAG167E No client certificate provided in the request")).statusCode(200);
         }
     }
