@@ -35,7 +35,7 @@ import static com.google.common.base.Strings.emptyToNull;
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "Central Registry")
-@RequestMapping(value = "gateway/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/gateway/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @ConditionalOnProperty(value = "apiml.gateway.registry.enabled", havingValue = "true")
 public class RegistryController {
 

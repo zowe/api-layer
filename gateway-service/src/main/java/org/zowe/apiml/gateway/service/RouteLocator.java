@@ -104,11 +104,6 @@ public class RouteLocator implements RouteDefinitionLocator {
     }
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
-        // TODO: this is till the SCGW and GW uses the same DS. The routing rules should be different for each application
-        if (org.apache.commons.lang.StringUtils.equalsIgnoreCase("GATEWAY", serviceInstance.getServiceId())) {
-            return Stream.of(new RoutedService("zuul", "", "/"));
-        }
-
         return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
             // sorting avoid a conflict with the more general pattern
             .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed());
