@@ -35,7 +35,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
@@ -97,7 +97,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                         .post(loginUrl)
                         .then()
                         .statusCode(is(SC_NO_CONTENT))
-                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .cookie(COOKIE_NAME, not(is(emptyString())))
                         .extract()
                         .detailedCookie(COOKIE_NAME);
 
@@ -115,7 +115,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                         .post(loginUrl)
                         .then()
                         .statusCode(is(SC_NO_CONTENT))
-                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .cookie(COOKIE_NAME, not(is(emptyString())))
                         .extract().detailedCookie(COOKIE_NAME);
 
                 assertValidAuthToken(cookie, Optional.of(USERNAME));
