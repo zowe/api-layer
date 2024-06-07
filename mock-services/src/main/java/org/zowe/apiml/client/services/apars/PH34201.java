@@ -49,7 +49,7 @@ public class PH34201 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-        if (containsInvalidOrNoUser(headers) && ltpaIsPresent(headers) && !isValidJwtCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers) && !isValidJwtCookie(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
