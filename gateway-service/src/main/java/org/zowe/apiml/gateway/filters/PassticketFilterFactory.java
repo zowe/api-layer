@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.gateway.filters;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -30,6 +32,12 @@ import java.util.Base64;
 public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactory<TicketResponse> {
 
     private static final String TICKET_URL = "%s://%s:%d/%s/zaas/ticket";
+
+    @Value("${apiml.security.auth.passticket.customUserHeader:}")
+    private String customUserHeader;
+
+    @Value("${apiml.security.auth.passticket.customAuthHeader:}")
+    private String customPassTicketHeader;
 
     public PassticketFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(webClient, instanceInfoService, messageService);
@@ -55,8 +63,14 @@ public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactor
         ServerHttpRequest request;
         if (response.getTicket() != null) {
             String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
-            final String headerValue = "Basic " + encodedCredentials;
-            request = setRequestHeader(exchange, HttpHeaders.AUTHORIZATION, headerValue);
+
+            var requestSpec = exchange.getRequest().mutate();
+            requestSpec = requestSpec.header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
+            if (StringUtils.isNotEmpty(customUserHeader) && StringUtils.isNotEmpty(customPassTicketHeader)) {
+                requestSpec = requestSpec.header(customUserHeader, response.getUserId());
+                requestSpec = requestSpec.header(customPassTicketHeader, response.getTicket());
+            }
+            request = requestSpec.build();
         } else {
             String message = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication").mapToLogMessage();
             request = updateHeadersForError(exchange, message);
