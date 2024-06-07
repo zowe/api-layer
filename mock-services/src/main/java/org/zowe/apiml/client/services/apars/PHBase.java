@@ -74,7 +74,7 @@ public class PHBase extends FunctionalApar {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
-            if (!isValidJwtCookie(headers) || !ltpaIsPresent(headers)) {
+            if (!isValidJwtCookie(headers)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         }
