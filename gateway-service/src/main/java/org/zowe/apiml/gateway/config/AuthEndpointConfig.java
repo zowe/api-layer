@@ -112,14 +112,14 @@ public class AuthEndpointConfig {
             .andRoute(path("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
             .andRoute(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
             .andRoute(path("/gateway/api/v1/auth/access-token/generate"), resendTo("/api/v1/auth/access-token/generate"))
-            .andRoute(path("/gateway/auth/access-token/revoke/tokens/user"), resendTo("/auth/access-token/revoke/tokens/user"))
-            .andRoute(path("/gateway/auth/access-token/revoke/tokens"), resendTo("/auth/access-token/revoke/tokens"))
-            .andRoute(path("/gateway/auth/access-token/revoke/tokens/scope"), resendTo("/auth/access-token/revoke/tokens/scope"))
-            .andRoute(path("/gateway/auth/access-token/evict"), resendTo("/auth/access-token/evict"))
-            .andRoute(path("/gateway/api/v1//keys/public/all"), resendTo("/api/v1//keys/public/all"))
-            .andRoute(path("/gateway/api/v1/keys/public/current"), resendTo("/api/v1/keys/public/current"))
-            .andRoute(path("/gateway/api/v1/oidc-token/validate"), resendTo("/api/v1/oidc-token/validate"))
-            .andRoute(path("/gateway/api/v1/oidc/webfinger"), resendTo("/api/v1/oidc/webfinger"));
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/user"), resendTo("/api/v1/auth/access-token/revoke/tokens/user"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens"), resendTo("/api/v1/auth/access-token/revoke/tokens"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/scope"), resendTo("/api/v1/auth/access-token/revoke/tokens/scope"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/evict"), resendTo("/api/v1/auth/access-token/evict"))
+            .andRoute(path("/gateway/api/v1/auth/keys/public/all"), resendTo("/api/v1/auth/keys/public/all"))
+            .andRoute(path("/gateway/api/v1/auth/keys/public/current"), resendTo("/api/v1/auth/keys/public/current"))
+            .andRoute(path("/gateway/api/v1/auth/oidc-token/validate"), resendTo("/api/v1/auth/oidc-token/validate"))
+            .andRoute(path("/gateway/api/v1/auth/oidc/webfinger"), resendTo("/api/v1/auth/oidc/webfinger"));
     }
 
 }

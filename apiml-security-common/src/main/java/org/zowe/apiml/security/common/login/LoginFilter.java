@@ -200,15 +200,22 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         // method available could return 0 even there are some data, depends on the implementation
-        try (var is = new BufferedInputStream(request.getInputStream())) {
-            is.mark(1);
-            if (is.read() < 0) {
+        try (
+            var is = request.getInputStream();
+            var bis = new BufferedInputStream(is)
+        ) {
+            if (is.isFinished()) {
+                logger.trace("The input stream is already closed");
+                return Optional.empty();
+            }
+            bis.mark(1);
+            if (bis.read() < 0) {
                 // no data available
                 return Optional.empty();
             }
             // return to the beginning (to do not skip first character: '{')
-            is.reset();
-            return Optional.of(mapper.readValue(is, LoginRequest.class));
+            bis.reset();
+            return Optional.of(mapper.readValue(bis, LoginRequest.class));
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
