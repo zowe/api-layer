@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.controllers;
+package org.zowe.apiml.gateway.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class VersionControllerTest {
     @Test
     void givenSpecificVersions_whenVersionEndpointCalled_thenVersionInfoShouldBeGivenInSuccessfulResponse() throws Exception {
         Mockito.when(versionService.getVersion()).thenReturn(getDummyVersionInfo());
-        this.mockMvc.perform(get("/zaas/version"))
+        this.mockMvc.perform(get("/gateway/version"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.zowe.version", is("0.0.0")))
             .andExpect(jsonPath("$.zowe.buildNumber", is("000")))
