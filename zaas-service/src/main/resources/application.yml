@@ -14,7 +14,6 @@ logging:
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
         org.ehcache: WARN
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
 

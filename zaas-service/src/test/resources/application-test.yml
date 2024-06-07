@@ -167,7 +167,6 @@ logging:
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
 spring.config.activate.on-profile: diag
