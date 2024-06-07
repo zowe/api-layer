@@ -99,7 +99,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .when()
                 .get(URL)
                 .then()
-                .body("headers.cookie", is("apimlAuthenticationToken=" + jwt)) // FIXME seems value is not coming with counter-slash escaping sequence
+                .body("headers.cookie", is("apimlAuthenticationToken=" + jwt))
                 .statusCode(200);
         }
 

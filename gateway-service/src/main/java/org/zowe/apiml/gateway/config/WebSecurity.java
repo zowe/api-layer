@@ -101,8 +101,6 @@ public class WebSecurity {
     public static final String OAUTH_2_REDIRECT_URI = CONTEXT_PATH + "/login/oauth2/code/**";
     public static final String OAUTH_2_REDIRECT_LOGIN_URI = CONTEXT_PATH + "/login/oauth2/code/{registrationId}";
 
-    public static final String ACTUATOR = "/application/**";
-
     @Value("${apiml.security.oidc.cookie.sameSite:Lax}")
     public String sameSite;
 
