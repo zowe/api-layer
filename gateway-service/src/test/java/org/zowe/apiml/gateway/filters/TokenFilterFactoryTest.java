@@ -62,7 +62,7 @@ class TokenFilterFactoryTest {
                     .token("cookieValue")
                     .build()
                 );
-                assertEquals("cookieName=\"cookieValue\"", request.getHeaders().getFirst("cookie"));
+                assertEquals("cookieName=cookieValue", request.getHeaders().getFirst("cookie"));
             }
 
         }
@@ -89,7 +89,7 @@ class TokenFilterFactoryTest {
                     .build()
                 );
                 assertEquals("jwt", request.getHeaders().getFirst("header"));
-                assertEquals("cookie=\"jwt\"", request.getHeaders().getFirst("cookie"));
+                assertEquals("cookie=jwt", request.getHeaders().getFirst("cookie"));
             }
 
         }
