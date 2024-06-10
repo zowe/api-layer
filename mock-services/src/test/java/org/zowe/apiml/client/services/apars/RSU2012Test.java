@@ -35,6 +35,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class RSU2012Test {
+
     private static final String SERVICE = "authentication";
     private static final String USERNAME = "USER";
     private static final String PASSWORD = "validPassword";
@@ -203,4 +204,5 @@ class RSU2012Test {
     private String getLtpaCookieHeader() {
         return "LtpaToken2=token";
     }
+
 }
