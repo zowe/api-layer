@@ -17,8 +17,8 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
-import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
@@ -39,11 +39,12 @@ public class SafIdtFilterFactory extends AbstractRequestBodyAuthSchemeFactory<Za
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
         ServerHttpRequest request;
         if (response.getToken() != null) {
-            request = exchange.getRequest().mutate().headers(headers ->
+            request = cleanHeadersOnAuthSuccess(exchange);
+            request = request.mutate().headers(headers ->
                 headers.add(ApimlConstants.SAF_TOKEN_HEADER, response.getToken())
             ).build();
         } else {
-            request = updateHeadersForError(exchange, "Invalid or missing authentication");
+            request = cleanHeadersOnAuthFail(exchange,"Invalid or missing authentication");
         }
 
         exchange = exchange.mutate().request(request).build();

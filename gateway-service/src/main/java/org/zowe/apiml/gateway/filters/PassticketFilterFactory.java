@@ -62,9 +62,11 @@ public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactor
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, TicketResponse response) {
         ServerHttpRequest request;
         if (response.getTicket() != null) {
+            request = cleanHeadersOnAuthSuccess(exchange);
+
             String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));
 
-            var requestSpec = exchange.getRequest().mutate();
+            var requestSpec = request.mutate();
             requestSpec = requestSpec.header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
             if (StringUtils.isNotEmpty(customUserHeader) && StringUtils.isNotEmpty(customPassTicketHeader)) {
                 requestSpec = requestSpec.header(customUserHeader, response.getUserId());
@@ -73,7 +75,7 @@ public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactor
             request = requestSpec.build();
         } else {
             String message = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication").mapToLogMessage();
-            request = updateHeadersForError(exchange, message);
+            request = cleanHeadersOnAuthFail(exchange, message);
         }
 
         exchange = exchange.mutate().request(request).build();

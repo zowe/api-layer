@@ -56,4 +56,5 @@ class VersionControllerTest {
         versionInfo.setApiml(versionInfoDetails);
         return versionInfo;
     }
+
 }

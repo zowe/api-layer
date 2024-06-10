@@ -23,9 +23,9 @@ import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.gateway.x509.X509Util;
-import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
 
@@ -36,9 +36,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static org.zowe.apiml.gateway.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
+import static org.zowe.apiml.gateway.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 /**
@@ -125,6 +125,11 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
 
+    private static final Predicate<String> CERTIFICATE_HEADERS = headerName ->
+        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-Public") ||
+        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-DistinguishedName") ||
+        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-CommonName");
+
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
         StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
         StringUtils.equalsIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME) ||
@@ -139,10 +144,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
     private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
         CREDENTIALS_HEADER_INPUT.test(headerName) ||
+        CERTIFICATE_HEADERS.test(headerName) ||
         StringUtils.equalsIgnoreCase(headerName, "X-SAF-Token") ||
-        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-Public") ||
-        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-DistinguishedName") ||
-        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-CommonName") ||
         StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
 
@@ -248,25 +251,65 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
                 // add client certificate when present
                 setClientCertificate(zaasCallBuilder, request.getSslInfo());
-
-                // update original request - to remove all potential headers and cookies with credentials
-                Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
-                    .filter(entry -> !CREDENTIALS_HEADER.test(entry.getKey()))
-                    .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
-                Stream<Map.Entry<String, String>> nonCredentialCookies = cookies.stream()
-                    .filter(c -> !CREDENTIALS_COOKIE.test(c))
-                    .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
-
-                List<Map.Entry<String, String>> newHeaders = Stream.concat(
-                    nonCredentialHeaders,
-                    nonCredentialCookies
-                ).toList();
-
-                headers.clear();
-                newHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));
             });
 
         return zaasCallBuilder;
+    }
+
+    /**
+     * This method remove a necessary subset of credentials in case of authentication fail. If ZAAS cannot generate a
+     * new credentials (ie. because of basic authentication, expired token, etc.) the Gateway should provide the original
+     * credentials passed by a user. But there are headers that could be removed to avoid misusing (see forwarding
+     * certificate - user cannot provide a public certificate to take foreign privilleges).
+     * It also set the header to describe an authentication error.
+     *
+     * @param exchange exchange of the user request resent to a service
+     * @param errorMessage message to be set in the X-Zowe-Auth-Failure header
+     * @returnmutated request
+     */
+    protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
+        return exchange.getRequest().mutate().headers(headers -> {
+            // update original request - to remove all potential headers and cookies with credentials
+            Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
+                .filter(entry -> !CERTIFICATE_HEADERS.test(entry.getKey()))
+                .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
+
+            headers.clear();
+            nonCredentialHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));
+
+            // set error header in both side (request to the service, response to the user)
+            headers.add(ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
+            exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
+        }).build();
+    }
+
+    /**
+     * This method removes from the request all headers and cookie related to the authentication. It is necessary to send
+     * the request with multiple auth values. The Gateway would set a new credentials in this case
+     * @param exchange exchange of the user request resent to a service
+     * @return mutated request
+     */
+    protected ServerHttpRequest cleanHeadersOnAuthSuccess(ServerWebExchange exchange) {
+        return exchange.getRequest().mutate().headers(headers -> {
+            // get all current cookies
+            List<HttpCookie> cookies = readCookies(headers).toList();
+
+            // update original request - to remove all potential headers and cookies with credentials
+            Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
+                    .filter(entry -> !CREDENTIALS_HEADER.test(entry.getKey()))
+                    .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
+            Stream<Map.Entry<String, String>> nonCredentialCookies = cookies.stream()
+                    .filter(c -> !CREDENTIALS_COOKIE.test(c))
+                    .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
+
+            List<Map.Entry<String, String>> newHeaders = Stream.concat(
+                    nonCredentialHeaders,
+                    nonCredentialCookies
+            ).toList();
+
+            headers.clear();
+            newHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));
+        }).build();
     }
 
     protected GatewayFilter createGatewayFilter(AbstractConfig config, D data) {
@@ -281,15 +324,10 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             }
         );
     }
+
     protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {
         return exchange.getRequest().mutate()
             .headers(headers -> headers.add(key, value))
-            .build();
-    }
-
-    protected ServerHttpRequest setRequestHeader(ServerWebExchange exchange, String headerName, String headerValue) {
-        return exchange.getRequest().mutate()
-            .header(headerName, headerValue)
             .build();
     }
 

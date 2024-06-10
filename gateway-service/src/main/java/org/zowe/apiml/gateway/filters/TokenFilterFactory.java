@@ -70,7 +70,8 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
         ServerHttpRequest request = null;
         if (response.getToken() != null) {
             if (!StringUtils.isEmpty(response.getCookieName())) {
-                request = exchange.getRequest().mutate().headers(headers -> {
+                request = cleanHeadersOnAuthSuccess(exchange);
+                request = request.mutate().headers(headers -> {
                     // FIXME add util
                     String cookieValue = response.getCookieName() + "=" + response.getToken();
                     String currentCookies = Optional.ofNullable(headers.get(HttpHeaders.COOKIE))
@@ -82,13 +83,14 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
                 }).build();
             }
             if (!StringUtils.isEmpty(response.getHeaderName())) {
-                request = exchange.getRequest().mutate().headers(headers ->
+                request = cleanHeadersOnAuthSuccess(exchange);
+                request = request.mutate().headers(headers ->
                     headers.add(response.getHeaderName(), response.getToken())
                 ).build();
             }
         }
         if (request == null) {
-            request = updateHeadersForError(exchange, "Invalid or missing authentication");
+            request = cleanHeadersOnAuthFail(exchange, "Invalid or missing authentication");
         }
 
         exchange = exchange.mutate().request(request).build();

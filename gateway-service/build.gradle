@@ -85,7 +85,6 @@ dependencies {
     testImplementation libs.reactor.test
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.web.test.client
-    testImplementation libs.spring.webmvc
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
