@@ -155,8 +155,12 @@ jobs:
                     APIML_SERVICE_APIMLID: apiml2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -397,6 +401,8 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
