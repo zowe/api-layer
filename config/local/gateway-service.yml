@@ -2,6 +2,7 @@ apiml:
     gateway.registry.enabled: true
     security.x509.registry.allowedUsers: Zowe Service
     service:
+        apimlId: apiml1
         forwardClientCertEnabled: true
         hostname: localhost
         port: 10010
