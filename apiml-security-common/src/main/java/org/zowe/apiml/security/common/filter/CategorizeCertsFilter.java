@@ -165,5 +165,4 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
     Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
 
-
 }

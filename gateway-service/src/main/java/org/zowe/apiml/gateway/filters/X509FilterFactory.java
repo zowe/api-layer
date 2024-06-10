@@ -104,7 +104,6 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
         return null;
     }
 
-
     public static class Config {
         private String headers;
 
@@ -115,5 +114,7 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
         public void setHeaders(String headers) {
             this.headers = headers;
         }
+
     }
+
 }
