@@ -24,7 +24,7 @@
 # - LIBRARY_PATH
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_components_gateway_port - the port the api gateway service will use
-# - ZWE_components_gateway_server_ssl_enabled
+# - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
 # - ZWE_configs_storage_evictionStrategy
@@ -41,6 +41,7 @@
 # - ZWE_configs_port - the port the caching service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
@@ -114,14 +115,21 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 ATTLS_ENABLED="false"
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-    ATTLS_ENABLED="true"
-    ZWE_configs_server_ssl_enabled="false"
+# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+  ATTLS_ENABLED="true"
+fi
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  ZWE_configs_server_ssl_enabled="false"
+  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
 fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "$ATTLS_ENABLED" = "true" ]; then
+if [ "${ATTLS_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 
@@ -149,14 +157,27 @@ if [ $JAVA_VERSION -ge 61 ]; then
                 --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
                 --add-opens=java.base/java.util=ALL-UNNAMED
                 --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                --add-opens=java.base/java.io=ALL-UNNAMED"
+
+    if [ "${keystore_type}" = "JCERACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    fi
 fi
 
 CACHING_CODE=CS
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
-   ${QUICK_START} \
-   ${ADD_OPENS} \
+  ${QUICK_START} \
+  ${ADD_OPENS} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
@@ -181,8 +202,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Dcaching.storage.infinispan.persistence.indexLocation=${ZWE_configs_storage_infinispan_persistence_indexLocation:-index} \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
   -Dserver.address=0.0.0.0 \
-  -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true}  \
-  -Dserver.ssl.protocol=${ZWE_components_gateway_server_ssl_protocol:-"TLSv1.2"}  \
+  -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
+  -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
   -Dserver.ssl.keyStore="${keystore_location}" \
   -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
   -Dserver.ssl.keyStorePassword="${keystore_pass}" \

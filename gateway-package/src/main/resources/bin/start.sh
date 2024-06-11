@@ -31,6 +31,7 @@
 # - ZWE_configs_heap_init
 # - ZWE_configs_apiml_catalog_serviceId
 # - ZWE_configs_apiml_gateway_timeoutMillis
+# - ZWE_configs_apiml_gateway_externalProtocol
 # - ZWE_configs_apiml_security_auth_provider
 # - ZWE_configs_apiml_security_allowtokenrefresh
 # - ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration
@@ -79,6 +80,7 @@
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_GATEWAY_SHARED_LIBS
 # - ZWE_haInstance_hostname
+# - ZWE_zowe_network_server_tls_attls
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
@@ -158,24 +160,32 @@ else
 fi
 
 ATTLS_ENABLED="false"
-if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-    ATTLS_ENABLED="true"
-    ZWE_configs_server_ssl_enabled="false"
-    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
+# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+  ATTLS_ENABLED="true"
 fi
-
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
-    httpProtocol="https"
-else
-    httpProtocol="http"
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  ZWE_configs_server_ssl_enabled="false"
+  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
 fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "$ATTLS_ENABLED" = "true" ]; then
+if [ "${ATTLS_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
     ZWE_configs_apiml_service_corsEnabled=true
 fi
+
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
+    externalProtocol="https"
+else
+    externalProtocol="http"
+fi
+
 
 # Check if the directory containing the Gateway shared JARs was set and append it to the GW loader path
 if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
@@ -225,7 +235,20 @@ if [ $JAVA_VERSION -ge 61 ]; then
                 --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
                 --add-opens=java.base/java.util=ALL-UNNAMED
                 --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
+                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                --add-opens=java.base/java.io=ALL-UNNAMED"
+
+    if [ "${keystore_type}" = "JCERACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    fi
 fi
 
 GATEWAY_CODE=AG
@@ -243,7 +266,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
-    -Dapiml.service.externalUrl="${httpProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
+    -Dapiml.service.externalUrl="${ZWE_configs_apiml_gateway_externalProtocol:-${externalProtocol}}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
