@@ -15,7 +15,6 @@ import {Constants} from "../../api/Constants";
 
 export default class MapHandler implements ICommandHandler {
 
-
     public async process(params: IHandlerParameters): Promise<void> {
         const file: string = params.arguments.inputFile;
         const system: string = params.arguments.system ?? '';
