@@ -125,10 +125,16 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
 
-    private static final Predicate<String> CERTIFICATE_HEADERS = headerName ->
-        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-Public") ||
-        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-DistinguishedName") ||
-        StringUtils.equalsIgnoreCase(headerName, "X-Certificate-CommonName");
+    private static final String[] CERTIFICATE_HEADERS = {
+        "X-Certificate-Public",
+        "X-Certificate-DistinguishedName",
+        "X-Certificate-CommonName"
+    };
+
+    private static final Predicate<String> CERTIFICATE_HEADERS_TEST = headerName ->
+        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[0]) ||
+        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[1]) ||
+        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[2]);
 
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
         StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
@@ -144,7 +150,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
     private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
         CREDENTIALS_HEADER_INPUT.test(headerName) ||
-        CERTIFICATE_HEADERS.test(headerName) ||
+        CERTIFICATE_HEADERS_TEST.test(headerName) ||
         StringUtils.equalsIgnoreCase(headerName, "X-SAF-Token") ||
         StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
@@ -270,12 +276,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
         return exchange.getRequest().mutate().headers(headers -> {
             // update original request - to remove all potential headers and cookies with credentials
-            Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
-                .filter(entry -> !CERTIFICATE_HEADERS.test(entry.getKey()))
-                .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
-
-            headers.clear();
-            nonCredentialHeaders.forEach(newHeader -> headers.add(newHeader.getKey(), newHeader.getValue()));
+            Arrays.stream(CERTIFICATE_HEADERS).forEach(headerToRemove -> headers.remove(headerToRemove));
 
             // set error header in both side (request to the service, response to the user)
             headers.add(ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
@@ -296,15 +297,14 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
             // update original request - to remove all potential headers and cookies with credentials
             Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
-                    .filter(entry -> !CREDENTIALS_HEADER.test(entry.getKey()))
-                    .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
+                .filter(entry -> !CREDENTIALS_HEADER.test(entry.getKey()))
+                .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
             Stream<Map.Entry<String, String>> nonCredentialCookies = cookies.stream()
-                    .filter(c -> !CREDENTIALS_COOKIE.test(c))
-                    .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
-
+                .filter(c -> !CREDENTIALS_COOKIE.test(c))
+                .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
             List<Map.Entry<String, String>> newHeaders = Stream.concat(
-                    nonCredentialHeaders,
-                    nonCredentialCookies
+                nonCredentialHeaders,
+                nonCredentialCookies
             ).toList();
 
             headers.clear();

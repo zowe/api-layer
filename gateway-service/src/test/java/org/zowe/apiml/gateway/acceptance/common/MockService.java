@@ -460,9 +460,13 @@ public class MockService implements AutoCloseable {
              * @throws JsonProcessingException in case an issue with generation of JSON
              */
             public EndpointBuilder bodyJson(Object body) throws JsonProcessingException {
-                ObjectWriter writer = new ObjectMapper().writer();
-                contentType(MediaType.APPLICATION_JSON_VALUE);
-                return body(writer.writeValueAsString(body));
+                if (body == null) {
+                    return body(null);
+                } else {
+                    ObjectWriter writer = new ObjectMapper().writer();
+                    contentType(MediaType.APPLICATION_JSON_VALUE);
+                    return body(writer.writeValueAsString(body));
+                }
             }
 
         }
