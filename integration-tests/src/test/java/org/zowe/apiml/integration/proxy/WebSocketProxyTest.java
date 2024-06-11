@@ -12,11 +12,7 @@ package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -173,8 +169,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.wait(WAIT_TIMEOUT_MS);
                         }
 
-                        System.out.println("Response: " + response.toString());
-                        assertEquals(0, response.toString().indexOf("CloseStatus[code=1003,"));
+                        assertEquals(0, response.toString().indexOf("CloseStatus[code=1003,"), "" +
+                            "Expected response with `CloseStatus[code=1003,`, but was `" + response + "`"
+                        );
                     }
 
                     @Test

@@ -163,14 +163,14 @@ public class SecurityUtils {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         String cookie = given()
-            .contentType(JSON)
-            .body(loginRequest)
+                .contentType(JSON)
+                .body(loginRequest)
             .when()
-            .post(gatewayLoginEndpoint)
+                .post(gatewayLoginEndpoint)
             .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+                .statusCode(is(SC_NO_CONTENT))
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
 
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return cookie;
