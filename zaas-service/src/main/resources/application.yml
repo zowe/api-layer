@@ -69,7 +69,7 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
-            acceptForwardedCert: false
+            acceptForwardedCert: true
             certificatesUrl:
             externalMapperUrl:
         saf:
