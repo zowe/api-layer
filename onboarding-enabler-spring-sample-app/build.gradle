@@ -50,5 +50,12 @@ bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
+
+    debugOptions {
+        port = 5015
+        suspend = false
+        server = true
+    }
+
     systemProperties = System.properties
 }
