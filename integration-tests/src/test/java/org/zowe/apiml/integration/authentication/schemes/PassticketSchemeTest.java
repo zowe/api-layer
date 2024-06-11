@@ -69,9 +69,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         );
     }
 
-    static Set<String> scopes = new HashSet<>();
-    static String jwt;
-    static String pat;
+    static final Set<String> scopes = new HashSet<>();
+    static final String jwt;
+    static final String pat;
 
     static {
         scopes.add("dcpassticket");
