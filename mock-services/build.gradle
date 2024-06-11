@@ -21,7 +21,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6303
+def javaAgentPort = 6305
 def debugPort = 5123
 def componentName = "mock-services"
 

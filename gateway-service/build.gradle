@@ -21,7 +21,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6310
+def javaAgentPort = 6300
 def debugPort = 5130
 def componentName = "gateway-service"
 
