@@ -10,16 +10,25 @@
 
 package org.zowe.apiml.gateway.filters;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
+import reactor.core.publisher.Mono;
 
 
 @Service
 public class ZoweFilterFactory extends TokenFilterFactory {
+
+    @Value("${apiml.security.auth.jwt.customAuthHeader:}")
+    private String customHeader;
 
     public ZoweFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(webClient, instanceInfoService, messageService);
@@ -28,6 +37,16 @@ public class ZoweFilterFactory extends TokenFilterFactory {
     @Override
     public String getEndpointUrl(ServiceInstance instance) {
         return String.format("%s://%s:%d/%s/zaas/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+    }
+
+    @Override
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
+        if (StringUtils.isNotEmpty(customHeader) && StringUtils.isNotEmpty(response.getToken())) {
+            var request = exchange.getRequest().mutate().headers(headers -> headers.add(customHeader, response.getToken())).build();
+            exchange = exchange.mutate().request(request).build();
+        }
+
+        return super.processResponse(exchange, chain, response);
     }
 
 }
