@@ -20,7 +20,8 @@ import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfigu
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product.web",
         "org.zowe.apiml.product.gateway",
-        "org.zowe.apiml.product.version"
+        "org.zowe.apiml.product.version",
+        "org.zowe.apiml.security.common.auth.saf"
     },
     exclude = {ReactiveOAuth2ClientAutoConfiguration.class, GatewayReactiveOAuth2AutoConfiguration.class}
 )
