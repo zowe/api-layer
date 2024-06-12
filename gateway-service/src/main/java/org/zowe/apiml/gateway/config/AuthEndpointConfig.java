@@ -91,6 +91,8 @@ public class AuthEndpointConfig {
     }
 
     private Mono<ServerResponse> resend(ServerRequest request, String path, String body) {
+        log.error(path);
+        log.error(body);
         var bodyInserter = StringUtils.isNotEmpty(body) ? BodyInserters.fromValue(body) : BodyInserters.empty();
         return getWebclient(request, path)
             .body(bodyInserter)
