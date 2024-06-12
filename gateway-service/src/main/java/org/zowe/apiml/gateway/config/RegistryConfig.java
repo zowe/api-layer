@@ -11,10 +11,15 @@
 package org.zowe.apiml.gateway.config;
 
 import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.services.BasicInfoService;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Configuration
 public class RegistryConfig {
@@ -27,6 +32,28 @@ public class RegistryConfig {
     @Bean
     public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
+    }
+
+    @Bean
+    public ServiceAddress gatewayServiceAddress(
+        @Value("${apiml.service.externalUrl:#{null}}") String externalUrl,
+        @Value("${server.attls.enabled:false}") boolean attlsEnabled,
+        @Value("${server.ssl.enabled:true}") boolean sslEnabled,
+        @Value("${server.hostname:localhost}") String hostname,
+        @Value("${server.port}") int port
+    ) throws URISyntaxException {
+        if (externalUrl != null) {
+            URI uri = new URI(externalUrl);
+            return ServiceAddress.builder()
+                .scheme(uri.getScheme())
+                .hostname(uri.getHost() + ":" + uri.getPort())
+                .build();
+        }
+
+        return ServiceAddress.builder()
+            .scheme(attlsEnabled || sslEnabled ? "https" : "http")
+            .hostname(hostname + ":" + port)
+            .build();
     }
 
 }

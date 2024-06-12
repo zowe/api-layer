@@ -11,17 +11,23 @@
 package org.zowe.apiml.security.common.token;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Objects;
 
 public class X509AuthenticationToken extends AbstractAuthenticationToken {
 
     private final X509Certificate[] x509Certificates;
 
-    public X509AuthenticationToken(X509Certificate[] x509Certificates) {
-        super(null);
+    public X509AuthenticationToken(Collection<GrantedAuthority> authorities, X509Certificate[] x509Certificates) {
+        super(authorities);
         this.x509Certificates = x509Certificates;
+    }
+
+    public X509AuthenticationToken(X509Certificate[] x509Certificates) {
+        this(null, x509Certificates);
     }
 
     @Override
