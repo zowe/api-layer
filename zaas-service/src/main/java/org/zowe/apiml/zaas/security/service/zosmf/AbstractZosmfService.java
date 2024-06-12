@@ -103,6 +103,7 @@ public abstract class AbstractZosmfService {
     /**
      * TODO: move to a library such as EurekaUtils
      * Construct base URL for specific InstanceInfo
+     *
      * @param serviceInstance Instance of service, for which we want to get an URL
      * @return URL to the instance
      */
@@ -156,7 +157,7 @@ public abstract class AbstractZosmfService {
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
-            log.warn("Request to z/OSMF requires authentication", re.getMessage());
+            log.warn("Request to z/OSMF requires authentication {}", re.getMessage());
             return new BadCredentialsException("Invalid Credentials");
         }
 

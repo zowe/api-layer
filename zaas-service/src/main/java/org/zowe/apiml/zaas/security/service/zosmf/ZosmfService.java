@@ -55,6 +55,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import jakarta.annotation.PostConstruct;
+
 import javax.management.ServiceNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -315,7 +316,9 @@ public class ZosmfService extends AbstractZosmfService {
      */
     protected AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url, HttpMethod httpMethod) {
         final HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, getAuthenticationValue(authentication));
+        var authValue = getAuthenticationValue(authentication);
+        log.error("Auth request to zosmf: {}", authValue);
+        headers.add(HttpHeaders.AUTHORIZATION, authValue);
         headers.add(ZOSMF_CSRF_HEADER, "");
 
         try {

@@ -216,6 +216,7 @@ logging:
         com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
+        org.springframework.security: DEBUG
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
@@ -237,7 +238,7 @@ server:
 ---
 spring.config.activate.on-profile: dev
 
-logbackServiceName: ZWEAGW1
+logbackServiceName: ZWEAZS1
 
 ---
 spring.config.activate.on-profile: attls
