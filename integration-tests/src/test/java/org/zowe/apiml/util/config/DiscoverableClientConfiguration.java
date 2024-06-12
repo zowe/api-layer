@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiscoverableClientConfiguration {
+public class DiscoverableClientConfiguration implements ServiceConfiguration {
     private String scheme;
     private String applId;
     private String host;

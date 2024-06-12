@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DiscoveryServiceConfiguration {
+public class DiscoveryServiceConfiguration implements ServiceConfiguration {
     private String scheme;
     private String user;
     private String password;

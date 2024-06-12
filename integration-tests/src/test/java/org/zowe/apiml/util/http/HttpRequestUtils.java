@@ -45,8 +45,10 @@ public class HttpRequestUtils {
     }
 
     public static HttpResponse getResponse(String endpoint, int returnCode, int port, String host) throws IOException {
+        String defaultScheme = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+
         HttpGet request = new HttpGet(
-            getUriFromGateway(endpoint, port, host, Collections.emptyList())
+            getUri(defaultScheme, host, port, endpoint)
         );
 
         // When
@@ -64,13 +66,7 @@ public class HttpRequestUtils {
         return new HttpGet(uri);
     }
 
-    public static URI getUriFromGateway(String endpoint, int port, String host, List<NameValuePair> arguments) {
-        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String scheme = gatewayServiceConfiguration.getScheme();
-
-        StringTokenizer hostnameTokenizer = new StringTokenizer(host, ",");
-        host = hostnameTokenizer.nextToken();
-
+    private static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair...arguments) {
         URI uri = null;
         try {
             uri = new URIBuilder()
@@ -78,7 +74,7 @@ public class HttpRequestUtils {
                 .setHost(host)
                 .setPort(port)
                 .setPath(endpoint)
-                .addParameters(arguments)
+                .addParameters(Arrays.asList(arguments))
                 .build();
         } catch (URISyntaxException e) {
             log.error("Can't create URI for endpoint '{}'", endpoint);
@@ -88,22 +84,23 @@ public class HttpRequestUtils {
         return uri;
     }
 
-    public static URI getUriFromGateway(String endpoint, List<NameValuePair> arguments) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), arguments);
+    public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
+        String scheme = serviceConfiguration.getScheme();
+        String host = serviceConfiguration.getHost();
+        int port = serviceConfiguration.getPort();
+
+        StringTokenizer hostnameTokenizer = new StringTokenizer(host, ",");
+        host = hostnameTokenizer.nextToken();
+
+        return getUri(scheme, host, port, endpoint, arguments);
     }
 
-    public static URI getUriFromGateway(String endpoint) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), Collections.emptyList());
+    public static URI getUriFromGateway(String endpoint, NameValuePair...arguments) {
+        return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, arguments);
     }
 
-    public static URI getUriFromDiscovery(String endpoint, String host) throws URISyntaxException {
-        DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-
-        return new URIBuilder()
-            .setScheme(discoveryServiceConfiguration.getScheme())
-            .setHost(host)
-            .setPort(discoveryServiceConfiguration.getPort())
-            .setPath(endpoint)
-            .build();
+    public static URI getUriFromZaas(String endpoint, NameValuePair...arguments) {
+        return getUriFromService(ConfigReader.environmentConfiguration().getZaasConfiguration(), endpoint, arguments);
     }
+
 }
