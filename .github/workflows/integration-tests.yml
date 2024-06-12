@@ -402,14 +402,7 @@ jobs:
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
                     APIML_SECURITY_OIDC_ENABLED: true
@@ -417,6 +410,12 @@ jobs:
                     APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
                     APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
