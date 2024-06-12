@@ -12,19 +12,16 @@ package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.services.ServiceInfo;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
 
@@ -40,27 +37,41 @@ public class ServicesInfoController {
 
     private final ServicesInfoService servicesInfoService;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ServiceInfo>> getServices(@RequestParam(required = false) String apiId) {
+    @GetMapping
+    @ResponseBody
+    public Mono<ResponseEntity<List<ServiceInfo>>> getServices(@RequestParam(required = false) String apiId) {
         List<ServiceInfo> services = servicesInfoService.getServicesInfo(apiId);
-        HttpStatus status = (services.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
 
-        return ResponseEntity
-            .status(status)
+        if (services.isEmpty()) {
+            return Mono.just(ResponseEntity
+                .status(NOT_FOUND)
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .build());
+        }
+
+        return Mono.just(ResponseEntity
+            .ok()
             .header(VERSION_HEADER, CURRENT_VERSION)
-            .body(services);
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(services));
     }
 
-    @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ServiceInfo> getService(@PathVariable String serviceId) {
+    @GetMapping("/{serviceId}")
+    @ResponseBody
+    public Mono<ResponseEntity<ServiceInfo>> getService(@PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
-        HttpStatus status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ?
-            HttpStatus.NOT_FOUND : HttpStatus.OK;
+        if (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) {
+            return Mono.just(ResponseEntity
+                .status(NOT_FOUND)
+                .header(VERSION_HEADER, CURRENT_VERSION)
+                .build());
+        }
 
-        return ResponseEntity
-            .status(status)
+        return Mono.just(ResponseEntity
+            .ok()
             .header(VERSION_HEADER, CURRENT_VERSION)
-            .body(serviceInfo);
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(serviceInfo));
     }
 
 }

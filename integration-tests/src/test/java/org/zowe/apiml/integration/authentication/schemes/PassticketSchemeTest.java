@@ -125,7 +125,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
     class WhenUsingPassticketAuthenticationScheme {
         @Nested
         class ResultContainsPassticketAndNoJwt {
-            @ParameterizedTest
+            @ParameterizedTest(name = "givenJwtInBearerHeader with header {2}")
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
             @InfinispanStorageTest
             void givenJwtInBearerHeader(String token, String cookie, Header header) {
