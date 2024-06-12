@@ -21,11 +21,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
-
-import java.util.Optional;
-
 
 public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<TokenFilterFactory.Config, ZaasTokenResponse, Object> {
 
@@ -72,14 +70,12 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
             if (!StringUtils.isEmpty(response.getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
                 request = request.mutate().headers(headers -> {
-                    // FIXME add util
-                    String cookieValue = response.getCookieName() + "=" + response.getToken();
-                    String currentCookies = Optional.ofNullable(headers.get(HttpHeaders.COOKIE))
-                        .filter(cookie -> !cookie.isEmpty())
-                        .map(cookie -> cookie.get(0))
-                        .map(currentCookieValue -> currentCookieValue + "; " + cookieValue)
-                        .orElse(cookieValue);
-                    headers.set(HttpHeaders.COOKIE, currentCookies);
+                    String cookieHeader = CookieUtil.setCookie(
+                        StringUtils.join(headers.get(HttpHeaders.COOKIE), ';'),
+                        response.getCookieName(),
+                        response.getToken()
+                    );
+                    headers.set(HttpHeaders.COOKIE, cookieHeader);
                 }).build();
             }
             if (!StringUtils.isEmpty(response.getHeaderName())) {
