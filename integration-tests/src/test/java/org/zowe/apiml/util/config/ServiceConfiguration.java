@@ -10,16 +10,10 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public interface ServiceConfiguration {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ZosmfServiceConfiguration implements ServiceConfiguration {
-    private String scheme;
-    private String host;
-    private int port;
-    private String serviceId;
+    String getScheme();
+    String getHost();
+    int getPort();
+
 }

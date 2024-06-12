@@ -29,13 +29,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -245,7 +244,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
                 URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
                     PASSTICKET_TEST_ENDPOINT,
-                    Collections.singletonList(new BasicNameValuePair("applId", "XBADAPPL"))
+                    new BasicNameValuePair("applId", "XBADAPPL")
                 );
 
                 given()

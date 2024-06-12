@@ -22,12 +22,11 @@ import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 
 import java.time.Duration;
-import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 
 @Slf4j
 @DiscoverableClientDependentTest
@@ -51,11 +50,7 @@ class GatewayTimeoutTest implements TestWithStartedInstances {
                 assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 6 + (2 * SECOND)), () -> {
                     given()
                     .when()
-                        .get(getUriFromGateway(DISCOVERABLE_GREET,
-                            Collections.singletonList(
-                                new BasicNameValuePair("delayMs", String.valueOf(DEFAULT_TIMEOUT + SECOND)))
-                            )
-                        )
+                        .get(getUriFromGateway(DISCOVERABLE_GREET, new BasicNameValuePair("delayMs", String.valueOf(DEFAULT_TIMEOUT + SECOND))))
                         .then()
                         .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
                 });

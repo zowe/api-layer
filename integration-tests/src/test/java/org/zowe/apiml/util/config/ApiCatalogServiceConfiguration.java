@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiCatalogServiceConfiguration {
+public class ApiCatalogServiceConfiguration implements ServiceConfiguration {
     private String scheme;
     private String url;
     private String host;
