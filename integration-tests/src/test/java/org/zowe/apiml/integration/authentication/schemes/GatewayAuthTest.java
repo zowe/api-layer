@@ -23,6 +23,7 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,8 +41,8 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @ZaasTest
 public class GatewayAuthTest implements TestWithStartedInstances {
 
-    private static final GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
+    private static final GatewayServiceConfiguration GATEWAY_CONF = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final SafIdtConfiguration SAF_IDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     static Stream<Arguments> validToBeTransformed() {
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
@@ -61,7 +62,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         ));
-        if (safIdtConf.isEnabled()) {
+        if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
                 assertNull(response.jsonPath().getString("cookies.jwtToken"));
                 assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
@@ -85,7 +86,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
         ));
-        if (safIdtConf.isEnabled()) {
+        if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions));
         }
         return arguments.stream();
@@ -111,7 +112,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -125,7 +126,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -136,7 +137,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .config(SslContext.clientCertValid)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -149,7 +150,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -167,7 +168,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -178,7 +179,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .config(SslContext.selfSignedUntrusted)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -191,7 +192,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -200,7 +201,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
         void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -211,7 +212,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }

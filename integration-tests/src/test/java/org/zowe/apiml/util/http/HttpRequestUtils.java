@@ -66,7 +66,11 @@ public class HttpRequestUtils {
         return new HttpGet(uri);
     }
 
-    private static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair...arguments) {
+    public static URI getUri(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
+        return getUri(serviceConfiguration.getScheme(), serviceConfiguration.getHost(), serviceConfiguration.getPort(), endpoint, arguments);
+    }
+
+    public static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair...arguments) {
         URI uri = null;
         try {
             uri = new URIBuilder()
