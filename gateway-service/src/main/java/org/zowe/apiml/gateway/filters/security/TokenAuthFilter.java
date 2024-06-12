@@ -26,28 +26,33 @@ import reactor.core.publisher.Mono;
 public class TokenAuthFilter implements WebFilter {
     public static final String HEADER_PREFIX = "Bearer ";
     private final TokenProvider tokenProvider;
+
     @Override
-public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-    String token = resolveToken(exchange.getRequest());
-    if (StringUtils.hasText(token)) {
-         return this.tokenProvider.validateToken(token).flatMap(resp -> {
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String token = resolveToken(exchange.getRequest());
+        if (StringUtils.hasText(token)) {
+            return this.tokenProvider.validateToken(token).flatMap(resp -> {
+                if (StringUtils.hasText(resp.getUserId())) {
+                    Authentication authentication = this.tokenProvider.getAuthentication(resp.getUserId(), token);
+                    return chain.filter(exchange).contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+                }
+                return chain.filter(exchange);
+            });
+        }
+        return chain.filter(exchange);
+    }
 
-             Authentication authentication = this.tokenProvider.getAuthentication(resp.getToken());
-
-             return chain.filter(exchange).contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
-         });
+    private String resolveToken(ServerHttpRequest request) {
+        String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (!StringUtils.hasText(bearerToken)) {
+            bearerToken = request.getHeaders().getFirst(HttpHeaders.COOKIE);
+            if (StringUtils.hasText(bearerToken)) {
+                return bearerToken.substring(bearerToken.indexOf("=") + 1);
+            }
+        }
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(HEADER_PREFIX)) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
-    return chain.filter(exchange);
-}
-private String resolveToken(ServerHttpRequest request) {
-    String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-    if(bearerToken == null) {
-        bearerToken = request.getHeaders().getFirst(HttpHeaders.COOKIE);
-        return bearerToken.substring(bearerToken.indexOf("=")+1);
-    }
-    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(HEADER_PREFIX)) {
-        return bearerToken.substring(7);
-    }
-    return null;
-}
 }
