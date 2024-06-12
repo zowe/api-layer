@@ -8,7 +8,7 @@ apiml:
         id: zaas  # Service ID of this service. It is fixed for ZAAS
         hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
         # Default is valid only for localhost
-        port: 10010  # Default port name for zaas service
+        port: 10023  # Default port name for zaas service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
