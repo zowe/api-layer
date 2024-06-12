@@ -100,6 +100,9 @@ logbackServiceName: ZWEAG1
 logging:
     level:
         ROOT: DEBUG
+        org.springframework.boot: INFO
+        org.springframework.beans: INFO
+        org.springframework.context: INFO
 
 management:
     endpoint:

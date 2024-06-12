@@ -28,6 +28,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -62,6 +64,8 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
+import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
+import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import reactor.core.publisher.Mono;
@@ -87,7 +91,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableMethodSecurity
+@EnableReactiveMethodSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class WebSecurity {
 
@@ -304,8 +308,9 @@ public class WebSecurity {
     }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, TokenProvider tokenProvider) {
         return http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(REGISTRY_PATH, SERVICES_SHORT_URL + "/**", SERVICES_FULL_URL + "/**"))
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 ->
                 x509
@@ -317,9 +322,9 @@ public class WebSecurity {
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers(REGISTRY_PATH, SERVICES_SHORT_URL + "/**", SERVICES_FULL_URL + "/**").authenticated()
-                    .anyExchange().permitAll()
+                    .anyExchange().authenticated()
             )
+            .addFilterAfter(new TokenAuthFilter(tokenProvider), SecurityWebFiltersOrder.AUTHENTICATION)
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .build();
     }
