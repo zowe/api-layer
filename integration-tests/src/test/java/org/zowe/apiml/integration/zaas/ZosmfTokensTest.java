@@ -98,9 +98,9 @@ class ZosmfTokensTest implements TestWithStartedInstances {
             //@formatter:on
         }
 
-        @ParameterizedTest
+        @ParameterizedTest(name = "ZosmfTokensTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
-        void givenX509Certificate(String certificate) {
+        void givenX509Certificate(String certificate, String description) {
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)

@@ -45,9 +45,9 @@ public class ZaasTestUtil {
 
     static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
-        args.add(Arguments.of(getClientCertificate()));
+        args.add(Arguments.of(getClientCertificate(), "client certificate"));
         if (!ZOS_TARGET) {
-            args.add(Arguments.of(getDummyClientCertificate()));
+            args.add(Arguments.of(getDummyClientCertificate(), "dummy client certificate"));
         }
         return args.stream();
     }

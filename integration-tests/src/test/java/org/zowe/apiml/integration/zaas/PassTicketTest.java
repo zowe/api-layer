@@ -129,9 +129,9 @@ class PassTicketTest implements TestWithStartedInstances {
             //@formatter:on
         }
 
-        @ParameterizedTest
+        @ParameterizedTest(name = "PassTicketTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
-        void givenX509Certificate(String certificate) {
+        void givenX509Certificate(String certificate, String description) {
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
