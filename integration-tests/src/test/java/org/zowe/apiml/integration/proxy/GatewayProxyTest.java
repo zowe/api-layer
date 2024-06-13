@@ -13,7 +13,10 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.config.*;
@@ -60,8 +63,8 @@ class GatewayProxyTest {
     void givenBasePath_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1/gateway/version");
         String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml2/gateway/version");
-        given().get(new URI(scgUrl1)).then().statusCode(200);
-        given().get(new URI(scgUrl2)).then().statusCode(200);
+        given().get(new URI(scgUrl1)).then().statusCode(200).onFailMessage("Accessing " + scgUrl1);
+        given().get(new URI(scgUrl2)).then().statusCode(200).onFailMessage("Accessing " + scgUrl2);
     }
 
     @Test
@@ -86,12 +89,13 @@ class GatewayProxyTest {
             given()
                 .config(SslContext.clientCertValid)
                 .header(HEADER_X_FORWARD_TO, "apiml1")
-                .when()
+            .when()
                 .get(scgUrl)
-                .then()
+            .then()
                 .statusCode(HttpStatus.SC_OK)
                 .body("dn", startsWith("CN=APIMTST"))
-                .body("cn", is("APIMTST"));
+                .body("cn", is("APIMTST"))
+                .onFailMessage("Accessing " + scgUrl);
         }
 
         @Test
@@ -99,12 +103,13 @@ class GatewayProxyTest {
             String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
             given()
                 .config(SslContext.clientCertValid)
-                .when()
+            .when()
                 .get(scgUrl)
-                .then()
+            .then()
                 .statusCode(HttpStatus.SC_OK)
                 .body("dn", startsWith("CN=APIMTST"))
-                .body("cn", is("APIMTST"));
+                .body("cn", is("APIMTST"))
+                .onFailMessage("Accessing " + scgUrl);
         }
     }
 
