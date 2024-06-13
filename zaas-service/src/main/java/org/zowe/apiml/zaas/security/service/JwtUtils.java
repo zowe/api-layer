@@ -76,15 +76,15 @@ public class JwtUtils {
     public static RuntimeException handleJwtParserException(RuntimeException exception) {
         if (exception instanceof ExpiredJwtException expiredJwtException) {
             log.debug("Token with id '{}' for user '{}' is expired.", expiredJwtException.getClaims().getId(), expiredJwtException.getClaims().getSubject());
-            return new TokenExpireException("Token is expired.");
+            return new TokenExpireException("Token is expired.", exception);
         }
         if (exception instanceof JwtException) {
             log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-            return new TokenNotValidException("Token is not valid.");
+            return new TokenNotValidException("Token is not valid.", exception);
         }
 
         log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-        return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.");
+        return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.", exception);
     }
 
 }
