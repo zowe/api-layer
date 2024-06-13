@@ -165,9 +165,10 @@ public class ZosmfService extends AbstractZosmfService {
                 authentication,
                 getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
                 HttpMethod.POST);
-
+            log.error("touken {}", authenticationResponse.getTokens().get(JWT));
             if (meAsProxy.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
                 invalidate(LTPA, authenticationResponse.getTokens().get(LTPA));
+                log.error("invalidny touken");
                 throw new TokenNotValidException("Invalid token returned from zosmf");
             }
         } else {
