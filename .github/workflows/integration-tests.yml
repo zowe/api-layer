@@ -146,8 +146,9 @@ jobs:
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
+                    APIML_SERVICE_APIMLID: apiml1
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://cloud-gateway-service:10023/gateway/certificates
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -162,7 +163,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
