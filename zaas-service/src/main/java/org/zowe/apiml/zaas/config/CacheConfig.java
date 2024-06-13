@@ -28,7 +28,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
-import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 
@@ -51,8 +51,6 @@ public class CacheConfig {
 
     @Value("${apiml.caching.enabled:true}")
     private boolean cacheEnabled;
-
-    private final ServiceAddress zaasAddress;
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -108,9 +106,8 @@ public class CacheConfig {
     }
 
     @Bean
-    public CachingServiceClient cachingServiceClient(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
-        String zaasUri = String.format("%s://%s", zaasAddress.getScheme(), zaasAddress.getHostname());
-        return new CachingServiceClient(restTemplate, zaasUri);
+    public CachingServiceClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
+        return new CachingServiceClient(restTemplate, gatewayClient);
     }
 
 }
