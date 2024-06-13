@@ -9,7 +9,6 @@
  */
 
 import getBaseUrl from '../helpers/urls';
-import contents from '../components/ExtraContents/educational_contents.json';
 
 export const isValidUrl = (url) => {
     try {
@@ -18,60 +17,6 @@ export const isValidUrl = (url) => {
         return false;
     }
 };
-
-function checkForSwagger(service) {
-    let hasSwagger = false;
-    const serviceAPIKeys = Object.keys(service.apis);
-    serviceAPIKeys.forEach((api) => {
-        // Statically defined api service has a swagger url for default, but details page doesn't like that.
-        // So filter it out for the moment
-        if (api !== 'default') {
-            const apiObject = service.apis[api];
-            if (apiObject?.swaggerUrl) {
-                // eslint-disable-next-line no-param-reassign
-                hasSwagger = true;
-            }
-        }
-    });
-    return hasSwagger;
-}
-
-function countValidItems(items, validator) {
-    return items.reduce((counter, item) => (validator(item) ? counter + 1 : counter), 0);
-}
-
-/**
- * Counts the additional contents
- * @param service
- * @returns {{videosCounter, useCases: *[], useCasesCounter, tutorialsCounter, tutorials: *[], documentation: null, hasSwagger: boolean, videos: *[]}}
- */
-export default function countAdditionalContents(service) {
-    let hasSwagger = false;
-    const { useCases, tutorials, videos, documentation } = contents?.products?.find(
-        (product) => service?.serviceId === product.name
-    ) || { useCases: [], tutorials: [], videos: [], documentation: null };
-
-    const filteredUseCases = useCases?.filter(({ url }) => isValidUrl(url));
-    const filteredTutorials = tutorials?.filter(({ url }) => isValidUrl(url));
-    const useCasesCounter = countValidItems(filteredUseCases, (item) => isValidUrl(item.url));
-    const tutorialsCounter = countValidItems(filteredTutorials, (item) => isValidUrl(item.url));
-    const videosCounter = countValidItems(videos, (item) => isValidUrl(item));
-
-    if (service?.apis) {
-        hasSwagger = checkForSwagger(service);
-    }
-
-    return {
-        useCasesCounter,
-        tutorialsCounter,
-        videosCounter,
-        hasSwagger,
-        filteredUseCases,
-        filteredTutorials,
-        videos,
-        documentation,
-    };
-}
 
 function setButtonsColor(wizardButton, uiConfig, refreshButton) {
     const color =
@@ -140,14 +85,6 @@ function handleWhiteHeader(uiConfig) {
     }
 }
 
-export const closeMobileMenu = () => {
-    document.body.classList.remove('mobile-menu-open');
-};
-
-export const openMobileMenu = () => {
-    document.body.classList.toggle('mobile-menu-open');
-};
-
 /**
  * Custom the UI look to match the setup from the service metadata
  * @param uiConfig the configuration to customize the UI
@@ -193,5 +130,3 @@ export const customUIStyle = async (uiConfig) => {
     }
     handleWhiteHeader(uiConfig);
 };
-
-export const isAPIPortal = () => process.env.REACT_APP_API_PORTAL === 'true';

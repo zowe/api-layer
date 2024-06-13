@@ -681,6 +681,7 @@
     padding: 0 10px;
     border: none;
     background: none;
+    opacity: 0.4;
 }
 
 .swagger-ui .authorization__btn.locked {

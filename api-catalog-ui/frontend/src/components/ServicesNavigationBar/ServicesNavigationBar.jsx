@@ -9,14 +9,11 @@
  */
 
 import { Component } from 'react';
-import { Tab, Tabs, Tooltip, Typography, withStyles, Button, IconButton } from '@material-ui/core';
+import { Tab, Tabs, Tooltip, Typography, withStyles } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
-import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
-import MenuCloseImage from '../../assets/images/xmark.svg';
-import { ReactComponent as BackArrowImage } from '../../assets/images/angles-left.svg';
 import { sortServices } from '../../selectors/selectors';
 
 export default class ServicesNavigationBar extends Component {
@@ -40,7 +37,6 @@ export default class ServicesNavigationBar extends Component {
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
         if (correctTile) {
             storeCurrentTileId(correctTile.id);
-            closeMobileMenu();
         }
     };
 
@@ -76,8 +72,6 @@ export default class ServicesNavigationBar extends Component {
         const url = window.location.href;
         const parts = url.split('/');
         const serviceId = parts[parts.length - 1];
-        const dashboard = '#/dashboard';
-        const backButtonText = 'Back';
         let selectedTab = Number(0);
         let allServices;
         if (hasTiles) {
@@ -92,30 +86,6 @@ export default class ServicesNavigationBar extends Component {
         ));
         return (
             <div>
-                {isAPIPortal() && (
-                    <IconButton
-                        id="go-back-button-portal"
-                        className="button-link"
-                        onClick={closeMobileMenu}
-                        size="medium"
-                        href={dashboard}
-                    >
-                        <BackArrowImage className="icon-img" alt="" />
-                        {backButtonText}
-                    </IconButton>
-                )}
-                {isAPIPortal() && (
-                    <div className="mobile-view mobile-menu-close-ctn">
-                        <h2 className="title1">API Catalog</h2>
-                        <Button
-                            className="mobile-menu-close-btn icon-btn"
-                            aria-label="close-menu"
-                            onClick={closeMobileMenu}
-                        >
-                            <img alt="Menu" src={MenuCloseImage} className="mobile-menu-close" />
-                        </Button>
-                    </div>
-                )}
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
                         <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={this.handleSearch} />

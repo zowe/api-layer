@@ -24,7 +24,6 @@ describe('>>> Header component tests', () => {
     });
 
     it('should handle a Logout button click', () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const logout = jest.fn();
         const wrapper = enzyme.shallow(<Header logout={logout} />);
         wrapper.find('[data-testid="logout"]').simulate('click');
@@ -32,7 +31,6 @@ describe('>>> Header component tests', () => {
     });
 
     it('should handle a Logout button click', () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const logout = jest.fn();
         render(<Header logout={logout} />);
         fireEvent.click(screen.getByTestId('logout-menu'));
@@ -53,7 +51,6 @@ describe('>>> Header component tests', () => {
                 },
             },
         ];
-        process.env.REACT_APP_API_PORTAL = false;
         const wrapper = enzyme.shallow(<Header tiles={dummyTile} />);
         const link = wrapper.find('[data-testid="internal-link"]');
         expect(link.exists()).toEqual(true);

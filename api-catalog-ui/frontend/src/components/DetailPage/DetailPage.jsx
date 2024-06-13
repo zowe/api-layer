@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { Component, Suspense } from 'react';
-import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
+import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -20,16 +20,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
-import countAdditionalContents, { customUIStyle, isAPIPortal, closeMobileMenu } from '../../utils/utilFunctions';
-
-const loadFeedbackButton = () => {
-    if (isAPIPortal()) {
-        return import('../FeedbackButton/FeedbackButton');
-    }
-    return Promise.resolve(null);
-};
-
-const FeedbackButton = React.lazy(loadFeedbackButton);
+import { customUIStyle } from '../../utils/utilFunctions';
 
 export default class DetailPage extends Component {
     componentDidUpdate() {
@@ -43,14 +34,6 @@ export default class DetailPage extends Component {
     }
 
     componentDidMount() {
-        if (isAPIPortal()) {
-            document.title = process.env.REACT_APP_API_PORTAL_SERVICE_TITLE;
-            closeMobileMenu();
-            const goBackButton = document.getElementById('go-back-button-portal');
-            if (goBackButton) {
-                goBackButton.style.removeProperty('display');
-            }
-        }
         const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
         fetchNewTiles();
         if (currentTileId) {
@@ -69,14 +52,6 @@ export default class DetailPage extends Component {
         history.push('/dashboard');
     };
 
-    handleLinkClick = (e, id) => {
-        e.preventDefault();
-        const elementToView = document.querySelector(id);
-        if (elementToView) {
-            elementToView.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
-
     render() {
         const {
             isLoading,
@@ -90,7 +65,6 @@ export default class DetailPage extends Component {
             history,
             currentTileId,
             fetchNewTiles,
-            selectedService,
         } = this.props;
         let { tiles } = this.props;
         const iconBack = <ChevronLeftIcon />;
@@ -112,25 +86,13 @@ export default class DetailPage extends Component {
                 }
             }
         }
-        const apiPortalEnabled = isAPIPortal();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
-        const {
-            useCasesCounter,
-            tutorialsCounter,
-            videosCounter,
-            filteredUseCases,
-            filteredTutorials,
-            videos,
-            documentation,
-        } = countAdditionalContents(selectedService);
-        const onlySwaggerPresent = tutorialsCounter === 0 && videosCounter === 0 && useCasesCounter === 0;
         const showSideBar = false;
         if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
         return (
             <div className="main">
-                {apiPortalEnabled && <FeedbackButton />}
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
@@ -140,7 +102,6 @@ export default class DetailPage extends Component {
                 </div>
 
                 <div className="main-content2 detail-content">
-                    {apiPortalEnabled && <Divider light id="footer-divider" />}
                     <Spinner isLoading={isLoading} />
                     {fetchTilesError && (
                         <div className="no-tiles-container">
@@ -165,18 +126,16 @@ export default class DetailPage extends Component {
 
                     {!isLoading && !fetchTilesError && (
                         <div className="api-description-container">
-                            {!apiPortalEnabled && (
-                                <IconButton
-                                    id="go-back-button"
-                                    data-testid="go-back-button"
-                                    color="primary"
-                                    onClick={this.handleGoBack}
-                                    size="medium"
-                                >
-                                    {iconBack}
-                                    Back
-                                </IconButton>
-                            )}
+                            <IconButton
+                                id="go-back-button"
+                                data-testid="go-back-button"
+                                color="primary"
+                                onClick={this.handleGoBack}
+                                size="medium"
+                            >
+                                {iconBack}
+                                Back
+                            </IconButton>
                             <div className="detailed-description-container">
                                 <div className="title-api-container">
                                     {tiles !== undefined && tiles.length === 1 && (
@@ -185,49 +144,14 @@ export default class DetailPage extends Component {
                                         </h2>
                                     )}
                                 </div>
-                                {!apiPortalEnabled && (
-                                    <div className="paragraph-description-container">
-                                        {tiles !== undefined && tiles.length > 0 && (
-                                            <p id="description" className="text-block-12">
-                                                {tiles[0].description}
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                            {apiPortalEnabled && !onlySwaggerPresent && (
-                                <div id="right-resources-menu">
-                                    <Typography id="resources-menu-title" variant="subtitle1">
-                                        On this page
-                                    </Typography>
-                                    <Container>
-                                        <Link
-                                            className="links"
-                                            onClick={(e) => this.handleLinkClick(e, '#swagger-label')}
-                                        >
-                                            Swagger
-                                        </Link>
-                                        <Link
-                                            className="links"
-                                            onClick={(e) => this.handleLinkClick(e, '#use-cases-label')}
-                                        >
-                                            Use cases ({useCasesCounter})
-                                        </Link>
-                                        <Link
-                                            className="links"
-                                            onClick={(e) => this.handleLinkClick(e, '#tutorials-label')}
-                                        >
-                                            Getting Started ({tutorialsCounter})
-                                        </Link>
-                                        <Link
-                                            className="links"
-                                            onClick={(e) => this.handleLinkClick(e, '#videos-label')}
-                                        >
-                                            Videos ({videosCounter})
-                                        </Link>
-                                    </Container>
+                                <div className="paragraph-description-container">
+                                    {tiles !== undefined && tiles.length > 0 && (
+                                        <p id="description" className="text-block-12">
+                                            {tiles[0].description}
+                                        </p>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     )}
                     <div className="content-description-container">
@@ -250,16 +174,7 @@ export default class DetailPage extends Component {
                                             path={`${match.path}/:serviceId`}
                                             render={() => (
                                                 <div className="tabs-swagger">
-                                                    <ServiceTabContainer
-                                                        videos={videos}
-                                                        useCases={filteredUseCases}
-                                                        tutorials={filteredTutorials}
-                                                        videosCounter={videosCounter}
-                                                        tutorialsCounter={tutorialsCounter}
-                                                        useCasesCounter={useCasesCounter}
-                                                        documentation={documentation}
-                                                        tiles={tiles}
-                                                    />
+                                                    <ServiceTabContainer tiles={tiles} />
                                                 </div>
                                             )}
                                         />
@@ -277,7 +192,6 @@ export default class DetailPage extends Component {
                                 </Router>
                             </Suspense>
                         )}
-                        {apiPortalEnabled && <Divider light id="footer-divider" />}
                     </div>
                 </div>
 
