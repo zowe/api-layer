@@ -20,7 +20,7 @@ eureka:
                     - apiId: zowe.apiml.gateway
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
                       documentationUrl: https://zowe.github.io/docs-site/
                 service:
                     title: API Gateway
@@ -46,6 +46,10 @@ spring:
                 registration:
                     okta:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
+
+springdoc:
+    api-docs:
+        path: /gateway/api-docs
 
 apiml:
     catalog:
