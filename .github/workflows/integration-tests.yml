@@ -270,7 +270,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: gateway-service
+                    APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_GATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
 
@@ -298,7 +298,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: central-gateway-service-2
                     APIML_GATEWAY_REGISTRY_ENABLED: false
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
