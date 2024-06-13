@@ -24,6 +24,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;
@@ -179,6 +180,10 @@ public abstract class AbstractZosmfService {
             log.debug("z/OSMF isn't accessible. {}", re.getMessage());
             apimlLog.log("org.zowe.apiml.security.generic", re.getMessage(), url);
             return new AuthenticationServiceException("A failure occurred when authenticating.", re);
+        }
+        if (re instanceof TokenNotValidException) {
+            log.error("Strange error {}", re.getMessage(), re.getCause());
+            re.printStackTrace();
         }
 
         return re;
