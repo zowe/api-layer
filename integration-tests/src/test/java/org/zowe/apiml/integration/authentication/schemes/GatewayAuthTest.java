@@ -137,7 +137,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             assertEquals(200, response.getStatusCode());
         }
 
-        @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
+        @ParameterizedTest(name = "givenValidRequest_thenClientCertIsTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenClientCertIsTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
