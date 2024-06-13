@@ -217,7 +217,7 @@ logging:
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.springframework.security: DEBUG
-        org.ehcache: INFO
+        org.ehcache: DEBUG
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
 

@@ -13,8 +13,8 @@ package org.zowe.apiml.zaas.security.service.zosmf;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
@@ -44,17 +45,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
-
-import jakarta.annotation.PostConstruct;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.management.ServiceNotFoundException;
 import java.io.IOException;
@@ -165,7 +164,10 @@ public class ZosmfService extends AbstractZosmfService {
                 authentication,
                 getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
                 HttpMethod.POST);
-            log.error("touken {}", authenticationResponse.getTokens().get(JWT));
+            log.error("touken");
+            for (String string : authenticationResponse.getTokens().get(JWT).split("\\.")) {
+                log.error(string);
+            }
             if (meAsProxy.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
                 invalidate(LTPA, authenticationResponse.getTokens().get(LTPA));
                 log.error("invalidny touken");

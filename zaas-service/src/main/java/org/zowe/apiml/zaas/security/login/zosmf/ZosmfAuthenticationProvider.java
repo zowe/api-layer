@@ -18,12 +18,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -54,8 +55,12 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             zosmfService.changePassword(authentication);
             authentication = new UsernamePasswordAuthenticationToken(user, newPassword);
         }
-        final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
-
+        final ZosmfService.AuthenticationResponse ar;
+        try {
+            ar = zosmfService.authenticate(authentication);
+        } catch (TokenNotValidException e) {
+            throw new BadCredentialsException("Invalid Credentials");
+        }
         switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
             case LTPA:
                 if (ar.getTokens().containsKey(LTPA)) {
