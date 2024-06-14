@@ -22,6 +22,8 @@ import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
+import java.net.URI;
+
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
@@ -67,15 +69,18 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 String dsname1 = "SYS1.PARMLIB";
                 String dsname2 = "SYS1.PROCLIB";
 
+                URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT);
+
                 given()
                     .header("Authorization", "Bearer " + token)
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT))
+                    .get(uri)
                 .then()
                     .statusCode(is(SC_OK))
                     .body(
-                        "items.dsname", hasItems(dsname1, dsname2));
+                        "items.dsname", hasItems(dsname1, dsname2))
+                        .onFailMessage("Calling " + uri);
             }
 
             @Test
@@ -83,15 +88,18 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 String dsname1 = "SYS1.PARMLIB";
                 String dsname2 = "SYS1.PROCLIB";
 
+                URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT);
+
                 given()
                     .cookie("apimlAuthenticationToken", token)
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT))
+                    .get(uri)
                 .then()
                     .statusCode(is(SC_OK))
                     .body(
-                        "items.dsname", hasItems(dsname1, dsname2));
+                        "items.dsname", hasItems(dsname1, dsname2))
+                        .onFailMessage("Accessing " + uri);
             }
 
             @Test
@@ -99,15 +107,18 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 String dsname1 = "SYS1.PARMLIB";
                 String dsname2 = "SYS1.PROCLIB";
 
+                URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT);
+
                 given()
                     .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT))
+                    .get(uri)
                 .then()
                     .statusCode(is(SC_OK))
                     .body(
-                        "items.dsname", hasItems(dsname1, dsname2));
+                        "items.dsname", hasItems(dsname1, dsname2))
+                    .onFailMessage("Accessing " + uri);
             }
         }
     }
