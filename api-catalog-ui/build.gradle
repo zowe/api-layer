@@ -104,8 +104,6 @@ task npmBuild(type: NpmTask) {
 
 }
 
-
-
 npmBuild.dependsOn npmInstall
 npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
