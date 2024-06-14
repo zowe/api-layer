@@ -175,7 +175,7 @@ class QueryTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidToken(String queryUrl) {
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
                 String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
 
                 given()
