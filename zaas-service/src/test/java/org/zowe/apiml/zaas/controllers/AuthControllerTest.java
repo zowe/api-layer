@@ -113,12 +113,12 @@ class AuthControllerTest {
     @Test
     void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/zaas/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(delete("/zaas/api/v1/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
 
         when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/zaas/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(delete("/zaas/api/v1/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
 
-        this.mockMvc.perform(delete("/zaas/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+        this.mockMvc.perform(delete("/zaas/api/v1/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
@@ -127,10 +127,10 @@ class AuthControllerTest {
     @Test
     void distributeInvalidate() throws Exception {
         when(authenticationService.distributeInvalidate("instance/1")).thenReturn(true);
-        this.mockMvc.perform(get("/zaas/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(get("/zaas/api/v1/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
 
         when(authenticationService.distributeInvalidate("instance2")).thenReturn(false);
-        this.mockMvc.perform(get("/zaas/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
+        this.mockMvc.perform(get("/zaas/api/v1/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
     }
 
     private JWK getJwk(int i) throws ParseException {
@@ -158,7 +158,7 @@ class AuthControllerTest {
         initPublicKeys();
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
         JWKSet jwkSet = new JWKSet(Arrays.asList(zosmfJwk, apimlJwk));
-        this.mockMvc.perform(get("/zaas/auth/keys/public/all"))
+        this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }
@@ -168,7 +168,7 @@ class AuthControllerTest {
         initPublicKeys();
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(apimlJwk));
-        this.mockMvc.perform(get("/zaas/auth/keys/public/all"))
+        this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }
@@ -182,7 +182,7 @@ class AuthControllerTest {
         when(mockedJwkSet.getKeys()).thenReturn(Collections.singletonList(oidcJwk));
 
         JWKSet jwkSet = new JWKSet(Arrays.asList(apimlJwk, oidcJwk));
-        this.mockMvc.perform(get("/zaas/auth/keys/public/all"))
+        this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }
@@ -194,7 +194,7 @@ class AuthControllerTest {
             initPublicKeys();
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
             JWKSet jwkSet = new JWKSet(Collections.singletonList(apimlJwk));
-            mockMvc.perform(get("/zaas/auth/keys/public/current"))
+            mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
         }
@@ -204,7 +204,7 @@ class AuthControllerTest {
             initPublicKeys();
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
             JWKSet jwkSet = new JWKSet(Collections.emptyList());
-            mockMvc.perform(get("/zaas/auth/keys/public/current"))
+            mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
         }
@@ -214,7 +214,7 @@ class AuthControllerTest {
             initPublicKeys();
             JWKSet jwkSet = new JWKSet(Collections.singletonList(zosmfJwk));
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
-            mockMvc.perform(get("/zaas/auth/keys/public/current"))
+            mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
                 .andExpect(content().json(jwkSet.toString()));
         }
@@ -229,7 +229,7 @@ class AuthControllerTest {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
                 when(zosmfService.getPublicKeys()).thenReturn(new JWKSet(getJwk(0)));
 
-                mockMvc.perform(get("/zaas/auth/keys/public"))
+                mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_OK));
             }
 
@@ -237,7 +237,7 @@ class AuthControllerTest {
             void whenNotReady_returnInternalServerError() throws Exception {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
 
-                mockMvc.perform(get("/zaas/auth/keys/public"))
+                mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
                     .andExpect(jsonPath("$.messageNumber", is("ZWEAG716E")));
             }
@@ -248,7 +248,7 @@ class AuthControllerTest {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
                 when(zosmfService.getPublicKeys()).thenReturn(new JWKSet(jwkList));
 
-                mockMvc.perform(get("/zaas/auth/keys/public"))
+                mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
                     .andExpect(jsonPath("$.messageNumber", is("ZWEAG715E")));
             }
@@ -261,7 +261,7 @@ class AuthControllerTest {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
                 when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(getJwk(0)));
 
-                mockMvc.perform(get("/zaas/auth/keys/public"))
+                mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_OK));
             }
         }
@@ -275,7 +275,7 @@ class AuthControllerTest {
                 void validateAccessToken() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
                     when(tokenProvider.isInvalidated("token")).thenReturn(false);
-                    mockMvc.perform(post("/zaas/auth/access-token/validate")
+                    mockMvc.perform(post("/zaas/api/v1/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_OK));
@@ -285,7 +285,7 @@ class AuthControllerTest {
                 void return401() throws Exception {
                     when(tokenProvider.isValidForScopes("token", "service")).thenReturn(true);
                     when(tokenProvider.isInvalidated("token")).thenReturn(true);
-                    mockMvc.perform(post("/zaas/auth/access-token/validate")
+                    mockMvc.perform(post("/zaas/api/v1/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_UNAUTHORIZED));
@@ -309,7 +309,7 @@ class AuthControllerTest {
                 void thenInvalidateAgain() throws Exception {
                     when(tokenProvider.isInvalidated("token")).thenReturn(true);
 
-                    mockMvc.perform(delete("/zaas/auth/access-token/revoke")
+                    mockMvc.perform(delete("/zaas/api/v1/auth/access-token/revoke")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_UNAUTHORIZED));
@@ -323,7 +323,7 @@ class AuthControllerTest {
                 void thenInvalidate() throws Exception {
                     when(tokenProvider.isInvalidated("token")).thenReturn(false);
 
-                    mockMvc.perform(delete("/zaas/auth/access-token/revoke")
+                    mockMvc.perform(delete("/zaas/api/v1/auth/access-token/revoke")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_OK));
@@ -338,7 +338,7 @@ class AuthControllerTest {
             class WhenNotInvalidated {
 
                 @ParameterizedTest
-                @ValueSource(strings = {"/zaas/auth/access-token/revoke/tokens/user", "/zaas/auth/access-token/revoke/tokens/scope"})
+                @ValueSource(strings = {"/zaas/api/v1/auth/access-token/revoke/tokens/user", "/zaas/api/v1/auth/access-token/revoke/tokens/scope"})
                 void thenInvalidateForScope(String url) throws Exception {
                     body = new JSONObject()
                         .put("userId", "user")
@@ -357,7 +357,7 @@ class AuthControllerTest {
                     SecurityContextHolder.setContext(context);
                     body = new JSONObject()
                         .put("timestamp", "1234");
-                    mockMvc.perform(delete("/zaas/auth//access-token/revoke/tokens")
+                    mockMvc.perform(delete("/zaas/api/v1/auth//access-token/revoke/tokens")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_NO_CONTENT));
@@ -367,7 +367,7 @@ class AuthControllerTest {
                 @ValueSource(strings = {"scope", "user"})
                 void thenReturnErrorMessage(String endpoint) throws Exception {
                     body = new JSONObject();
-                    mockMvc.perform(delete("/zaas/auth//access-token/revoke/tokens/" + endpoint)
+                    mockMvc.perform(delete("/zaas/api/v1/auth//access-token/revoke/tokens/" + endpoint)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
                         .andExpect(status().is(SC_BAD_REQUEST)).andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAT607E")));
@@ -381,7 +381,7 @@ class AuthControllerTest {
 
         @Test
         void thenRemoveRulesAndTokens() throws Exception {
-            mockMvc.perform(delete("/zaas/auth//access-token/evict")
+            mockMvc.perform(delete("/zaas/api/v1/auth//access-token/evict")
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(SC_NO_CONTENT));
         }
@@ -397,7 +397,7 @@ class AuthControllerTest {
             @Test
             void validateOIDCToken() throws Exception {
                 when(oidcProvider.isValid(TOKEN)).thenReturn(true);
-                mockMvc.perform(post("/zaas/auth/oidc-token/validate")
+                mockMvc.perform(post("/zaas/api/v1/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
                     .andExpect(status().is(SC_OK));
@@ -406,7 +406,7 @@ class AuthControllerTest {
             @Test
             void return401() throws Exception {
                 when(oidcProvider.isValid(TOKEN)).thenReturn(false);
-                mockMvc.perform(post("/zaas/auth/oidc-token/validate")
+                mockMvc.perform(post("/zaas/api/v1/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
                     .andExpect(status().is(SC_UNAUTHORIZED));
@@ -427,7 +427,7 @@ class AuthControllerTest {
             webFingerResponse.setSubject("foobar");
             webFingerResponse.setLinks(Arrays.asList(new WebFingerResponse.Link("http://openid.net/specs/connect/1.0/issuer", "https://foo.org/.well-known")));
             when(webFingerProvider.getWebFingerConfig("foobar")).thenReturn(webFingerResponse);
-            MvcResult result = mockMvc.perform(get("/zaas/auth/oidc/webfinger?resource=foobar"))
+            MvcResult result = mockMvc.perform(get("/zaas/api/v1/auth/oidc/webfinger?resource=foobar"))
                 .andExpect(status().is(SC_OK)).andReturn();
             ObjectMapper mapper = new ObjectMapper();
             WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
@@ -438,7 +438,7 @@ class AuthControllerTest {
         void givenNoClientId_thenReturnEmptyList() throws Exception {
             WebFingerResponse webFingerResponse = new WebFingerResponse();
             when(webFingerProvider.getWebFingerConfig("")).thenReturn(webFingerResponse);
-            MvcResult result = mockMvc.perform(get("/zaas/auth/oidc/webfinger?resource="))
+            MvcResult result = mockMvc.perform(get("/zaas/api/v1/auth/oidc/webfinger?resource="))
                 .andExpect(status().is(SC_OK)).andReturn();
             ObjectMapper mapper = new ObjectMapper();
             WebFingerResponse res = mapper.readValue(result.getResponse().getContentAsString(), WebFingerResponse.class);
@@ -450,7 +450,7 @@ class AuthControllerTest {
             body = new JSONObject();
             when(webFingerProvider.getWebFingerConfig("foobar")).thenThrow(new IOException("some error"));
             mockMvc.perform(
-                    get("/zaas/auth/oidc/webfinger?resource=foobar")
+                    get("/zaas/api/v1/auth/oidc/webfinger?resource=foobar")
                         .contentType(MediaType.APPLICATION_JSON).content(body.toString())
                 )
                 .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
@@ -464,7 +464,7 @@ class AuthControllerTest {
         @Test
         void whenRequestWithUserid_thenReturnNotFound() throws Exception {
             when(webFingerProvider.isEnabled()).thenReturn(false);
-            mockMvc.perform(get("/zaas/auth/oidc/webfinger?resource=foobar"))
+            mockMvc.perform(get("/zaas/api/v1/auth/oidc/webfinger?resource=foobar"))
                 .andExpect(status().is(SC_NOT_FOUND));
         }
 

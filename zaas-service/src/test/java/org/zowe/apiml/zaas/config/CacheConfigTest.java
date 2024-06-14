@@ -20,7 +20,7 @@ import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.gateway.GatewayClient;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,7 +31,7 @@ class CacheConfigTest {
     @Nested
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class)
     @ActiveProfiles("test")
-    @MockBean(ServiceAddress.class)
+    @MockBean(GatewayClient.class)
     @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class EnabledCache {
 
@@ -51,7 +51,7 @@ class CacheConfigTest {
         "apiml.caching.enabled=false"
     })
     @ActiveProfiles("test")
-    @MockBean(ServiceAddress.class)
+    @MockBean(GatewayClient.class)
     @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class DisabledCache {
 

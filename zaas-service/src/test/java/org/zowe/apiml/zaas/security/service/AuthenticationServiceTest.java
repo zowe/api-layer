@@ -41,7 +41,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -445,7 +445,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
-            doNothing().when(restTemplate).delete("http://localhost:0/zaas/auth/invalidate/" + token);
+            doNothing().when(restTemplate).delete("http://localhost:0/zaas/api/v1/auth/invalidate/" + token);
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
@@ -538,7 +538,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Nested
     @ExtendWith(SpringExtension.class)
     @ContextConfiguration(classes = { CacheConfig.class, AuthenticationService.class, AuthConfigurationProperties.class })
-    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, ServiceAddress.class })
+    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, GatewayClient.class })
     @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class GivenCacheJWTTest {
 
@@ -628,8 +628,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/auth/invalidate/{}", "b");
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "a");
+            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "b");
         }
 
     }
