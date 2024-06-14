@@ -22,19 +22,11 @@ import WizardContainer from '../Wizard/WizardContainer';
 import DialogDropdown from '../Wizard/DialogDropdown';
 import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
-import { customUIStyle, isAPIPortal } from '../../utils/utilFunctions';
+import { customUIStyle } from '../../utils/utilFunctions';
 import { sortServices } from '../../selectors/selectors';
-import FeedbackButton from '../FeedbackButton/FeedbackButton';
 
 export default class Dashboard extends Component {
     componentDidMount() {
-        if (isAPIPortal()) {
-            document.title = process.env.REACT_APP_API_PORTAL_DASHBOARD_TITLE;
-            const goBackButton = document.getElementById('go-back-button-portal');
-            if (goBackButton) {
-                goBackButton.style.display = 'none';
-            }
-        }
         const { fetchTilesStart, clearService } = this.props;
         clearService();
         fetchTilesStart();
@@ -66,34 +58,6 @@ export default class Dashboard extends Component {
         closeAlert();
     };
 
-    /**
-     * This method is used only in the portal in combination with CSS, to scroll the tiles.
-     * @param event
-     */
-    dashboardTileScroll = (event) => {
-        if (isAPIPortal()) {
-            const gridHeader = document.querySelectorAll('.dashboard-grid-header')[0];
-            const getHeaderHeight = gridHeader?.offsetHeight;
-            const getFilterHeight = document.querySelectorAll('.filtering-container')[0]?.offsetHeight;
-
-            if (
-                gridHeader &&
-                getHeaderHeight &&
-                event.target &&
-                event.target.classList &&
-                event.target.scrollTop > getFilterHeight
-            ) {
-                event.target.classList.add('fixed-header');
-                event.target.style.paddingTop = `${
-                    getHeaderHeight + parseFloat(gridHeader.style.marginBottom) + parseFloat(gridHeader.style.marginTop)
-                }px`;
-            } else if (event.target?.classList) {
-                event.target.classList.remove('fixed-header');
-                event.target.style.paddingTop = 0;
-            }
-        }
-    };
-
     render() {
         const {
             tiles,
@@ -115,7 +79,6 @@ export default class Dashboard extends Component {
             searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
-        const apiPortalEnabled = isAPIPortal();
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
@@ -131,26 +94,23 @@ export default class Dashboard extends Component {
 
         return (
             <div className="main-content dashboard-content">
-                {isAPIPortal() && <FeedbackButton />}
-                {!apiPortalEnabled && (
-                    <div id="dash-buttons">
-                        <DialogDropdown
-                            selectEnabler={this.props.selectEnabler}
-                            data={enablerData}
-                            toggleWizard={this.toggleWizard}
-                            visible
-                        />
-                        <IconButton
-                            id="refresh-api-button"
-                            size="medium"
-                            variant="outlined"
-                            onClick={this.refreshStaticApis}
-                            style={{ borderRadius: '0.1875em' }}
-                        >
-                            Refresh Static APIs
-                        </IconButton>
-                    </div>
-                )}
+                <div id="dash-buttons">
+                    <DialogDropdown
+                        selectEnabler={this.props.selectEnabler}
+                        data={enablerData}
+                        toggleWizard={this.toggleWizard}
+                        visible
+                    />
+                    <IconButton
+                        id="refresh-api-button"
+                        size="medium"
+                        variant="outlined"
+                        onClick={this.refreshStaticApis}
+                        style={{ borderRadius: '0.1875em' }}
+                    >
+                        Refresh Static APIs
+                    </IconButton>
+                </div>
                 <WizardContainer />
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -183,11 +143,6 @@ export default class Dashboard extends Component {
                             }}
                         >
                             <div className="filtering-container">
-                                {apiPortalEnabled && (
-                                    <div>
-                                        <h1 className="api-heading">API Catalog</h1>
-                                    </div>
-                                )}
                                 <div id="search">
                                     <Shield title="Search Bar is broken !">
                                         <SearchCriteria
@@ -198,15 +153,6 @@ export default class Dashboard extends Component {
                                     </Shield>
                                 </div>
                             </div>
-                            {apiPortalEnabled && (
-                                <div className="dashboard-grid-header">
-                                    <div className="empty" />
-                                    <h4 className="description-header">Swagger</h4>
-                                    <h4 className="description-header">Use Cases</h4>
-                                    <h4 className="description-header">Videos</h4>
-                                    <h4 className="description-header">Getting Started</h4>
-                                </div>
-                            )}
 
                             <div className="tile-container">
                                 {isLoading && <div className="loadingDiv" />}

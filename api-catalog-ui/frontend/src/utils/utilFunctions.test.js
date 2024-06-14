@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import countAdditionalContents, { closeMobileMenu, customUIStyle, isValidUrl, openMobileMenu } from './utilFunctions';
+import { customUIStyle, isValidUrl } from './utilFunctions';
 
 describe('>>> Util Functions tests', () => {
     function mockFetch() {
@@ -44,81 +44,6 @@ describe('>>> Util Functions tests', () => {
 
     afterEach(() => {
         document.body.innerHTML = '';
-    });
-    it('should return default count when no medias are provided', () => {
-        const service = {
-            id: 'apicatalog',
-            hasSwagger: false,
-        };
-        expect(countAdditionalContents(service)).toEqual({
-            documentation: null,
-            hasSwagger: false,
-            filteredTutorials: [],
-            tutorialsCounter: 0,
-            filteredUseCases: [],
-            useCasesCounter: 0,
-            videos: [],
-            videosCounter: 0,
-        });
-    });
-
-    it('should check for swagger when not default one available', () => {
-        const service = {
-            id: 'service',
-            apis: {
-                'org.zowe v1': {
-                    swaggerUrl: 'swagger',
-                },
-            },
-        };
-        expect(countAdditionalContents(service)).toEqual({
-            documentation: null,
-            hasSwagger: true,
-            filteredTutorials: [],
-            tutorialsCounter: 0,
-            filteredUseCases: [],
-            useCasesCounter: 0,
-            videos: [],
-            videosCounter: 0,
-        });
-    });
-
-    it('should check for swagger and set false when no swagger URL available', () => {
-        const service = {
-            id: 'service',
-            apis: {
-                'org.zowe v1': {},
-            },
-        };
-        expect(countAdditionalContents(service)).toEqual({
-            documentation: null,
-            hasSwagger: false,
-            filteredTutorials: [],
-            tutorialsCounter: 0,
-            filteredUseCases: [],
-            useCasesCounter: 0,
-            videos: [],
-            videosCounter: 0,
-        });
-    });
-
-    it('should check for swagger when default API is available', () => {
-        const service = {
-            id: 'service',
-            apis: {
-                default: { apiId: 'enabler' },
-            },
-        };
-        expect(countAdditionalContents(service)).toEqual({
-            documentation: null,
-            hasSwagger: false,
-            filteredTutorials: [],
-            tutorialsCounter: 0,
-            filteredUseCases: [],
-            useCasesCounter: 0,
-            videos: [],
-            videosCounter: 0,
-        });
     });
 
     it('should apply UI changes', async () => {
@@ -225,18 +150,6 @@ describe('>>> Util Functions tests', () => {
 
         global.fetch = () => Promise.resolve({ ok: false, status: 404 });
         await expect(customUIStyle(uiConfig)).rejects.toThrow('Network response was not ok');
-    });
-
-    it('should open mobile menu', async () => {
-        const spyToggle = jest.spyOn(document.body.classList, 'toggle');
-        openMobileMenu();
-        expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
-    });
-
-    it('should close mobile menu', async () => {
-        const spyToggle = jest.spyOn(document.body.classList, 'remove');
-        closeMobileMenu();
-        expect(spyToggle).toHaveBeenCalledWith('mobile-menu-open');
     });
 
     it('should return false when URL is invalid', async () => {

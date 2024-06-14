@@ -47,36 +47,11 @@ const history = {
 };
 
 describe('>>> Detailed Page component tests', () => {
-    beforeEach(() => {
-        process.env.REACT_APP_API_PORTAL = false;
-    });
-
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     it('should start epic on mount', () => {
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
-            />
-        );
-        const instance = wrapper.instance();
-        instance.componentDidMount();
-        expect(fetchTilesStart).toHaveBeenCalled();
-    });
-
-    it('should start epic on mount when portal enabled', () => {
-        process.env.REACT_APP_API_PORTAL = true;
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
         const wrapper = shallow(
@@ -250,137 +225,6 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStop).toHaveBeenCalled();
         expect(clearService).toHaveBeenCalled();
         expect(fetchTilesStart).toHaveBeenCalled();
-    });
-
-    it('should display nav right menu', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        // eslint-disable-next-line global-require
-        const utils = require('../../utils/utilFunctions');
-        const spyOnCountAdditionalContents = jest.spyOn(utils, 'default');
-        spyOnCountAdditionalContents.mockImplementation(() => ({
-            useCasesCounter: 2,
-            tutorialsCounter: 2,
-            videosCounter: 2,
-            hasSwagger: true,
-            useCases: [],
-            tutorials: [],
-            videos: [],
-            documentation: '',
-        }));
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services[0]}
-                currentTileId="apicatalog"
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
-            />
-        );
-        expect(wrapper.find('#right-resources-menu').exists()).toEqual(true);
-        spyOnCountAdditionalContents.mockRestore();
-    });
-
-    it('should click on the links', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        const mockHandleLinkClick = jest.fn();
-        const mockEvent = { preventDefault: jest.fn() };
-        const mockElementToView = { scrollIntoView: jest.fn() };
-        document.querySelector = jest.fn().mockReturnValue(mockElementToView);
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={[tile]}
-                currentTileId="apicatalog"
-                handleLinkClick={mockHandleLinkClick}
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
-            />
-        );
-        // Simulate a click event on the Link component, providing the id as the second argument
-        wrapper.instance().handleLinkClick(mockEvent, '#swagger-label');
-        expect(mockEvent.preventDefault).toHaveBeenCalled();
-        expect(document.querySelector).toHaveBeenCalledWith('#swagger-label');
-        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
-
-        wrapper.instance().handleLinkClick(mockEvent, '#use-cases-label');
-        expect(mockEvent.preventDefault).toHaveBeenCalled();
-        expect(document.querySelector).toHaveBeenCalledWith('#use-cases-label');
-        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
-
-        wrapper.instance().handleLinkClick(mockEvent, '#videos-label');
-        expect(mockEvent.preventDefault).toHaveBeenCalled();
-        expect(document.querySelector).toHaveBeenCalledWith('#videos-label');
-        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
-
-        wrapper.instance().handleLinkClick(mockEvent, '#tutorials-label');
-        expect(mockEvent.preventDefault).toHaveBeenCalled();
-        expect(document.querySelector).toHaveBeenCalledWith('#tutorials-label');
-        expect(mockElementToView.scrollIntoView).toHaveBeenCalled();
-    });
-
-    it('should get correct service tile if currentTileId not defined', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        const mockHandleLinkClick = jest.fn();
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={[tile]}
-                currentTileId={null}
-                handleLinkClick={mockHandleLinkClick}
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
-            />
-        );
-        const instance = wrapper.instance();
-        instance.componentDidMount();
-    });
-
-    const productLabel = {
-        style: {
-            display: 'none',
-            removeProperty: jest.fn(),
-        },
-    };
-
-    it('should call getElementById to get go back button and hide it', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const spyElementById = jest.spyOn(document, 'getElementById');
-        const removePropSpy = jest.spyOn(productLabel.style, 'removeProperty');
-
-        // eslint-disable-next-line no-unused-vars
-        spyElementById.mockImplementation((_elementId) => productLabel);
-
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
-            />
-        );
-        expect(spyElementById).toHaveBeenCalledWith('go-back-button-portal');
-        expect(removePropSpy).toHaveBeenCalled();
     });
 
     it('should scroll into view when selectedContentAnchor prop is updated', () => {

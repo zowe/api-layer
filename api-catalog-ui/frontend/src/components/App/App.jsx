@@ -16,7 +16,6 @@ import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
-import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
 
 function App({ history }) {
@@ -26,11 +25,6 @@ function App({ history }) {
 
     useEffect(() => {
         window.process = { ...window.process };
-        window.onresize = () => {
-            if (document.body.offsetWidth > 767) {
-                closeMobileMenu();
-            }
-        };
     }, []);
 
     return (
@@ -44,12 +38,6 @@ function App({ history }) {
                         <>
                             <div className="content">
                                 <Route path={headerPath} component={HeaderContainer} />
-
-                                {isAPIPortal() && (
-                                    <div className="dashboard-mobile-menu mobile-view">
-                                        <Route path={headerPath} component={HeaderContainer} />
-                                    </div>
-                                )}
 
                                 <Switch>
                                     <Route path="/" exact render={() => <Redirect replace to={dashboardPath} />} />
