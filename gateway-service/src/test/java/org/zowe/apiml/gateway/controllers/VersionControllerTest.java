@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurity
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.version.VersionInfo;
 import org.zowe.apiml.product.version.VersionInfoDetails;
 import org.zowe.apiml.product.version.VersionService;
@@ -23,6 +24,7 @@ import org.zowe.apiml.product.version.VersionService;
 import static org.mockito.Mockito.when;
 
 @WebFluxTest(controllers = VersionController.class, excludeAutoConfiguration = { ReactiveSecurityAutoConfiguration.class })
+@MockBean(MessageService.class)
 class VersionControllerTest {
 
     @MockBean

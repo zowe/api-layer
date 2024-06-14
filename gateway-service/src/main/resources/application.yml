@@ -117,6 +117,8 @@ management:
           enabled: false
       health:
           showDetails: always
+      shutdown:
+          enabled: true
     endpoints:
         web:
             base-path: /application

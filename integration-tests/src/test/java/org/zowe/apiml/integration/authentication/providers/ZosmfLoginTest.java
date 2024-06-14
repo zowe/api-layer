@@ -60,20 +60,22 @@ class ZosmfLoginTest implements TestWithStartedInstances {
 
         @Test
         void givenValidCertificate_thenReturnExistingDatasets() {
-
             String dsname1 = "SYS1.PARMLIB";
             String dsname2 = "SYS1.PROCLIB";
+
+            URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*"));
 
             given()
                 .config(SslContext.clientCertValid)
                 .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*")))
+                .get(uri)
             .then()
                 .statusCode(is(SC_OK))
                 .body(
                     "items.dsname", hasItems(dsname1, dsname2)
-                );
+                )
+                .onFailMessage("Accessing " + uri);
         }
     }
 
@@ -87,11 +89,12 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
-                        .when()
+                    .when()
                         .post(loginUrl)
-                        .then()
+                    .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(is(emptyString())))
+                        .onFailMessage("Accessing " + loginUrl)
                         .extract()
                         .detailedCookie(COOKIE_NAME);
 
@@ -105,11 +108,12 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                     given()
                         .config(SslContext.clientCertValid)
                         .auth().basic("Bob", "The Builder")
-                        .when()
+                    .when()
                         .post(loginUrl)
-                        .then()
+                    .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(is(emptyString())))
+                        .onFailMessage("Accessing " + loginUrl)
                         .extract().detailedCookie(COOKIE_NAME);
 
                 assertValidAuthToken(cookie, Optional.of(USERNAME));

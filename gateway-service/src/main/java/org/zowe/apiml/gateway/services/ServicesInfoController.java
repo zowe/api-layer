@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
 
@@ -60,15 +61,10 @@ public class ServicesInfoController {
     @ResponseBody
     public Mono<ResponseEntity<ServiceInfo>> getService(@PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
-        if (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) {
-            return Mono.just(ResponseEntity
-                .status(NOT_FOUND)
-                .header(VERSION_HEADER, CURRENT_VERSION)
-                .build());
-        }
+        var status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ? NOT_FOUND : OK;
 
         return Mono.just(ResponseEntity
-            .ok()
+            .status(status)
             .header(VERSION_HEADER, CURRENT_VERSION)
             .contentType(MediaType.APPLICATION_JSON)
             .body(serviceInfo));

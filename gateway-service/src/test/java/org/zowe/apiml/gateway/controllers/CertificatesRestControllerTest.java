@@ -19,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.gateway.service.CertificateChainService;
+import org.zowe.apiml.message.core.MessageService;
 
 import static org.mockito.Mockito.*;
 
@@ -80,6 +81,9 @@ class CertificatesRestControllerTest {
 
     @MockBean
     private CertificateChainService mockCertificateChainService;
+
+    @MockBean
+    private MessageService messageService;
 
     @Nested
     class WhenNoCertificate {
