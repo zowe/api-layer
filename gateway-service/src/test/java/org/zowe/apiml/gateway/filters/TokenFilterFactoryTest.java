@@ -28,7 +28,7 @@ class TokenFilterFactoryTest {
     @Nested
     class RequestUpdate {
 
-        private MockServerHttpRequest testRequestMutation(ZaasTokenResponse response) {
+        private MockServerHttpRequest testRequestMutation(AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
             MockServerHttpRequest request = MockServerHttpRequest.get("/url").build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
@@ -37,7 +37,7 @@ class TokenFilterFactoryTest {
                 public String getEndpointUrl(ServiceInstance instance) {
                     return null;
                 }
-            }.processResponse(exchange, mock(GatewayFilterChain.class), response);
+            }.processResponse(exchange, mock(GatewayFilterChain.class), tokenResponse);
 
             return request;
         }
@@ -47,21 +47,21 @@ class TokenFilterFactoryTest {
 
             @Test
             void givenHeaderResponse_whenHandling_thenUpdateTheRequest() {
-                MockServerHttpRequest request = testRequestMutation(ZaasTokenResponse.builder()
+                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .headerName("headerName")
                     .token("headerValue")
                     .build()
-                );
+                ));
                 assertEquals("headerValue", request.getHeaders().getFirst("headerName"));
             }
 
             @Test
             void givenCookieResponse_whenHandling_thenUpdateTheRequest() {
-                MockServerHttpRequest request = testRequestMutation(ZaasTokenResponse.builder()
+                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .cookieName("cookieName")
                     .token("cookieValue")
                     .build()
-                );
+                ));
                 assertEquals("cookieName=cookieValue", request.getHeaders().getFirst("cookie"));
             }
 
@@ -72,22 +72,22 @@ class TokenFilterFactoryTest {
 
             @Test
             void givenEmptyResponse_whenHandling_thenNoUpdate() {
-                MockServerHttpRequest request = testRequestMutation(ZaasTokenResponse.builder()
+                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .token("jwt")
                     .build()
-                );
+                ));
                 assertEquals(1, request.getHeaders().size());
                 assertTrue(request.getHeaders().containsKey(ApimlConstants.AUTH_FAIL_HEADER));
             }
 
             @Test
             void givenCookieAndHeaderInResponse_whenHandling_thenSetBoth() {
-                MockServerHttpRequest request = testRequestMutation(ZaasTokenResponse.builder()
+                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .cookieName("cookie")
                     .headerName("header")
                     .token("jwt")
                     .build()
-                );
+                ));
                 assertEquals("jwt", request.getHeaders().getFirst("header"));
                 assertEquals("cookie=jwt", request.getHeaders().getFirst("cookie"));
             }

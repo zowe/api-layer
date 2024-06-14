@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.util.CookieUtil;
@@ -51,11 +52,6 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
     }
 
     @Override
-    protected ZaasTokenResponse getResponseFor401() {
-        return new ZaasTokenResponse();
-    }
-
-    @Override
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
         String tokensUrl = getEndpointUrl(instance);
         return webClient.post()
@@ -64,9 +60,10 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
 
     @Override
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
-    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
         ServerHttpRequest request = null;
-        if (response.getToken() != null) {
+        var response = tokenResponse.getBody();
+        if (response != null) {
             if (!StringUtils.isEmpty(response.getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
                 request = request.mutate().headers(headers -> {
@@ -86,7 +83,10 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
             }
         }
         if (request == null) {
-            request = cleanHeadersOnAuthFail(exchange, "Invalid or missing authentication");
+
+            var failureHeaders = tokenResponse.getHeaders().header(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase());
+            request = cleanHeadersOnAuthFail(exchange, !failureHeaders.isEmpty() ? failureHeaders.get(0) : "Invalid or missing authentication");
+
         }
 
         exchange = exchange.mutate().request(request).build();

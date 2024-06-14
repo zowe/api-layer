@@ -36,9 +36,10 @@ public class SafIdtFilterFactory extends AbstractRequestBodyAuthSchemeFactory<Za
     }
 
     @Override
-    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
         ServerHttpRequest request;
-        if (response.getToken() != null) {
+        var response = tokenResponse.getBody();
+        if (response != null) {
             request = cleanHeadersOnAuthSuccess(exchange);
             request = request.mutate().headers(headers ->
                 headers.add(ApimlConstants.SAF_TOKEN_HEADER, response.getToken())
@@ -54,11 +55,6 @@ public class SafIdtFilterFactory extends AbstractRequestBodyAuthSchemeFactory<Za
     @Override
     protected Class<ZaasTokenResponse> getResponseClass() {
         return ZaasTokenResponse.class;
-    }
-
-    @Override
-    protected ZaasTokenResponse getResponseFor401() {
-        return new ZaasTokenResponse();
     }
 
 }

@@ -49,19 +49,15 @@ public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactor
     }
 
     @Override
-    protected TicketResponse getResponseFor401() {
-        return new TicketResponse();
-    }
-
-    @Override
     public String getEndpointUrl(ServiceInstance instance) {
         return String.format(TICKET_URL, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
     @Override
-    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, TicketResponse response) {
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<TicketResponse> ticketResponse) {
         ServerHttpRequest request;
-        if (response.getTicket() != null) {
+        var response = ticketResponse.getBody();
+        if (response != null) {
             request = cleanHeadersOnAuthSuccess(exchange);
 
             String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));

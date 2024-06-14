@@ -40,13 +40,14 @@ public class ZoweFilterFactory extends TokenFilterFactory {
     }
 
     @Override
-    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, ZaasTokenResponse response) {
-        if (StringUtils.isNotEmpty(customHeader) && StringUtils.isNotEmpty(response.getToken())) {
+    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
+        var response = tokenResponse.getBody();
+        if (StringUtils.isNotEmpty(customHeader) && response != null) {
             var request = exchange.getRequest().mutate().headers(headers -> headers.add(customHeader, response.getToken())).build();
             exchange = exchange.mutate().request(request).build();
         }
 
-        return super.processResponse(exchange, chain, response);
+        return super.processResponse(exchange, chain, tokenResponse);
     }
 
 }
