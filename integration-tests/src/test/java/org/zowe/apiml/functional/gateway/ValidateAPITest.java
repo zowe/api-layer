@@ -78,11 +78,25 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testGetEndpointNonConformant() {
         given()
             .log().all()
+            .header("Cookie", "apimlAuthenticationToken=" + token)
             .when()
             .get(getEndpointURLGet() + "/nonConformantServiceBecauseNameIsTooLongAndContainsCapitalLettersqwertyuiop")
             .then()
             .assertThat()
             .statusCode(HttpStatus.SC_BAD_REQUEST);
+
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    void testGetEndpointWithNoAuthentication() {
+        given()
+            .log().all()
+            .when()
+            .get(getEndpointURLGet() + "/discoverableclient")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.SC_UNAUTHORIZED);
 
     }
 
