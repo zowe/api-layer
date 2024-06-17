@@ -56,7 +56,7 @@ public class ValidateAPIController {
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
     @GetMapping(
-        value = "/gateway/conformance/{serviceId}",
+        value = {"/gateway/conformance/{serviceId}","/gateway/api/v1/conformance/{serviceId}"},
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
