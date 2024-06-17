@@ -29,6 +29,7 @@
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
+# - ZWE_configs_apimlId
 # - ZWE_configs_apiml_service_forwardClientCertEnabled
 # - ZWE_configs_gateway_registry_enabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
@@ -142,6 +143,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
+    -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
