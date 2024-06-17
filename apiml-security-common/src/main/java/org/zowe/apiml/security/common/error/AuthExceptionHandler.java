@@ -98,6 +98,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     private void handleAuthenticationRequired(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+        String error = this.messageService.createMessage("org.zowe.apiml.zaas.security.schema.missingAuthentication").mapToLogMessage();
+        response.addHeader(ApimlConstants.AUTH_FAIL_HEADER, error);
         writeErrorResponse(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
