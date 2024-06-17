@@ -47,9 +47,6 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
 
-    @Value("${apiml.security.x509.acceptForwardedCert:false}")
-    private boolean acceptForwardedCert;
-
     private final ApplicationContext context;
 
     private final CorsUtils corsUtils;
@@ -122,13 +119,6 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
         List<FilterDefinition> serviceRelated = new LinkedList<>();
-
-        if (acceptForwardedCert) {
-            FilterDefinition acceptForwardedClientCertFilter = new FilterDefinition();
-            acceptForwardedClientCertFilter.setName("AcceptForwardedClientCertFilterFactory");
-            serviceRelated.add(acceptForwardedClientCertFilter);
-        }
-
         if (
             forwardingClientCertEnabled &&
             Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
