@@ -12,7 +12,11 @@ package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
 import org.apache.http.message.BasicNameValuePair;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,8 +32,12 @@ import java.net.URI;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
@@ -157,7 +165,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
                 //@formatter:off
                 given()
-                    .auth().basic(UNAUTHORIZED_USERNAME, new String(UNAUTHORIZED_PASSWORD))
+                    .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
                     .when()
                     .get(getUriFromGateway(ROUTED_SERVICE))
                     .then()

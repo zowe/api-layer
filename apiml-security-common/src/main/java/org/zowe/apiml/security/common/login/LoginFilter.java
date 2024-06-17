@@ -97,7 +97,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             }
 
             UsernamePasswordAuthenticationToken authentication
-                    = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
             Authentication auth = null;
 
@@ -142,9 +142,14 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @return the decoded credentials
      */
     public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
-        return Optional.ofNullable(
-                request.getHeader(HttpHeaders.AUTHORIZATION)
-            ).filter(
+        var headers = Optional.ofNullable(
+            request.getHeader(HttpHeaders.AUTHORIZATION)
+        );
+        return getCredentialFromAuthorizationHeader(headers);
+    }
+
+    public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(Optional<String> headers) {
+        return headers.filter(
                 header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
             ).map(
                 header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
@@ -152,6 +157,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             .filter(base64Credentials -> !base64Credentials.isEmpty())
             .map(LoginFilter::mapBase64Credentials);
     }
+
 
     /**
      * Decode the encoded credentials
