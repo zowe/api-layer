@@ -92,9 +92,23 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testGetEndpointWithNoAuthentication() {
         given()
             .log().all()
-            .when()
+        .when()
             .get(getEndpointURLGet() + "/discoverableclient")
-            .then()
+        .then()
+            .assertThat()
+            .statusCode(HttpStatus.SC_UNAUTHORIZED);
+
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    void testLegacyEndpointWithNoAuthentication() {
+        given()
+            .log().all()
+            .param("serviceID", "discoverableclient")
+        .when()
+            .post(getLegacyEndpointURLPost())
+        .then()
             .assertThat()
             .statusCode(HttpStatus.SC_UNAUTHORIZED);
 
