@@ -120,9 +120,6 @@ public class ConnectionsConfig {
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
-    @Value("${spring.application.name}")
-    private String serviceId;
-
     @Value("${server.ssl.trustStoreRequired:false}")
     private boolean trustStoreRequired;
 

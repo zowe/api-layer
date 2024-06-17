@@ -53,9 +53,9 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
-import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.TokenProvider;
+import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import reactor.core.publisher.Mono;
@@ -102,6 +102,8 @@ public class WebSecurity {
     private String allowedUsers;
 
     private final ClientConfiguration clientConfiguration;
+
+    private final TokenProvider tokenProvider;
 
     private Predicate<String> usernameAuthorizationTester;
 
@@ -291,22 +293,36 @@ public class WebSecurity {
             ).collect(Collectors.toList());
     }
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, TokenProvider tokenProvider) {
+    public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
         return http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(REGISTRY_PATH, SERVICES_SHORT_URL + "/**", SERVICES_FULL_URL + "/**"))
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
-            .x509(x509 ->
-                x509
-                    .principalExtractor(X509Util.x509PrincipalExtractor())
-                    .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            .x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
             )
+            .csrf(ServerHttpSecurity.CsrfSpec::disable);
+    }
+
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
+        return defaultSecurityConfig(http).build();
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        return defaultSecurityConfig(http)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                REGISTRY_PATH,
+                SERVICES_SHORT_URL + "/**",
+                SERVICES_FULL_URL + "/**"
+            ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
                     .anyExchange().authenticated()
             )
             .addFilterAfter(new TokenAuthFilter(tokenProvider), SecurityWebFiltersOrder.AUTHENTICATION)
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .build();
     }
 
