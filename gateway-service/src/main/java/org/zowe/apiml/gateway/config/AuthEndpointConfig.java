@@ -36,7 +36,7 @@ import static org.apache.hc.core5.http.HttpHeaders.SET_COOKIE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.path;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
-import static org.zowe.apiml.gateway.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
+import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
 
 
 @Slf4j

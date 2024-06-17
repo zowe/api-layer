@@ -27,11 +27,11 @@ import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CER
  */
 @Service
 @Slf4j
-public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<ClientCertFilterFactory.Config> {
+public class ForwardClientCertFilterFactory extends AbstractGatewayFilterFactory<ForwardClientCertFilterFactory.Config> {
 
     public static final String CLIENT_CERT_HEADER = "Client-Cert";
 
-    public ClientCertFilterFactory() {
+    public ForwardClientCertFilterFactory() {
         super(Config.class);
     }
 

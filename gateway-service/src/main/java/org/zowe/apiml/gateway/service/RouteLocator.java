@@ -23,9 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.gateway.service.scheme.SchemeHandler;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
@@ -46,6 +46,9 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
+
+    @Value("${apiml.security.x509.acceptForwardedCert:false}")
+    private boolean acceptForwardedCert;
 
     private final ApplicationContext context;
 
@@ -119,14 +122,21 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
         List<FilterDefinition> serviceRelated = new LinkedList<>();
+
+        if (acceptForwardedCert) {
+            FilterDefinition acceptForwardedClientCertFilter = new FilterDefinition();
+            acceptForwardedClientCertFilter.setName("AcceptForwardedClientCertFilterFactory");
+            serviceRelated.add(acceptForwardedClientCertFilter);
+        }
+
         if (
             forwardingClientCertEnabled &&
             Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
                 .map(Boolean::parseBoolean).orElse(false)
         ) {
-            FilterDefinition clientCertFilter = new FilterDefinition();
-            clientCertFilter.setName("ClientCertFilterFactory");
-            serviceRelated.add(clientCertFilter);
+            FilterDefinition forwardClientCertFilter = new FilterDefinition();
+            forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
+            serviceRelated.add(forwardClientCertFilter);
         }
 
         return join(commonFilters, serviceRelated);
