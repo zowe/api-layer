@@ -40,14 +40,14 @@ class GatewayProxyTest {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
-    static GatewayServiceConfiguration conf;
+    static ServiceConfiguration conf;
 
     @BeforeAll
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
-        conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        conf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
     }
 
     @Test

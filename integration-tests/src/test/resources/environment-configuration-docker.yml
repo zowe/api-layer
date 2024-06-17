@@ -11,6 +11,10 @@ gatewayServiceConfiguration:
     externalPort: 10010
     instances: 1
     servicesEndpoint: gateway/api/v1/services
+centralGatewayServiceConfiguration:
+    scheme: https
+    host: central-gateway-service
+    port: 10010
 zaasConfiguration:
     scheme: https
     host: zaas-service
