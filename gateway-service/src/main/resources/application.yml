@@ -14,8 +14,8 @@ eureka:
                         version: 1.0.0
                 routes:
                     api_v1:
-                        gatewayUrl: /api/v1
-                        serviceUrl: /gateway
+                        gatewayUrl: /
+                        serviceUrl: /
                 apiInfo:
                     - apiId: zowe.apiml.gateway
                       version: 1.0.0
