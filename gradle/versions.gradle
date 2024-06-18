@@ -75,7 +75,6 @@ ext {
     velocityVersion = '2.3'
     woodstoxVersion = '6.6.2'
     xstreamVersion = '1.4.20'
-    annotationsVersion = '3.0.1'
 
     libraries = [
         zowe_attls                         : "org.zowe.apiml.sdk:attls:${attlsVersion}",
@@ -179,7 +178,6 @@ ext {
         json_unit_fluent                   : "net.javacrumbs.json-unit:json-unit-fluent:${jsonUnitVersion}",
         jsoup                              : "org.jsoup:jsoup:${jsoupVersion}",
         jsr305                             : "com.google.code.findbugs:jsr305:${jsr305Version}",
-        annotations                        : "com.google.code.findbugs:Annotations:${annotationsVersion}",
         junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
         junit_platform_launcher            : "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}",
         junit_platform_commons             : "org.junit.platform:junit-platform-commons:${junitPlatformVersion}",
