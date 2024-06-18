@@ -62,7 +62,7 @@ class PATWithAllSchemesTest {
                 String jwt = r.getBody().path("headers.cookie").toString();
                 try {
                     String issuer = JWTParser.parse(jwt.substring(COOKIE_NAME.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
-                    assertEquals("zOSMF", issuer);
+                    assertEquals("APIML", issuer);
                 } catch (ParseException e) {
                     fail(e);
                 }
