@@ -278,7 +278,7 @@ class RouteLocatorTest {
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertEquals(2, filterDefinitions.size());
-                    assertEquals("ClientCertFilterFactory", filterDefinitions.get(1).getName());
+                    assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
 
                 @Test

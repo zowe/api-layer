@@ -26,6 +26,8 @@ import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<TokenFilterFactory.Config, ZaasTokenResponse, Object> {
 
     protected TokenFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
@@ -83,10 +85,14 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
             }
         }
         if (request == null) {
+            String failureHeader = Optional.of(tokenResponse)
+                .map(AuthorizationResponse::getHeaders)
+                .map(headers -> headers.header(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase()))
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.get(0))
+                .orElse("Invalid or missing authentication");
 
-            var failureHeaders = tokenResponse.getHeaders().header(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase());
-            request = cleanHeadersOnAuthFail(exchange, !failureHeaders.isEmpty() ? failureHeaders.get(0) : "Invalid or missing authentication");
-
+            request = cleanHeadersOnAuthFail(exchange, failureHeader);
         }
 
         exchange = exchange.mutate().request(request).build();

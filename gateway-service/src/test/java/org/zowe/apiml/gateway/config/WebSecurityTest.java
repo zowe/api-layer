@@ -34,6 +34,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
+import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -54,14 +55,15 @@ class WebSecurityTest {
     private ReactiveUserDetailsService reactiveUserDetailsService;
     @Autowired
     private TokenProvider tokenProvider;
-
+    @Autowired
+    private BasicAuthProvider basicAuthProvider;
     @Nested
     class WhenListOfAllowedUserDefined {
         WebSecurity webSecurity;
 
         @BeforeEach
         void setUp() {
-            webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider);
+            webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider, basicAuthProvider);
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "registryUser,registryAdmin");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
@@ -144,7 +146,7 @@ class WebSecurityTest {
     class WhenAnyUsersWildcardDefined {
         @BeforeEach
         void setUp() {
-            var webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider);
+            var webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider, basicAuthProvider);
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "*");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
@@ -177,7 +179,7 @@ class WebSecurityTest {
         var oauth2AuthReq = oauth2AuthReqBuilder.build();
         var monoResp = Mono.just(oauth2AuthReq);
         when(resolver.resolve(any(), any())).thenReturn(monoResp);
-        var requestRepository = new WebSecurity(null, tokenProvider).new ApimlServerAuthorizationRequestRepository(resolver);
+        var requestRepository = new WebSecurity(null, tokenProvider, basicAuthProvider).new ApimlServerAuthorizationRequestRepository(resolver);
         var exchange = mock(ServerWebExchange.class);
         var request = mock(ServerHttpRequest.class);
         when(exchange.getRequest()).thenReturn(request);
