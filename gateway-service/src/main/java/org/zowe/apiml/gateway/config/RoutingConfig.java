@@ -47,6 +47,7 @@ public class RoutingConfig {
         retryFilter.setName("Retry");
         retryFilter.addArg("retries", "5");
         retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
+        retryFilter.addArg("series", "");
         filters.add(retryFilter);
 
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {

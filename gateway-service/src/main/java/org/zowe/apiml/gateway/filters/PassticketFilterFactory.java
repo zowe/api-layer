@@ -20,6 +20,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.ticket.TicketResponse;
@@ -27,6 +28,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactory<TicketResponse> {
@@ -70,8 +72,13 @@ public class PassticketFilterFactory extends AbstractRequestBodyAuthSchemeFactor
             }
             request = requestSpec.build();
         } else {
-            String message = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication").mapToLogMessage();
-            request = cleanHeadersOnAuthFail(exchange, message);
+            String failureHeader = Optional.of(ticketResponse)
+                .map(AuthorizationResponse::getHeaders)
+                .map(headers -> headers.header(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase()))
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.get(0))
+                .orElse(messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", "Invalid or missing authentication").mapToLogMessage());
+            request = cleanHeadersOnAuthFail(exchange, failureHeader);
         }
 
         exchange = exchange.mutate().request(request).build();
