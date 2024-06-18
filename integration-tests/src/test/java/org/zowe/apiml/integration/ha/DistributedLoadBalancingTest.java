@@ -82,6 +82,6 @@ class DistributedLoadBalancingTest {
 
         String resultLog2 = Arrays.asList(results2).stream().collect(Collectors.joining(","));
         assertThat("Result of testing against another gateway instance", resultLog2, containsString("match,match,match,match,match,match,match,match,match,match"));
-
     }
+
 }
