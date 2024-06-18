@@ -37,9 +37,9 @@ public class Endpoints {
     public final static String ROUTED_SERVICE_NOT_VERSIONED = "/gateway/services";
 
     public final static String REVOKE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/revoke";
-    public static final String REVOKE_ACCESS_TOKENS_FOR_USER = "/gateway/auth/access-token/revoke/tokens/user";
-    public static final String REVOKE_OWN_ACCESS_TOKENS = "/gateway/auth/access-token/revoke/tokens";
-    public static final String REVOKE_ACCESS_TOKENS_FOR_SCOPE = "/gateway/auth/access-token/revoke/tokens/scope";
+    public static final String REVOKE_ACCESS_TOKENS_FOR_USER = "/gateway/api/v1/auth/access-token/revoke/tokens/user";
+    public static final String REVOKE_OWN_ACCESS_TOKENS = "/gateway/api/v1/auth/access-token/revoke/tokens";
+    public static final String REVOKE_ACCESS_TOKENS_FOR_SCOPE = "/gateway/api/v1/auth/access-token/revoke/tokens/scope";
     public final static String VALIDATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/validate";
     public final static String GENERATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/generate";
     public final static String EVICT_ACCESS_TOKEN = "/gateway/auth/access-token/evict";
