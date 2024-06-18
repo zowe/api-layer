@@ -42,7 +42,7 @@ import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
- class PATWithAllSchemesTest {
+class PATWithAllSchemesTest {
 
     static Stream<Arguments> authentication() {
         return Stream.of(
@@ -56,23 +56,24 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
     static Stream<Arguments> schemas() {
         return Stream.of(
             Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
+                assertNull(r.getBody().path("headers.authorization"));
                 assertThat(r.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
-                String jwt = r.getBody().path("headers.authorization").toString();
+                String jwt = r.getBody().path("headers.cookie").toString();
                 try {
-                   String issuer = JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
-                    assertEquals("APIML", issuer);
+                    String issuer = JWTParser.parse(jwt.substring(COOKIE_NAME.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
+                    assertEquals("zOSMF", issuer);
                 } catch (ParseException e) {
                     fail(e);
                 }
             }),
             Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
                 assertThat(r.getBody().path("headers.authorization"), startsWith("Basic "));
                 assertThat(r.getBody().path("cookies"), not(hasKey(COOKIE_NAME)));
             }),
             Arguments.of("dcsafidt", HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
                 assertThat(r.getBody().path("headers"), hasKey("x-saf-token"));
             })
         );
@@ -99,7 +100,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 
         validation.accept(authenticationAction.apply(given(), pat)
             .config(SslContext.tlsWithoutCert)
-        .when()
+            .when()
             .get(urlSpecification)
         );
     }

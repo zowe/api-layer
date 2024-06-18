@@ -1453,8 +1453,6 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
             -   uses: actions/checkout@v4
