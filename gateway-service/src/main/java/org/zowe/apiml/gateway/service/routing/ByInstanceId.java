@@ -12,24 +12,26 @@ package org.zowe.apiml.gateway.service.routing;
 
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
-import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.handler.predicate.PredicateDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.routing.RoutedService;
 
+import java.net.URI;
+import java.util.regex.Pattern;
+
 /**
- * The routing rule by header. It uses a header with name {@link ByHeader#TARGET_HEADER_NAME} and make rule routing by
- * it. It looks for a first part of routing steps and redirect by it (it could contain multiple steps separated by /).
- *
- * The rule modify the header for next hop (remove first part of remove the whole one if there is just one part).
+ * The routing rule for deterministic routing. If the request has set header `X-InstanceId`
+ * {@link ByInstanceId#HEADER_NAME} it route directly to this instanceId. If the instanceId is not available then
+ * it would be ignored.
  */
 @Component
-public class ByHeader extends RouteDefinitionProducer {
+public class ByInstanceId extends RouteDefinitionProducer {
 
-    private static final String TARGET_HEADER_NAME = "X-Forward-To";
+    private static final String HEADER_NAME = "X-InstanceId";
 
-    public ByHeader(DiscoveryLocatorProperties properties) {
+
+    public ByInstanceId(DiscoveryLocatorProperties properties) {
         super(properties);
     }
 
@@ -38,23 +40,20 @@ public class ByHeader extends RouteDefinitionProducer {
         PredicateDefinition predicate = new PredicateDefinition();
 
         predicate.setName("Header");
-        predicate.addArg("header", TARGET_HEADER_NAME);
-        predicate.addArg("regexp", serviceInstance.getServiceId() + "(/.*)?");
+        predicate.addArg("header", HEADER_NAME);
+        predicate.addArg("regexp", Pattern.quote(serviceInstance.getInstanceId()).toString());
 
         routeDefinition.getPredicates().add(predicate);
     }
 
     @Override
     protected void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
-        FilterDefinition filter = new FilterDefinition();
-        filter.setName("HeaderRouteStepFilterFactory");
-        filter.addArg("header", TARGET_HEADER_NAME);
-        routeDefinition.getFilters().add(filter);
+        routeDefinition.setUri(serviceInstance.getUri());
     }
 
     @Override
     public int getOrder() {
-        return 1;
+        return 0;
     }
 
 }
