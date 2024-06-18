@@ -36,7 +36,7 @@ import static org.apache.hc.core5.http.HttpHeaders.SET_COOKIE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.path;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
-import static org.zowe.apiml.gateway.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
+import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
 
 
 @Slf4j
@@ -120,6 +120,7 @@ public class AuthEndpointConfig {
         return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
             .andRoute(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
             .andRoute(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
+            .andRoute(path("/gateway/api/v1/auth/refresh"), resendTo("/api/v1/auth/refresh"))
             .andRoute(path("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
             .andRoute(path("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
             .andRoute(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))

@@ -45,11 +45,20 @@ services:
             - apiml.env
     gateway-service:
         container_name: gateway-service
-        image: ghcr.io/balhar-jakub/gateway-service:{GATEWAY_VERSION}
+        image: ghcr.io/balhar-jakub/gateway-service:{APIML_VERSION}
 {LINUX_SETTING}        network_mode: "host"
 {NOT_LINUX_SETTING}        ports:
 {NOT_LINUX_SETTING}            - 10010:10010
-{NOT_LINUX_SETTING}            - 10017:10017
+        volumes:
+            - ./keystore:/keystore
+        env_file:
+            - apiml.env
+    zaas-service:
+        container_name: zaas-service
+        image: ghcr.io/balhar-jakub/zaas-service:{APIML_VERSION}
+{LINUX_SETTING}        network_mode: "host"
+{NOT_LINUX_SETTING}        ports:
+{NOT_LINUX_SETTING}            - 10023:10023
         volumes:
             - ./keystore:/keystore
         env_file:

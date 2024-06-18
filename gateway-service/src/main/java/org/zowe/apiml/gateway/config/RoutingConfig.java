@@ -26,19 +26,29 @@ public class RoutingConfig {
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:-}")
     private String ignoredHeadersWhenCorsEnabled;
 
+    @Value("${apiml.security.x509.acceptForwardedCert:false}")
+    private boolean acceptForwardedCert;
+
     @Bean
     public List<FilterDefinition> filters() {
+        List<FilterDefinition> filters = new ArrayList<>();
+
+        if (acceptForwardedCert) {
+            FilterDefinition acceptForwardedClientCertFilter = new FilterDefinition();
+            acceptForwardedClientCertFilter.setName("AcceptForwardedClientCertFilterFactory");
+            filters.add(acceptForwardedClientCertFilter);
+        }
+
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
+        filters.add(circuitBreakerFilter);
 
         FilterDefinition retryFilter = new FilterDefinition();
         retryFilter.setName("Retry");
         retryFilter.addArg("retries", "5");
         retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
-
-        List<FilterDefinition> filters = new ArrayList<>();
-        filters.add(circuitBreakerFilter);
         filters.add(retryFilter);
+
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
             removeHeaders.setName("RemoveRequestHeader");

@@ -30,21 +30,22 @@ runs:
             until [ $attemptCounter -gt $maxAttempts ]; do
               sleep 10
               gwHealth=$(curl -k -s https://localhost:10010/application/health)
+              zaasHealth=$(curl -k -s https://localhost:10023/application/health)
               echo "Polling for GW health: $attemptCounter"
               echo $gwHealth
 
               gatewayUp=$(echo $gwHealth | jq -r '.status')
-              authUp=$(echo $gwHealth | jq -r '.components.gateway.details.auth')
+              authUp=$(echo $zaasHealth | jq -r '.components.zaas.details.auth')
               acUp="$(echo $gwHealth | jq -r '.components.gateway.details.apicatalog')"
 
               csUp="DOWN"
-              csHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
+              csHealth="$(echo $zaasHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
               if [ "$csHealth" != "null" ]; then
                   csUp="UP"
               fi
 
               dcUp="DOWN"
-              dcHealth="$(echo $gwHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
+              dcHealth="$(echo $zaasHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
               if [ "$dcHealth" != "null" ]; then
                   dcUp="UP"
               fi

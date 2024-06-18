@@ -84,14 +84,14 @@ class GatewayRoutingTest implements TestWithStartedInstances {
             .get(new URI(scgUrl)).then().statusCode(404);
     }
 
-    @ParameterizedTest(name = "When header X-Forward-To is set to {0} and base path is {1} should return 404")
+    @ParameterizedTest(name = "When header X-Forward-To is set to {0} and base path is {1} should return 200 - loopback")
     @CsvSource({
-        "apiml1,/apiml1" + DISCOVERABLE_GREET,
+        "apiml1/apiml1,/apiml1/apiml1" + DISCOVERABLE_GREET,
     })
     void testWrongRoutingWithHeader(String forwardTo, String endpoint) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), endpoint);
         given().header(HEADER_X_FORWARD_TO, forwardTo)
-            .get(new URI(scgUrl)).then().statusCode(404);
+            .get(new URI(scgUrl)).then().statusCode(200);
     }
 
     @ParameterizedTest(name = "When base path is {0} should return 404")

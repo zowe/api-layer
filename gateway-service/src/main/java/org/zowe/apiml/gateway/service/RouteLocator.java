@@ -23,9 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.gateway.service.scheme.SchemeHandler;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
@@ -124,9 +124,9 @@ public class RouteLocator implements RouteDefinitionLocator {
             Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
                 .map(Boolean::parseBoolean).orElse(false)
         ) {
-            FilterDefinition clientCertFilter = new FilterDefinition();
-            clientCertFilter.setName("ClientCertFilterFactory");
-            serviceRelated.add(clientCertFilter);
+            FilterDefinition forwardClientCertFilter = new FilterDefinition();
+            forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
+            serviceRelated.add(forwardClientCertFilter);
         }
 
         return join(commonFilters, serviceRelated);
