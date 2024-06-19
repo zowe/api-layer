@@ -21,6 +21,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 public class X509AuthAwareFilter extends X509AuthenticationFilter {
@@ -38,11 +39,9 @@ public class X509AuthAwareFilter extends X509AuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        if (SecurityContextHolder.getContext().getAuthentication() == null || !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(authResult);
-            SecurityContextHolder.setContext(context);
-        }
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authResult);
+        SecurityContextHolder.setContext(context);
         chain.doFilter(request, response);
     }
 

@@ -53,10 +53,10 @@ public class AuthConfigurationProperties {
     private String zaasAccessTokenEndpoint = "/zaas/api/v1/auth/access-token/generate";
 
     private String gatewayRevokeMultipleAccessTokens = "/gateway/auth/access-token/revoke/tokens";
-    private String zaasRevokeMultipleAccessTokens = "/zaas/auth/access-token/revoke/tokens";
+    private String zaasRevokeMultipleAccessTokens = "/zaas/api/v1/auth/access-token/revoke/tokens";
 
     private String gatewayEvictAccessTokensAndRules = "/gateway/auth/access-token/evict";
-    private String zaasEvictAccessTokensAndRules = "/zaas/auth/access-token/evict";
+    private String zaasEvictAccessTokensAndRules = "/zaas/api/v1/auth/access-token/evict";
 
     private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
     private String gatewayRefreshEndpoint = "/gateway/api/v1/auth/refresh";
