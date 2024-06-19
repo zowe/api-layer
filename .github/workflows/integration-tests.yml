@@ -279,7 +279,7 @@ jobs:
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_APIMLID: central-apiml-lb
                     APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_GATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
@@ -308,6 +308,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
             central-gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
