@@ -37,29 +37,19 @@ public class GatewayRequests {
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
     private static final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
-    private final Requests requests;
+    private final Requests requests = new Requests();
     private final String scheme;
     private final String host;
     private final int port;
-
     private final String instance;
 
     public GatewayRequests() {
-        this(gatewayServiceConfiguration.getHost(), gatewayServiceConfiguration.getInternalPorts());
-    }
-
-    public GatewayRequests(String host, String port) {
-        this(gatewayServiceConfiguration.getScheme(), host, Integer.parseInt(port), new Requests());
+        this(gatewayServiceConfiguration.getScheme(), gatewayServiceConfiguration.getHost(), gatewayServiceConfiguration.getExternalPort());
     }
 
     public GatewayRequests(String scheme, String host, int port) {
-        this(scheme, host, port, new Requests());
-    }
-
-    public GatewayRequests(String scheme, String host, int port, Requests requests) {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        this.requests = requests;
         this.scheme = scheme;
         this.host = host;
         this.port = port;

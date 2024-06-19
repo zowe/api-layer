@@ -1,9 +1,14 @@
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+        hostname: ${apiml.service.hostname}
         #ports are computed in code
         homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        port: ${apiml.service.port}
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+        securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
                 catalog:
@@ -71,6 +76,9 @@ apiml:
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         port: 10010
         scheme: https  # "https" or "http"
+        preferIpAddress: false
+        nonSecurePortEnabled: false
+        securePortEnabled: true
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
@@ -155,3 +163,5 @@ apiml:
     service:
         corsEnabled: true
         scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
