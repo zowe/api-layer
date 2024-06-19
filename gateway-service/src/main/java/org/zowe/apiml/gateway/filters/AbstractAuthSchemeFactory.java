@@ -52,10 +52,9 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  * <p>
  * To prepare a new implementation of authentication scheme decoration is required to implement those methods:
  * - {@link AbstractAuthSchemeFactory#getResponseClass()} - define class of the response body (see T)
- * - {@link AbstractAuthSchemeFactory#getResponseFor401()} - construct empty response body for 401 response
  * - {@link AbstractAuthSchemeFactory#createRequest(AbstractConfig, ServerHttpRequest.Builder, ServiceInstance, Object, ServerHttpRequest request)}
  * - create the base part of request to the ZAAS. It requires only related request properties to the related scheme
- * - {@link AbstractAuthSchemeFactory#processResponse(ServerWebExchange, GatewayFilterChain, Object)}
+ * - {@link AbstractAuthSchemeFactory#processResponse(ServerWebExchange, GatewayFilterChain, AuthorizationResponse<R>)}
  * - it is responsible for reading the response from the ZAAS and modifying the clients request to provide new credentials
  * <p>
  * Example:
@@ -220,7 +219,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      *
      * @param clientCallBuilder builder of customer request (to set new credentials)
      * @param chain             chain of filter to be evaluated. Method should return `return chain.filter(exchange)`
-     * @param response          response body from the ZAAS containing new credentials or and empty object - see {@link AbstractAuthSchemeFactory#getResponseFor401()}
+     * @param response          response body from the ZAAS containing new credentials or and empty object
      * @return response of chain evaluation (`return chain.filter(exchange)`)
      */
     @SuppressWarnings("squid:S2092")    // the cookie is used just for internal purposes (off the browser)
