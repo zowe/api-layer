@@ -38,8 +38,7 @@ class GatewayHomepageControllerTest {
     private GatewayHomepageController gatewayHomepageController;
     private BuildInfo buildInfo;
 
-    private final String API_CATALOG_ID = "apicatalog";
-    private final String METRICS_SERVICE_ID = "metrics-service";
+    private final String API_CATALOG_ID = "apicatalog"
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
 
     @BeforeEach
@@ -53,7 +52,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID, METRICS_SERVICE_ID, true);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID, true);
     }
 
     @Test

@@ -46,16 +46,12 @@ public class GatewayHomepageController {
     private String buildString;
 
     private final String apiCatalogServiceId;
-    private final String metricsServiceId;
-    private final boolean metricsServiceEnabled;
 
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
-                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId,
-                                     @Value("${apiml.metrics.serviceId:}") String metricsServiceId,
-                                     @Value("${apiml.metrics.enabled:false}") boolean metricsServiceEnabled) {
-        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId, metricsServiceId, metricsServiceEnabled);
+                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
+        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
@@ -68,15 +64,11 @@ public class GatewayHomepageController {
     public GatewayHomepageController(DiscoveryClient discoveryClient,
                                      Providers providers,
                                      BuildInfo buildInfo,
-                                     String apiCatalogServiceId,
-                                     String metricsServiceId,
-                                     boolean metricsServiceEnabled) {
+                                     String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
         this.providers = providers;
         this.buildInfo = buildInfo;
         this.apiCatalogServiceId = apiCatalogServiceId;
-        this.metricsServiceId = metricsServiceId;
-        this.metricsServiceEnabled = metricsServiceEnabled;
 
         initializeBuildInfos();
     }
@@ -85,7 +77,6 @@ public class GatewayHomepageController {
     @HystrixCommand
     public String home(Model model) {
         initializeCatalogAttributes(model);
-        initializeMetricsAttributes(model);
         initializeDiscoveryAttributes(model);
         initializeAuthenticationAttributes(model);
 
@@ -190,44 +181,10 @@ public class GatewayHomepageController {
         return serviceUrl + gatewayUrl;
     }
 
-    private void initializeMetricsAttributes(Model model) {
-        model.addAttribute("metricsEnabled", metricsServiceEnabled);
-
-        String metricsLink = null;
-        String metricsStatusText = "The Metrics Service is not running";
-        String metricsIconName = WARNING_ICON_NAME;
-        String metricsTitleText = WARNING_TITLE;
-
-        if (metricsServiceEnabled) {
-            List<ServiceInstance> metricsServiceInstances = discoveryClient.getInstances(metricsServiceId);
-            boolean metricsUp = !metricsServiceInstances.isEmpty();
-
-            if (metricsUp) {
-                metricsIconName = SUCCESS_ICON_NAME;
-                metricsLink = getMetricsLink(metricsServiceInstances.get(0));
-                metricsStatusText = "The Metrics Service is running";
-                metricsTitleText = SUCCESS_TITLE;
-            }
-        }
-
-        model.addAttribute("metricsLinkEnabled", metricsLink != null);
-        model.addAttribute("metricsStatusText", metricsStatusText);
-        model.addAttribute("metricsIconName", metricsIconName);
-        model.addAttribute("metricsLink", metricsLink);
-        model.addAttribute("metricsTitleText", metricsTitleText);
-    }
-
-    private String getMetricsLink(ServiceInstance metricsInstance) {
-        String gatewayUrl = metricsInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
-        String serviceUrl = metricsInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
-        return serviceUrl + "/" + gatewayUrl;
-    }
-
     private boolean authorizationServiceUp() {
         if (providers.isZosfmUsed()) {
             return providers.isZosmfAvailable();
         }
-
         return true;
     }
 }
