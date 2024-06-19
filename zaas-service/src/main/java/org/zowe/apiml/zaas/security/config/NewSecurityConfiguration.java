@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -90,6 +91,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class NewSecurityConfiguration {
 
     private final ObjectMapper securityObjectMapper;
@@ -297,8 +299,6 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                        authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
-                        authConfigurationProperties.getZaasEvictAccessTokensAndRules(),
                         "/zaas/zaas/**"
                 )))
                         .authorizeHttpRequests(requests -> requests

@@ -21,6 +21,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import java.io.IOException;
 
@@ -39,9 +40,11 @@ public class X509AuthAwareFilter extends X509AuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authResult);
-        SecurityContextHolder.setContext(context);
+        if (SecurityContextHolder.getContext().getAuthentication() == null || (SecurityContextHolder.getContext().getAuthentication() instanceof PreAuthenticatedAuthenticationToken) || !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(authResult);
+            SecurityContextHolder.setContext(context);
+        }
         chain.doFilter(request, response);
     }
 

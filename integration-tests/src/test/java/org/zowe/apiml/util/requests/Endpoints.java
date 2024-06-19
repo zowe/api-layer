@@ -42,7 +42,7 @@ public class Endpoints {
     public static final String REVOKE_ACCESS_TOKENS_FOR_SCOPE = "/gateway/api/v1/auth/access-token/revoke/tokens/scope";
     public final static String VALIDATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/validate";
     public final static String GENERATE_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/generate";
-    public final static String EVICT_ACCESS_TOKEN = "/gateway/auth/access-token/evict";
+    public final static String EVICT_ACCESS_TOKEN = "/gateway/api/v1/auth/access-token/evict";
 
     public final static String VALIDATE_OIDC_TOKEN = "/gateway/api/v1/auth/oidc-token/validate";
     public final static String JWK_ALL = "/gateway/api/v1/auth/keys/public/all";
