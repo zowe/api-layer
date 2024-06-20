@@ -103,7 +103,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
         assertThat(metadata)
             .extracting(map -> map.get("apiml.service.apimlId"))
-            .containsExactlyInAnyOrder("central-apiml", "domain-apiml");
+            .containsOnly("central-apiml", "domain-apiml");
     }
 
     @Test
