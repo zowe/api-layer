@@ -165,6 +165,7 @@ public class GatewayHomepageController {
         if (providers.isZosfmUsed()) {
             return providers.isZosmfAvailable();
         }
+
         return true;
     }
 }
