@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -32,6 +33,7 @@ import java.util.Map;
  * Client for interaction with Caching Service
  * Supports basic CRUD operations
  */
+@Slf4j
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
 public class CachingServiceClient {
 
@@ -85,7 +87,9 @@ public class CachingServiceClient {
 
     public void appendList(String mapKey, KeyValue kv) throws CachingServiceClientException {
         try {
-            restTemplate.exchange(getGatewayAddress() + CACHING_LIST_API_PATH + mapKey, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
+            var url = getGatewayAddress() + CACHING_LIST_API_PATH + mapKey;
+            log.error("append list url: {}", url);
+            restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + " key, caused by: " + e.getMessage(), e);
         }
@@ -93,10 +97,11 @@ public class CachingServiceClient {
 
     public Map<String, Map<String, String>> readAllMaps() throws CachingServiceClientException {
         try {
-            ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
-                new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
-                };
-            ResponseEntity<Map<String, Map<String, String>>> response = restTemplate.exchange(getGatewayAddress() + CACHING_LIST_API_PATH, HttpMethod.GET, null, responseType);
+            var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+            };
+            var url = getGatewayAddress() + CACHING_LIST_API_PATH;
+            log.error("readAllMaps url: {}", url);
+            var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();

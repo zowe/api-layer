@@ -137,6 +137,7 @@ public class AuthController {
         if (userId == null) {
             return badRequestForPATInvalidation();
         }
+        log.error("revokeAccessTokensForUser: userId={}", userId);
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
