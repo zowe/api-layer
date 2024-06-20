@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.security.common.audit.RauditxService;
@@ -21,11 +22,13 @@ import org.zowe.apiml.security.common.token.AccessTokenProvider;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Set;
 
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
+@Slf4j
 @RequiredArgsConstructor
 public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandler {
 
@@ -35,6 +38,7 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         String username = authentication.getName();
+        log.error("generate access token for user {}", username);
         RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
             .userId(username)
             .messageSegment("An attempt to generate PAT")
