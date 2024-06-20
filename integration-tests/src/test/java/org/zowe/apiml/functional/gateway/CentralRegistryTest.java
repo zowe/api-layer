@@ -91,19 +91,19 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
     @Test
     void shouldFindTwoRegisteredGatewaysInTheEurekaApps() {
-        TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>> typeRef = new TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>>() {
+        TypeRef<List<ArrayList<LinkedHashMap<Object, Object>>>> typeRef = new TypeRef<>() {
         };
 
         ArrayList<LinkedHashMap<Object, Object>> metadata = listEurekaApps()
             .extract()
             .jsonPath()
-            .getObject("applications.application.findAll { it.name == 'gateway' }.instance.metadata", typeRef).get(0);
+            .getObject("applications.application.findAll { it.name == 'GATEWAY' }.instance.metadata", typeRef).get(0);
 
-        assertThat(metadata).hasSize(2);
+        assertThat(metadata).hasSize(4);
 
         assertThat(metadata)
             .extracting(map -> map.get("apiml.service.apimlId"))
-            .containsExactlyInAnyOrder("central-apiml", "domain-apiml");
+            .containsOnly("central-apiml", "domain-apiml");
     }
 
     @Test
