@@ -53,6 +53,7 @@ public class ValidateAPIController {
     private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
 
+
     /**
      * Accepts serviceID and checks conformance criteria
      *
