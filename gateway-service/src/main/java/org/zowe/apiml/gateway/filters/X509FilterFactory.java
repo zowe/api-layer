@@ -84,6 +84,7 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
                     headers.add(PUBLIC_KEY, Base64.getEncoder().encodeToString(certificate.getEncoded()));
                     break;
                 case DISTINGUISHED_NAME:
+                    log.error("Adding DN {}", certificate.getSubjectDN().getName());
                     headers.add(DISTINGUISHED_NAME, certificate.getSubjectDN().getName());
                     break;
                 default:
