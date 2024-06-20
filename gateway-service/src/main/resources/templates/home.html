@@ -163,8 +163,7 @@
         <li class="list-item">
             <div class="wrap" th:if="${isAnyCatalogAvailable == true}"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"
-                                   alt="API Catalog status icon"
-                                   th:title="${catalogTitleText}"/>
+                                   alt="API Catalog status icon"/>
                 <a class="active"
                    th:if="${catalogLinkEnabled} == true"
                    th:href="${catalogLink}"
@@ -176,34 +175,16 @@
                 </a>
             </div>
         </li>
-        <li class="list-item" th:if="${metricsEnabled == true}">
-            <div class="wrap"><img class="status-icon"
-                                                                     th:src="@{${'/images/icon-notification-intent-' + metricsIconName + '.png'}}"
-                                                                     alt="Metrics service running icon"
-                                                                     th:title="${metricsTitleText}"/>
-                <a class="active"
-                   th:if="${metricsLinkEnabled} == true"
-                   th:href="${metricsLink}"
-                   title="Go to the Metrics service">
-                    <p class="status-text" th:text="${metricsStatusText}"/>
-                </a>
-                <a class="disabled" th:if="${metricsLinkEnabled} == false">
-                    <p class="status-text" th:text="${metricsStatusText}"/>
-                </a>
-            </div>
-        </li>
         <li class="list-item">
             <div class="wrap"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + discoveryIconName + '.png'}}"
-                                   alt="Discovery service running icon"
-                                   th:title="${discoveryTitleText}"/>
+                                   alt="Discovery service running icon"/>
                 <p class="status-text" th:text="${discoveryStatusText}"/></div>
         </li>
         <li class="list-item">
             <div class="wrap"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + authIconName + '.png'}}"
-                                   alt="Authentication service running icon"
-                                   th:title="${authenticationTitleText}"/>
+                                   alt="Authentication service running icon"/>
                 <p class="status-text" th:text="${authStatusText}"/></div>
         </li>
     </ul>

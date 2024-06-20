@@ -34,9 +34,6 @@ public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
-    protected static final String ERROR_TITLE = "The API Mediation Layer does not work";
-    protected static final String WARNING_TITLE = "There are limitations to how API Mediation Layer works";
-    protected static final String SUCCESS_TITLE = "The API Mediation Layer works properly";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
 
     private final DiscoveryClient discoveryClient;
@@ -52,13 +49,6 @@ public class GatewayHomepageController {
                                      Providers providers,
                                      @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
         this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
-    }
-
-    public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     Providers providers,
-                                     BuildInfo buildInfo,
-                                     String apiCatalogServiceId) {
-        this(discoveryClient, providers, buildInfo, apiCatalogServiceId, null, false);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
@@ -95,7 +85,6 @@ public class GatewayHomepageController {
     private void initializeDiscoveryAttributes(Model model) {
         String discoveryStatusText = null;
         String discoveryIconName = null;
-        String discoveryTitleText = ERROR_TITLE;
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances("discovery");
         if (serviceInstances != null) {
@@ -108,36 +97,30 @@ public class GatewayHomepageController {
                 case 1:
                     discoveryStatusText = "The Discovery Service is running";
                     discoveryIconName = SUCCESS_ICON_NAME;
-                    discoveryTitleText = SUCCESS_TITLE;
                     break;
                 default:
                     discoveryStatusText = discoveryCount + " Discovery Service instances are running";
                     discoveryIconName = SUCCESS_ICON_NAME;
-                    discoveryTitleText = SUCCESS_TITLE;
                     break;
             }
         }
 
         model.addAttribute("discoveryStatusText", discoveryStatusText);
         model.addAttribute("discoveryIconName", discoveryIconName);
-        model.addAttribute("discoveryTitleText", discoveryTitleText);
     }
 
     private void initializeAuthenticationAttributes(Model model) {
         String authStatusText = "The Authentication Service is not running";
         String authIconName = WARNING_ICON_NAME;
-        String authTitleText = WARNING_TITLE;
         boolean authUp = authorizationServiceUp();
 
         if (authUp) {
             authStatusText = "The Authentication Service is running";
             authIconName = SUCCESS_ICON_NAME;
-            authTitleText = SUCCESS_TITLE;
         }
 
         model.addAttribute("authStatusText", authStatusText);
         model.addAttribute("authIconName", authIconName);
-        model.addAttribute("authTitleText", authTitleText);
     }
 
     private void initializeCatalogAttributes(Model model) {
@@ -150,7 +133,6 @@ public class GatewayHomepageController {
         String catalogLink = null;
         String catalogStatusText = "The API Catalog Service is not running";
         String catalogIconName = WARNING_ICON_NAME;
-        String catalogTitleText = WARNING_TITLE;
         boolean linkEnabled = false;
         boolean authServiceEnabled = authorizationServiceUp();
 
@@ -160,7 +142,6 @@ public class GatewayHomepageController {
             if (catalogCount > 0) {
                 linkEnabled = true;
                 catalogIconName = SUCCESS_ICON_NAME;
-                catalogTitleText = SUCCESS_TITLE;
                 catalogLink = getCatalogLink(serviceInstances.get(0));
 
                 catalogStatusText = catalogCount > 1 ?
@@ -172,7 +153,6 @@ public class GatewayHomepageController {
         model.addAttribute("catalogIconName", catalogIconName);
         model.addAttribute("catalogLinkEnabled", linkEnabled);
         model.addAttribute("catalogStatusText", catalogStatusText);
-        model.addAttribute("catalogTitleText", catalogTitleText);
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {

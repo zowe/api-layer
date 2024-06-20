@@ -38,7 +38,7 @@ class GatewayHomepageControllerTest {
     private GatewayHomepageController gatewayHomepageController;
     private BuildInfo buildInfo;
 
-    private final String API_CATALOG_ID = "apicatalog"
+    private final String API_CATALOG_ID = "apicatalog";
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
 
     @BeforeEach
@@ -52,7 +52,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID, true);
+            discoveryClient, providers, buildInfo, API_CATALOG_ID);
     }
 
     @Test
@@ -157,7 +157,6 @@ class GatewayHomepageControllerTest {
 
         assertCatalogIsUpMessageShown(model.asMap());
         assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog Service is running"));
-        assertThat(model.asMap(), hasEntry("catalogTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 
     @Test
@@ -171,7 +170,6 @@ class GatewayHomepageControllerTest {
 
         assertCatalogIsUpMessageShown(model.asMap());
         assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog Service instances are running"));
-        assertThat(model.asMap(), hasEntry("catalogTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
@@ -179,14 +177,12 @@ class GatewayHomepageControllerTest {
         assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog Service is not running"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", false));
         assertThat(preparedModelView, not(hasKey("catalogLink")));
-        assertThat(preparedModelView, hasEntry("catalogTitleText", GatewayHomepageController.WARNING_TITLE));
     }
 
     private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", true));
         assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
-        assertThat(preparedModelView, hasEntry("catalogTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 
     private void discoveryReturnValidZosmfAuthorizationInstance() {
@@ -221,7 +217,6 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryIconName", "danger"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryStatusText", "The Discovery Service is not running"));
-        assertThat(actualModelMap, hasEntry("discoveryTitleText", GatewayHomepageController.ERROR_TITLE));
     }
 
 
@@ -236,7 +231,6 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryIconName", "danger"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryStatusText", "The Discovery Service is not running"));
-        assertThat(actualModelMap, hasEntry("discoveryTitleText", GatewayHomepageController.ERROR_TITLE));
     }
 
     @Test
@@ -253,7 +247,6 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryIconName", "success"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryStatusText", "The Discovery Service is running"));
-        assertThat(actualModelMap, hasEntry("discoveryTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 
     @Test
@@ -270,7 +263,6 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryIconName", "success"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("discoveryStatusText", "2 Discovery Service instances are running"));
-        assertThat(actualModelMap, hasEntry("discoveryTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 
 
@@ -283,7 +275,6 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is running"));
-        assertThat(actualModelMap, hasEntry("authTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 
     @Test
@@ -298,7 +289,6 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "warning"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is not running"));
-        assertThat(actualModelMap, hasEntry("authTitleText", GatewayHomepageController.WARNING_TITLE));
     }
 
     @Test
@@ -313,6 +303,5 @@ class GatewayHomepageControllerTest {
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is running"));
-        assertThat(actualModelMap, hasEntry("authTitleText", GatewayHomepageController.SUCCESS_TITLE));
     }
 }
