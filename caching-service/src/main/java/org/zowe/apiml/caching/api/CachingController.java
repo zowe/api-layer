@@ -253,7 +253,7 @@ public class CachingController {
     private ResponseEntity<Object> mapKeyValueRequest(MapKeyValueOperation operation, String mapKey, KeyValue keyValue,
                                                       HttpServletRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
-        if (!serviceId.isPresent()) {
+        if (serviceId.isEmpty()) {
             return getUnauthorizedResponse();
         }
 
