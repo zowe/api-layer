@@ -115,8 +115,8 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .get(scgUrl)
                 .then()
                 .statusCode(SC_OK)
-                .body("headers.x-zowe-auth-failure", startsWith("ZWEAG141E"))
-                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG141E"));
+                .body("headers.x-zowe-auth-failure", startsWith("ZWEAG160E"))
+                .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG160E"));
         }
     }
 
