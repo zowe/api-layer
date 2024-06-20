@@ -290,6 +290,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-15000} \
     -Dserver.webSocket.stopTimeout=${ZWE_configs_server_webSocket_stopTimeout:-30000} \
     -Dserver.webSocket.asyncWriteTimeout=${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000} \
+    -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
