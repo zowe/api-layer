@@ -131,7 +131,7 @@ public class GatewayHomepageController {
         }
 
         String catalogLink = null;
-        String catalogStatusText = "The API Catalog Service is not running";
+        String catalogStatusText = "The API Catalog is not running";
         String catalogIconName = WARNING_ICON_NAME;
         boolean linkEnabled = false;
         boolean authServiceEnabled = authorizationServiceUp();
@@ -145,7 +145,7 @@ public class GatewayHomepageController {
                 catalogLink = getCatalogLink(serviceInstances.get(0));
 
                 catalogStatusText = catalogCount > 1 ?
-                    catalogCount + " API Catalog Service instances are running" : "The API Catalog Service is running";
+                    catalogCount + " API Catalog instances are running" : "The API Catalog is running";
             }
         }
 

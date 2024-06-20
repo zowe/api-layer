@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.controllers;
 
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
@@ -156,7 +155,7 @@ class GatewayHomepageControllerTest {
 
 
         assertCatalogIsUpMessageShown(model.asMap());
-        assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog Service is running"));
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog is running"));
     }
 
     @Test
@@ -169,12 +168,12 @@ class GatewayHomepageControllerTest {
 
 
         assertCatalogIsUpMessageShown(model.asMap());
-        assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog Service instances are running"));
+        assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog instances are running"));
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "warning"));
-        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog Service is not running"));
+        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is not running"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", false));
         assertThat(preparedModelView, not(hasKey("catalogLink")));
     }
@@ -304,4 +303,5 @@ class GatewayHomepageControllerTest {
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
         assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "The Authentication Service is running"));
     }
+
 }
