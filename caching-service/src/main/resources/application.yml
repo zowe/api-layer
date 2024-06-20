@@ -150,7 +150,6 @@ management:
 logging:
     level:
         ROOT: INFO
-        org.jgroups: TRACE
         org.zowe.apiml: DEBUG
         org.zowe.apiml.enable: DEBUG
         org.zowe.apiml.caching: DEBUG
