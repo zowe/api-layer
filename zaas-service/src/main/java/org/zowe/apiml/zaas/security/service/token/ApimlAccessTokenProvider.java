@@ -122,11 +122,22 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     private Optional<Boolean> checkRule(Map<String, String> tokenRules, String ruleId, QueryResponse parsedToken) {
+        if (tokenRules != null && !tokenRules.isEmpty()) {
+            log.error("Contains rule {}", tokenRules.containsKey(ruleId));
+            log.error("ruleId {}", ruleId);
+            log.error("parsed token {}", parsedToken.toString());
+            tokenRules.forEach((key, value) -> {
+                log.error(key + " : " + value);
+            });
+        }
         if (tokenRules != null && !tokenRules.isEmpty() && tokenRules.containsKey(ruleId)) {
             String timestampStr = tokenRules.get(ruleId);
             try {
                 long timestamp = Long.parseLong(timestampStr);
-                boolean result = parsedToken.getCreation().getTime() < timestamp;
+                var tokenTime = parsedToken.getCreation().getTime();
+                log.error("Not able to parse token rule {}. Timestamp: {}", ruleId, timestampStr);
+                log.error("Token time: {}", tokenTime);
+                boolean result = tokenTime <= timestamp;
                 if (result) {
                     return Optional.of(true);
                 }
