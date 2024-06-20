@@ -44,6 +44,22 @@ springBoot {
     }
 }
 
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+
+    debugOptions {
+        port = 5013
+        suspend = false
+        server = true
+    }
+
+    workingDir = project.rootDir
+
+    systemProperties = System.properties
+}
+
 gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
