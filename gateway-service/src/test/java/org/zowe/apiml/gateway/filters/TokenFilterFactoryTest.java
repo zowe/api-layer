@@ -32,7 +32,7 @@ class TokenFilterFactoryTest {
             MockServerHttpRequest request = MockServerHttpRequest.get("/url").build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
-            new TokenFilterFactory(null, null, null) {
+            new TokenFilterFactory<>(TokenFilterFactory.Config.class, null, null, null) {
                 @Override
                 public String getEndpointUrl(ServiceInstance instance) {
                     return null;
