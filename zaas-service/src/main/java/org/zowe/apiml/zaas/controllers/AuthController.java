@@ -119,7 +119,7 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        log.error("revokeAllUserAccessTokens: userId={}", userId);
+        log.debug("revokeAllUserAccessTokens: userId={}", userId);
         long timeStamp = 0;
         if (rulesRequestModel != null) {
             timeStamp = rulesRequestModel.getTimestamp();
@@ -137,7 +137,7 @@ public class AuthController {
         if (userId == null) {
             return badRequestForPATInvalidation();
         }
-        log.error("revokeAccessTokensForUser: userId={}", userId);
+        log.debug("revokeAccessTokensForUser: userId={}", userId);
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -171,14 +171,11 @@ public class AuthController {
     @ResponseBody
     public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
-        log.error("validateAccessToken: token={}", token);
         String serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
             !tokenProvider.isInvalidated(token)) {
-            log.error("valid access token: token={} serviceId={}", token, serviceId);
             return new ResponseEntity<>(HttpStatus.OK);
         }
-        log.error("invalid access token: token={} serviceId={}", token, serviceId);
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 

@@ -120,7 +120,7 @@ public class CachingController {
     public ResponseEntity<Object> getAllMapItems(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
-                log.error("Storing for serviceId: {}", s);
+                log.debug("Storing for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
                 } catch (Exception exception) {
@@ -137,7 +137,7 @@ public class CachingController {
     public ResponseEntity<Object> getAllMaps(HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
-                log.error("Get all for serviceId: {}", s);
+                log.debug("Get all for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
@@ -154,7 +154,7 @@ public class CachingController {
     public ResponseEntity<Object> evictRules(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
-                log.error("Delete record for serviceId: {}", s);
+                log.debug("Delete record for serviceId: {}", s);
                 try {
                     storage.removeNonRelevantRules(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -172,7 +172,7 @@ public class CachingController {
     public ResponseEntity<Object> evictTokens(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
-                log.error("Evict tokens for serviceId: {}", s);
+                log.debug("Evict tokens for serviceId: {}", s);
                 try {
                     storage.removeNonRelevantTokens(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -258,7 +258,7 @@ public class CachingController {
         }
 
         try {
-            log.error("All map for serviceId: {}", serviceId.get());
+            log.debug("All map for serviceId: {}", serviceId.get());
             checkForInvalidPayload(keyValue);
 
             operation.storageRequest(serviceId.get(), mapKey, keyValue);

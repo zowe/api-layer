@@ -38,7 +38,7 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         String username = authentication.getName();
-        log.error("generate access token for user {}", username);
+        log.debug("generate access token for user {}", username);
         RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
             .userId(username)
             .messageSegment("An attempt to generate PAT")

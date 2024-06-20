@@ -88,7 +88,7 @@ public class CachingServiceClient {
     public void appendList(String mapKey, KeyValue kv) throws CachingServiceClientException {
         try {
             var url = getGatewayAddress() + CACHING_LIST_API_PATH + mapKey;
-            log.error("append list url: {}", url);
+            log.debug("append list url: {}", url);
             restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
         } catch (RestClientException e) {
             throw new CachingServiceClientException("Unable to create keyValue: " + kv.toString() + " in a map under " + mapKey + " key, caused by: " + e.getMessage(), e);
@@ -100,7 +100,7 @@ public class CachingServiceClient {
             var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
             };
             var url = getGatewayAddress() + CACHING_LIST_API_PATH;
-            log.error("readAllMaps url: {}", url);
+            log.debug("readAllMaps url: {}", url);
             var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null

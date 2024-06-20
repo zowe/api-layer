@@ -68,7 +68,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }
-        log.error("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
+        log.debug("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
         cachingServiceClient.appendList(INVALID_USERS_KEY, new CachingServiceClient.KeyValue(hashedUserId, Long.toString(timestamp)));
     }
 
@@ -77,7 +77,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }
-        log.error("serviceIdHash {}, timestamp {}", hashedServiceId, timestamp);
+        log.debug("serviceIdHash {}, timestamp {}", hashedServiceId, timestamp);
         cachingServiceClient.appendList(INVALID_SCOPES_KEY, new CachingServiceClient.KeyValue(hashedServiceId, Long.toString(timestamp)));
     }
 
@@ -124,21 +124,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     private Optional<Boolean> checkRule(Map<String, String> tokenRules, String ruleId, QueryResponse parsedToken) {
-        if (tokenRules != null && !tokenRules.isEmpty()) {
-            log.error("Contains rule {}", tokenRules.containsKey(ruleId));
-            log.error("ruleId {}", ruleId);
-            log.error("parsed token {}", parsedToken.toString());
-            tokenRules.forEach((key, value) -> {
-                log.error(key + " : " + value);
-            });
-        }
         if (tokenRules != null && !tokenRules.isEmpty() && tokenRules.containsKey(ruleId)) {
             String timestampStr = tokenRules.get(ruleId);
             try {
                 long timestamp = Long.parseLong(timestampStr);
                 var tokenTime = parsedToken.getCreation().getTime();
-                log.error("Not able to parse token rule {}. Timestamp: {}", ruleId, timestampStr);
-                log.error("Token time: {}", tokenTime);
                 boolean result = tokenTime <= timestamp;
                 if (result) {
                     return Optional.of(true);
