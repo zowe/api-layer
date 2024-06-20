@@ -52,8 +52,6 @@ public class ValidateAPIController {
     private final VerificationOnboardService verificationOnboardService;
     private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
-    public static final String VALIDATE_CONFORMANCE_URL = "/gateway/conformance";
-    public static final String LEGACY_CONFORMANCE_URL = "/validate";
 
     /**
      * Accepts serviceID and checks conformance criteria
@@ -134,7 +132,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
-    @PostMapping(value = LEGACY_CONFORMANCE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @HystrixCommand
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
