@@ -56,7 +56,7 @@
         "postbuild": "rimraf build/**/*.map",
         "test": "react-app-rewired test --silent --watchAll=false --env=jsdom components/* utils/* reducers/* epics/* actions/* selectors/* ErrorBoundary/* helpers/* --reporters=default --reporters=jest-html-reporter --coverage",
         "cy:open": "cypress open",
-        "cy:e2e:ci": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --env catalogHomePage=https://gateway-service:10010/apicatalog/ui/v1,gatewayOktaRedirect=https://gateway-service:10010/gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Fgateway-service%3A10010%2Fapplication --browser chrome --headless",
+        "cy:e2e:ci": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --env catalogHomePage=https://gateway-service:10010/apicatalog/ui/v1,gatewayOktaRedirect=https://central-gateway-service:10010/gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Fcentral-gateway-service%3A10010%2Fapplication --browser chrome --headless",
         "cy:e2e:localhost": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headless",
         "cy:e2e:localhost-debug": "DEBUG=cypress:net* cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headless",
         "cy:e2e:localhost-headful": "cypress run --spec \"cypress/e2e/**/*.cy.js\" --browser chrome --headed",
