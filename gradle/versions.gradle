@@ -36,8 +36,14 @@ dependencyResolutionManagement {
             version('jakartaValidation', '3.1.0')
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0-M2')
-            version('jaxbApi', '4.0.2')
-            version('jaxbImpl', '4.0.2')
+            version('jaxbApi') {
+                strictly '[2.3.3,3.0.0['
+                prefer '2.3.3'
+            }
+            version('jaxbImpl') {
+                strictly '[2.3.9,3.0.0['
+                prefer '2.3.9'
+            }
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.54.v20240208')
             version('jettison', '1.5.4')
