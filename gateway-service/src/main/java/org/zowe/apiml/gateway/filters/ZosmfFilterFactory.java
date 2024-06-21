@@ -19,10 +19,10 @@ import org.zowe.apiml.message.core.MessageService;
 
 
 @Service
-public class ZosmfFilterFactory extends TokenFilterFactory {
+public class ZosmfFilterFactory extends TokenFilterFactory<TokenFilterFactory.Config, Object> {
 
     public ZosmfFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(webClient, instanceInfoService, messageService);
+        super(TokenFilterFactory.Config.class, webClient, instanceInfoService, messageService);
     }
 
     @Override

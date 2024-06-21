@@ -249,7 +249,7 @@ class ZaasControllerTest {
             void whenRequestingZoweTokensAndUserMissingMapping_thenOkWithTokenInHeader() throws Exception {
                 authSource = new OIDCAuthSource(JWT_TOKEN);
                 when(authSourceService.getJWT(authSource))
-                    .thenThrow(new NoMainframeIdentityException("No user mappring", null, true));
+                    .thenThrow(new NoMainframeIdentityException("No user mapping", null, true));
 
                 mockMvc.perform(post(ZOWE_TOKEN_URL)
                         .requestAttr(AUTH_SOURCE_ATTR, authSource))
@@ -263,7 +263,7 @@ class ZaasControllerTest {
             void whenRequestingZoweTokensAndUserMissingMappingAndTokenIsInvalid_thenUnauthorized() throws Exception {
                 authSource = new OIDCAuthSource(JWT_TOKEN);
                 when(authSourceService.getJWT(authSource))
-                    .thenThrow(new NoMainframeIdentityException("No user mappring", null, false));
+                    .thenThrow(new NoMainframeIdentityException("No user mapping", null, false));
 
                 mockMvc.perform(post(ZOWE_TOKEN_URL)
                         .requestAttr(AUTH_SOURCE_ATTR, authSource))

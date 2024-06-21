@@ -17,6 +17,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -27,17 +28,18 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<TokenFilterFactory.Config, ZaasTokenResponse, Object> {
+public abstract class TokenFilterFactory<T extends TokenFilterFactory.Config, D> extends AbstractAuthSchemeFactory<T, ZaasTokenResponse, D> {
 
-    protected TokenFilterFactory(WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(Config.class, webClient, instanceInfoService, messageService);
+    protected TokenFilterFactory(Class<T> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+        super(configClazz, webClient, instanceInfoService, messageService);
     }
 
     public abstract String getEndpointUrl(ServiceInstance instance);
 
     @Override
-    public GatewayFilter apply(Config config) {
+    public GatewayFilter apply(T config) {
         try {
             return createGatewayFilter(config, null);
         } catch (Exception e) {
@@ -54,7 +56,7 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
     }
 
     @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data) {
         String tokensUrl = getEndpointUrl(instance);
         return webClient.post()
             .uri(tokensUrl);
@@ -64,35 +66,47 @@ public abstract class TokenFilterFactory extends AbstractAuthSchemeFactory<Token
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
         ServerHttpRequest request = null;
-        var response = tokenResponse.getBody();
-        if (response != null) {
-            if (!StringUtils.isEmpty(response.getCookieName())) {
+        var response = new AtomicReference<>(tokenResponse.getBody());
+        var failureHeader = Optional.of(tokenResponse)
+            .map(AuthorizationResponse::getHeaders)
+            .map(headers -> headers.header(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase()))
+            .filter(list -> !list.isEmpty())
+            .map(list -> list.get(0));
+        if (response.get() == null) {
+            //In case ZAAS will return 401, and there is OIDC token that used for authentication. See use case with valid OIDC token, but missing user mapping.
+            response.set(Optional.ofNullable(tokenResponse.getHeaders())
+                .map(ClientResponse.Headers::asHttpHeaders)
+                .map(httpHeaders -> httpHeaders.getFirst(ApimlConstants.HEADER_OIDC_TOKEN))
+                .map(oidcToken -> ZaasTokenResponse.builder().headerName(ApimlConstants.HEADER_OIDC_TOKEN).token(oidcToken).build())
+                .orElse(null));
+        }
+        if (response.get() != null) {
+            if (!StringUtils.isEmpty(response.get().getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
                 request = request.mutate().headers(headers -> {
                     String cookieHeader = CookieUtil.setCookie(
                         StringUtils.join(headers.get(HttpHeaders.COOKIE), ';'),
-                        response.getCookieName(),
-                        response.getToken()
+                        response.get().getCookieName(),
+                        response.get().getToken()
                     );
                     headers.set(HttpHeaders.COOKIE, cookieHeader);
                 }).build();
             }
-            if (!StringUtils.isEmpty(response.getHeaderName())) {
+            if (!StringUtils.isEmpty(response.get().getHeaderName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
                 request = request.mutate().headers(headers ->
-                    headers.add(response.getHeaderName(), response.getToken())
+                    headers.add(response.get().getHeaderName(), response.get().getToken())
                 ).build();
+            }
+            if (failureHeader.isPresent()) {
+                if (request != null) {
+                    request = request.mutate().headers(httpHeaders -> httpHeaders.add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get())).build();
+                }
+                exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get());
             }
         }
         if (request == null) {
-            String failureHeader = Optional.of(tokenResponse)
-                .map(AuthorizationResponse::getHeaders)
-                .map(headers -> headers.header(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase()))
-                .filter(list -> !list.isEmpty())
-                .map(list -> list.get(0))
-                .orElse("Invalid or missing authentication");
-
-            request = cleanHeadersOnAuthFail(exchange, failureHeader);
+            request = cleanHeadersOnAuthFail(exchange, failureHeader.orElse("Invalid or missing authentication"));
         }
 
         exchange = exchange.mutate().request(request).build();

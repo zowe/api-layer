@@ -65,8 +65,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleAuthMethodNotSupported(request, response, ex);
         } else if (ex instanceof TokenNotValidException) {
             handleTokenNotValid(request, response, ex);
-        } else if (ex instanceof NoMainframeIdentityException) {
-            handleNoMainframeIdentity(request, response, ex);
+        } else if (ex instanceof NoMainframeIdentityException nmie) {
+            handleNoMainframeIdentity(request, response, nmie);
         } else if (ex instanceof TokenNotProvidedException) {
             handleTokenNotProvided(request, response, ex);
         } else if (ex instanceof TokenExpireException) {
@@ -127,8 +127,10 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
-    private void handleNoMainframeIdentity(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+    private void handleNoMainframeIdentity(HttpServletRequest request, HttpServletResponse response, NoMainframeIdentityException ex) throws ServletException {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+        response.addHeader(ApimlConstants.HEADER_OIDC_TOKEN, ex.getToken());
+        response.addHeader(ApimlConstants.AUTH_FAIL_HEADER, ex.getMessage());
         writeErrorResponse(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 

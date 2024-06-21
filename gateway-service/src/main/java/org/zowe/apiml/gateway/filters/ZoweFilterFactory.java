@@ -25,13 +25,13 @@ import reactor.core.publisher.Mono;
 
 
 @Service
-public class ZoweFilterFactory extends TokenFilterFactory {
+public class ZoweFilterFactory extends TokenFilterFactory<TokenFilterFactory.Config, Object> {
 
     @Value("${apiml.security.auth.jwt.customAuthHeader:}")
     private String customHeader;
 
     public ZoweFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(webClient, instanceInfoService, messageService);
+        super(TokenFilterFactory.Config.class, webClient, instanceInfoService, messageService);
     }
 
     @Override
