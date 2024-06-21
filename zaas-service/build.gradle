@@ -74,6 +74,7 @@ dependencies {
     implementation libs.jjwt
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc
+    implementation libs.swagger3.parser
 
     implementation libs.logback.classic
 
