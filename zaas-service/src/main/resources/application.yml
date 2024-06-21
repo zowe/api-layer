@@ -171,7 +171,7 @@ eureka:
                     - apiId: zowe.apiml.zaas
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs
                       documentationUrl: https://zowe.github.io/docs-site/
                 service:
                     title: ZAAS
