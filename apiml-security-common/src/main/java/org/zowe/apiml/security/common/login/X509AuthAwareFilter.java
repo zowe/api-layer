@@ -40,6 +40,7 @@ public class X509AuthAwareFilter extends X509AuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
+        // TODO: investigate how to improve the security config to avoid calling isPreAuthenticated()
         if (SecurityContextHolder.getContext().getAuthentication() == null || isPreAuthenticated() || !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authResult);
