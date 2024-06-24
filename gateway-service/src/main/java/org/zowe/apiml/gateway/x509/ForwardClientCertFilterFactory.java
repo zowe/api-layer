@@ -53,7 +53,7 @@ public class ForwardClientCertFilterFactory extends AbstractGatewayFilterFactory
                     if (encodedCert != null) {
                         exchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
                         headers.add(CLIENT_CERT_HEADER, encodedCert);
-                        log.debug("Incoming client certificate has been added to the {} header.", CLIENT_CERT_HEADER);
+                        log.debug("Incoming client certificate {} has been added to the {} header.", encodedCert, CLIENT_CERT_HEADER);
                     }
                 } catch (CertificateEncodingException e) {
                     log.debug("Failed to encode the incoming client certificate. Error message: {}", e.getMessage());

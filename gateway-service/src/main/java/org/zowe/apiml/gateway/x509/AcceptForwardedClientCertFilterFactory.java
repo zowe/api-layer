@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.x509;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -28,6 +29,7 @@ import java.util.Base64;
 
 import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
 
+@Slf4j
 @Service
 public class AcceptForwardedClientCertFilterFactory extends AbstractGatewayFilterFactory<AcceptForwardedClientCertFilterFactory.Config> {
 
@@ -47,7 +49,7 @@ public class AcceptForwardedClientCertFilterFactory extends AbstractGatewayFilte
             var certificate = (X509Certificate) CertificateFactory
                 .getInstance("X.509")
                 .generateCertificate(bais);
-            return new X509Certificate[] { certificate };
+            return new X509Certificate[]{certificate};
         } catch (CertificateException | IOException e) {
             throw new IllegalStateException(e);
         }
@@ -61,6 +63,7 @@ public class AcceptForwardedClientCertFilterFactory extends AbstractGatewayFilte
             if ((x509Certificates != null) && (x509Certificates.length > 0) && certificateValidator.isTrusted(x509Certificates)) {
                 X509Certificate[] forwardedClientCertificate = getClientCertificateFromHeader(exchange.getRequest());
                 if (forwardedClientCertificate.length > 0) {
+                    log.debug("Accepting forwarded client certificate {}", forwardedClientCertificate[0].getSubjectX500Principal().getName());
                     var request = exchange.getRequest().mutate().sslInfo(CustomSslInfo.builder()
                         .peerCertificates(forwardedClientCertificate)
                         .build()
