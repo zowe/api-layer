@@ -513,6 +513,7 @@ public class NewSecurityConfiguration {
                         .antMatchers(ValidateAPIController.VALIDATE_CONFORMANCE_URL + "/**")
                         .antMatchers(ValidateAPIController.LEGACY_CONFORMANCE_URL))
                 ).authorizeRequests(requests -> requests
+                        .antMatchers("/application/health").permitAll()
                         .anyRequest().authenticated())
                         .logout(logout -> logout.disable());  // logout filter in this chain not needed
 
@@ -613,7 +614,7 @@ public class NewSecurityConfiguration {
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
                     web.ignoring()
                         .antMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                            "/application/health", "/application/info", "/application/version",
+                            "/application/info", "/application/version",
                             AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                             AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
 
