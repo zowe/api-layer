@@ -334,7 +334,7 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
+    public UrlBasedCorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
         corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
