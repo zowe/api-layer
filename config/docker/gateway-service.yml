@@ -1,4 +1,4 @@
-spring.profiles.include: diag, debug
+spring.profiles.include: diag,debug
 apiml:
     service:
         apimlId: apiml1
