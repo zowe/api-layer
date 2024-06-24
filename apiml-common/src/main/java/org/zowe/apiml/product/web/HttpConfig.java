@@ -10,9 +10,14 @@
 
 package org.zowe.apiml.product.web;
 
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.function.Supplier;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
@@ -27,14 +32,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Supplier;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
@@ -157,10 +163,10 @@ public class HttpConfig {
 
         } catch (HttpsConfigError e) {
             log.error("Invalid configuration of HTTPs: {}", e.getMessage());
-            System.exit(1);
+            throw e;
         } catch (Exception e) {
             log.error("Cannot construct configuration of HTTPs: {}", e.getMessage());
-            System.exit(1);
+            throw new RuntimeException(e);
         }
     }
 

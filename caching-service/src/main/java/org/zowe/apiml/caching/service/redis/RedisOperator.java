@@ -55,7 +55,7 @@ public class RedisOperator {
             log.info("Connected to Redis {}", redisUri);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.cache.errorInitializingStorage", "redis", e.getCause().getMessage(), e);
-            System.exit(1);
+            throw new RuntimeException(e);
         }
     }
 

@@ -61,7 +61,8 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             try {
                 authUp = loginProviders.isZosmfAvailableAndOnline();
             } catch (AuthenticationServiceException ex) {
-                System.exit(-1);
+                apimlLog.log("org.zowe.apiml.gateway.instanceNotFound", "zosmf");
+                throw new RuntimeException(ex);
             }
         }
 
