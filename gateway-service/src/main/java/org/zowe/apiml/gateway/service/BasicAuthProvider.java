@@ -55,7 +55,6 @@ public class BasicAuthProvider extends TokenProvider {
 
     }
 
-    //
     protected Mono<ClientResponse.Headers> invokeS(
         List<ServiceInstance> serviceInstances,
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
