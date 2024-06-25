@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.gateway.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -24,10 +24,15 @@ import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import reactor.core.publisher.Mono;
 
+import java.net.HttpCookie;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
 
 @Component
 public class BasicAuthProvider extends TokenProvider {
@@ -72,18 +77,16 @@ public class BasicAuthProvider extends TokenProvider {
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
     ) {
         return requestCreator.apply(serviceInstanceIterator.next())
-            .exchangeToMono(clientResp -> {
-                if (HttpStatus.UNAUTHORIZED.equals(clientResp.statusCode()) || HttpStatus.NO_CONTENT.equals(clientResp.statusCode())) {
-                    return Mono.just(clientResp.headers());
-                }
-                return Mono.empty();
-
+            .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
+                case SC_UNAUTHORIZED: case SC_NO_CONTENT:
+                    yield Mono.just(clientResp.headers());
+                default:
+                    yield Mono.empty();
             })
             .switchIfEmpty(serviceInstanceIterator.hasNext() ?
                 requestWithHa(serviceInstanceIterator, requestCreator) : Mono.empty()
             );
     }
-
 
     public String getEndpointUrl(ServiceInstance instance) {
         return String.format("%s://%s:%d/%s/api/v1/auth/login", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
@@ -99,25 +102,22 @@ public class BasicAuthProvider extends TokenProvider {
     }
 
     public Mono<String> getToken(String authHeader) {
-        return authenticateUser(authHeader).map(headers -> {
-            var apimlToken = headers.header(HttpHeaders.SET_COOKIE).stream().map(cookieHeader -> {
-                    for (String s : cookieHeader.split(";")) {
-                        if (s.startsWith(authConfigurationProperties.getCookieProperties().getCookieName())) {
-                            return s;
-                        }
-                    }
-                    return "";
-                })
-                .findFirst();
-            return apimlToken.orElse("");
-        });
+        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        return authenticateUser(authHeader)
+            .map(headers -> headers.header(HttpHeaders.SET_COOKIE).stream()
+                .map(HttpCookie::parse)
+                .flatMap(Collection::stream)
+                .filter(cookie -> StringUtils.equals(cookieName, cookie.getName()))
+                .findFirst()
+                .map(HttpCookie::getValue).orElse("")
+            );
     }
 
     public Authentication getAuthentication(String token, String authHeader) {
-
         var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
         var auth = new TokenAuthentication(loginRequest.get().getUsername(), token);
         auth.setAuthenticated(true);
         return auth;
     }
+
 }
