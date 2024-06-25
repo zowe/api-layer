@@ -2,8 +2,6 @@ version: "3.3"
 services:
     zaas-service:
         image: ghcr.io/zowe/zaas-service:latest
-        volumes:
-            - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10023:10023"
     api-catalog-services:
