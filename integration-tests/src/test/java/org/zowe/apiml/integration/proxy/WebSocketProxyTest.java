@@ -94,7 +94,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     }
                 }
             }
+
         };
+
     }
 
     private String discoverableClientGatewayUrl(String gatewayUrl) throws URISyntaxException {
