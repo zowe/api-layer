@@ -27,6 +27,8 @@ import reactor.core.publisher.Mono;
 import java.net.HttpCookie;
 import java.util.Optional;
 
+import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
+
 @RequiredArgsConstructor
 public class TokenAuthFilter implements WebFilter {
 
@@ -42,7 +44,7 @@ public class TokenAuthFilter implements WebFilter {
             .map(token -> this.tokenProvider.validateToken(token)
                 .filter(resp -> StringUtils.isNotBlank(resp.getUserId()))
                 .flatMap(resp -> {
-                    Authentication authentication = this.tokenProvider.getAuthentication(resp.getUserId(), token);
+                    Authentication authentication = createAuthenticated(resp.getUserId(), token);
                     return response.contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
                 })
             ).orElse(response);

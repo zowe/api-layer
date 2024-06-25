@@ -23,6 +23,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
+import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticatedFromHeader;
+
 @RequiredArgsConstructor
 public class BasicAuthFilter implements WebFilter {
 
@@ -35,7 +37,7 @@ public class BasicAuthFilter implements WebFilter {
             if (StringUtils.isEmpty(token)) {
                 return chain.filter(exchange);
             }
-            var auth = basicAuthProvider.getAuthentication(token, header);
+            var auth = createAuthenticatedFromHeader(token, header);
             return chain.filter(exchange).contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(auth));
         })).orElseGet(() -> chain.filter(exchange));
     }
