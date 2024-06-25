@@ -20,12 +20,15 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.TokenProvider;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 public class TokenAuthFilter implements WebFilter {
     public static final String HEADER_PREFIX = "Bearer ";
     private final TokenProvider tokenProvider;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -45,9 +48,9 @@ public class TokenAuthFilter implements WebFilter {
     private String resolveToken(ServerHttpRequest request) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (!StringUtils.hasText(bearerToken)) {
-            bearerToken = request.getHeaders().getFirst(HttpHeaders.COOKIE);
-            if (StringUtils.hasText(bearerToken)) {
-                return bearerToken.substring(bearerToken.indexOf("=") + 1);
+            var cookie = CookieUtil.readCookies(request.getHeaders()).filter(httpCookie -> httpCookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName())).findFirst();
+            if (cookie.isPresent()) {
+                return cookie.get().getValue();
             }
         }
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(HEADER_PREFIX)) {
