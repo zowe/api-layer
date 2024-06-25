@@ -28,7 +28,7 @@ jobs:
                     ./gradlew clean jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
             -   name: Standalone Catalog
                 run: >
-                    ./gradlew :api-catalog-services:jib -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6305 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                    ./gradlew :api-catalog-services:jib -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/teardown
 
@@ -66,6 +66,10 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
@@ -101,6 +105,8 @@ jobs:
         services:
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+            zaas-service:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
@@ -109,8 +115,6 @@ jobs:
                     APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
                     APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
@@ -146,8 +150,10 @@ jobs:
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
+                    APIML_SERVICE_APIMLID: apiml1
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -155,13 +161,22 @@ jobs:
                     APIML_SERVICE_APIMLID: apiml2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
+                    APIML_SERVICE_APIMLID: centralapiml
                     APIML_GATEWAY_TIMEOUT: 2
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
+                    APIML_SERVICE_HOSTNAME: central-gateway-service
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
@@ -181,7 +196,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -205,6 +220,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: apiml1
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             central-gateway-service:
@@ -227,7 +244,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -257,11 +274,15 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: gateway-service
+                    APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_GATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
 
@@ -285,11 +306,16 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_SERVICEURL: /
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
             central-gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_HOSTNAME: central-gateway-service-2
                     APIML_GATEWAY_REGISTRY_ENABLED: false
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
@@ -311,7 +337,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -397,13 +423,8 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
                     APIML_SECURITY_OIDC_ENABLED: true
@@ -411,6 +432,15 @@ jobs:
                     APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
                     APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -433,7 +463,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/zaas-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -467,6 +497,10 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -525,6 +559,10 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -579,6 +617,10 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -634,6 +676,10 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -688,6 +734,10 @@ jobs:
                     - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1338,7 +1388,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6302 --destfile ./results/discoverable-client.exec
+                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec
 
             -   name: Correct Permisions
                 run: |
@@ -1400,11 +1450,14 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
-
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1448,7 +1501,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            central-gateway-service:
+            gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
@@ -1460,8 +1513,6 @@ jobs:
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
@@ -1492,7 +1543,7 @@ jobs:
                     npm run cy:e2e:ci
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
                 uses: actions/upload-artifact@v4

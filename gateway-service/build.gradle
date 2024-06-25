@@ -21,7 +21,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6310
+def javaAgentPort = 6300
 def debugPort = 5130
 def componentName = "gateway-service"
 
@@ -71,13 +71,14 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.thymeleaf
-    implementation libs.spring.doc
+    implementation libs.spring.doc.webflux
     implementation libs.netty.reactor.http
 
     implementation libs.bcpkix
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
+    implementation libs.jaxbApi
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc
@@ -110,6 +111,25 @@ bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
+
+    jvmArgs([
+        '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED',
+        '--add-opens=java.base/java.net=ALL-UNNAMED'
+    ])
+
+    debugOptions {
+        port = 5010
+        suspend = false
+        server = true
+    }
+
     systemProperties = System.properties
 }
 

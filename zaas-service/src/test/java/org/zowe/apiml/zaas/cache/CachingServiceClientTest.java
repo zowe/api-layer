@@ -23,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.models.AccessTokenContainer;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +41,9 @@ class CachingServiceClientTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CachingServiceClient(restTemplate, "https://localhost:10010");
+        ServiceAddress gatewayAddress = ServiceAddress.builder().scheme("https").hostname("localhost:10010").build();
+        GatewayClient gatewayClient = new GatewayClient(gatewayAddress);
+        underTest = new CachingServiceClient(restTemplate, gatewayClient);
     }
 
     @Nested

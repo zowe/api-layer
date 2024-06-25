@@ -126,20 +126,20 @@ public class ZosmfService extends AbstractZosmfService {
     private final List<TokenValidationStrategy> tokenValidationStrategy;
 
     public ZosmfService(
-        final AuthConfigurationProperties authConfigurationProperties,
-        final DiscoveryClient discovery,
-        final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-        final ObjectMapper securityObjectMapper,
-        final ApplicationContext applicationContext,
-        final AuthenticationService authenticationService,
-        final TokenCreationService tokenCreationService,
-        List<TokenValidationStrategy> tokenValidationStrategy
+            final AuthConfigurationProperties authConfigurationProperties,
+            final DiscoveryClient discovery,
+            final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
+            final ObjectMapper securityObjectMapper,
+            final ApplicationContext applicationContext,
+            final AuthenticationService authenticationService,
+            final TokenCreationService tokenCreationService,
+            List<TokenValidationStrategy> tokenValidationStrategy
     ) {
         super(
-            authConfigurationProperties,
-            discovery,
-            restTemplateWithoutKeystore,
-            securityObjectMapper
+                authConfigurationProperties,
+                discovery,
+                restTemplateWithoutKeystore,
+                securityObjectMapper
         );
         this.applicationContext = applicationContext;
         this.tokenValidationStrategy = tokenValidationStrategy;
@@ -161,9 +161,9 @@ public class ZosmfService extends AbstractZosmfService {
         AuthenticationResponse authenticationResponse;
         if (loginEndpointExists()) {
             authenticationResponse = issueAuthenticationRequest(
-                authentication,
-                getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
-                HttpMethod.POST);
+                    authentication,
+                    getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
+                    HttpMethod.POST);
 
             if (meAsProxy.isInvalidated(authenticationResponse.getTokens().get(JWT))) {
                 invalidate(LTPA, authenticationResponse.getTokens().get(LTPA));
@@ -172,9 +172,9 @@ public class ZosmfService extends AbstractZosmfService {
         } else {
             String zosmfInfoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
             authenticationResponse = issueAuthenticationRequest(
-                authentication,
-                zosmfInfoURIEndpoint,
-                HttpMethod.GET);
+                    authentication,
+                    zosmfInfoURIEndpoint,
+                    HttpMethod.GET);
             authenticationResponse.setDomain(meAsProxy.getZosmfRealm(zosmfInfoURIEndpoint));
         }
         return authenticationResponse;
@@ -184,9 +184,9 @@ public class ZosmfService extends AbstractZosmfService {
     public ResponseEntity<String> changePassword(Authentication authentication) {
         ResponseEntity<String> changePasswordResponse;
         changePasswordResponse = issueChangePasswordRequest(
-            authentication,
-            getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
-            HttpMethod.PUT);
+                authentication,
+                getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
+                HttpMethod.PUT);
         return changePasswordResponse;
     }
 
@@ -211,10 +211,10 @@ public class ZosmfService extends AbstractZosmfService {
 
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
-                infoURIEndpoint,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                ZosmfInfo.class
+                    infoURIEndpoint,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    ZosmfInfo.class
             );
 
             ZosmfInfo zosmfInfo = info.getBody();
@@ -276,16 +276,16 @@ public class ZosmfService extends AbstractZosmfService {
         log.debug("Verifying z/OSMF accessibility on info endpoint: {}", infoURIEndpoint);
         try {
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore
-                .exchange(
-                    infoURIEndpoint,
-                    HttpMethod.GET,
-                    new HttpEntity<>(headers),
-                    ZosmfInfo.class
-                );
+                    .exchange(
+                            infoURIEndpoint,
+                            HttpMethod.GET,
+                            new HttpEntity<>(headers),
+                            ZosmfInfo.class
+                    );
 
             if (info.getStatusCode() != HttpStatus.OK) {
                 log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
-                    + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, info.getBody());
+                        + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, info.getBody());
             }
 
             return info.getStatusCode() == HttpStatus.OK;
@@ -320,9 +320,9 @@ public class ZosmfService extends AbstractZosmfService {
 
         try {
             final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
-                url,
-                httpMethod,
-                new HttpEntity<>(null, headers), String.class);
+                    url,
+                    httpMethod,
+                    new HttpEntity<>(null, headers), String.class);
             return getAuthenticationResponse(response);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
@@ -343,10 +343,10 @@ public class ZosmfService extends AbstractZosmfService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         try {
             return restTemplateWithoutKeystore.exchange(
-                url,
-                httpMethod,
-                new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers),
-                String.class);
+                    url,
+                    httpMethod,
+                    new HttpEntity<>(new ChangePasswordRequest((LoginRequest) authentication.getCredentials()), headers),
+                    String.class);
         } catch (HttpServerErrorException e) {
             throw handleServerErrorOnChangePasswordCall(e);
         } catch (HttpClientErrorException.NotFound | HttpClientErrorException.MethodNotAllowed e) {
@@ -404,7 +404,7 @@ public class ZosmfService extends AbstractZosmfService {
                 return false;
             } else {
                 log.warn("z/OSMF authentication endpoint with HTTP method " + httpMethod.name() +
-                    " has failed with status code: " + hce.getStatusCode(), hce);
+                        " has failed with status code: " + hce.getStatusCode(), hce);
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
@@ -526,7 +526,7 @@ public class ZosmfService extends AbstractZosmfService {
 
             try {
                 ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.DELETE,
-                    new HttpEntity<>(null, headers), String.class);
+                        new HttpEntity<>(null, headers), String.class);
 
                 if (re.getStatusCode().is2xxSuccessful())
                     return;

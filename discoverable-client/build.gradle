@@ -21,7 +21,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6302
+def javaAgentPort = 6303
 def debugPort = 5122
 def componentName = "discoverable-client"
 
@@ -42,6 +42,20 @@ springBoot {
             ]
         }
     }
+}
+
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+
+    debugOptions {
+        port = 5012
+        suspend = false
+        server = true
+    }
+
+    systemProperties = System.properties
 }
 
 gitProperties {
@@ -65,6 +79,5 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 }
-
 
 bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"

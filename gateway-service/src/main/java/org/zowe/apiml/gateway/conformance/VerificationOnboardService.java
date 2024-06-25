@@ -11,11 +11,13 @@
 package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,7 @@ import java.util.Set;
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
+    @Qualifier("restTemplateWithoutKeystore")
     private final RestTemplate restTemplate;
 
     /**
@@ -164,6 +167,8 @@ public class VerificationOnboardService {
             response = ResponseEntity.status(e.getStatusCode())
                 .headers(e.getResponseHeaders())
                 .body(e.getResponseBodyAsString());
+        } catch (Exception ex) {
+            response = ResponseEntity.status(HttpStatusCode.valueOf(500)).body(ex.getMessage());
         }
         return response;
     }

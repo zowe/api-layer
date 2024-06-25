@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.ha;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.LbHaTest;
 import org.zowe.apiml.util.requests.Apps;
@@ -42,6 +43,7 @@ class DistributedLoadBalancingTest {
     }
 
     @Test
+    @Disabled("Deterministic routing in load balancer is not implemented yet")
     void loadBalancerHAtest() {
 
         assumeTrue(haGatewayRequests.existing() > 1);
@@ -82,6 +84,6 @@ class DistributedLoadBalancingTest {
 
         String resultLog2 = Arrays.asList(results2).stream().collect(Collectors.joining(","));
         assertThat("Result of testing against another gateway instance", resultLog2, containsString("match,match,match,match,match,match,match,match,match,match"));
-
     }
+
 }

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.controllers;
+package org.zowe.apiml.gateway.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ import org.zowe.apiml.product.version.VersionService;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping({"/zaas", "/application"})
+@RequestMapping({"/gateway", "/application"})
 public class VersionController {
 
     private VersionService versionService;

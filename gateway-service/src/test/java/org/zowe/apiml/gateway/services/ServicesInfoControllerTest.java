@@ -11,8 +11,9 @@
 package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -21,10 +22,11 @@ import org.zowe.apiml.services.ServiceInfo;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static io.restassured.module.webtestclient.RestAssuredWebTestClient.given;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
-import static io.restassured.module.webtestclient.RestAssuredWebTestClient.given;
-import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_URL;
+import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
+import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
 
@@ -41,8 +43,9 @@ class ServicesInfoControllerTest {
     @Mock
     private ServicesInfoService servicesInfoService;
 
-    @Test
-    void whenGetAllServices_thenReturnList() {
+    @ParameterizedTest(name = "whenGetAllServices_thenReturnList: {0}")
+    @ValueSource(strings = {SERVICES_SHORT_URL, SERVICES_FULL_URL})
+    void whenGetAllServices_thenReturnList(String url) {
         when(servicesInfoService.getServicesInfo(null)).thenReturn(
                 Arrays.asList(serviceInfo, serviceInfo)
         );
@@ -51,7 +54,7 @@ class ServicesInfoControllerTest {
         given()
                 .standaloneSetup(new ServicesInfoController(servicesInfoService))
         .when()
-                .get(SERVICES_URL)
+                .get(url)
         .then()
                 .statusCode(HttpStatus.OK.value())
                 .header(VERSION_HEADER, CURRENT_VERSION)
@@ -59,8 +62,9 @@ class ServicesInfoControllerTest {
         //@formatter:on
     }
 
-    @Test
-    void whenFilterByApiId_thenReturnList() {
+    @ParameterizedTest(name = "whenFilterByApiId_thenReturnList: {0}")
+    @ValueSource(strings = {SERVICES_SHORT_URL, SERVICES_FULL_URL})
+    void whenFilterByApiId_thenReturnList(String url) {
         String apiId = "apiId";
         when(servicesInfoService.getServicesInfo(apiId)).thenReturn(
                 Arrays.asList(serviceInfo, serviceInfo)
@@ -70,7 +74,7 @@ class ServicesInfoControllerTest {
         given()
                 .standaloneSetup(new ServicesInfoController(servicesInfoService))
         .when()
-                .get(String.format("%s?apiId=%s",SERVICES_URL, apiId))
+                .get(String.format("%s?apiId=%s", url, apiId))
         .then()
                 .statusCode(HttpStatus.OK.value())
                 .header(VERSION_HEADER, CURRENT_VERSION)
@@ -78,8 +82,9 @@ class ServicesInfoControllerTest {
         //@formatter:on
     }
 
-    @Test
-    void whenApiIdDoesNotExists_thenReturn404() {
+    @ParameterizedTest(name = "whenApiIdDoesNotExists_thenReturn404: {0}")
+    @ValueSource(strings = {SERVICES_SHORT_URL, SERVICES_FULL_URL})
+    void whenApiIdDoesNotExists_thenReturn404(String url) {
         String apiId = "apiId";
         when(servicesInfoService.getServicesInfo(apiId)).thenReturn(Collections.emptyList());
 
@@ -87,21 +92,22 @@ class ServicesInfoControllerTest {
         given()
                 .standaloneSetup(new ServicesInfoController(servicesInfoService))
         .when()
-                .get(String.format("%s?apiId=%s",SERVICES_URL, apiId))
+                .get(String.format("%s?apiId=%s", url, apiId))
         .then()
                 .statusCode(HttpStatus.NOT_FOUND.value());
         //@formatter:on
     }
 
-    @Test
-    void whenServiceIsUp_thenReturnOK() {
+    @ParameterizedTest(name = "whenServiceIsUp_thenReturnOK: {0}")
+    @ValueSource(strings = {SERVICES_SHORT_URL, SERVICES_FULL_URL})
+    void whenServiceIsUp_thenReturnOK(String url) {
         when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(serviceInfo);
 
         //@formatter:off
         given()
                 .standaloneSetup(new ServicesInfoController(servicesInfoService))
         .when()
-                .get(SERVICES_URL + "/" + SERVICE_ID)
+                .get(url + "/" + SERVICE_ID)
         .then()
                 .statusCode(HttpStatus.OK.value())
                 .header(VERSION_HEADER, CURRENT_VERSION)
@@ -110,8 +116,9 @@ class ServicesInfoControllerTest {
         //@formatter:on
     }
 
-    @Test
-    void whenServiceDoesNotExist_thenReturnNotFound() {
+    @ParameterizedTest(name = "whenServiceDoesNotExist_thenReturnNotFound: {0}")
+    @ValueSource(strings = {SERVICES_SHORT_URL, SERVICES_FULL_URL})
+    void whenServiceDoesNotExist_thenReturnNotFound(String url) {
         serviceInfo.setStatus(InstanceInfo.InstanceStatus.UNKNOWN);
         when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(serviceInfo);
 
@@ -119,7 +126,7 @@ class ServicesInfoControllerTest {
         given()
                 .standaloneSetup(new ServicesInfoController(servicesInfoService))
         .when()
-                .get(SERVICES_URL + "/" + SERVICE_ID)
+                .get(url + "/" + SERVICE_ID)
         .then()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .body("status", is(InstanceInfo.InstanceStatus.UNKNOWN.toString()))

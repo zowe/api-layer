@@ -17,8 +17,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ZaasConfiguration {
+public class ZaasConfiguration implements ServiceConfiguration {
     private String scheme;
     private String host;
     private int port;
+    private int instances;
 }

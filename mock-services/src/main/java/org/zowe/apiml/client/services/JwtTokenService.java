@@ -46,6 +46,7 @@ public class JwtTokenService {
             .setHeaderParam("typ", "JWT")
             .setHeaderParam("alg", "RS256")
             .signWith(readPemPrivateKey())
+            .claim("uuid", UUID.randomUUID())
             .setSubject(user)
             .setIssuer("zOSMF")
             .setIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))

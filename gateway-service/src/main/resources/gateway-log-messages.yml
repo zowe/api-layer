@@ -388,6 +388,13 @@ messages:
       - The keystore is invalid or corrupted\n
       - The certificate is invalid or corrupted"
 
+    - key: org.zowe.apiml.security.forbidden
+      number: ZWEAT403
+      type: ERROR
+      text: "The user is not authorized to the target resource: %s"
+      reason: "The service has accepted the authentication of the user but the user does not have access rights to the resource."
+      action: "Contact your security administrator to give you access."
+
     # Revoke personal access token
     - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
       number: ZWEAT607

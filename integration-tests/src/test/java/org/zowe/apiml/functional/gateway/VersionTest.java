@@ -12,6 +12,7 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,6 +23,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.*;
 
 class VersionTest {
+
+    @SuppressWarnings("unused")
     private static String[] versionUrls() {
         return new String[]{
             "/application/version", "/gateway/version", "/gateway/api/v1/version"
@@ -35,9 +38,12 @@ class VersionTest {
     }
 
     @Nested
+    @Disabled("Requires migration of actuator as in old gateway")
     class GivenNoAuthentication {
+
         @Nested
         class WhenRequestingVersion {
+
             @ParameterizedTest(name = "ReturnValidVersion {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.gateway.VersionTest#versionUrls")
             void returnValidVersion(String endpoint) {

@@ -23,11 +23,13 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -40,8 +42,8 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @ZaasTest
 public class GatewayAuthTest implements TestWithStartedInstances {
 
-    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
-    private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
+    private static final GatewayServiceConfiguration GATEWAY_CONF = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final SafIdtConfiguration SAF_IDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     static Stream<Arguments> validToBeTransformed() {
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
@@ -61,7 +63,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         ));
-        if (safIdtConf.isEnabled()) {
+        if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
                 assertNull(response.jsonPath().getString("cookies.jwtToken"));
                 assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
@@ -72,11 +74,16 @@ public class GatewayAuthTest implements TestWithStartedInstances {
     }
 
     static Stream<Arguments> noAuthTransformation() {
-        Consumer<Response> assertions = response -> {
+        BiConsumer<String, Response> assertions = (ignore, response) -> {
             assertEquals(200, response.getStatusCode());
-            assertNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
-            assertNull(response.jsonPath().getString("cookies.jwtToken"));
-            assertNull(response.jsonPath().getString("headers.authorization"));
+            for (String path : new String[] {
+                "cookies.apimlAuthenticationToken",
+                "cookies.jwtToken",
+                "headers.authorization"
+            }) {
+                if (path.equals(ignore)) continue;
+                assertNull(response.jsonPath().getString(path));
+            }
             assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
         };
 
@@ -85,7 +92,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
         ));
-        if (safIdtConf.isEnabled()) {
+        if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions));
         }
         return arguments.stream();
@@ -111,7 +118,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -125,18 +132,18 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
 
-        @ParameterizedTest(name = "givenValidRequest_thenPatIsTransformed {0} [{index}]")
+        @ParameterizedTest(name = "givenValidRequest_thenClientCertIsTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenClientCertIsTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .config(SslContext.clientCertValid)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -149,7 +156,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -161,59 +168,63 @@ public class GatewayAuthTest implements TestWithStartedInstances {
 
         @ParameterizedTest(name = "givenInvalidPatRequest_thenPatIsNotTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
-        void givenInvalidPatRequest_thenPatIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
+        void givenInvalidPatRequest_thenPatIsNotTransformed(String title, String basePath, BiConsumer<String, Response> assertions) {
             String pat = personalAccessToken(Collections.singleton("anotherService"));
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertEquals(200, response.getStatusCode());
+            assertions.accept("headers.authorization", response);
+            assertEquals("Bearer " + pat, response.jsonPath().getString("headers.authorization"));
         }
 
         @ParameterizedTest(name = "givenInvalidRequest_thenClientCertIsNotTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
-        void givenInvalidRequest_thenClientCertIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
+        void givenInvalidRequest_thenClientCertIsNotTransformed(String title, String basePath, BiConsumer<String, Response> assertions) {
             Response response = given()
                 .config(SslContext.selfSignedUntrusted)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertEquals(200, response.getStatusCode());
+            assertions.accept(null, response);
+
         }
 
         @ParameterizedTest(name = "givenInvalidRequest_thenOidcIsNotTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
-        void givenInvalidRequest_thenOidcIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
+        void givenInvalidRequest_thenOidcIsNotTransformed(String title, String basePath, BiConsumer<String, Response> assertions) {
             String oAuthToken = generateJwtWithRandomSignature("https://localhost:10010");
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertEquals(200, response.getStatusCode());
+            assertEquals("Bearer " + oAuthToken, response.jsonPath().getString("headers.authorization"));
+            assertions.accept("headers.authorization", response);
         }
 
         @ParameterizedTest(name = "givenNoCredentials_thenNoCredentialsAreProvided {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
-        void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
+        void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, BiConsumer<String, Response> assertions) {
             Response response = when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertEquals(200, response.getStatusCode());
+            assertions.accept(null, response);
         }
 
         @ParameterizedTest(name = "givenInvalidCredentials_thenNoCredentialsAreProvided {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#noAuthTransformation")
-        void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
+        void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, BiConsumer<String, Response> assertions) {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
             .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
-            assertions.accept(response);
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
             assertEquals(200, response.getStatusCode());
+            assertions.accept("headers.authorization", response);
+            assertEquals("Bearer invalidToken", response.jsonPath().getString("headers.authorization"));
         }
 
     }

@@ -21,6 +21,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+
 import java.io.IOException;
 
 public class X509AuthAwareFilter extends X509AuthenticationFilter {
@@ -38,7 +40,8 @@ public class X509AuthAwareFilter extends X509AuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        if (SecurityContextHolder.getContext().getAuthentication() == null || !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+        // TODO: investigate how to improve the security config to avoid calling isPreAuthenticated()
+        if (SecurityContextHolder.getContext().getAuthentication() == null || isPreAuthenticated() || !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authResult);
             SecurityContextHolder.setContext(context);
@@ -46,6 +49,9 @@ public class X509AuthAwareFilter extends X509AuthenticationFilter {
         chain.doFilter(request, response);
     }
 
+    protected boolean isPreAuthenticated() {
+        return SecurityContextHolder.getContext().getAuthentication() instanceof PreAuthenticatedAuthenticationToken;
+    }
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         failureHandler.onAuthenticationFailure(request, response, failed);

@@ -97,7 +97,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             }
 
             UsernamePasswordAuthenticationToken authentication
-                    = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
             Authentication auth = null;
 
@@ -142,9 +142,14 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @return the decoded credentials
      */
     public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
-        return Optional.ofNullable(
-                request.getHeader(HttpHeaders.AUTHORIZATION)
-            ).filter(
+        var headers = Optional.ofNullable(
+            request.getHeader(HttpHeaders.AUTHORIZATION)
+        );
+        return getCredentialFromAuthorizationHeader(headers);
+    }
+
+    public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(Optional<String> headers) {
+        return headers.filter(
                 header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
             ).map(
                 header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
@@ -152,6 +157,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             .filter(base64Credentials -> !base64Credentials.isEmpty())
             .map(LoginFilter::mapBase64Credentials);
     }
+
 
     /**
      * Decode the encoded credentials
@@ -200,15 +206,22 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         // method available could return 0 even there are some data, depends on the implementation
-        try (var is = new BufferedInputStream(request.getInputStream())) {
-            is.mark(1);
-            if (is.read() < 0) {
+        try (
+            var is = request.getInputStream();
+            var bis = new BufferedInputStream(is)
+        ) {
+            if (is.isFinished()) {
+                logger.trace("The input stream is already closed");
+                return Optional.empty();
+            }
+            bis.mark(1);
+            if (bis.read() < 0) {
                 // no data available
                 return Optional.empty();
             }
             // return to the beginning (to do not skip first character: '{')
-            is.reset();
-            return Optional.of(mapper.readValue(is, LoginRequest.class));
+            bis.reset();
+            return Optional.of(mapper.readValue(bis, LoginRequest.class));
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");

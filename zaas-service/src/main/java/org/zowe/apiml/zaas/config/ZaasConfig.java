@@ -10,18 +10,29 @@
 
 package org.zowe.apiml.zaas.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayInstanceInitializer;
+import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 
 @Configuration
 public class ZaasConfig {
 
     @Bean
-    public ServiceAddress getZaasAddress(@Value("${apiml.zaas.hostname}") String hostname,
-                                         @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
-        return ServiceAddress.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    public GatewayInstanceInitializer gatewayInstanceInitializer(
+            @Qualifier("eurekaClient") EurekaClient eurekaClient,
+            ApplicationEventPublisher applicationEventPublisher,
+            GatewayClient gatewayClient) {
+
+        return new GatewayInstanceInitializer(
+                new InstanceLookupExecutor(eurekaClient),
+                applicationEventPublisher,
+                gatewayClient
+        );
     }
 
 }

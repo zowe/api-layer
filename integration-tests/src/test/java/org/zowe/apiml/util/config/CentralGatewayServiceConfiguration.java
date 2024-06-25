@@ -17,8 +17,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GatewayConfiguration {
+public class CentralGatewayServiceConfiguration implements ServiceConfiguration {
+
     private String scheme;
     private String host;
     private int port;
+
 }

@@ -191,15 +191,6 @@ class RouteLocatorTest {
         }
 
         @Test
-        void givenGateway_whenGetRoutedService_thenReturnDefaultRouting() {
-            ServiceInstance gw = createServiceInstance("gateway", "api/v1");
-            List<RoutedService> rs = routeLocator.getRoutedService(gw).collect(Collectors.toList());
-            assertEquals(1, rs.size());
-            assertEquals("", rs.get(0).getGatewayUrl());
-            assertEquals("/", rs.get(0).getServiceUrl());
-        }
-
-        @Test
         void givenNonGatewayService_whenGetRoutedService_thenReturnRoutingFromMetadata() {
             ServiceInstance s = createServiceInstance("myservice", "api/v1", "ui/v1");
             List<RoutedService> rs = routeLocator.getRoutedService(s).collect(Collectors.toList());
@@ -287,7 +278,7 @@ class RouteLocatorTest {
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertEquals(2, filterDefinitions.size());
-                    assertEquals("ClientCertFilterFactory", filterDefinitions.get(1).getName());
+                    assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
 
                 @Test

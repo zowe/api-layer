@@ -22,7 +22,7 @@ apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6300
+def javaAgentPort = 6301
 def debugPort = 5120
 def componentName = "zaas-service"
 
@@ -74,6 +74,7 @@ dependencies {
     implementation libs.jjwt
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc
+    implementation libs.swagger3.parser
 
     implementation libs.logback.classic
 
@@ -128,6 +129,25 @@ bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
+
+    jvmArgs([
+        '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED',
+        '--add-opens=java.base/java.net=ALL-UNNAMED'
+    ])
+
+    debugOptions {
+        port = 5023
+        suspend = false
+        server = true
+    }
+
     systemProperties = System.properties
 }
 

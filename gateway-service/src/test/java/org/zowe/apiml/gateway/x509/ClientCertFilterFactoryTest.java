@@ -50,14 +50,14 @@ class ClientCertFilterFactoryTest {
     ServerWebExchange exchange = mock(ServerWebExchange.class);
     ServerHttpRequest request = mock(ServerHttpRequest.class);
     GatewayFilterChain chain = mock(GatewayFilterChain.class);
-    ClientCertFilterFactory filterFactory;
-    ClientCertFilterFactory.Config filterConfig = new ClientCertFilterFactory.Config();
+    ForwardClientCertFilterFactory filterFactory;
+    ForwardClientCertFilterFactory.Config filterConfig = new ForwardClientCertFilterFactory.Config();
     ServerHttpRequest.Builder requestBuilder;
 
     @BeforeEach
     void setup() {
         x509Certificates[0] = mock(X509Certificate.class);
-        filterFactory = new ClientCertFilterFactory();
+        filterFactory = new ForwardClientCertFilterFactory();
         requestBuilder = new ServerHttpRequestBuilderMock();
         ServerWebExchange.Builder exchangeBuilder = new ServerWebExchangeBuilderMock();
 

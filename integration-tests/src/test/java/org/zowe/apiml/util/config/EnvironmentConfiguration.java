@@ -22,13 +22,13 @@ import java.util.Map;
 public class EnvironmentConfiguration {
     private Credentials credentials;
     private GatewayServiceConfiguration gatewayServiceConfiguration;
+    private CentralGatewayServiceConfiguration centralGatewayServiceConfiguration;
     private ZaasConfiguration zaasConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoverableClientConfiguration discoverableClientConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
     private CachingServiceConfiguration cachingServiceConfiguration;
-    private GatewayConfiguration gatewayConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;

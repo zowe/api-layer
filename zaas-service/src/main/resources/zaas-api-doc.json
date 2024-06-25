@@ -9,18 +9,10 @@
         {
             "name": "Security",
             "description": "Mainframe authentication and authorization operations"
-        },
-        {
-            "name": "Services",
-            "description": "Information about services running behind ZAAS"
-        },
-        {
-            "name": "Diagnostic",
-            "description": "Operations which showing diagnostic information"
         }
     ],
     "paths": {
-        "/auth/login": {
+        "/zaas/api/v1/auth/login": {
             "post": {
                 "tags": ["Security"],
                 "summary": "Authenticate mainframe user credentials and return authentication token.",
@@ -71,7 +63,7 @@
                 }
             }
         },
-        "/auth/query": {
+        "/zaas/api/v1/auth/query": {
             "get": {
                 "tags": ["Security"],
                 "summary": "Validate the authentication token.",
@@ -111,7 +103,7 @@
                 }
             }
         },
-        "/auth/ticket": {
+        "/zaas/api/v1/auth/ticket": {
             "post": {
                 "tags": ["Security"],
                 "summary": "Generate a passticket for the user associated with a token.",
@@ -168,7 +160,7 @@
             }
         },
 
-        "/auth/refresh": {
+        "/zaas/api/v1/auth/refresh": {
             "post": {
                 "tags": ["Security"],
                 "summary": "Refresh authentication token.",
@@ -213,8 +205,7 @@
             }
         },
 
-
-        "/auth/logout": {
+        "/zaas/api/v1/auth/logout": {
             "post": {
                 "tags": ["Security"],
                 "summary": "Invalidate mainframe user session.",
@@ -238,189 +229,51 @@
                 }
             }
         },
-        "/version": {
-            "get": {
-                "tags": ["Diagnostic"],
-                "summary": "Return version information of API Mediation Layer and Zowe",
-                "description": "Use the `/version` API to get the version information of API Mediation Layer and Zowe.\nThe version information includes version, build number and commit hash.\nIn the response can be only API ML version information or API ML and Zowe version information, this depends on API ML installed as part of Zowe build or as standalone application.",
-                "operationId": "VersionInfoUsingGET",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/VersionInfo"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/keys/public/all": {
-            "get": {
-                "tags": ["Security"],
-                "summary": "Returns all public keys to verify JWT tokens validity",
-                "description": "This endpoint return all possible JWKs, which can verify sign outside ZAAS. It can contain public keys of Zowe and z/OSMF.",
-                "operationId": "GetAllPublicKeysUsingGET",
-                "security": [
-                    {
-                        "CookieAuth": []
-                    },
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/JWKSet"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error"
-                    }
-                }
-            }
-        },
-        "/auth/keys/public/current": {
-            "get": {
-                "tags": ["Security"],
-                "summary": "Returns public keys to verify JWT tokens, which can be generated now",
-                "description": "This endpoint return all possible JWKs, which can verify sign outside ZAAS for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
-                "operationId": "GetCurrentPublicKeysUsingGET",
-                "security": [
-                    {
-                        "CookieAuth": []
-                    },
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/JWKSet"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error"
-                    }
-                }
-            }
-        },
-        "/services": {
-            "get": {
-                "tags": ["Services"],
-                "summary": "Returns detailed information about all or selected services",
-                "description": "Use this endpoint to obtain detailed information about all services, their APIs, and instances. You can also select services only for the specific API ID. This endpoint is protected by the `APIML.SERVICES` resource in the `ZOWE` class. At least `READ` access is required.",
-                "operationId": "servicesUsingGET",
-                "parameters": [
-                    {
-                        "in": "query",
-                        "name": "apiId",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "description": "The API ID of requested services",
-                        "required": false,
-                        "example": "zowe.apiml.zaas"
-                    }
-                ],
-                "security": [
-                    {
-                        "CookieAuth": []
-                    },
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "headers": {
-                            "Content-version": {
-                                "schema": {
-                                    "type": "string"
-                                },
-                                "description": "Specifies a version of the response"
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/ServiceInfo"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error"
-                    }
-                }
-            }
-        },
 
-        "/services/{serviceId}": {
-            "get": {
-                "tags": ["Services"],
-                "summary": "Returns detailed information about the requested service",
-                "description": "Use this endpoint to obtain detailed information about the service, its APIs, and its instances. This endpoint is protected by the `APIML.SERVICES` resource in the `ZOWE` class. At least `READ` access is required.",
-                "operationId": "servicesUsingGETSpecific",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "serviceId",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "required": true,
-                        "description": "Service ID of the requested service"
-                    }
-                ],
+        "/zaas/api/v1/auth/access-token/generate": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Authenticate mainframe user credentials and return personal access token.",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  * HTTP header containing the client certificate\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "operationId": "access-token-generate-POST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "description": "Specifies the user credentials to be authenticated."
+                },
                 "security": [
                     {
-                        "CookieAuth": []
-                    },
-                    {
-                        "Bearer": []
+                        "LoginBasicAuth": []
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "Authenticated",
                         "headers": {
-                            "Content-version": {
+                            "Set-Cookie": {
+                                "description": "Cookie named apimlAuthenticationToken contains authentication\ntoken.",
                                 "schema": {
                                     "type": "string"
-                                },
-                                "description": "Specifies a version of the response"
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ServiceInfo"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     },
                     "404": {
-                        "description": "Requested service does not exist"
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
                     },
                     "500": {
                         "description": "Internal error"

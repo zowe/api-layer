@@ -40,8 +40,8 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 @GatewayTest
 class PublicKeyIntegrationTest implements TestWithStartedInstances {
 
-    private final static String ALL_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/all";
-    private final static String CURRENT_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/current";
+    private final static String ALL_PUBLIC_KEY_ENDPOINT = "/gateway/api/v1/auth/keys/public/all";
+    private final static String CURRENT_PUBLIC_KEY_ENDPOINT = "/gateway/api/v1/auth/keys/public/current";
 
     @BeforeEach
     void setUp() {

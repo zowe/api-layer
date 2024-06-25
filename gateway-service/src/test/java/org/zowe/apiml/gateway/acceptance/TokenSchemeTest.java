@@ -12,11 +12,7 @@ package org.zowe.apiml.gateway.acceptance;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
@@ -32,10 +28,9 @@ import java.util.Collection;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
+import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class TokenSchemeTest {
 
@@ -273,18 +268,17 @@ public abstract class TokenSchemeTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class ZaasCommunication extends AcceptanceTestWithMockServices {
 
-        private MockService zaas;
         private MockService service;
 
         @BeforeAll
-        void init() throws IOException {
-            zaas = createZaas();
+        void initService() throws IOException {
             service = createService();
         }
 
-        MockService createZaas() throws IOException {
-            return mockService("zaas").scope(MockService.Scope.CLASS)
+        MockService createZaasSuccess() throws IOException {
+            return mockService("zaas").scope(MockService.Scope.TEST)
                 .addEndpoint(getTokenEndpoint())
+                .responseCode(SC_OK)
                 .bodyJson(OK_RESPONSE)
                 .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
 
@@ -306,36 +300,60 @@ public abstract class TokenSchemeTest {
                 .and().start();
         }
 
-        MockService createService() throws IOException {
-            return mockService("service").scope(MockService.Scope.CLASS)
-                .authenticationScheme(getAuthenticationScheme())
-                .addEndpoint("/service/test")
-                .assertion(he -> assertEquals(JWT, getCookie(he, COOKIE_NAME)))
-
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
-                .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
-
-                .assertion(he -> assertNull(getCookie(he, "personalAccessToken")))
-                .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken")))
-                .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken.2")))
-                .assertion(he -> assertNull(getCookie(he, "jwtToken")))
-                .assertion(he -> assertNull(getCookie(he, "LtpaToken2")))
-                .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
+        MockService createZaasFailure() throws IOException {
+            return mockService("zaas").scope(MockService.Scope.TEST)
+                .addEndpoint(getTokenEndpoint())
+                .responseCode(SC_UNAUTHORIZED)
                 .and().start();
         }
 
-        private String getServiceUrl() {
-            return basePath + "/service/api/v1/test";
+        MockService createService() throws IOException {
+            return mockService("service").scope(MockService.Scope.CLASS)
+                .authenticationScheme(getAuthenticationScheme())
+                .addEndpoint("/service/test/success")
+                    .assertion(he -> assertEquals(JWT, getCookie(he, COOKIE_NAME)))
+
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+                    .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
+
+                    .assertion(he -> assertNull(getCookie(he, "personalAccessToken")))
+                    .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken")))
+                    .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken.2")))
+                    .assertion(he -> assertNull(getCookie(he, "jwtToken")))
+                    .assertion(he -> assertNull(getCookie(he, "LtpaToken2")))
+                    .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
+                .and()
+
+                .addEndpoint("/service/test/fail")
+                    .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
+
+                    .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
+                    .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+                    .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
+
+                    .assertion(he -> assertNotNull(getCookie(he, "personalAccessToken")))
+                    .assertion(he -> assertNotNull(getCookie(he, "apimlAuthenticationToken")))
+                    .assertion(he -> assertNotNull(getCookie(he, "apimlAuthenticationToken.2")))
+                    .assertion(he -> assertNotNull(getCookie(he, "jwtToken")))
+                    .assertion(he -> assertNotNull(getCookie(he, "LtpaToken2")))
+                    .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
+                .and().start();
         }
 
-        @Test
-        void givenMultipleHeaders_whenCallingAService_thenTheyAreResend() {
-            //RestAssured.config().
+        private String getServiceUrl(String path) {
+            return basePath + "/service/api/v1/test/" + path;
+        }
+
+        private void makeACall(String path) {
             given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer userJwt")
 
@@ -352,13 +370,30 @@ public abstract class TokenSchemeTest {
                 .cookie("apimlAuthenticationToken.2", "jwt2")
                 .cookie("jwtToken", "jwtToken")
                 .cookie("LtpaToken2", "LtpaToken2")
-                .when()
-                .get(getServiceUrl())
-                .then()
+            .when()
+                .get(getServiceUrl(path))
+            .then()
                 .statusCode(200);
+        }
 
-            assertEquals(1, zaas.getCounter());
-            assertEquals(1, service.getCounter());
+        @Test
+        void givenMultipleHeaders_whenCallingAService_thenTheyAreResend() throws IOException {
+            try (MockService zaas = createZaasSuccess()) {
+                makeACall("success");
+
+                assertEquals(1, zaas.getCounter());
+                assertEquals(1, service.getCounter());
+            }
+        }
+
+        @Test
+        void givenInvalidCredentials_whenCallingAService_thenResendAllHeadersExceptClientCertificate() throws IOException {
+            try (MockService zaas = createZaasFailure()) {
+                makeACall("fail");
+
+                assertEquals(1, zaas.getCounter());
+                assertEquals(1, service.getCounter());
+            }
         }
 
     }

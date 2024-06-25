@@ -52,7 +52,6 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -119,9 +118,6 @@ public class ConnectionsConfig {
 
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
-
-    @Value("${spring.application.name}")
-    private String serviceId;
 
     @Value("${server.ssl.trustStoreRequired:false}")
     private boolean trustStoreRequired;
@@ -337,7 +333,7 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
+    public UrlBasedCorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
         corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);

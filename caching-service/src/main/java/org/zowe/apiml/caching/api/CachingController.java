@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,8 +26,10 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -117,6 +120,7 @@ public class CachingController {
     public ResponseEntity<Object> getAllMapItems(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
+                log.debug("Storing for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
                 } catch (Exception exception) {
@@ -133,6 +137,7 @@ public class CachingController {
     public ResponseEntity<Object> getAllMaps(HttpServletRequest request) {
         return getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
+                log.debug("Get all for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
@@ -149,6 +154,7 @@ public class CachingController {
     public ResponseEntity<Object> evictRules(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
+                log.debug("Delete record for serviceId: {}", s);
                 try {
                     storage.removeNonRelevantRules(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -166,6 +172,7 @@ public class CachingController {
     public ResponseEntity<Object> evictTokens(@PathVariable String mapKey, HttpServletRequest request) {
         return getServiceId(request).map(
             s -> {
+                log.debug("Evict tokens for serviceId: {}", s);
                 try {
                     storage.removeNonRelevantTokens(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -246,11 +253,12 @@ public class CachingController {
     private ResponseEntity<Object> mapKeyValueRequest(MapKeyValueOperation operation, String mapKey, KeyValue keyValue,
                                                       HttpServletRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
-        if (!serviceId.isPresent()) {
+        if (serviceId.isEmpty()) {
             return getUnauthorizedResponse();
         }
 
         try {
+            log.debug("All map for serviceId: {}", serviceId.get());
             checkForInvalidPayload(keyValue);
 
             operation.storageRequest(serviceId.get(), mapKey, keyValue);

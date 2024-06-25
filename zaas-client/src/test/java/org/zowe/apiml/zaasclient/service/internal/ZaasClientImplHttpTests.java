@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ZaasClientImplHttpTests {
     @ParameterizedTest
-    @ValueSource(strings = {"/api/v1/gateway/auth", "/gateway/api/v1/auth"})
+    @ValueSource(strings = {"/gateway/api/v1/auth"})
     void testHttpOnlyZaasClientCanBeCreated(String baseUrl) throws ZaasConfigurationException {
         ConfigProperties configProperties = new ConfigProperties();
         configProperties.setHttpOnly(true);

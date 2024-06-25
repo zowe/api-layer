@@ -38,7 +38,8 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
             "saf.yml",
             "gateway-service/saf.yml",
             "discovery-service/saf.yml",
-            "api-catalog-services/saf.yml"
+            "api-catalog-services/saf.yml",
+            "zaas-service/saf.yml"
     };
     private static final String DEFAULT_RESOURCE_LOCATION = "mock-saf.yml";
 

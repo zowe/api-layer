@@ -21,7 +21,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6303
+def javaAgentPort = 6305
 def debugPort = 5123
 def componentName = "mock-services"
 
@@ -42,6 +42,32 @@ springBoot {
             ]
         }
     }
+}
+
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+
+    jvmArgs([
+        '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED',
+        '--add-opens=java.base/java.net=ALL-UNNAMED'
+    ])
+
+    debugOptions {
+        port = 5013
+        suspend = false
+        server = true
+    }
+
+    systemProperties = System.properties
 }
 
 gitProperties {

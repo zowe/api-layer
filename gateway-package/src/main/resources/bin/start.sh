@@ -29,6 +29,7 @@
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
+# - ZWE_configs_apimlId
 # - ZWE_configs_apiml_service_forwardClientCertEnabled
 # - ZWE_configs_gateway_registry_enabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
@@ -68,24 +69,23 @@ then
   export LOG_LEVEL="debug"
 fi
 
-LIBPATH="$LIBPATH":"/lib"
-LIBPATH="$LIBPATH":"/usr/lib"
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
-LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
+    cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
+fi
 
-ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
-        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
-        --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
-        --add-opens=java.base/java.util=ALL-UNNAMED
-        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
-        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
-        --add-opens=java.base/java.io=ALL-UNNAMED"
+# how to verifyCertificates
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
+if [ "${verify_certificates_config}" = "DISABLED" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=true
+elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=true
+else
+  # default value is STRICT
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=false
+fi
 
 ATTLS_ENABLED="false"
 # ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
@@ -104,7 +104,34 @@ fi
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 if [ "${ATTLS_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
+    ZWE_configs_apiml_service_corsEnabled=true
 fi
+
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
+    externalProtocol="https"
+else
+    externalProtocol="http"
+fi
+
+LIBPATH="$LIBPATH":"/lib"
+LIBPATH="$LIBPATH":"/usr/lib"
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+
+ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+        --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+        --add-opens=java.base/java.util=ALL-UNNAMED
+        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+        --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+        --add-opens=java.base/java.io=ALL-UNNAMED"
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
@@ -136,12 +163,17 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
+    -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_service_forwardClientCertEnabled:-false} \
+    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_gateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \

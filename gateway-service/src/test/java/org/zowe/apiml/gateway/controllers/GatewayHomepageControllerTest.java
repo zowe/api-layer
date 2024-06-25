@@ -184,7 +184,7 @@ class GatewayHomepageControllerTest {
     private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", true));
-        assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
+        assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1/"));
     }
 
     private void discoveryReturnValidApiCatalog(int numberOfInstances) {

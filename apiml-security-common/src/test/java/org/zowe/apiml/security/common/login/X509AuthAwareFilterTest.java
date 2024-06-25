@@ -47,12 +47,12 @@ class X509AuthAwareFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
-        httpServletRequest.setServletPath("/api/v1/gateway/auth/login");
+        httpServletRequest.setServletPath("/gateway/api/v1/auth/login");
 
         httpServletResponse = new MockHttpServletResponse();
         failureHandler = mock(AuthenticationFailureHandler.class);
         authenticationProvider = mock(AuthenticationProvider.class);
-        x509AuthAwareFilter = new X509AuthAwareFilter("/api/v1/gateway/auth/login", failureHandler, authenticationProvider);
+        x509AuthAwareFilter = new X509AuthAwareFilter("/gateway/api/v1/auth/login", failureHandler, authenticationProvider);
     }
 
     @Nested

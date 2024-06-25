@@ -13,11 +13,11 @@ package org.zowe.apiml.zaas.security.mapping;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -90,10 +90,7 @@ class OIDCExternalMapperTest {
         oidcExternalMapper = new OIDCExternalMapper("https://domain.com/mapper", "mapper_user", httpClient, tokenCreationService, authConfigurationProperties);
         oidcExternalMapper.registry = "test_registry";
 
-        responseEntity = new BasicHttpEntity();
-        responseEntity.setContent(IOUtils.toInputStream(SUCCESS_MAPPER_RESPONSE, StandardCharsets.UTF_8));
-
-
+        responseEntity = new BasicHttpEntity(IOUtils.toInputStream(SUCCESS_MAPPER_RESPONSE, StandardCharsets.UTF_8), ContentType.APPLICATION_JSON);
     }
 
     @Nested
@@ -102,9 +99,7 @@ class OIDCExternalMapperTest {
         @BeforeEach
         void setup() throws IOException {
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-            StatusLine responseStatusLine = mock(StatusLine.class);
-            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-            when(response.getStatusLine()).thenReturn(responseStatusLine);
+            when(response.getCode()).thenReturn(HttpStatus.SC_OK);
             when(response.getEntity()).thenReturn(responseEntity);
             when(httpClient.execute(any())).thenReturn(response);
         }
@@ -122,12 +117,10 @@ class OIDCExternalMapperTest {
 
         @BeforeEach
         void setup() throws IOException {
-            responseEntity.setContent(IOUtils.toInputStream(FAILURE_MAPPER_RESPONSE, StandardCharsets.UTF_8));
+            responseEntity = new BasicHttpEntity(IOUtils.toInputStream(FAILURE_MAPPER_RESPONSE, StandardCharsets.UTF_8), ContentType.APPLICATION_JSON);
 
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-            StatusLine responseStatusLine = mock(StatusLine.class);
-            when(responseStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-            when(response.getStatusLine()).thenReturn(responseStatusLine);
+            when(response.getCode()).thenReturn(HttpStatus.SC_OK);
             when(response.getEntity()).thenReturn(responseEntity);
             when(httpClient.execute(any())).thenReturn(response);
         }

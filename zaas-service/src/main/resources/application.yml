@@ -14,7 +14,6 @@ logging:
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
         org.ehcache: WARN
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
 
@@ -31,7 +30,7 @@ apiml:
         id: zaas  # Service ID of this service. It is fixed for ZAAS
         hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
                              # Default is valid only for localhost
-        port: 10010  # Default port name for ZAAS
+        port: 10023  # Default port name for ZAAS
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
@@ -70,7 +69,7 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
-            acceptForwardedCert: false
+            acceptForwardedCert: true
             certificatesUrl:
             externalMapperUrl:
         saf:
@@ -172,7 +171,7 @@ eureka:
                     - apiId: zowe.apiml.zaas
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs
                       documentationUrl: https://zowe.github.io/docs-site/
                 service:
                     title: ZAAS
@@ -217,7 +216,8 @@ logging:
         com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
-        org.ehcache: INFO
+        org.springframework.security: DEBUG
+        org.ehcache: DEBUG
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
 
@@ -238,7 +238,7 @@ server:
 ---
 spring.config.activate.on-profile: dev
 
-logbackServiceName: ZWEAGW1
+logbackServiceName: ZWEAZS1
 
 ---
 spring.config.activate.on-profile: attls

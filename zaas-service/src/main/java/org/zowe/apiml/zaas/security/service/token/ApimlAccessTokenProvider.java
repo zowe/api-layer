@@ -68,6 +68,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }
+        log.debug("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
         cachingServiceClient.appendList(INVALID_USERS_KEY, new CachingServiceClient.KeyValue(hashedUserId, Long.toString(timestamp)));
     }
 
@@ -76,6 +77,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }
+        log.debug("serviceIdHash {}, timestamp {}", hashedServiceId, timestamp);
         cachingServiceClient.appendList(INVALID_SCOPES_KEY, new CachingServiceClient.KeyValue(hashedServiceId, Long.toString(timestamp)));
     }
 
@@ -126,7 +128,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             String timestampStr = tokenRules.get(ruleId);
             try {
                 long timestamp = Long.parseLong(timestampStr);
-                boolean result = parsedToken.getCreation().getTime() < timestamp;
+                var tokenTime = parsedToken.getCreation().getTime();
+                boolean result = tokenTime <= timestamp;
                 if (result) {
                     return Optional.of(true);
                 }

@@ -16,9 +16,9 @@ import org.zowe.apiml.util.service.FullApiMediationLayer;
 public interface TestWithStartedInstances {
     @BeforeEach
     default void beforeAllTests() {
-        FullApiMediationLayer apiml = FullApiMediationLayer.getInstance();
-        if (!apiml.runsOffPlatform()) {
-            FullApiMediationLayer.getInstance().waitUntilReady();
-        }
+       FullApiMediationLayer apiml = FullApiMediationLayer.getInstance();
+       if (!apiml.runsOffPlatform()) {
+           FullApiMediationLayer.getInstance().waitUntilReady();
+       }
     }
 }

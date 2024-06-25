@@ -29,8 +29,9 @@ public enum ErrorType {
     SERVICE_UNAVAILABLE("org.zowe.apiml.security.serviceUnavailable", "Authentication service not available.", "Make sure that the Authentication service is running and is accessible by the URL provided in the message."),
     GATEWAY_NOT_AVAILABLE("org.zowe.apiml.security.gatewayNotAvailable", "API Gateway Service not available.", "Check that both the service and Gateway are correctly registered in the Discovery service. Allow some time after the services are discovered for the information to propagate to individual services."),
     INVALID_TOKEN_TYPE("org.zowe.apiml.security.login.invalidTokenType", "Invalid token type in response from Authentication service.", "Review your APIML authentication provider configuration and ensure your Authentication service is working."),
-    USER_SUSPENDED("org.zowe.apiml.security.platform.errno.EMVSSAFEXTRERR","Account Suspended", "Contact your security administrator to unsuspend your account."),
+    USER_SUSPENDED("org.zowe.apiml.security.platform.errno.EMVSSAFEXTRERR", "Account Suspended", "Contact your security administrator to unsuspend your account."),
     NEW_PASSWORD_INVALID("org.zowe.apiml.security.platform.errno.EMVSPASSWORD", "The new password is not valid", "Provide valid password."),
+    MISSING_AUTHENTICATION("org.zowe.apiml.zaas.security.schema.missingAuthentication", "No authentication provided in the request", "Configure your client to provide valid authentication."),
     PASSWORD_EXPIRED("org.zowe.apiml.security.platform.errno.EMVSEXPIRE", "Password has expired", "Contact your security administrator to reset your password."),
     IDENTITY_MAPPING_FAILED("org.zowe.apiml.gateway.security.schema.x509.mappingFailed", "No user was found", "Ask your security administrator to connect your token or client certificate with your mainframe user.");
 

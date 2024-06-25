@@ -37,7 +37,7 @@ public class HeaderRouteStepFilterFactory extends AbstractGatewayFilterFactory<H
         String header = config.getHeader();
         return (exchange, chain) -> {
             if (exchange.getRequest().getHeaders().containsKey(header)) {
-                exchange.mutate().request(request -> exchange.getRequest().mutate().headers(headers -> {
+                exchange = exchange.mutate().request(request -> request.headers(headers -> {
                     String headerValue = headers.getFirst(header);
                     int index = headerValue.indexOf("/");
                     if ((index >= 0) && (index + 1 < headerValue.length())) {
@@ -45,7 +45,7 @@ public class HeaderRouteStepFilterFactory extends AbstractGatewayFilterFactory<H
                     } else {
                         headers.remove(header);
                     }
-                }));
+                })).build();
             }
 
             return chain.filter(exchange);

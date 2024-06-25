@@ -7,10 +7,14 @@ gatewayServiceConfiguration:
     scheme: https
     host: localhost
     port: 10010
-    internalPorts: 10017
+    internalPorts: 10010
     externalPort: 10010
     instances: 1
     servicesEndpoint: gateway/api/v1/services
+centralGatewayServiceConfiguration:
+    scheme: https
+    host: localhost
+    port: 10199
 zaasConfiguration:
     scheme: https
     host: localhost

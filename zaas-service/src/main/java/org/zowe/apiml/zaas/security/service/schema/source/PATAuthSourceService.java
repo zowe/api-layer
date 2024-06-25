@@ -85,9 +85,10 @@ public class PATAuthSourceService extends TokenAuthSourceService {
             String serviceId = ((PATAuthSource) authSource).getDefaultServiceId();
             boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
             logger.log(MessageType.DEBUG, "PAT is %s for scope: %s ", validForScopes ? "valid" : "not valid", serviceId);
+            if (!validForScopes) return false;
             boolean invalidate = tokenProvider.isInvalidated(token);
             logger.log(MessageType.DEBUG, "PAT was %s", invalidate ? "invalidated" : "not invalidated");
-            return validForScopes && !invalidate;
+            return !invalidate;
         } catch (Exception e) {
             logger.log(MessageType.ERROR, "PAT is not valid due to the exception: %s", e.getMessage());
             return false;

@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -26,6 +27,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -42,7 +45,6 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
-import org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
@@ -51,7 +53,14 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
+import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
+import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
+import org.zowe.apiml.gateway.service.BasicAuthProvider;
+import org.zowe.apiml.gateway.service.TokenProvider;
+import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -62,12 +71,15 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_URL;
+import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
+import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 
 @Configuration
 @RequiredArgsConstructor
+@EnableReactiveMethodSecurity
+@EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class WebSecurity {
 
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
@@ -79,6 +91,7 @@ public class WebSecurity {
     private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + CONTEXT_PATH + "/login/oauth2/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
+
     public static final String OAUTH_2_AUTHORIZATION = CONTEXT_PATH + "/oauth2/authorization/**";
     public static final String OAUTH_2_AUTHORIZATION_BASE_URI = CONTEXT_PATH + "/oauth2/authorization/";
     public static final String OAUTH_2_AUTHORIZATION_URI = CONTEXT_PATH + "/oauth2/authorization/{registrationId}";
@@ -92,6 +105,9 @@ public class WebSecurity {
     private String allowedUsers;
 
     private final ClientConfiguration clientConfiguration;
+
+    private final TokenProvider tokenProvider;
+    private final BasicAuthProvider basicAuthProvider;
 
     private Predicate<String> usernameAuthorizationTester;
 
@@ -281,24 +297,39 @@ public class WebSecurity {
             ).collect(Collectors.toList());
     }
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
         return http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
-            .x509(x509 ->
-                x509
-                    .principalExtractor(new SubjectDnX509PrincipalExtractor())
-                    .authenticationManager(authentication -> {
-                        authentication.setAuthenticated(true);
-                        return Mono.just(authentication);
-                    })
+            .x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
             )
+            .csrf(ServerHttpSecurity.CsrfSpec::disable);
+    }
+
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
+        return defaultSecurityConfig(http).build();
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+        return defaultSecurityConfig(http)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                REGISTRY_PATH,
+                SERVICES_SHORT_URL,
+                SERVICES_SHORT_URL + "/**",
+                SERVICES_FULL_URL,
+                SERVICES_FULL_URL + "/**"
+            ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers(REGISTRY_PATH, SERVICES_URL + "/**").authenticated()
-                    .anyExchange().permitAll()
+                    .anyExchange().authenticated()
             )
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 

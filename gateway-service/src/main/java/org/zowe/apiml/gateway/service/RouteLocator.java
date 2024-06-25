@@ -23,9 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.gateway.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.gateway.service.scheme.SchemeHandler;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
@@ -104,11 +104,6 @@ public class RouteLocator implements RouteDefinitionLocator {
     }
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
-        // TODO: this is till the SCGW and GW uses the same DS. The routing rules should be different for each application
-        if (org.apache.commons.lang.StringUtils.equalsIgnoreCase("GATEWAY", serviceInstance.getServiceId())) {
-            return Stream.of(new RoutedService("zuul", "", "/"));
-        }
-
         return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
             // sorting avoid a conflict with the more general pattern
             .sorted(Comparator.<RoutedService>comparingInt(x -> StringUtils.removeFirstAndLastOccurrence(x.getGatewayUrl(), "/").length()).reversed());
@@ -129,9 +124,9 @@ public class RouteLocator implements RouteDefinitionLocator {
             Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
                 .map(Boolean::parseBoolean).orElse(false)
         ) {
-            FilterDefinition clientCertFilter = new FilterDefinition();
-            clientCertFilter.setName("ClientCertFilterFactory");
-            serviceRelated.add(clientCertFilter);
+            FilterDefinition forwardClientCertFilter = new FilterDefinition();
+            forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
+            serviceRelated.add(forwardClientCertFilter);
         }
 
         return join(commonFilters, serviceRelated);

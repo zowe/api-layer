@@ -17,7 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.GatewayConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import java.net.URI;
@@ -35,7 +35,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     private static final String NON_EXISTING_SERVICE_ENDPOINT = "/noservice/api/v1/something";
     private static final String WRONG_VERSION_ENPOINT = "/discoverableclient/api/v10/greeting";
 
-    private static final GatewayConfiguration conf = ConfigReader.environmentConfiguration().getGatewayConfiguration();
+    private static final GatewayServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     @BeforeAll
     static void setup() {
@@ -84,14 +84,14 @@ class GatewayRoutingTest implements TestWithStartedInstances {
             .get(new URI(scgUrl)).then().statusCode(404);
     }
 
-    @ParameterizedTest(name = "When header X-Forward-To is set to {0} and base path is {1} should return 404")
+    @ParameterizedTest(name = "When header X-Forward-To is set to {0} and base path is {1} should return 200 - loopback")
     @CsvSource({
-        "apiml1,/apiml1" + DISCOVERABLE_GREET,
+        "apiml1/apiml1,/apiml1/apiml1" + DISCOVERABLE_GREET,
     })
     void testWrongRoutingWithHeader(String forwardTo, String endpoint) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), endpoint);
         given().header(HEADER_X_FORWARD_TO, forwardTo)
-            .get(new URI(scgUrl)).then().statusCode(404);
+            .get(new URI(scgUrl)).then().statusCode(200);
     }
 
     @ParameterizedTest(name = "When base path is {0} should return 404")
