@@ -52,7 +52,8 @@ public class BasicAuthProvider extends AbstractAuthProviderFilter<ClientResponse
     }
 
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String headerValue) {
-        return super.createRequest(instance)
+        return webClient.post()
+            .uri(getEndpointUrl(instance))
             .headers(httpHeaders -> httpHeaders.set(HttpHeaders.AUTHORIZATION, headerValue));
     }
 

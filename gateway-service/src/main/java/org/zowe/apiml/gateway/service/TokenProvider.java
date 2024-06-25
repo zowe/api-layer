@@ -41,7 +41,8 @@ public class TokenProvider extends AbstractAuthProviderFilter<QueryResponse> {
     }
 
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String token) {
-        return super.createRequest(instance)
+        return webClient.get()
+            .uri(getEndpointUrl(instance))
             .headers(httpHeaders -> httpHeaders.set(HttpHeaders.COOKIE, "apimlAuthenticationToken=" + token));
     }
 

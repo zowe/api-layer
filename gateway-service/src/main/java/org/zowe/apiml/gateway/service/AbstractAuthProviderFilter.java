@@ -56,11 +56,6 @@ public abstract class AbstractAuthProviderFilter<T> {
             .toUriString();
     }
 
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance) {
-        return webClient.get()
-            .uri(getEndpointUrl(instance));
-    }
-
     protected Mono<T> invoke(
         List<ServiceInstance> serviceInstances,
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator

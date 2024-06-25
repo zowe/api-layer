@@ -45,4 +45,5 @@ public class BasicAuthFilter implements WebFilter {
     private Optional<String> resolveAuth(ServerHttpRequest request) {
         return Optional.of(request.getHeaders()).map(head -> head.getFirst(HttpHeaders.AUTHORIZATION));
     }
+
 }
