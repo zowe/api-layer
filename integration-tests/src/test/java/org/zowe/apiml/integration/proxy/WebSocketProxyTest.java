@@ -118,6 +118,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         return appendingWebSocketSession(url, null, response, countToNotify);
     }
 
+    // TODO add tests:
+    // 7 KB http header --> Works
+    // 9 KB http header --> fails
+
+    // Connect timeout, how to replicate?
 
     @Nested
     class WhenRoutingSession {
@@ -127,6 +132,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
             class WhenValid {
                 @Nested
                 class ReturnSuccess {
+
                     @Test
                     void message() throws Exception {
                         final StringBuilder response = new StringBuilder();
@@ -161,6 +167,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         session.sendMessage(new TextMessage("bye"));
                         session.close();
                     }
+
+                    @Test
+                    void handshakeOnLimit() {
+
+                    }
+
                 }
 
                 @Nested
@@ -203,7 +215,29 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                         assertEquals("CloseStatus[code=1003, reason=Invalid URL format]", response.toString());
                     }
+
+                    @Test
+                    void whenHandshakeRequestIsTooLarge() throws Exception {
+                        final StringBuilder response = new StringBuilder();
+                        if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
+                            VALID_AUTH_HEADERS.add("X-Test", "value");
+                        }
+                        VALID_AUTH_HEADERS.add("Cookie", validToken);
+                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_HEADER), VALID_AUTH_HEADERS, response, 1);
+
+                        session.sendMessage(new TextMessage("gimme those headers"));
+                        synchronized (response) {
+                            response.wait(WAIT_TIMEOUT_MS);
+                        }
+
+                        assertTrue(response.toString().contains("x-test:\"value\""));
+                        assertTrue(response.toString().contains(validToken));
+                        session.sendMessage(new TextMessage("bye"));
+                        session.close();
+                    }
+
                 }
+
             }
 
             @Nested
@@ -259,7 +293,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                 .and()
                 .statusCode(SC_OK);
         }
-    }
 
+    }
 
 }
