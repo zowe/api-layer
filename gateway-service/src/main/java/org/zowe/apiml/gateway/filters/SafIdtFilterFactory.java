@@ -28,7 +28,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.ticket.TicketRequest;
 
 @Service
-public class SafIdtFilterFactory extends TokenFilterFactory<SafIdtFilterFactory.Config, String> {
+public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilterFactory.Config, String> {
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
     public SafIdtFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
@@ -62,7 +62,7 @@ public class SafIdtFilterFactory extends TokenFilterFactory<SafIdtFilterFactory.
 
     @Data
     @EqualsAndHashCode(callSuper = true)
-    public static class Config extends TokenFilterFactory.Config {
+    public static class Config extends AbstractTokenFilterFactory.Config {
         private String applicationName;
     }
 }

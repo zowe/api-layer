@@ -14,31 +14,37 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.zowe.apiml.gateway.filters.RobinRoundIterator;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import reactor.core.publisher.Mono;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
-
 @Component
-public class TokenProvider {
-
-    private final WebClient webClient;
-    private final InstanceInfoService instanceInfoService;
+public class TokenProvider extends AbstractAuthProviderFilter<QueryResponse> {
 
     public TokenProvider(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService) {
-        this.webClient = webClient;
-        this.instanceInfoService = instanceInfoService;
+        super(webClient, instanceInfoService);
     }
 
-    private static final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
+    public String getEndpointPath() {
+        return "/zaas/api/v1/auth/query";
+    }
+
+    @Override
+    protected Mono<QueryResponse> processResponse(WebClient.RequestHeadersSpec<?> rhs) {
+        return rhs
+            .retrieve()
+            .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> Mono.empty())
+            .bodyToMono(QueryResponse.class)
+            .onErrorResume(exception -> exception instanceof WebClientResponseException.Unauthorized ? Mono.just(new QueryResponse()) : Mono.error(exception));
+    }
+
+    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String token) {
+        return webClient.get()
+            .uri(getEndpointUrl(instance))
+            .headers(httpHeaders -> httpHeaders.set(HttpHeaders.COOKIE, "apimlAuthenticationToken=" + token));
+    }
 
     public Mono<QueryResponse> validateToken(String token) {
         return getZaasInstances().flatMap(instances ->
@@ -47,55 +53,6 @@ public class TokenProvider {
                 instance -> createRequest(instance, token)
             )
         );
-
     }
 
-    protected Mono<QueryResponse> invoke(
-        List<ServiceInstance> serviceInstances,
-        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
-    ) {
-        Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
-        if (!i.hasNext()) {
-            throw new IllegalArgumentException("No ZAAS is available");
-        }
-
-        return requestWithHa(i, requestCreator);
-    }
-
-    private Mono<QueryResponse> requestWithHa(
-        Iterator<ServiceInstance> serviceInstanceIterator,
-        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
-    ) {
-        return requestCreator.apply(serviceInstanceIterator.next())
-            .retrieve()
-            .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> Mono.empty())
-            .bodyToMono(getResponseClass())
-            .onErrorResume(exception -> exception instanceof WebClientResponseException.Unauthorized ? Mono.just(new QueryResponse()) : Mono.error(exception))
-            .switchIfEmpty(serviceInstanceIterator.hasNext() ?
-                requestWithHa(serviceInstanceIterator, requestCreator) : Mono.empty()
-            );
-    }
-
-    protected Class<QueryResponse> getResponseClass() {
-        return QueryResponse.class;
-    }
-
-    public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/api/v1/auth/query", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
-    }
-
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String token) {
-        String tokensUrl = getEndpointUrl(instance);
-        return webClient.get().uri(tokensUrl).headers(httpHeaders -> httpHeaders.set(HttpHeaders.COOKIE, "apimlAuthenticationToken=" + token));
-    }
-
-    private Mono<List<ServiceInstance>> getZaasInstances() {
-        return instanceInfoService.getServiceInstance("zaas");
-    }
-
-    public Authentication getAuthentication(String user, String token) {
-        var auth = new TokenAuthentication(user, token);
-        auth.setAuthenticated(true);
-        return auth;
-    }
 }

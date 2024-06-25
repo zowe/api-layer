@@ -10,114 +10,68 @@
 
 package org.zowe.apiml.gateway.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.zowe.apiml.gateway.filters.RobinRoundIterator;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import reactor.core.publisher.Mono;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+import java.net.HttpCookie;
+import java.util.Collection;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
 
 @Component
-public class BasicAuthProvider extends TokenProvider {
+public class BasicAuthProvider extends AbstractAuthProviderFilter<ClientResponse.Headers> {
 
-    private final WebClient webClient;
-    private final InstanceInfoService instanceInfoService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
     public BasicAuthProvider(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, AuthConfigurationProperties authConfigurationProperties) {
         super(webClient, instanceInfoService);
-        this.webClient = webClient;
-        this.instanceInfoService = instanceInfoService;
         this.authConfigurationProperties = authConfigurationProperties;
     }
 
-    private static final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
-
-    public Mono<ClientResponse.Headers> authenticateUser(String authHeader) {
-        return getZaasInstances().flatMap(instances ->
-            invokeS(
-                instances,
-                instance -> createRequest(instance, authHeader)
-            )
-        );
-
+    public String getEndpointPath() {
+        return "/zaas/api/v1/auth/login";
     }
 
-    protected Mono<ClientResponse.Headers> invokeS(
-        List<ServiceInstance> serviceInstances,
-        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
-    ) {
-        Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
-        if (!i.hasNext()) {
-            throw new IllegalArgumentException("No ZAAS is available");
-        }
-
-        return requestWithHa(i, requestCreator);
-    }
-
-    private Mono<ClientResponse.Headers> requestWithHa(
-        Iterator<ServiceInstance> serviceInstanceIterator,
-        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
-    ) {
-        return requestCreator.apply(serviceInstanceIterator.next())
-            .exchangeToMono(clientResp -> {
-                if (HttpStatus.UNAUTHORIZED.equals(clientResp.statusCode()) || HttpStatus.NO_CONTENT.equals(clientResp.statusCode())) {
-                    return Mono.just(clientResp.headers());
-                }
-                return Mono.empty();
-
-            })
-            .switchIfEmpty(serviceInstanceIterator.hasNext() ?
-                requestWithHa(serviceInstanceIterator, requestCreator) : Mono.empty()
-            );
-    }
-
-
-    public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/api/v1/auth/login", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+    @Override
+    protected Mono<ClientResponse.Headers> processResponse(WebClient.RequestHeadersSpec<?> rhs) {
+        return rhs
+            .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
+                case SC_UNAUTHORIZED: case SC_NO_CONTENT:
+                    yield Mono.just(clientResp.headers());
+                default:
+                    yield Mono.empty();
+            });
     }
 
     protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String headerValue) {
-        var loginUrl = getEndpointUrl(instance);
-        return webClient.post().uri(loginUrl).headers(httpHeaders -> httpHeaders.set(HttpHeaders.AUTHORIZATION, headerValue));
-    }
-
-    private Mono<List<ServiceInstance>> getZaasInstances() {
-        return instanceInfoService.getServiceInstance("zaas");
+        return webClient.post()
+            .uri(getEndpointUrl(instance))
+            .headers(httpHeaders -> httpHeaders.set(HttpHeaders.AUTHORIZATION, headerValue));
     }
 
     public Mono<String> getToken(String authHeader) {
-        return authenticateUser(authHeader).map(headers -> {
-            var apimlToken = headers.header(HttpHeaders.SET_COOKIE).stream().map(cookieHeader -> {
-                    for (String s : cookieHeader.split(";")) {
-                        if (s.startsWith(authConfigurationProperties.getCookieProperties().getCookieName())) {
-                            return s;
-                        }
-                    }
-                    return "";
-                })
-                .findFirst();
-            return apimlToken.orElse("");
-        });
+        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        return getZaasInstances().flatMap(instances ->
+                invoke(
+                    instances,
+                    instance -> createRequest(instance, authHeader)
+                )
+            )
+            .map(headers -> headers.header(HttpHeaders.SET_COOKIE).stream()
+                .map(HttpCookie::parse)
+                .flatMap(Collection::stream)
+                .filter(cookie -> StringUtils.equals(cookieName, cookie.getName()))
+                .findFirst()
+                .map(HttpCookie::getValue).orElse("")
+            );
     }
 
-    public Authentication getAuthentication(String token, String authHeader) {
-
-        var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
-        var auth = new TokenAuthentication(loginRequest.get().getUsername(), token);
-        auth.setAuthenticated(true);
-        return auth;
-    }
 }
