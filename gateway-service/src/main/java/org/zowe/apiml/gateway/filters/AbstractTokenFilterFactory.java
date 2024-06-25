@@ -30,9 +30,9 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class TokenFilterFactory<T extends TokenFilterFactory.Config, D> extends AbstractAuthSchemeFactory<T, ZaasTokenResponse, D> {
+public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFactory.Config, D> extends AbstractAuthSchemeFactory<T, ZaasTokenResponse, D> {
 
-    protected TokenFilterFactory(Class<T> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
+    protected AbstractTokenFilterFactory(Class<T> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(configClazz, webClient, instanceInfoService, messageService);
     }
 

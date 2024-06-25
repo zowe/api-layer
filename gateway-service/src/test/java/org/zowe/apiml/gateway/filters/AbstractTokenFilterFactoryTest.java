@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-class TokenFilterFactoryTest {
+class AbstractTokenFilterFactoryTest {
 
     @Nested
     class RequestUpdate {
@@ -32,7 +32,7 @@ class TokenFilterFactoryTest {
             MockServerHttpRequest request = MockServerHttpRequest.get("/url").build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
-            new TokenFilterFactory<>(TokenFilterFactory.Config.class, null, null, null) {
+            new AbstractTokenFilterFactory<>(AbstractTokenFilterFactory.Config.class, null, null, null) {
                 @Override
                 public String getEndpointUrl(ServiceInstance instance) {
                     return null;
