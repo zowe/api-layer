@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MockService;
-import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 
@@ -36,9 +36,8 @@ import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.constants.ApimlConstants.SAF_TOKEN_HEADER;
 
 public class SafIdtSchemeTest {
 
@@ -63,8 +62,7 @@ public class SafIdtSchemeTest {
 
         @BeforeEach
         void setup() throws IOException {
-            ZaasTokenResponse response = new ZaasTokenResponse();
-            response.setToken(SAF_IDT);
+            ZaasTokenResponse response = ZaasTokenResponse.builder().token(SAF_IDT).headerName(SAF_TOKEN_HEADER).build();
 
             zaas = mockService("zaas").scope(MockService.Scope.TEST)
                 .addEndpoint("/zaas/zaas/safIdt")
