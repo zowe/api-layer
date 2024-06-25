@@ -69,6 +69,51 @@ then
   export LOG_LEVEL="debug"
 fi
 
+if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
+    cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
+fi
+
+# how to verifyCertificates
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
+if [ "${verify_certificates_config}" = "DISABLED" ]; then
+  verifySslCertificatesOfServices=false
+  nonStrictVerifySslCertificatesOfServices=true
+elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=true
+else
+  # default value is STRICT
+  verifySslCertificatesOfServices=true
+  nonStrictVerifySslCertificatesOfServices=false
+fi
+
+ATTLS_ENABLED="false"
+# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+  ATTLS_ENABLED="true"
+fi
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  ZWE_configs_server_ssl_enabled="false"
+  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+fi
+
+# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
+ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
+    ZWE_configs_apiml_service_corsEnabled=true
+fi
+
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
+    externalProtocol="https"
+else
+    externalProtocol="http"
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -87,31 +132,6 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
         --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
         --add-opens=java.base/java.io=ALL-UNNAMED"
-
-ATTLS_ENABLED="false"
-# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
-if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-  ATTLS_ENABLED="true"
-fi
-if [ "${ATTLS_ENABLED}" = "true" ]; then
-  ZWE_configs_server_ssl_enabled="false"
-  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-  fi
-  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
-fi
-
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
-    externalProtocol="https"
-else
-    externalProtocol="http"
-fi
-
-# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
-ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "${ATTLS_ENABLED}" = "true" ]; then
-    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
-fi
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
@@ -151,6 +171,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_gateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \
