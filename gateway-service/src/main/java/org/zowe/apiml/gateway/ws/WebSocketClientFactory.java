@@ -39,7 +39,7 @@ public class WebSocketClientFactory {
     public WebSocketClientFactory(
             SslContextFactory.Client jettyClientSslContextFactory,
             @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout,
-            @Value("${server.webSocket.connectTimeout:15000}") long connectTimeout,
+            @Value("${server.webSocket.connectTimeout:45000}") long connectTimeout,
             @Value("${server.webSocket.stopTimeout:30000}") long stopTimeout,
             @Value("${server.webSocket.asyncWriteTimeout:60000}") long asyncWriteTimeout,
             @Value("${server.webSocket.requestBufferSize:8192}") int maxRequestBufferSize
