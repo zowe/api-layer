@@ -10,23 +10,8 @@
 
 package org.zowe.apiml.integration.proxy;
 
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
-import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Base64;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import io.restassured.RestAssured;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -45,7 +30,21 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import io.restassured.RestAssured;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
 @TestsNotMeantForZowe
 @WebsocketTest
@@ -59,13 +58,14 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     private static final WebSocketHttpHeaders INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
     private static final String validToken = "apimlAuthenticationToken=tokenValue";
 
-
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+    void setup() {
+        VALID_AUTH_HEADERS.clear();
         String plainCred = "user:pass";
         String base64cred = Base64.getEncoder().encodeToString(plainCred.getBytes());
         VALID_AUTH_HEADERS.add("Authorization", "Basic " + base64cred);
 
+        INVALID_AUTH_HEADERS.clear();
         String invalidPlainCred = "user:invalidPass";
         String invalidBase64cred = Base64.getEncoder().encodeToString(invalidPlainCred.getBytes());
         INVALID_AUTH_HEADERS.add("Authorization", "Basic " + invalidBase64cred);
@@ -118,14 +118,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         return appendingWebSocketSession(url, null, response, countToNotify);
     }
 
-    // TODO add tests:
-    // 7 KB http header --> Works
-    // 9 KB http header --> fails
-
-    // Connect timeout, how to replicate?
-
     @Nested
     class WhenRoutingSession {
+
         @Nested
         class Authentication {
             @Nested
@@ -155,6 +150,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             VALID_AUTH_HEADERS.add("X-Test", "value");
                         }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
+                        char[] data = new char[3000];
+                        Arrays.fill(data, 'a');
+                        for (int i = 0; i < 2; i++) { // at least 6K, more than the original 4K limit
+                            VALID_AUTH_HEADERS.add("X-Test-" + i, String.valueOf(data));
+                        }
                         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_HEADER), VALID_AUTH_HEADERS, response, 1);
 
                         session.sendMessage(new TextMessage("gimme those headers"));
@@ -166,11 +166,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         assertTrue(response.toString().contains(validToken));
                         session.sendMessage(new TextMessage("bye"));
                         session.close();
-                    }
-
-                    @Test
-                    void handshakeOnLimit() {
-
                     }
 
                 }
@@ -223,6 +218,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             VALID_AUTH_HEADERS.add("X-Test", "value");
                         }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
+
+                        char[] data = new char[3000];
+                        Arrays.fill(data, 'a');
+                        for (int i = 0; i < 3; i++) {
+                            VALID_AUTH_HEADERS.add("X-Test-" + i, String.valueOf(data));
+                        }
                         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_HEADER), VALID_AUTH_HEADERS, response, 1);
 
                         session.sendMessage(new TextMessage("gimme those headers"));
@@ -230,10 +231,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.wait(WAIT_TIMEOUT_MS);
                         }
 
-                        assertTrue(response.toString().contains("x-test:\"value\""));
-                        assertTrue(response.toString().contains(validToken));
-                        session.sendMessage(new TextMessage("bye"));
-                        session.close();
+                        assertTrue(response.toString().contains("code=1003"), "WebSocket response: " + response + ". Does not contain code=1003");
+                        assertTrue(response.toString().contains("UpgradeException"), "WebSocket response: " + response + ". Does not contain \"UpgradeException\"");
+
                     }
 
                 }
