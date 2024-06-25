@@ -19,18 +19,13 @@ import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ServerWebExchange;
-import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.ticket.TicketRequest;
-import org.zowe.apiml.zaas.ZaasTokenResponse;
-import reactor.core.publisher.Mono;
 
 @Service
 public class SafIdtFilterFactory extends TokenFilterFactory<SafIdtFilterFactory.Config, String> {
@@ -43,21 +38,6 @@ public class SafIdtFilterFactory extends TokenFilterFactory<SafIdtFilterFactory.
     @Override
     public String getEndpointUrl(ServiceInstance instance) {
         return String.format("%s://%s:%d/%s/zaas/safIdt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
-    }
-
-    @Override
-    protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
-        ServerHttpRequest request;
-        var response = tokenResponse.getBody();
-        if (response != null) {
-            request = cleanHeadersOnAuthSuccess(exchange);
-            request = request.mutate().headers(headers ->
-                headers.add(ApimlConstants.SAF_TOKEN_HEADER, response.getToken())
-            ).build();
-            exchange = exchange.mutate().request(request).build();
-        }
-
-        return super.processResponse(exchange, chain, tokenResponse);
     }
 
     @Override
