@@ -62,45 +62,50 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  * Example:
  * class MyScheme extends AbstractAuthSchemeFactory<MyScheme.Config, MyResponse, MyData> {
  *
- * @param <T> Class of config class. It should extend {@link AbstractAuthSchemeFactory.AbstractConfig}
- * @param <R> Class of expended response from the ZAAS
- * @param <D> Type of data object that could be constructed before any request, and it is request for creating a request
- * @Override public GatewayFilter apply(Config config) {
- * try {
- * return createGatewayFilter(config, <construct common data or null>);
- * } catch (Exception e) {
- * return ((exchange, chain) -> {
- * ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
- * return chain.filter(exchange.mutate().request(request).build());
- * });
+ *   @param <T> Class of config class. It should extend {@link AbstractAuthSchemeFactory.AbstractConfig}
+ *   @param <R> Class of expended response from the ZAAS
+ *   @param <D> Type of data object that could be constructed before any request, and it is request for creating a request
+ *   @Override public GatewayFilter apply(Config config) {
+ *     try {
+ *       return createGatewayFilter(config, <construct common data or null>);
+ *     } catch (Exception e) {
+ *       return ((exchange, chain) -> {
+ *         ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
+ *         return chain.filter(exchange.mutate().request(request).build());
+ *       });
+ *     }
+ *   }
+ *
+ *   @Override protected Class<MyResponse> getResponseClass() {
+ *     return MyResponse.class;
+ *   }
+ *
+ *   @Override protected MyResponse getResponseFor401() {
+ *     return new MyResponse();
+ *   }
+ *   @Override protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
+ *     String url = String.format("%s://%s:%d/%s/zaas/myScheme", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+ *     return webClient.post().uri(url);
+ *   }
+ *
+ *   @Override protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, MyResponse response) {
+ *     ServerHttpRequest request;
+ *     if (response.getToken() != null) {
+ *       request = exchange.getRequest().mutate().headers(headers ->
+ *         headers.add("mySchemeHeader", response.getToken())
+ *       ).build();
+ *     } else {
+ *       request = updateHeadersForError(exchange, "Invalid or missing authentication");
+ *     }
+ *     exchange = exchange.mutate().request(request).build();
+ *     return chain.filter(exchange);
+ *   }
+ *
+ *   @EqualsAndHashCode(callSuper = true)
+ *   public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
+ *   }
  * }
- * }
- * @Override protected Class<MyResponse> getResponseClass() {
- * return MyResponse.class;
- * }
- * @Override protected MyResponse getResponseFor401() {
- * return new MyResponse();
- * }
- * @Override protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
- * String url = String.format("%s://%s:%d/%s/zaas/myScheme", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
- * return webClient.post().uri(url);
- * }
- * @Override protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, MyResponse response) {
- * ServerHttpRequest request;
- * if (response.getToken() != null) {
- * request = exchange.getRequest().mutate().headers(headers ->
- * headers.add("mySchemeHeader", response.getToken())
- * ).build();
- * } else {
- * request = updateHeadersForError(exchange, "Invalid or missing authentication");
- * }
- * exchange = exchange.mutate().request(request).build();
- * return chain.filter(exchange);
- * }
- * @EqualsAndHashCode(callSuper = true)
- * public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
- * }
- * }
+ *
  * @Data class MyResponse {
  * private String token;
  * }
@@ -117,27 +122,27 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     private static final Predicate<String> CERTIFICATE_HEADERS_TEST = headerName ->
         StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[0]) ||
-            StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[1]) ||
-            StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[2]);
+        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[1]) ||
+        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[2]);
 
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
         StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
-            StringUtils.equalsIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME) ||
-            StringUtils.startsWithIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME + ".");
+        StringUtils.equalsIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME) ||
+        StringUtils.startsWithIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME + ".");
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE = cookie ->
         CREDENTIALS_COOKIE_INPUT.test(cookie) ||
-            StringUtils.equalsIgnoreCase(cookie.getName(), "jwtToken") ||
-            StringUtils.equalsIgnoreCase(cookie.getName(), "LtpaToken2");
+        StringUtils.equalsIgnoreCase(cookie.getName(), "jwtToken") ||
+        StringUtils.equalsIgnoreCase(cookie.getName(), "LtpaToken2");
 
     private static final Predicate<String> CREDENTIALS_HEADER_INPUT = headerName ->
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.AUTHORIZATION) ||
-            StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
+        StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
     private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
         CREDENTIALS_HEADER_INPUT.test(headerName) ||
-            CERTIFICATE_HEADERS_TEST.test(headerName) ||
-            StringUtils.equalsIgnoreCase(headerName, "X-SAF-Token") ||
-            StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
-            StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
+        CERTIFICATE_HEADERS_TEST.test(headerName) ||
+        StringUtils.equalsIgnoreCase(headerName, "X-SAF-Token") ||
+        StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
+        StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
 
     private static final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
 
@@ -168,8 +173,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         return requestCreator.apply(serviceInstanceIterator.next())
             .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
                 case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<R>(clientResp.headers(), null));
-                case SC_OK ->
-                    clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<R>(clientResp.headers(), b));
+                case SC_OK -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<R>(clientResp.headers(), b));
                 default -> Mono.empty();
             })
             .switchIfEmpty(serviceInstanceIterator.hasNext() ?
