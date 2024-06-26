@@ -12,11 +12,7 @@ import React, { Component } from 'react';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import videosImg from '../../assets/images/videos.png';
-import tutorialsImg from '../../assets/images/tutorials.png';
-import swaggerImg from '../../assets/images/swagger.png';
-
-import utilFunctions, { isAPIPortal } from '../../utils/utilFunctions';
+import PropTypes from 'prop-types';
 
 export default class Tile extends Component {
     getTileStatus = (tile) => {
@@ -39,17 +35,14 @@ export default class Tile extends Component {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
-        const apiPortalEnabled = isAPIPortal();
-        if (!apiPortalEnabled) {
-            const { status } = tile;
-            switch (status) {
-                case 'UP':
-                    return 'The service is running';
-                case 'DOWN':
-                    return 'The service is not running';
-                default:
-                    return 'Status unknown';
-            }
+        const { status } = tile;
+        switch (status) {
+            case 'UP':
+                return 'The service is running';
+            case 'DOWN':
+                return 'The service is not running';
+            default:
+                return 'Status unknown';
         }
     };
 
@@ -63,9 +56,6 @@ export default class Tile extends Component {
 
     render() {
         const { tile, service } = this.props;
-        const apiPortalEnabled = isAPIPortal();
-        const { useCasesCounter, tutorialsCounter, videosCounter, hasSwagger } = utilFunctions(service);
-
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
                 <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
@@ -73,60 +63,18 @@ export default class Tile extends Component {
                         <div className="tile-ctn">
                             <div className="tile-title">
                                 <Typography id="tileLabel" className="grid-tile-status">
-                                    {!apiPortalEnabled && this.getTileStatus(tile)}
-                                    {!apiPortalEnabled && this.getTileStatusText(tile)}
+                                    {this.getTileStatus(tile)}
+                                    {this.getTileStatusText(tile)}
                                 </Typography>
                                 <Typography id="tiles-service-title" variant="subtitle1">
                                     {service.title}
                                 </Typography>
-                                {!apiPortalEnabled && service.sso && (
+                                {service.sso && (
                                     <Typography variant="h6" id="grid-tile-sso">
                                         (SSO)
                                     </Typography>
                                 )}
                             </div>
-
-                            {apiPortalEnabled && (
-                                <>
-                                    <div id="swagger" className="desktop-view">
-                                        {hasSwagger ? (
-                                            <img data-testid="swagger-img" alt="Swagger" src={swaggerImg} />
-                                        ) : (
-                                            <div style={{ height: '24px', width: '24px' }} />
-                                        )}
-                                    </div>
-                                    <Typography
-                                        className="media-labels desktop-view"
-                                        id="use-cases-counter"
-                                        size="medium"
-                                        variant="outlined"
-                                    >
-                                        {useCasesCounter}
-                                    </Typography>
-                                    <div className="imageCounter desktop-view">
-                                        <Typography
-                                            className="media-labels desktop-view"
-                                            id="tutorials-counter"
-                                            size="medium"
-                                            variant="outlined"
-                                        >
-                                            {tutorialsCounter}
-                                        </Typography>
-                                        <img id="tutorials" alt="Tutorials" src={tutorialsImg} />
-                                    </div>
-                                    <div className="imageCounter desktop-view">
-                                        <Typography
-                                            className="media-labels"
-                                            id="videos-counter"
-                                            size="medium"
-                                            variant="outlined"
-                                        >
-                                            {videosCounter}
-                                        </Typography>
-                                        <img id="videos" alt="Videos" src={videosImg} />
-                                    </div>
-                                </>
-                            )}
                         </div>
                     </CardContent>
                 </CardActionArea>
@@ -134,3 +82,10 @@ export default class Tile extends Component {
         );
     }
 }
+
+Tile.propTypes = {
+    service: PropTypes.shape({
+        title: PropTypes.string,
+        sso: PropTypes.bool,
+    }).isRequired,
+};

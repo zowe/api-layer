@@ -11,12 +11,12 @@
 import {ResponseMock} from "../../__src__/ResponseMock";
 import {Constants} from "../../../src/api/Constants";
 import {expect, jest, describe, it} from '@jest/globals';
+// Require the handler and create a new instance
+const handlerReq = require("../../../src/cli/map/Map.handler");
 
 describe("map handler unit tests", () => {
 
     it("should accept options and return successful message", async () => {
-        // Require the handler and create a new instance
-        const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
 
         // Vars populated by the mocked function - error should remain undefined.

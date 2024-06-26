@@ -127,19 +127,4 @@ describe('>>> Tile component tests', () => {
         const wrapper = shallow(<Tile tile={sampleTile} service={sampleTile.services[1]} />);
         expect(wrapper.text().includes('SSO')).toBe(false);
     });
-
-    it('should display media icons when the portal is enabled', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const instance = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
-        expect(instance.find('media-icons')).not.toBeNull();
-        expect(instance.find('swagger')).not.toBeNull();
-        expect(instance.find('media-labels')).not.toBeNull();
-    });
-
-    it('should display swagger image', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        sampleTile.services[0].apis = [{ v1: { apiId: 'zowe.apiml.gateway' }, swaggerUrl: 'url' }];
-        const instance = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
-        expect(instance.find('[data-testid="swagger-img"]').exists()).toEqual(true);
-    });
 });

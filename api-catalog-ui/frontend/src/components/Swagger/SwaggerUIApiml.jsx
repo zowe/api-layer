@@ -14,7 +14,6 @@ import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
-import { isAPIPortal } from '../../utils/utilFunctions';
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -39,16 +38,6 @@ function setFilterBarStyle() {
     const filterInput = document.getElementsByClassName('operation-filter-input');
     if (filterInput && filterInput.length > 0) {
         filterInput.item(0).placeholder = 'Search in endpoints...';
-    }
-    if (isAPIPortal() && !document.getElementById('filter-label')) {
-        const divInfo = document.querySelector('.info');
-        const searchLabel = document.createElement('span');
-        if (divInfo && searchLabel) {
-            searchLabel.setAttribute('id', 'filter-label');
-            searchLabel.textContent = 'Search through Swagger';
-            searchLabel.style.fontSize = '13.3px';
-            divInfo.appendChild(searchLabel);
-        }
     }
 }
 
@@ -105,11 +94,7 @@ export default class SwaggerUIApiml extends Component {
 
                 return (
                     <div>
-                        {!isAPIPortal() &&
-                        (
-                            <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
-                        )
-                        }
+                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
                         <Original {...props} />
                     </div>
                 )

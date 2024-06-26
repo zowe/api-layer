@@ -14,9 +14,6 @@ import { userService } from '../services';
 import history from '../helpers/history';
 
 describe('>>> User actions tests', () => {
-    beforeEach(() => {
-        process.env.REACT_APP_API_PORTAL = false;
-    });
     const credentials = { username: 'user', password: 'password' };
 
     it('should close alert', () => {
