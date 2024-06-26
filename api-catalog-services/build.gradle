@@ -125,6 +125,15 @@ bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
+
+    debugOptions {
+        port = 5014
+        suspend = false
+        server = true
+    }
+
+    workingDir = project.rootDir
+
     systemProperties = System.properties
 }
 

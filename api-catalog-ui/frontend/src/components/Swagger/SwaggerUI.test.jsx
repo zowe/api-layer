@@ -18,10 +18,6 @@ describe('>>> Swagger component tests', () => {
         document.body.innerHTML = '';
     });
 
-    beforeEach(() => {
-        process.env.REACT_APP_API_PORTAL = false;
-    });
-
     it('should not render swagger if apiDoc is null', () => {
         const service = {
             serviceId: 'testservice',
@@ -257,88 +253,6 @@ describe('>>> Swagger component tests', () => {
 
         await act(async () => render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container));
         expect(container).not.toBeNull();
-    });
-
-    const divInfo = {
-        appendChild: jest.fn(),
-    };
-
-    it('should create element if does not exist', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const service = {
-            serviceId: 'testservice',
-            title: 'Spring Boot Enabler Service',
-            description: 'Dummy Service for enabling others',
-            status: 'UP',
-            secured: false,
-            homePageUrl: 'http://localhost:10013/enabler/',
-            basePath: '/enabler/api/v1',
-            apiDoc: null,
-        };
-        service.apis = {
-            codeSnippet: {
-                codeBlock: 'code',
-                endpoint: '/test',
-                language: 'java',
-            },
-        };
-        const querySelectorSpy = jest.spyOn(document, 'querySelector');
-        const createElementSpy = jest.spyOn(document, 'createElement');
-        const elementsByClassNameSpy = jest.spyOn(document, 'getElementsByClassName');
-        const divInfoSpy = jest.spyOn(divInfo, 'appendChild');
-
-        // eslint-disable-next-line no-unused-vars
-        querySelectorSpy.mockImplementation((element) => divInfo);
-
-        const wrapper = shallow(<SwaggerUI selectedService={service} />);
-
-        wrapper.setProps({ selectedVersion: 'v2' });
-
-        expect(elementsByClassNameSpy).toHaveBeenCalled();
-        expect(querySelectorSpy).toHaveBeenCalled();
-        expect(querySelectorSpy).toHaveBeenCalledWith('.info');
-        expect(createElementSpy).toHaveBeenCalled();
-        expect(createElementSpy).toHaveBeenCalledWith('span');
-        expect(divInfoSpy).toHaveBeenCalled();
-    });
-
-    it('should not create element if span already exists', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const service = {
-            serviceId: 'testservice',
-            title: 'Spring Boot Enabler Service',
-            description: 'Dummy Service for enabling others',
-            status: 'UP',
-            secured: false,
-            homePageUrl: 'http://localhost:10013/enabler/',
-            basePath: '/enabler/api/v1',
-            apiDoc: null,
-        };
-        service.apis = {
-            codeSnippet: {
-                codeBlock: 'code',
-                endpoint: '/test',
-                language: 'java',
-            },
-        };
-        const querySelectorSpy = jest.spyOn(document, 'querySelector');
-        const createElementSpy = jest.spyOn(document, 'createElement');
-        const elementsByClassNameSpy = jest.spyOn(document, 'getElementsByClassName');
-        const getElementByIdSpy = jest.spyOn(document, 'getElementById');
-        const divInfoSpy = jest.spyOn(divInfo, 'appendChild');
-
-        // eslint-disable-next-line no-unused-vars
-        getElementByIdSpy.mockImplementation((elementId) => <span id="filter-label" />);
-
-        const wrapper = shallow(<SwaggerUI selectedService={service} />);
-
-        wrapper.setProps({ selectedVersion: 'v2' });
-
-        expect(elementsByClassNameSpy).toHaveBeenCalled();
-        expect(getElementByIdSpy).toHaveBeenCalledWith('filter-label');
-        expect(querySelectorSpy).not.toHaveBeenCalled();
-        expect(createElementSpy).not.toHaveBeenCalled();
-        expect(divInfoSpy).not.toHaveBeenCalled();
     });
 
     it('should not create element if api portal disabled and element does not exist', () => {

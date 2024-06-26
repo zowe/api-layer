@@ -67,6 +67,8 @@ bootRun {
         server = true
     }
 
+    workingDir = project.rootDir
+
     systemProperties = System.properties
 }
 

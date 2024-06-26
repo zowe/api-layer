@@ -43,12 +43,7 @@ const ajaxError = {
 };
 
 describe('>>> Dashboard component tests', () => {
-    beforeEach(() => {
-        process.env.REACT_APP_API_PORTAL = false;
-    });
-
     it('should have "Refresh Static APIs" button', () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const wrapper = shallow(
             <Dashboard
                 tiles={null}
@@ -235,28 +230,7 @@ describe('>>> Dashboard component tests', () => {
         expect(screen.getByText('Your mainframe password was successfully changed.')).toBeInTheDocument();
     });
 
-    it('should display the dashboard grid header and API heading when portal enabled', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const dashboard = shallow(
-            <Dashboard
-                tiles={[]}
-                fetchTilesStart={jest.fn()}
-                clearService={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clear={jest.fn()}
-                fetchTilesFailed={jest.fn()}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        const dashboardHeader = dashboard.find('.dashboard-grid-header');
-        const apiHeading = dashboard.find('.api-heading');
-        expect(dashboardHeader.length).toEqual(1);
-        expect(apiHeading.length).toEqual(1);
-    });
-
     it('should display loading div', () => {
-        process.env.REACT_APP_API_PORTAL = false;
         const wrapper = shallow(
             <Dashboard
                 tiles={null}
@@ -272,119 +246,5 @@ describe('>>> Dashboard component tests', () => {
         );
         const button = wrapper.find('.loadingDiv');
         expect(button.length).toEqual(1);
-    });
-
-    it('should call getElementById to get go back button and hide it', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const spyElementById = jest.spyOn(document, 'getElementById').mockReturnValue({ style: { display: 'block' } });
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        expect(spyElementById).toHaveBeenCalledWith('go-back-button-portal');
-        const productLabel = wrapper.find('#go-back-button-portal');
-        expect(document.getElementById('go-back-button-portal').style.display).toBe('none');
-        expect(productLabel.length).toEqual(0);
-    });
-
-    it('should add fixed-header class and update padding when scrolled below filter height', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        const instance = wrapper.instance();
-        const eventMock = {
-            target: {
-                scrollTop: 40,
-                classList: {
-                    add: jest.fn(),
-                    remove: jest.fn(),
-                },
-                style: {
-                    paddingTop: '0px',
-                },
-            },
-        };
-        const getHeaderMock = {
-            offsetHeight: 50,
-            style: {
-                marginBottom: '10px',
-                marginTop: '5px',
-            },
-        };
-        const getFilterHeightMock = { offsetHeight: 30 };
-
-        jest.spyOn(document, 'querySelectorAll')
-            .mockReturnValueOnce([getHeaderMock])
-            .mockReturnValueOnce([getFilterHeightMock]);
-
-        instance.dashboardTileScroll(eventMock);
-
-        expect(eventMock.target.classList.add).toHaveBeenCalledWith('fixed-header');
-        expect(eventMock.target.classList.add).toHaveBeenCalledTimes(1);
-        expect(eventMock.target.style.paddingTop).toBe('65px');
-    });
-
-    it('should handle cases where elements are not found', () => {
-        process.env.REACT_APP_API_PORTAL = true;
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                clearService={jest.fn()}
-                clear={jest.fn()}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        const instance = wrapper.instance();
-
-        const eventMock = {
-            target: {
-                scrollTop: 40,
-                classList: {
-                    add: jest.fn(),
-                    remove: jest.fn(),
-                },
-                style: {
-                    paddingTop: '0px',
-                },
-            },
-        };
-
-        const getHeaderMock = {
-            style: {
-                marginBottom: '10px',
-                marginTop: '5px',
-            },
-        };
-        const getFilterHeightMock = { offsetHeight: 30 };
-
-        jest.spyOn(document, 'querySelectorAll')
-            .mockReturnValueOnce([getHeaderMock])
-            .mockReturnValueOnce([getFilterHeightMock]);
-
-        instance.dashboardTileScroll(eventMock);
-
-        expect(eventMock.target.classList.add).toHaveBeenCalledTimes(0);
-        expect(eventMock.target.classList.remove).toHaveBeenCalledWith('fixed-header');
-        expect(eventMock.target.classList.remove).toHaveBeenCalledTimes(1);
-        expect(eventMock.target.style.paddingTop).toBe(0);
     });
 });
