@@ -103,6 +103,10 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
 
+                    configuration.getCentralGatewayServiceConfiguration().setScheme(System.getProperty("centralgateway.scheme", configuration.getCentralGatewayServiceConfiguration().getScheme()));
+                    configuration.getCentralGatewayServiceConfiguration().setHost(System.getProperty("centralgateway.host", configuration.getCentralGatewayServiceConfiguration().getHost()));
+                    configuration.getCentralGatewayServiceConfiguration().setPort(Integer.parseInt(System.getProperty("centralgateway.port", String.valueOf(configuration.getCentralGatewayServiceConfiguration().getPort()))));
+
                     configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
                     configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
                     configuration.getZaasConfiguration().setPort(Integer.parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
