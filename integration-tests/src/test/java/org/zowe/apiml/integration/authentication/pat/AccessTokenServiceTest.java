@@ -222,7 +222,7 @@ public class AccessTokenServiceTest {
 //            validate after revocation rule
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(200);
+                .then().statusCode(204);
         }
     }
 
