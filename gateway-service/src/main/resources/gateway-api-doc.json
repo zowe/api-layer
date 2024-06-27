@@ -395,7 +395,7 @@
             "delete": {
                 "tags": ["Access token"],
                 "summary": "Invalidate multiple personal access tokens.",
-                "description": "Use the `/access-token/revoke/token` API to invalidate multiple personal access tokens issued for your user ID. \n\n**Response:**\n\nThe response is no content`.\n",
+                "description": "Use the `/access-token/revoke/token` API to invalidate multiple personal access tokens issued for your user ID. \n\n**Request:**\n\nThe revoke request requires the user credentials in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n * Bearer authentication \n*Header example:* Authorization: Bearer *token* \n* Client certificate \n\n**Response:**\n\nThe response is no content`.\n",
                 "operationId": "accessTokensInvalidateDELETE",
                 "requestBody": {
                     "content": {
@@ -412,6 +412,14 @@
                     },
                     "description": "Specifies the time until which the tokens will remain invalid."
                 },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No content"
@@ -438,7 +446,7 @@
             "delete": {
                 "tags": ["Access token"],
                 "summary": "Invalidate personal access tokens by user ID.",
-                "description": "Use the `/access-token/revoke/token/user` API to invalidate multiple personal access tokens issued for a user ID. \n\n**Response:**\n\nThe response is no content`.\n",
+                "description": "Use the `/access-token/revoke/token/user` API to invalidate multiple personal access tokens issued for a user ID.\n\n**Request:**\n\nThe revoke user ID request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate \n\n**Response:**\n\nThe response is no content`.\n",
                 "operationId": "accessTokensInvalidateAdminDELETE",
                 "requestBody": {
                     "content": {
@@ -458,6 +466,11 @@
                     },
                     "description": "Specifies the user ID and time until which the tokens will remain invalid."
                 },
+                "security": [
+                    {
+                        "LoginBasicAuth": []
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No content"
@@ -484,7 +497,7 @@
             "delete": {
                 "tags": ["Access token"],
                 "summary": "Invalidate multiple personal access tokens by service ID.",
-                "description": "Use the `/access-token/revoke/token/scope` API to invalidate multiple personal access tokens issued for service ID. \n\n**Response:**\n\nThe response is no content`.\n",
+                "description": "Use the `/access-token/revoke/token/scope` API to invalidate multiple personal access tokens issued for service ID.\n\n**Request:**\n\nThe revoke scope request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content`.\n",
                 "operationId": "accessTokensInvalidateAdminScopeDELETE",
                 "requestBody": {
                     "content": {
@@ -504,6 +517,11 @@
                     },
                     "description": "Specifies the service ID and time until which the tokens will remain invalid."
                 },
+                "security": [
+                    {
+                        "LoginBasicAuth": []
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No content"
@@ -530,8 +548,13 @@
             "delete": {
                 "tags": ["Access token"],
                 "summary": "Remove invalidated tokens and rules which are not relevant anymore.",
-                "description": "Will evict all the invalidated tokens which are not relevant anymore \n\n**Response:**\n\nThe response is no content`.\n",
+                "description": "Will evict all the invalidated tokens which are not relevant anymore\n\n**Request:**\n\nThe evict requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content`.\n",
                 "operationId": "accessTokensInvalidateAdminScopeDELETE",
+                "security": [
+                    {
+                        "LoginBasicAuth": []
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No content"
