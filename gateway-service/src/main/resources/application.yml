@@ -69,6 +69,7 @@ apiml:
     service:
         apimlId: apiml1
         corsEnabled: true
+        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
         hostname: localhost
