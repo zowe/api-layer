@@ -69,7 +69,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
      */
     @Test
     @TestsNotMeantForZowe
-    @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
+    //@Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
     void apiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, DISCOVERABLE_GREET);
         String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_GREET);
