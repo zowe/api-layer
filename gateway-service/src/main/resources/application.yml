@@ -61,8 +61,8 @@ springdoc:
 apiml:
     catalog:
         serviceId: apicatalog
-    gateway:
-        timeout: 60
+    connection:
+        timeout: 60000
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
@@ -82,6 +82,9 @@ apiml:
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
+    httpclient:
+        conn-pool:
+            requestConnectionTimeout: ${apiml.connection.timeout}
 
 server:
     http2:

@@ -233,6 +233,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} java \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
+    -Dapiml.connection.timeout=${APIML_CONNECTION_TIMEOUT} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \

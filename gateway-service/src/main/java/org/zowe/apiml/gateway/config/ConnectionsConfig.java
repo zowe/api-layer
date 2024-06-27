@@ -125,7 +125,13 @@ public class ConnectionsConfig {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
-    @Value("${apiml.gateway.timeout:60}")
+    @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
+    private int idleConnTimeoutSeconds;
+
+    @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
+    private int requestConnectionTimeout;
+
+    @Value("${apiml.connection.timeout:60000}")
     private int requestTimeout;
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -160,6 +166,7 @@ public class ConnectionsConfig {
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+            .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)
             .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
@@ -317,7 +324,7 @@ public class ConnectionsConfig {
     @Bean
     public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(requestTimeout)).build()).build());
+            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(requestTimeout)).build()).build());
     }
 
     @Bean
