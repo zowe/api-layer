@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.path.xml.element.Node;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.SecurityUtils;
@@ -91,7 +90,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
      */
     @Test
     @TestsNotMeantForZowe
-    @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
+   // @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
     void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
@@ -114,7 +113,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
      */
     @Test
     @TestsNotMeantForZowe
-    @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
+  //  @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
     void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_UI);
