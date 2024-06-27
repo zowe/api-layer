@@ -11,6 +11,10 @@
             "description": "Mainframe authentication and authorization operations"
         },
         {
+            "name": "Access token",
+            "description": "Administration operations with personal access tokens"
+        },
+        {
             "name": "Services",
             "description": "Information about services running behind the API Gateway"
         },
@@ -258,7 +262,7 @@
         },
         "/auth/access-token/generate": {
             "post": {
-                "tags": ["Security"],
+                "tags": ["Access token"],
                 "summary": "Authenticate mainframe user credentials and return personal access token.",
                 "description": "Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe generate request requires the user credentials in one of the following formats:\n  * Basic authentication\n  * Client certificate\n\n**Response:**\n\nThe response is a plain text body`.\n",
                 "operationId": "accessTokenGeneratePOST",
@@ -308,7 +312,7 @@
         },
         "/auth/access-token/validate": {
             "post": {
-                "tags": ["Security"],
+                "tags": ["Access token"],
                 "summary": "Validate personal access token.",
                 "description": "Use the `/access-token/validate` API to verify that personal access token is valid. \n\n**Response:**\n\nThe response is a plain text body`.\n",
                 "operationId": "accessTokenValidatePOST",
@@ -322,6 +326,212 @@
                     },
                     "description": "Specifies the personal access token and service ID for validation."
                 },
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/access-token/revoke": {
+            "delete": {
+                "tags": ["Access token"],
+                "summary": "Invalidate personal access token.",
+                "description": "Use the `/access-token/revoke` API to invalidate a specific personal access token. \n\n**Response:**\n\nThe response is no content`.\n",
+                "operationId": "accessTokenInvalidateDELETE",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "token": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "description": "Specifies the personal access token."
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/access-token/revoke/tokens": {
+            "delete": {
+                "tags": ["Access token"],
+                "summary": "Invalidate multiple personal access tokens.",
+                "description": "Use the `/access-token/revoke/token` API to invalidate multiple personal access tokens issued for your user ID. \n\n**Response:**\n\nThe response is no content`.\n",
+                "operationId": "accessTokensInvalidateDELETE",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "timestamp": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "description": "Specifies the time until which the tokens will remain invalid."
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/access-token/revoke/tokens/user": {
+            "delete": {
+                "tags": ["Access token"],
+                "summary": "Invalidate personal access tokens by user ID.",
+                "description": "Use the `/access-token/revoke/token/user` API to invalidate multiple personal access tokens issued for a user ID. \n\n**Response:**\n\nThe response is no content`.\n",
+                "operationId": "accessTokensInvalidateAdminDELETE",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "string"
+                                    },
+                                    "timestamp": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "description": "Specifies the user ID and time until which the tokens will remain invalid."
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/access-token/revoke/tokens/scope": {
+            "delete": {
+                "tags": ["Access token"],
+                "summary": "Invalidate multiple personal access tokens by service ID.",
+                "description": "Use the `/access-token/revoke/token/scope` API to invalidate multiple personal access tokens issued for service ID. \n\n**Response:**\n\nThe response is no content`.\n",
+                "operationId": "accessTokensInvalidateAdminScopeDELETE",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "serviceId": {
+                                        "type": "string"
+                                    },
+                                    "timestamp": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "description": "Specifies the service ID and time until which the tokens will remain invalid."
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/access-token/evict": {
+            "delete": {
+                "tags": ["Access token"],
+                "summary": "Remove invalidated tokens and rules which are not relevant anymore.",
+                "description": "Will evict all the invalidated tokens which are not relevant anymore \n\n**Response:**\n\nThe response is no content`.\n",
+                "operationId": "accessTokensInvalidateAdminScopeDELETE",
                 "responses": {
                     "204": {
                         "description": "No content"
