@@ -129,6 +129,12 @@ public class RouteLocator implements RouteDefinitionLocator {
             serviceRelated.add(forwardClientCertFilter);
         }
 
+        FilterDefinition pageRedirectionFilter = new FilterDefinition();
+        pageRedirectionFilter.setName("PageRedirectionFilterFactory");
+        pageRedirectionFilter.addArg("serviceId", serviceInstance.getServiceId());
+        pageRedirectionFilter.addArg("instanceId", serviceInstance.getInstanceId());
+        serviceRelated.add(pageRedirectionFilter);
+
         return join(commonFilters, serviceRelated);
     }
 
