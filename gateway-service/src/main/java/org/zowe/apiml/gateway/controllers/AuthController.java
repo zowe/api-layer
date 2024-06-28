@@ -29,14 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurity;
 import org.zowe.apiml.gateway.security.service.token.OIDCTokenProvider;
@@ -53,15 +46,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
@@ -127,7 +114,7 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(body.get(TOKEN_KEY));
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
@@ -195,7 +182,7 @@ public class AuthController {
         String serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
             !tokenProvider.isInvalidated(token)) {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
