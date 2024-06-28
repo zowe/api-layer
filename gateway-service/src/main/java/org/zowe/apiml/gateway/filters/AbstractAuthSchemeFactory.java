@@ -84,7 +84,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  *     return new MyResponse();
  *   }
  *   @Override protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, Object data) {
- *     String url = String.format("%s://%s:%d/%s/zaas/myScheme", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+ *     String url = String.format("%s://%s:%d/%s/scheme/myScheme", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
  *     return webClient.post().uri(url);
  *   }
  *

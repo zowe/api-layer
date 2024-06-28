@@ -57,7 +57,7 @@ class ZaasTest {
         given()
             .cookie(COOKIE, zosmfJwt)
         .when()
-            .post(String.format("https://%s:%d/zaas/zaas/zoweJwt", hostname, port))
+            .post(String.format("https://%s:%d/zaas/scheme/zoweJwt", hostname, port))
         .then()
             .statusCode(SC_SERVICE_UNAVAILABLE);
         //@formatter:on
