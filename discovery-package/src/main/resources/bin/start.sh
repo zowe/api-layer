@@ -173,7 +173,16 @@ fi
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  keystore_type=
+  keystore_pass=
+  key_pass=
+  key_alias=
+  keystore_location=
+fi
+
 DISCOVERY_CODE=AD
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
