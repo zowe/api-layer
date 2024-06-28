@@ -116,6 +116,9 @@ public class NewSecurityConfiguration {
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
+    @Value("${apiml.gateway.health.protected:false}")
+    private boolean isHealthEndpointProtected;
+
     /**
      * Login and Logout endpoints
      * <p>
@@ -513,7 +516,6 @@ public class NewSecurityConfiguration {
                         .antMatchers(ValidateAPIController.VALIDATE_CONFORMANCE_URL + "/**")
                         .antMatchers(ValidateAPIController.LEGACY_CONFORMANCE_URL))
                 ).authorizeRequests(requests -> requests
-                        .antMatchers("/application/health").permitAll()
                         .anyRequest().authenticated())
                         .logout(logout -> logout.disable());  // logout filter in this chain not needed
 
@@ -609,7 +611,6 @@ public class NewSecurityConfiguration {
 
                 return web -> {
                     web.httpFirewall(firewall);
-
                     // Endpoints that skip Spring Security completely
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
                     web.ignoring()
@@ -620,6 +621,9 @@ public class NewSecurityConfiguration {
 
                     if (isMetricsEnabled) {
                         web.ignoring().antMatchers("/application/hystrixstream");
+                    }
+                    if (!isHealthEndpointProtected) {
+                        web.ignoring().antMatchers("/application/health");
                     }
                 };
             }
