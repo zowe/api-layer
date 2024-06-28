@@ -299,7 +299,7 @@ public class NewSecurityConfiguration {
             @Bean
             public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
-                        "/zaas/**"
+                        "/zaas/scheme/**"
                 )))
                         .authorizeHttpRequests(requests -> requests
                                 .anyRequest().authenticated())
