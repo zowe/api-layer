@@ -11,8 +11,7 @@
 package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
@@ -78,6 +77,22 @@ class GatewayAuthenticationTest {
                         "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    class GivenHealthEndpointProtectionDisabled {
+
+        @Test
+        @DisplayName("This test needs to run against Gateway service instance that has application/health endpoint authentication disabled.")
+        void thenDoNotRequireAuthentication() {
+            String healthEndpoint = "/application/health";
+            given()
+                .when()
+                .get(HttpRequestUtils.getUriFromGateway(healthEndpoint))
+                .then()
+                .statusCode(is(SC_OK));
         }
     }
 }
