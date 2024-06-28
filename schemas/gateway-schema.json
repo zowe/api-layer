@@ -270,23 +270,28 @@
                                                     "properties": {
                                                         "maxIdleTimeout": {
                                                             "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default idle timeout for its client role.",
+                                                            "description": "The gateway acts as a server and client. This parameter customizes the default idle timeout for its client role.",
                                                             "default": 3600000
                                                         },
                                                         "connectTimeout": {
                                                             "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default connect timeout for its client role.",
-                                                            "default": 15000
+                                                            "description": "The gateway acts as a server and client. This parameter customizes the default connect timeout for its client role.",
+                                                            "default": 45000
                                                         },
                                                         "stopTimeout": {
                                                             "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default stop timeout for its client role.",
+                                                            "description": "The gateway acts as a server and client. This parameter customizes the default stop timeout for its client role.",
                                                             "default": 30000
                                                         },
                                                         "asyncWriteTimeout": {
                                                             "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default async write timeout for its client role.",
+                                                            "description": "The gateway acts as a server and client. This parameter customizes the default async write timeout for its client role.",
                                                             "default": 60000
+                                                        },
+                                                        "requestBufferSize": {
+                                                            "type": "integer",
+                                                            "description": "The gateway acts as a server and client. This parameter customizes the default max size of the request",
+                                                            "default": 8192
                                                         }
                                                     }
                                                 },

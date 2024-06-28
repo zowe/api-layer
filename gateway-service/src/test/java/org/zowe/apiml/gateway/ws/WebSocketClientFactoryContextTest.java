@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
         "server.webSocket.connectTimeout=1000",
         "server.webSocket.stopTimeout=500",
         "server.webSocket.asyncWriteTimeout=1500",
+        "server.webSocket.requestBufferSize=9090"
     },
     classes = { WebSocketClientFactory.class }
 )
@@ -60,6 +61,7 @@ public class WebSocketClientFactoryContextTest {
             assertEquals(1000, httpClient.getConnectTimeout());
             assertEquals(500, webSocketClient.getStopTimeout());
             assertEquals(1500, policy.getAsyncWriteTimeout());
+            assertEquals(9090, httpClient.getRequestBufferSize());
         }
 
     }
