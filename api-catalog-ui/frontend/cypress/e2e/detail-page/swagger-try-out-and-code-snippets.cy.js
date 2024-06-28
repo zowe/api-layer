@@ -45,6 +45,8 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
                 cy.contains(test.tile).click();
                 cy.get('#operations-Security-loginUsingPOST .authorization__btn').should('exist');
 
+                cy.get('#operations-Security-loginUsingPOST .authorization__btn').should('exist');
+
                 cy.get('#operations-Security-loginUsingPOST .authorization__btn').eq(0).click();
 
                 cy.get('input[name=username]').type('non-valid');
