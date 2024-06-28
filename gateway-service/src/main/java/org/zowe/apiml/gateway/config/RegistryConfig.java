@@ -39,7 +39,7 @@ public class RegistryConfig {
         @Value("${apiml.service.externalUrl:#{null}}") String externalUrl,
         @Value("${server.attls.enabled:false}") boolean attlsEnabled,
         @Value("${server.ssl.enabled:true}") boolean sslEnabled,
-        @Value("${server.hostname:localhost}") String hostname,
+        @Value("${apiml.service.hostname:localhost}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
         if (externalUrl != null) {
