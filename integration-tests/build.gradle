@@ -46,6 +46,7 @@ dependencies {
     testImplementation(libraries.jackson_databind)
     testImplementation libraries.jackson_dataformat_yaml
     testImplementation libraries.javax_servlet_api
+    testImplementation libraries.json_smart
     testImplementation libraries.nimbusJoseJwt
     runtimeOnly libraries.jjwt_impl
     runtimeOnly libraries.jjwt_jackson
