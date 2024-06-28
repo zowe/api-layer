@@ -196,12 +196,12 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
   keystore_location=
 fi
 
-
 # NOTE: these are moved from below
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.service.preferIpAddress=false \
 
 CATALOG_CODE=AC
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \

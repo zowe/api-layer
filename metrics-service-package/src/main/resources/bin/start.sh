@@ -146,6 +146,7 @@ if [ $JAVA_VERSION -ge 61 ]; then
 fi
 
 METRICS_CODE=MS
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
    ${QUICK_START} \
