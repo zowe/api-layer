@@ -68,7 +68,6 @@ class PageRedirectionTest implements TestWithStartedInstances {
      */
     @Test
     @TestsNotMeantForZowe
-    //@Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
     void apiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, DISCOVERABLE_GREET);
         String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_GREET);
@@ -90,7 +89,6 @@ class PageRedirectionTest implements TestWithStartedInstances {
      */
     @Test
     @TestsNotMeantForZowe
-   // @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
     void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
@@ -113,7 +111,6 @@ class PageRedirectionTest implements TestWithStartedInstances {
      */
     @Test
     @TestsNotMeantForZowe
-  //  @Disabled("Probably depending on Zuul / Ribbon. Needs to be migrated to SCGW")
     void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_UI);
