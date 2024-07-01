@@ -88,13 +88,11 @@ public class HttpConfig {
     @Value("${server.maxTotalConnections:#{100}}")
     private Integer maxTotalConnections;
 
-    @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
+    @Value("${apiml.connection.idleConnectionTimeoutSeconds:#{5}}")
     private int idleConnTimeoutSeconds;
-    @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
+    @Value("${apiml.connection.timeout:#{10000}}")
     private int requestConnectionTimeout;
-    @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
-    private int readTimeout;
-    @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
+    @Value("${apiml.connection.timeToLive:#{10000}}")
     private int timeToLive;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);

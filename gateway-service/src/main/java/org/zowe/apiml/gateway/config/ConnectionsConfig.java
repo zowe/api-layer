@@ -125,11 +125,8 @@ public class ConnectionsConfig {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
-    @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
+    @Value("${apiml.connection.idleConnectionTimeoutSeconds:#{5}}")
     private int idleConnTimeoutSeconds;
-
-    @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
-    private int requestConnectionTimeout;
 
     @Value("${apiml.connection.timeout:60000}")
     private int requestTimeout;
@@ -166,7 +163,7 @@ public class ConnectionsConfig {
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-            .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
+            .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestTimeout)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)
             .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();

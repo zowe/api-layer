@@ -61,11 +61,13 @@ springdoc:
 apiml:
     catalog:
         serviceId: apicatalog
-    connection:
-        timeout: 60000
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    connection:
+        timeout: 60000
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
     service:
         apimlId: apiml1
         corsEnabled: true
@@ -83,9 +85,6 @@ apiml:
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
-    httpclient:
-        conn-pool:
-            requestConnectionTimeout: ${apiml.connection.timeout}
 
 server:
     http2:

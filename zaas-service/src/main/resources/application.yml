@@ -35,12 +35,10 @@ apiml:
         scheme: https  # "https" or "http"
         preferIpAddress: false
 
-    httpclient:
-        conn-pool:
-            requestConnectionTimeout: ${apiml.connection.timeout}
-
     connection:
         timeout: 30000 # Timeout for connection to the services
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
     zaas:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
