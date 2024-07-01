@@ -9,7 +9,7 @@ dependencies {
     testImplementation libs.hamcrest
     testImplementation libs.logback.classic
     testImplementation libs.mockito.core
-    testImplementation libs.spring4.test
+    testImplementation libs.spring.test
 
     testImplementation libs.jakarta.servlet.api
 
