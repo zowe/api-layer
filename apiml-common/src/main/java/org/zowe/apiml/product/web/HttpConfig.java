@@ -90,9 +90,9 @@ public class HttpConfig {
 
     @Value("${apiml.connection.idleConnectionTimeoutSeconds:#{5}}")
     private int idleConnTimeoutSeconds;
-    @Value("${apiml.connection.timeout:#{10000}}")
+    @Value("${apiml.connection.timeout:#{60000}}")
     private int requestConnectionTimeout;
-    @Value("${apiml.connection.timeToLive:#{10000}}")
+    @Value("${apiml.connection.timeToLive:#{60000}}")
     private int timeToLive;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);

@@ -80,6 +80,7 @@ import java.util.Map;
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
 
+//TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
 @Slf4j
 public class ConnectionsConfig {
