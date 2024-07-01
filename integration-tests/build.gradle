@@ -151,7 +151,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'ChaoticHATest',
             'NotAttlsTest',
             'OktaOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'HealthEndpointProtectionDisabledTest'
         )
 
     }
@@ -257,7 +258,8 @@ task runCITests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OktaOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'HealthEndpointProtectionDisabledTest'
         )
     }
 }
@@ -290,7 +292,8 @@ task runContainerTests(type: Test) {
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
-            'ZaasTest'
+            'ZaasTest',
+            'HealthEndpointProtectionDisabledTest'
         )
     }
 }
@@ -326,7 +329,8 @@ task runBaseTests(type: Test) {
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'HealthEndpointProtectionDisabledTest'
         )
     }
 }
@@ -440,7 +444,8 @@ task runZaasTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'ZaasTest'
+            'ZaasTest',
+            'HealthEndpointProtectionDisabledTest'
         )
     }
 }

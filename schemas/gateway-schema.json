@@ -51,6 +51,23 @@
                                                             "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
                                                             "default": false
                                                         },
+                                                        "gateway": {
+                                                            "type": "object",
+                                                            "description": "General properties related to the gateway service",
+                                                            "properties": {
+                                                                "health": {
+                                                                    "type": "object",
+                                                                    "description": "Spring actuator health endpoint configuration",
+                                                                    "properties": {
+                                                                        "protected": {
+                                                                            "type": "boolean",
+                                                                            "description": "Boolean value which tells whether application/health endpoint is accessible only for authenticated users.",
+                                                                            "default": false
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
                                                         "auth": {
                                                             "type": "object",
                                                             "description": "Authentication against API ML.",
