@@ -61,7 +61,8 @@
             "react": "$react",
             "react": "$react-dom",
             "react-redux": "^8"
-        }
+        },
+        "@babel/traverse": "7.24.7"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
