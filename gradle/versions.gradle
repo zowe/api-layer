@@ -202,6 +202,9 @@ dependencyResolutionManagement {
             library('spring_security_core', 'org.springframework.security', 'spring-security-core').versionRef('springSecurity')
             library('spring_security_crypto', 'org.springframework.security', 'spring-security-crypto').versionRef('springSecurity')
             library('spring_security_web', 'org.springframework.security', 'spring-security-web').versionRef('springSecurity')
+            library('spring_security_oauth_client', 'org.springframework.security', 'spring-security-oauth2-client').versionRef('springSecurity')
+            library('spring_security_oauth_core', 'org.springframework.security', 'spring-security-oauth2-core').versionRef('springSecurity')
+            library('spring_security_oauth_jose', 'org.springframework.security', 'spring-security-oauth2-jose').versionRef('springSecurity')
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetry')
             library('spring_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('springWebTestClient')
