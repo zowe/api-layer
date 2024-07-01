@@ -61,7 +61,7 @@
                                                                     "properties": {
                                                                         "protected": {
                                                                             "type": "boolean",
-                                                                            "description": "Boolean value which tels whether application/health endpoint is accessible only for authenticated users.",
+                                                                            "description": "Boolean value which tells whether application/health endpoint is accessible only for authenticated users.",
                                                                             "default": false
                                                                         }
                                                                     }
