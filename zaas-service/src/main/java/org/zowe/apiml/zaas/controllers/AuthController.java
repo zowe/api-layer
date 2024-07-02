@@ -104,17 +104,17 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
-    public ResponseEntity<String> revokeAccessToken(@RequestBody() Map<String, String> body) throws IOException {
+    public ResponseEntity<Void> revokeAccessToken(@RequestBody() Map<String, String> body) throws IOException {
         if (tokenProvider.isInvalidated(body.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(body.get(TOKEN_KEY));
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
-    public ResponseEntity<String> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
+    public ResponseEntity<Void> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -131,7 +131,7 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
     @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
-    public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+    public ResponseEntity<Void> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
         if (userId == null) {
@@ -146,7 +146,7 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
     @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
-    public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+    public ResponseEntity<Void> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
         if (serviceId == null) {
@@ -162,19 +162,19 @@ public class AuthController {
         description = "Will evict all the invalidated tokens which are not relevant anymore")
     @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE',#root)")
-    public ResponseEntity<String> evictNonRelevantTokensAndRules() {
+    public ResponseEntity<Void> evictNonRelevantTokensAndRules() {
         tokenProvider.evictNonRelevantTokensAndRules();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
-    public ResponseEntity<String> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
+    public ResponseEntity<Void> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
             !tokenProvider.isInvalidated(token)) {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
