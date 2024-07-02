@@ -11,9 +11,9 @@
 package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -30,7 +30,6 @@ class GatewayAuthenticationTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private static final String ACTUATOR_ENDPOINT = "/application";
 
     @BeforeEach
     void setUp() {
@@ -42,14 +41,16 @@ class GatewayAuthenticationTest {
     class GivenBearerAuthentication {
         @Nested
         class WhenAccessingProtectedEndpoint {
-            @Test
-            void thenAuthenticate() {
+
+            @ParameterizedTest
+            @ValueSource(strings = {"/application", "/application/health"})
+            void thenAuthenticate(String endpoint) {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
                 // Gateway request to url
                 given()
                     .header("Authorization", "Bearer " + token)
                     .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ACTUATOR_ENDPOINT))
+                    .get(HttpRequestUtils.getUriFromGateway(endpoint))
                     .then()
                     .statusCode(is(SC_OK));
             }
@@ -60,20 +61,38 @@ class GatewayAuthenticationTest {
     class GivenInvalidBearerAuthentication {
         @Nested
         class WhenAccessingProtectedEndpoint {
-            @Test
-            void thenReturnUnauthorized() {
-                String expectedMessage = "Token is not valid for URL '" + ACTUATOR_ENDPOINT + "'";
+
+            @ParameterizedTest
+            @ValueSource(strings = {"/application", "/application/health"})
+            void thenReturnUnauthorized(String endpoint) {
+                String expectedMessage = "Token is not valid for URL '" + endpoint + "'";
                 // Gateway request to url
                 given()
                     .header("Authorization", "Bearer invalidToken")
                     .when()
-                    .get(HttpRequestUtils.getUriFromGateway(ACTUATOR_ENDPOINT))
+                    .get(HttpRequestUtils.getUriFromGateway(endpoint))
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
-                 .body(
-                    "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-                );
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                    );
             }
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    class GivenHealthEndpointProtectionDisabled {
+
+        @Test
+        @DisplayName("This test needs to run against Gateway service instance that has application/health endpoint authentication disabled.")
+        void thenDoNotRequireAuthentication() {
+            String healthEndpoint = "/application/health";
+            given()
+                .when()
+                .get(HttpRequestUtils.getUriFromGateway(healthEndpoint))
+                .then()
+                .statusCode(is(SC_OK));
         }
     }
 }

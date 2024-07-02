@@ -33,7 +33,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
     private final Providers loginProviders;
     private String apiCatalogServiceId;
-    
+
     private final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class,
             YamlMessageServiceInstance.getInstance());
     boolean startedInformationPublished = false;

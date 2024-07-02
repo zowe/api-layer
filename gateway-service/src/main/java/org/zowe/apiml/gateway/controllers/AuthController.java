@@ -114,7 +114,7 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         tokenProvider.invalidateToken(body.get(TOKEN_KEY));
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)

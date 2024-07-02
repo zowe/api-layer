@@ -182,10 +182,11 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
   keystore_location=
 fi
 
-
 CACHING_CODE=CS
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
+  -XX:+ExitOnOutOfMemoryError \
   ${QUICK_START} \
   ${ADD_OPENS} \
   -Dibm.serversocket.recover=true \

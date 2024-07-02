@@ -12,7 +12,7 @@
         "api-layer-thin": "concurrently --names \"GW,DS,AC,DC,ZO,CS\" -c cyan,yellow,white,blue,green npm:gateway-service-thin npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client npm:mock-services npm:caching-service",
         "api-layer-without-gateway": "concurrently --names \"DS,AC,DC\" -c yellow,white,blue npm:discovery-service npm:api-catalog-service npm:discoverable-client",
         "api-layer-without-discovery": "concurrently --names \"GW,AC,DC\" -c cyan,white,blue npm:gateway-service npm:api-catalog-service npm:discoverable-client",
-        "api-layer-without-catalog": "concurrently --names \"GW,DS,DC\" -c cyan,yellow,blue npm:gateway-service npm:discovery-service npm:discoverable-client",
+        "api-layer-without-catalog": "concurrently --names \"GW,DS,DC,ZO\" -c cyan,yellow,blue npm:gateway-service npm:discovery-service npm:discoverable-client npm:mock-services",
         "caching-service": "java -jar caching-service/build/libs/caching-service.jar",
         "metrics-service": "java -jar metrics-service/build/libs/metrics-service.jar",
         "metrics-service-thin": "java -Dloader.path=build/libs/api-layer-lite-lib-all.jar -jar metrics-service/build/libs/metrics-service-lite.jar",
