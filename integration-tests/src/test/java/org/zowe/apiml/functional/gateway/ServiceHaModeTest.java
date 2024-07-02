@@ -56,7 +56,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 @TestsNotMeantForZowe
 @GatewayTest
-//@Disabled("May be returned once ZUUL is fixed")
+@Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
 class ServiceHaModeTest implements TestWithStartedInstances {
 
     private static final int TIMEOUT = 30;
