@@ -80,7 +80,8 @@
     "@zowe/imperative": "5.9.1"
   },
   "overrides": {
-    "ip": "2.0.1"
+    "ip": "2.0.1",
+    "@babel/traverse": "7.24.7"
   },
   "jest": {
     "modulePathIgnorePatterns": [
