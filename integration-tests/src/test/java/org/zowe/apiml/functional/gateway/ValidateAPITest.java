@@ -34,7 +34,6 @@ import static io.restassured.RestAssured.given;
  * The controller receive the response from the service and then will post response.
  */
 @GatewayTest
-@Disabled("wip")
 class ValidateAPITest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -91,6 +90,7 @@ class ValidateAPITest implements TestWithStartedInstances {
 
     @Test
     @TestsNotMeantForZowe
+    @Disabled("skipping as its WIP in anothe PR")
     void testGetEndpointWithNoAuthentication() {
         given()
             .log().all()
@@ -104,6 +104,7 @@ class ValidateAPITest implements TestWithStartedInstances {
 
     @Test
     @TestsNotMeantForZowe
+    @Disabled("skipping as its WIP in anothe PR")
     void testLegacyEndpointWithNoAuthentication() {
         given()
             .log().all()

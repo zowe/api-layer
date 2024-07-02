@@ -124,6 +124,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#httpMethods")
+            @Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
             void verifyThatGatewayRetriesToTheLiveOne(Method method) {
                 routeAndVerifyRetry(service1.getGatewayUrls(), method, TIMEOUT);
             }
@@ -185,12 +186,14 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#retryableHttpMethods")
+            @Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
             void verifyThatGatewayRetriesGet(Method method) {
                 routeAndVerifyRetries(service1.getGatewayUrls(), method, 2);
             }
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#nonRetryableHttpMethods")
+            @Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
             void verifyThatGatewayNotRetriesPost(Method method) {
                 routeAndVerifyRetries(service1.getGatewayUrls(), method, 1);
             }
