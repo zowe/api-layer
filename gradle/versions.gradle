@@ -138,7 +138,6 @@ dependencyResolutionManagement {
 
             library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
-            library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonCore')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
@@ -188,6 +187,8 @@ dependencyResolutionManagement {
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
+
+            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock' ])
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
