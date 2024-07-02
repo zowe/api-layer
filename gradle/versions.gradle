@@ -81,7 +81,7 @@ dependencyResolutionManagement {
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
-            version('micronaut', '4.5.3')
+            version('micronaut', '4.5.0')
             version('micronautPlugin', '4.4.0')
             version('shadow', '8.1.1')
             version('checkstyle', '10.17.0')
