@@ -27,7 +27,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         {
             tile: 'API Gateway',
             id: 'gateway',
-            selectOp: '#operations-Security-RefreshTokenUsingPOST',
+            selectOp: '#operations-Diagnostic-VersionInfoUsingGET',
             auth: true,
         }
     ].forEach((test) => {
@@ -43,9 +43,9 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             if (test.auth) {
                 cy.log(`Visiting ${test.tile}, ${test.id}`);
                 cy.contains(test.tile).click();
-                cy.get('.authorization__btn').should('exist');
+                cy.get('#operations-Security-loginUsingPOST .authorization__btn').should('exist');
 
-                cy.get('.authorization__btn').eq(0).click();
+                cy.get('#operations-Security-loginUsingPOST .authorization__btn').eq(0).click();
 
                 cy.get('input[name=username]').type('non-valid');
                 cy.get('input[name=password]').type('non-valid');
@@ -54,7 +54,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
 
                 cy.get('.close-modal').click();
 
-                cy.get('.opblock-summary').eq(0).click();
+                cy.get('#operations-Security-loginUsingPOST .opblock-summary').eq(0).click();
 
                 cy.get('.try-out').click();
 
@@ -68,7 +68,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
             cy.contains(test.tile).click();
             cy.get('.opblock-control-arrow').eq(1).click();
-            cy.get('.try-out').should('exist');
+            cy.get(`${test.selectOp} .opblock-control-arrow`).eq(0).click();
             cy.get('.try-out').click();
 
             cy.get('button.execute').click();
