@@ -29,7 +29,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             id: 'gateway',
             selectOp: '#operations-Diagnostic-VersionInfoUsingGET',
             auth: true,
-        }
+        },
     ].forEach((test) => {
         it('Should contain try-out button', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
@@ -69,6 +69,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             cy.contains(test.tile).click();
             cy.get('.opblock-control-arrow').eq(1).click();
             cy.get(`${test.selectOp} .opblock-control-arrow`).eq(0).click();
+            cy.get('.try-out').should('exist');
             cy.get('.try-out').click();
 
             cy.get('button.execute').click();
