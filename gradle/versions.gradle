@@ -6,7 +6,7 @@ dependencyResolutionManagement {
             version('projectNpm', '9.3.1')
 
             version('springBoot', '3.2.7')
-            version('springCloudNetflix', '6.1.10')
+            version('springCloudNetflix', '4.1.2')
             version('springCloudCommons', '4.1.3')
             version('springCloudCB', '3.1.1')
             version('springCloudGateway', '4.1.4')
@@ -190,13 +190,13 @@ dependencyResolutionManagement {
             library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')
             library('spring_doc_webflux', 'org.springdoc', 'springdoc-openapi-starter-webflux-api').versionRef('springDoc')
             library('spring_mock_mvc', 'io.rest-assured', 'spring-mock-mvc').versionRef('restAssured')
+            library('swagger2_parser', 'io.swagger', 'swagger-parser').versionRef('swagger2Parser')
+            library('swagger3_parser', 'io.swagger.parser.v3', 'swagger-parser-v3').versionRef('swagger3Parser')
             library('swagger_inflector', 'io.swagger', 'swagger-inflector').versionRef('swaggerInflector')
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
-
-            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling' ])
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
@@ -234,6 +234,7 @@ dependencyResolutionManagement {
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
 
 
+            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling' ])
             bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
 
         }
