@@ -68,6 +68,9 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
+
     @Bean
     public WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
@@ -75,12 +78,15 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/js/**",
             "/eureka/fonts/**",
             "/eureka/images/**",
-            "/application/health",
             "/application/info",
             "/favicon.ico"
         };
         return web -> {
             web.ignoring().antMatchers(noSecurityAntMatchers);
+
+            if (!isHealthEndpointProtected) {
+                web.ignoring().antMatchers("/application/health");
+            }
 
             if (isMetricsEnabled) {
                 web.ignoring().antMatchers("/application/hystrixstream");

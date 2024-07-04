@@ -65,6 +65,9 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
@@ -123,14 +126,21 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http)
-            .httpBasic().realmName(DISCOVERY_REALM)
-            .and()
-            .authorizeRequests()
-            .antMatchers("/application/info", "/application/health").permitAll()
-            .antMatchers("/**").authenticated();
+                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
+                .authorizeRequests(requests -> requests
+                        .antMatchers("/application/info").permitAll()
+                        .antMatchers("/**").authenticated());
+
+        if (isHealthEndpointProtected) {
+            http.authorizeRequests(requests -> requests
+                .antMatchers("/application/health").authenticated());
+        } else {
+            http.authorizeRequests(requests -> requests
+                .antMatchers("/application/health").permitAll());
+        }
 
         if (isMetricsEnabled) {
-            http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
+            http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

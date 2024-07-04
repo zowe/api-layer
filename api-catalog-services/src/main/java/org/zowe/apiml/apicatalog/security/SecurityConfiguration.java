@@ -71,13 +71,18 @@ public class SecurityConfiguration {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private final CertificateValidator certificateValidator;
+
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
+
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
+
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
@@ -156,9 +161,18 @@ public class SecurityConfiguration {
                             .antMatchers("/static-api/**").authenticated()
                             .antMatchers("/containers/**").authenticated()
                             .antMatchers(APIDOC_ROUTES).authenticated()
-                            .antMatchers("/application/health", "/application/info").permitAll())
+                            .antMatchers("/application/info").permitAll())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider);
+
+
+            if (isHealthEndpointProtected) {
+                http.authorizeRequests(requests -> requests
+                    .antMatchers("/application/health").authenticated());
+            } else {
+                http.authorizeRequests(requests -> requests
+                    .antMatchers("/application/health").permitAll());
+            }
 
             if (isMetricsEnabled) {
                 http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
