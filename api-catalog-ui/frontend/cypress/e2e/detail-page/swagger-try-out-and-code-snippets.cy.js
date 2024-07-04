@@ -72,7 +72,8 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             cy.get('.try-out__btn').should('exist');
             cy.get('.try-out__btn').eq(0).click();
 
-            cy.get('button.execute').click();
+            cy.get('.execute').should('exist');
+            cy.get('.execute').click();
 
             // Snippet open/collaptse element exists
             cy.get('.request-snippets > div:nth-child(1) > button:nth-child(2)').should('exist');
