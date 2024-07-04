@@ -29,6 +29,12 @@ spring:
     profiles.group:
         dev: diag
 
+    graphql:
+        graphiql:
+            enabled: true
+        path:  "api/v1/graphql"
+
+
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -212,3 +218,5 @@ apiml:
 server:
     ssl:
         enabled: false
+
+

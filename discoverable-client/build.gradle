@@ -69,6 +69,7 @@ dependencies {
     api project(':zaas-client')
     api project(':apiml-tomcat-common')
 
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-graphql', version: '3.2.7'
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.webflux
