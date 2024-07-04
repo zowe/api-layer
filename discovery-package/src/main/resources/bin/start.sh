@@ -183,7 +183,9 @@ if [ $JAVA_VERSION -ge 61 ]; then
     fi
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+# Disable Java keyring loading for ICSF hardware private key storage.
+# Only z/OSMF JWT authentication provider is supported with this type of keyrings.
+if [ "${ATTLS_ENABLED}" = "true" -a "${ZWE_zowe_certificate_keystore_icsfHwKey:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=

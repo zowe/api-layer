@@ -107,14 +107,15 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+# Disable Java keyring loading for ICSF hardware private key storage.
+# Only z/OSMF JWT authentication provider is supported with this type of keyrings.
+if [ "${ATTLS_ENABLED}" = "true" -a "${ZWE_zowe_certificate_keystore_icsfHwKey:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
   key_alias=
   keystore_location=
 fi
-
 
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
