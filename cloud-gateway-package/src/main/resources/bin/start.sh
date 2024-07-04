@@ -127,8 +127,10 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
 fi
 
 CLOUD_GATEWAY_CODE=CG
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
+    -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
     -Dibm.serversocket.recover=true \
