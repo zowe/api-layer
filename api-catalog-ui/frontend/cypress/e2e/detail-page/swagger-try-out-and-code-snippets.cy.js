@@ -67,6 +67,9 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         it('Should execute request and display basic code snippets', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
             cy.contains(test.tile).click();
+
+            cy.viewport(1400, 980);
+
             cy.get('.opblock-control-arrow').eq(1).click();
             cy.get(`${test.selectOp} .opblock-control-arrow`).eq(0).click();
             cy.get('.try-out__btn').should('exist');
