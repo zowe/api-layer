@@ -160,6 +160,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_service_forwardClientCertEnabled:-false} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dapiml.cloudGateway.registry.enabled=${ZWE_configs_cloudGateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \

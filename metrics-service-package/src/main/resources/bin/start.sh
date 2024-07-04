@@ -156,6 +156,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.include=$LOG_LEVEL \
+  -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
   -Dapiml.service.port=${ZWE_configs_port:-7551} \
   -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
