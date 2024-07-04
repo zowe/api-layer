@@ -69,17 +69,19 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
             cy.contains(test.tile).click();
             cy.get('.opblock-control-arrow').eq(1).click();
             cy.get(`${test.selectOp} .opblock-control-arrow`).eq(0).click();
-            cy.get('.try-out').should('exist');
-            cy.get('.try-out').click();
+            cy.get('.try-out__btn').should('exist');
+            cy.get('.try-out__btn').eq(0).click();
 
             cy.get('button.execute').click();
-            cy.get(
-                `${test.selectOp} > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div:nth-child(1)`
-            ).should('exist');
-            cy.get('div.curl-command > div:nth-child(1) > div:nth-child(1) > h4').should('contain', 'cURL (CMD)');
-            cy.get(
-                `${test.selectOp} > div.no-margin > div > div.responses-wrapper > div.responses-inner > div > div > div:nth-child(1) > div.curl-command > div:nth-child(3) > pre`
-            ).should('exist');
+
+            // Snippet open/collaptse element exists
+            cy.get('.request-snippets > div:nth-child(1) > button:nth-child(2)').should('exist');
+
+            // cURL snippet tab exists
+            cy.get('div.btn:nth-child(1) > h4:nth-child(1)').should('contain', 'cURL (CMD)');
+
+            // cURL snippet box exists
+            cy.get('.curl').should('exist');
             cy.get('div.curl-command > div:nth-child(1) > div:nth-child(2)').click();
             cy.get('div.curl-command > div:nth-child(3) > pre').should('exist');
         });
