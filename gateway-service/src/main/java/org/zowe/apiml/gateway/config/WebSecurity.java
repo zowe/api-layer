@@ -334,6 +334,22 @@ public class WebSecurity {
     }
 
     @Bean
+    @Order(2)
+    public SecurityWebFilterChain securityWebFilterChainForActuator(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+        return defaultSecurityConfig(http)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                "application/**"
+            ))
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec
+                    .anyExchange().authenticated()
+            )
+            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+    }
+
+    @Bean
     @Primary
     ReactiveUserDetailsService userDetailsService() {
 

@@ -12,7 +12,6 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
@@ -58,7 +57,6 @@ class GatewayAuthenticationTest {
     }
 
     @Nested
-    @Disabled("// FIXME response is 401 but empty, possibly missing exception handler")
     class GivenInvalidBearerAuthentication {
         @Nested
         class WhenAccessingProtectedEndpoint {

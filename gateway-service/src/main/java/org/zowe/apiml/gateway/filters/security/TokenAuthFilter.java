@@ -12,19 +12,22 @@ package org.zowe.apiml.gateway.filters.security;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
@@ -38,18 +41,30 @@ public class TokenAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        Mono<Void> response = chain.filter(exchange);
-        return resolveToken(exchange.getRequest())
-            .filter(token -> StringUtils.isNotBlank(token))
-            .map(token -> this.tokenProvider.validateToken(token)
-                .filter(resp -> StringUtils.isNotBlank(resp.getUserId()))
-                .flatMap(resp -> {
-                    Authentication authentication = createAuthenticated(resp.getUserId(), token);
-                    return response.contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
-                })
-            ).orElse(response);
+
+        var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);
+        return token.map(jwt -> tokenProvider
+            .validateToken(jwt)
+            .flatMap(newToken -> {
+                if (StringUtils.isNotBlank(newToken.getUserId())) {
+                    var authentication = createAuthenticated(newToken.getUserId(), jwt);
+                    return chain.filter(exchange).contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+                }
+              // return chain.filter(exchange);
+                return Mono.error(new TokenNotValidException("token not valid"));
+            })
+   //     ).orElseGet(() -> chain.filter(exchange));
+        ).orElseGet(() ->Mono.error(new TokenNotValidException("Invalid token: Token is blank or missing")))
+            .onErrorResume(TokenNotValidException.class, ex -> unauthorizedResponse(exchange, ex.getMessage()));
     }
 
+    private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
+        exchange.getResponse().getHeaders().add("Content-Type", "application/json");
+        return exchange.getResponse().writeWith(Mono.just(buffer));
+    }
     private Optional<String> resolveToken(ServerHttpRequest request) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (StringUtils.startsWith(bearerToken, HEADER_PREFIX)) {
