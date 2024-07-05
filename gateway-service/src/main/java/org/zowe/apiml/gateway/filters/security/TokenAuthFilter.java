@@ -38,19 +38,16 @@ public class TokenAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);
-        return token.map(jwt -> tokenProvider
-            .validateToken(jwt)
-            .flatMap(resp -> {
-                if (StringUtils.isNotBlank(resp.getUserId())) {
-                    Authentication authentication = createAuthenticated(resp.getUserId(), jwt);
-                    return chain.filter(exchange)
-                        .contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
-                }
-              //  return Mono.error(new TokenNotValidException("Null token.")); }
-                return chain.filter(exchange);
-            })
-        ).orElseGet(() -> chain.filter(exchange));
+        Mono<Void> response = chain.filter(exchange);
+        return resolveToken(exchange.getRequest())
+            .filter(token -> StringUtils.isNotBlank(token))
+            .map(token -> this.tokenProvider.validateToken(token)
+                .filter(resp -> StringUtils.isNotBlank(resp.getUserId()))
+                .flatMap(resp -> {
+                    Authentication authentication = createAuthenticated(resp.getUserId(), token);
+                    return response.contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+                })
+            ).orElse(response);
     }
 
     private Optional<String> resolveToken(ServerHttpRequest request) {
