@@ -338,7 +338,8 @@ public class WebSecurity {
     public SecurityWebFilterChain securityWebFilterChainForActuator(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
-                "application/**"
+                "/application",
+                "/application/**"
             ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec

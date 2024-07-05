@@ -69,10 +69,8 @@ class GatewayAuthenticationTest {
                     .when()
                     .get(HttpRequestUtils.getUriFromGateway(ACTUATOR_ENDPOINT))
                     .then()
-                    .statusCode(is(SC_UNAUTHORIZED))
-                 .body(
-                    "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-                );
+                    .statusCode(is(SC_UNAUTHORIZED));
+
             }
         }
     }

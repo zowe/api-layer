@@ -21,6 +21,7 @@ import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import reactor.core.publisher.Mono;
 
+import javax.print.DocFlavor;
 import java.util.Optional;
 
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticatedFromHeader;
@@ -43,7 +44,8 @@ public class BasicAuthFilter implements WebFilter {
     }
 
     private Optional<String> resolveAuth(ServerHttpRequest request) {
-        return Optional.of(request.getHeaders()).map(head -> head.getFirst(HttpHeaders.AUTHORIZATION));
+        return Optional.of(request.getHeaders()).map(head -> head.getFirst(HttpHeaders.AUTHORIZATION))
+            .filter(header -> StringUtils.startsWith(header, "Baisc"));
     }
 
 }
