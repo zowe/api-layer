@@ -83,7 +83,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 public class WebSecurity {
 
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
-    public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry/**";
+    public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
 
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
@@ -319,6 +319,7 @@ public class WebSecurity {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 REGISTRY_PATH,
+                REGISTRY_PATH + "/**",
                 SERVICES_SHORT_URL,
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
