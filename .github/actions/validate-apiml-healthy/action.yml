@@ -35,17 +35,17 @@ runs:
               echo $gwHealth
 
               gatewayUp=$(echo $gwHealth | jq -r '.status')
-              authUp=$(echo $zaasHealth | jq -r '.components.zaas.details.auth')
-              acUp="$(echo $gwHealth | jq -r '.components.gateway.details.apicatalog')"
+              authUp=$(echo $zaasHealth | jq -r '.components.gateway.details.zaas')
+              acUp="$(echo $acHealth | jq -r '.components.gateway.details.apicatalog')"
 
               csUp="DOWN"
-              csHealth="$(echo $zaasHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
+              csHealth="$(echo $zaasHealth | jq -r '[.components.discoveryComposite.components.discoveryClient.details.services[]] | index("cachingservice")')"
               if [ "$csHealth" != "null" ]; then
                   csUp="UP"
               fi
 
               dcUp="DOWN"
-              dcHealth="$(echo $zaasHealth | jq -r '[.components.apimlDiscoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
+              dcHealth="$(echo $zaasHealth | jq -r '[.components.discoveryComposite.components.discoveryClient.details.services[]] | index("discoverableclient")')"
               if [ "$dcHealth" != "null" ]; then
                   dcUp="UP"
               fi
