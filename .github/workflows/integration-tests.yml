@@ -795,6 +795,8 @@ jobs:
             -   uses: ./.github/actions/validate-apiml-healthy
                 with:
                     caching-service: "true"
+                    username: ${{ secrets.USERNAME }}
+                    password: ${{ secrets.PASSWORD }}
 
             -   name: Run Caching Service tests
                 run: >
