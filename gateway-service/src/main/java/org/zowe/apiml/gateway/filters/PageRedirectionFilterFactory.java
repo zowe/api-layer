@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * PageRedirectionFilterFactory is a Spring Cloud Gateway Filter Factory that adapts a response from a routed service
+ * to handle 3xx status codes, and applies the headers to the response object.
+ *
+ */
 @Component
 @Slf4j
 public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<PageRedirectionFilterFactory.Config> {
@@ -45,7 +50,10 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     private TransformService transformService;
 
     // TODO: solve multiple instances, there is not necessary to have multiple
-    public PageRedirectionFilterFactory(EurekaClient eurekaClient, @Qualifier("getEurekaMetadataParser") EurekaMetadataParser metadataParser, GatewayClient gatewayClient) {
+    public PageRedirectionFilterFactory(
+            EurekaClient eurekaClient,
+            @Qualifier("getEurekaMetadataParser") EurekaMetadataParser metadataParser,
+            GatewayClient gatewayClient) {
         super(Config.class);
         this.eurekaClient = eurekaClient;
         this.metadataParser = metadataParser;
@@ -56,8 +64,9 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
         if (location == null) {
             return Optional.empty();
         }
-        return ((List<InstanceInfo>) eurekaClient.getInstancesById(config.instanceId)).stream()
+        return ((List<?>) eurekaClient.getInstancesById(config.instanceId)).stream()
             .findAny()
+            .map(InstanceInfo.class::cast)
             .map(serviceInstance -> {
                 Map<String, String> metadata = serviceInstance.getMetadata();
                 RoutedServices routes = metadataParser.parseRoutes(metadata);
