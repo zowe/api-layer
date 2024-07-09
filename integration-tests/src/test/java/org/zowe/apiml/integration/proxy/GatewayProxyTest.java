@@ -36,7 +36,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @Tag("GatewayProxyTest")
 class GatewayProxyTest {
     private static final int SECOND = 1000;
-    private static final int DEFAULT_TIMEOUT = 2 * SECOND;
+    private static final int DEFAULT_TIMEOUT = 7 * SECOND;
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 

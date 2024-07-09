@@ -175,7 +175,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: centralapiml
-                    APIML_GATEWAY_TIMEOUT: 2
+                    APIML_CONNECTION_TIMEOUT: 2000
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
                     APIML_SERVICE_HOSTNAME: central-gateway-service
             discoverable-client:

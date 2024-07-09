@@ -35,10 +35,10 @@ apiml:
         scheme: https  # "https" or "http"
         preferIpAddress: false
 
-    httpclient:
-        conn-pool:
-            requestConnectionTimeout: ${apiml.zaas.timeoutMillis}
-
+    connection:
+        timeout: 30000 # Timeout for connection to the services
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
     zaas:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -47,7 +47,6 @@ apiml:
                                              # and is all run from single host.
                                              # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
                                              # properly.
-        timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
         allowTokenRefresh: false
