@@ -135,6 +135,7 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
+key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
 key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
@@ -153,9 +154,19 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
+if [ "${ATTLS_ENABLED}" = "true" ]; then
+  keystore_type=
+  keystore_pass=
+  key_pass=
+  key_alias=
+  keystore_location=
+fi
+
 GATEWAY_CODE=AG
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
+    -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
     -Dibm.serversocket.recover=true \
@@ -189,12 +200,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
     -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
-    -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
+    -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
