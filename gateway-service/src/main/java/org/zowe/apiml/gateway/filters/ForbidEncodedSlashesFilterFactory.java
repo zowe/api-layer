@@ -41,7 +41,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Component
 @RequiredArgsConstructor
-public class AllowEncodedSlashesFilterFactory extends AbstractGatewayFilterFactory<Object> {
+public class ForbidEncodedSlashesFilterFactory extends AbstractGatewayFilterFactory<Object> {
 
     private final MessageService messageService;
     private final ObjectMapper mapper;

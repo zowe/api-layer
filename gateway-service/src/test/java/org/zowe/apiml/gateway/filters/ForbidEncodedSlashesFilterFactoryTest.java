@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class AllowEncodedSlashesFilterFactoryTest {
+class ForbidEncodedSlashesFilterFactoryTest {
 
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded%2fslash";
     private static final String NORMAL_REQUEST_URI = "/api/v1/normal";
@@ -43,7 +43,7 @@ class AllowEncodedSlashesFilterFactoryTest {
     class Responses {
 
         @Autowired
-        AllowEncodedSlashesFilterFactory gatewayFiler;
+        ForbidEncodedSlashesFilterFactory gatewayFiler;
 
         @Test
         void whenUrlDoesNotContainEncodedCharacters() {
@@ -83,7 +83,7 @@ class AllowEncodedSlashesFilterFactoryTest {
             MessageService messageService = mock(MessageService.class);
             doReturn(mock(Message.class)).when(messageService).createMessage(any(), (Object[]) any());
             ObjectMapper objectMapperError = spy(objectMapper);
-            AllowEncodedSlashesFilterFactory filter = new AllowEncodedSlashesFilterFactory(
+            ForbidEncodedSlashesFilterFactory filter = new ForbidEncodedSlashesFilterFactory(
                 messageService, objectMapperError, mock(LocaleContextResolver.class)
             );
 
