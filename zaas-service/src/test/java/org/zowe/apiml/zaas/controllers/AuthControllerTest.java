@@ -278,7 +278,7 @@ class AuthControllerTest {
                     mockMvc.perform(post("/zaas/api/v1/auth/access-token/validate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
-                        .andExpect(status().is(SC_OK));
+                        .andExpect(status().is(SC_NO_CONTENT));
                 }
 
                 @Test
@@ -326,7 +326,7 @@ class AuthControllerTest {
                     mockMvc.perform(delete("/zaas/api/v1/auth/access-token/revoke")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body.toString()))
-                        .andExpect(status().is(SC_OK));
+                        .andExpect(status().is(SC_NO_CONTENT));
                 }
             }
         }
@@ -400,7 +400,7 @@ class AuthControllerTest {
                 mockMvc.perform(post("/zaas/api/v1/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
-                    .andExpect(status().is(SC_OK));
+                    .andExpect(status().is(SC_NO_CONTENT));
             }
 
             @Test
