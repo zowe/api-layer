@@ -10,10 +10,11 @@
 
 package org.zowe.apiml.message.api;
 
-import org.zowe.apiml.message.core.MessageType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.zowe.apiml.message.core.MessageType;
 
 /**
  * User facing messages that can be provided with API responses.
@@ -22,6 +23,7 @@ import lombok.Setter;
  * Note that some users might have malicious intents therefore do not disclose your private data.
  */
 @Setter
+@NoArgsConstructor
 @EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ApiMessage {

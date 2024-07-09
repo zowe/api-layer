@@ -80,6 +80,7 @@ import java.util.Map;
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
 
+//TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
 @Slf4j
 public class ConnectionsConfig {
@@ -125,7 +126,10 @@ public class ConnectionsConfig {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
-    @Value("${apiml.gateway.timeout:60}")
+    @Value("${apiml.connection.idleConnectionTimeoutSeconds:#{5}}")
+    private int idleConnTimeoutSeconds;
+
+    @Value("${apiml.connection.timeout:60000}")
     private int requestTimeout;
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -160,6 +164,7 @@ public class ConnectionsConfig {
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+            .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestTimeout)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)
             .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
@@ -317,7 +322,7 @@ public class ConnectionsConfig {
     @Bean
     public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(requestTimeout)).build()).build());
+            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(requestTimeout)).build()).build());
     }
 
     @Bean
