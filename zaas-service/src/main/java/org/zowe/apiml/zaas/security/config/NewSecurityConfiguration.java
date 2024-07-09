@@ -486,7 +486,10 @@ public class NewSecurityConfiguration {
 
             private final String[] protectedEndpoints = {
                 "/application",
-                SafResourceAccessController.FULL_CONTEXT_PATH
+                SafResourceAccessController.FULL_CONTEXT_PATH,
+                "/gateway/services",
+                "/gateway/conformance",
+                "/validate"
             };
 
             @Bean
@@ -495,6 +498,9 @@ public class NewSecurityConfiguration {
                     http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
                         .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
+                        .requestMatchers("/gateway/services/**")
+                        .requestMatchers("/gateway/conformance/**")
+                        .requestMatchers("/validate")
                     )
                 ).authorizeHttpRequests(requests -> requests
                     .anyRequest()

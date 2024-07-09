@@ -51,13 +51,13 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testPostEndpoint() {
         given()
             .log().all()
-            .param("serviceID", "discoverableclient")
+            .body("serviceID=discoverableclient")
             .header("Cookie", "apimlAuthenticationToken=" + token)
         .when()
             .post(getLegacyEndpointURLPost())
             .then()
             .assertThat()
-            .statusCode(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+            .statusCode(HttpStatus.SC_BAD_REQUEST);
 
     }
 
@@ -107,7 +107,7 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testLegacyEndpointWithNoAuthentication() {
         given()
             .log().all()
-            .param("serviceID", "discoverableclient")
+            .body("serviceID=discoverableclient")
         .when()
             .post(getLegacyEndpointURLPost())
         .then()

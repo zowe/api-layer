@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.product.constants.CoreService;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -198,23 +200,20 @@ public class VerificationOnboardService {
     }
 
     private String getAuthenticationCookie(String passedAuthenticationToken) {
+        String errorMsg = "Error retrieving ZAAS connection details";
         // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
             URI uri = discoveryClient.getServices().stream()
-                .map(service -> discoveryClient.getInstances(service))
+                .map(discoveryClient::getInstances)
                 .map(services -> services.stream()
-                    .filter(service -> "zaas".equalsIgnoreCase(service.getServiceId())) // TODO: replace "zaas" with CoreService.ZAAS.getServiceId() once is ready
+                    .filter(service -> CoreService.ZAAS.getServiceId().equalsIgnoreCase(service.getServiceId()))
                     .findFirst()
-                    .map(service -> service.getUri())
-                    .orElse(null))
+                    .map(ServiceInstance::getUri)
+                    .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY)))
                 .findFirst()
-                .orElseThrow(() -> new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY));
+                .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY));
 
-            if (uri == null) {
-                throw new ValidationException("Error retrieving ZAAS connection details", ValidateAPIController.NO_METADATA_KEY);
-            }
-
-            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/validate/auth");
+            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
             ResponseEntity<String> validationResponse = restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
             if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);

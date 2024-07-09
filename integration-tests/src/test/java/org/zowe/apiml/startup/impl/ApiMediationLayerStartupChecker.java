@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.ZaasConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -38,17 +39,18 @@ import static org.awaitility.Awaitility.await;
 @Slf4j
 public class ApiMediationLayerStartupChecker {
     private final GatewayServiceConfiguration gatewayConfiguration;
+    private final ZaasConfiguration zaasConfiguration;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        zaasConfiguration = ConfigReader.environmentConfiguration().getZaasConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
         servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
         servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
         servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
-        servicesToCheck.add(new Service("Authentication Service", "$.components.gateway.details.auth"));
     }
 
     public void waitUntilReady() {
@@ -60,9 +62,8 @@ public class ApiMediationLayerStartupChecker {
         .until(this::areAllServicesUp);
     }
 
-    private DocumentContext getDocumentAsContext() {
+    private DocumentContext getDocumentAsContext(HttpGet request) {
         try {
-            HttpGet request = HttpRequestUtils.getRequest(healthEndpoint);
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.warn("Unexpected HTTP status code: {}", response.getStatusLine().getStatusCode());
@@ -80,7 +81,8 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean areAllServicesUp() {
         try {
-            DocumentContext context = getDocumentAsContext();
+            HttpGet requestToGateway = HttpRequestUtils.getRequest(healthEndpoint);
+            DocumentContext context = getDocumentAsContext(requestToGateway);
             if (context == null) {
                 return false;
             }
@@ -94,6 +96,10 @@ public class ApiMediationLayerStartupChecker {
                     areAllServicesUp = false;
                 }
             }
+            if (!isAuthUp()) {
+                areAllServicesUp  = false;
+            }
+
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
             boolean isTestApplicationUp = allComponents.contains("discoverableclient");
             log.debug("Discoverable Client is {}", isTestApplicationUp);
@@ -119,6 +125,17 @@ public class ApiMediationLayerStartupChecker {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
         }
+    }
+
+    private boolean isAuthUp() {
+        HttpGet requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint));
+        DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
+        if (zaasContext == null) {
+            return false;
+        }
+        boolean isUp = isServiceUp(zaasContext, "$.components.zaas.details.auth");
+        logDebug("Authentication Service is {}", isUp);
+        return isUp;
     }
 
     private boolean isServiceUp(DocumentContext documentContext, String path) {

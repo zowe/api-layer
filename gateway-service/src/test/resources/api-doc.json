@@ -164,6 +164,137 @@
                     }
                 }
             }
+        },
+        "/gateway/conformance/{serviceId}": {
+            "get": {
+                "tags": ["Services"],
+                "summary": "Checks service conformance",
+                "description": "Accepts serviceID and checks conformance criteria.",
+                "operationId": "checkConformanceUsingGET",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "serviceId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true,
+                        "description": "Service ID of the service to check"
+                    }
+                ],
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service conforms to the criteria",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service {serviceId} fulfills all checked conformance criteria"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Service does not conform to the criteria",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "details": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/validate": {
+            "post": {
+                "tags": ["Services"],
+                "summary": "Legacy endpoint for checking service conformance",
+                "description": "Mapping so the old endpoint keeps working.",
+                "operationId": "checkValidateLegacyUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "example": "serviceID=serviceId"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service conforms to the criteria",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Service {serviceId} fulfills all checked conformance criteria"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Service does not conform to the criteria",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "details": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "servers": [
