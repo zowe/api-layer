@@ -13,14 +13,12 @@ package org.zowe.apiml.gateway.filters;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
@@ -30,7 +28,6 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -44,8 +41,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "apiml.service.allowEncodedSlashes", havingValue = "true")
-public class AllowEncodedSlashesFilter implements GatewayFilter {
+public class AllowEncodedSlashesFilterFactory extends AbstractGatewayFilterFactory<Object> {
 
     private final MessageService messageService;
     private final ObjectMapper mapper;
@@ -62,31 +58,31 @@ public class AllowEncodedSlashesFilter implements GatewayFilter {
      * If encoded slashes are not allowed and found, returns a BAD_REQUEST response.
      * Otherwise, proceeds with the filter chain.
      *
-     * @param exchange The server web exchange
-     * @param chain    The web filter chain
-     * @return A Mono that indicates when request processing is complete
+     * @return Allowed Encoded slashes filter.
      */
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String uri = exchange.getRequest().getURI().toString();
-        String decodedUri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
+    public GatewayFilter apply(Object routeId) {
+        return ((exchange, chain) -> {
+            String uri = exchange.getRequest().getURI().toString();
+            String decodedUri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
 
-        if (uri.equals(decodedUri)) {
-            return chain.filter(exchange);
-        }
+            if (uri.equals(decodedUri)) {
+                return chain.filter(exchange);
+            }
 
-        var serverWebExchange = new DefaultServerWebExchange(exchange.getRequest(), exchange.getResponse(), sessionManager, serverCodecConfigurer, localeContextResolver);
-        serverWebExchange.getResponse().setRawStatusCode(SC_BAD_REQUEST);
-        serverWebExchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
+            var serverWebExchange = new DefaultServerWebExchange(exchange.getRequest(), exchange.getResponse(), sessionManager, serverCodecConfigurer, localeContextResolver);
+            serverWebExchange.getResponse().setRawStatusCode(SC_BAD_REQUEST);
+            serverWebExchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
-        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
-        try {
-            DataBuffer buffer = serverWebExchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()));
-            return serverWebExchange.getResponse().writeWith(Flux.just(buffer));
-        } catch (JsonProcessingException e) {
-            apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
-            throw new RuntimeException(e);
-        }
+            Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
+            try {
+                DataBuffer buffer = serverWebExchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()));
+                return serverWebExchange.getResponse().writeWith(Flux.just(buffer));
+            } catch (JsonProcessingException e) {
+                apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 }

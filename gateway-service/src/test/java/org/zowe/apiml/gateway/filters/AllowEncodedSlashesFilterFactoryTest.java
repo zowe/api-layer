@@ -26,14 +26,12 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class AllowEncodedSlashesFilterTest {
+class AllowEncodedSlashesFilterFactoryTest {
 
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded%2fslash";
     private static final String NORMAL_REQUEST_URI = "/api/v1/normal";
@@ -45,7 +43,7 @@ class AllowEncodedSlashesFilterTest {
     class Responses {
 
         @Autowired
-        AllowEncodedSlashesFilter tomcatFilter;
+        AllowEncodedSlashesFilterFactory gatewayFiler;
 
         @Test
         void whenUrlDoesNotContainEncodedCharacters() {
@@ -53,7 +51,7 @@ class AllowEncodedSlashesFilterTest {
                 .get(NORMAL_REQUEST_URI)
                 .build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
-            var response = tomcatFilter.filter(exchange, exchange2 -> {
+            var response = gatewayFiler.apply("").filter(exchange, exchange2 -> {
                 exchange.getResponse().setRawStatusCode(200);
                 return Mono.empty();
             });
@@ -67,26 +65,12 @@ class AllowEncodedSlashesFilterTest {
                 .get(ENCODED_REQUEST_URI)
                 .build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
-            var response = tomcatFilter.filter(exchange, exchange2 -> Mono.empty());
+            var response = gatewayFiler.apply("").filter(exchange, exchange2 -> Mono.empty());
             response.block();
             assertEquals(SC_BAD_REQUEST, exchange.getResponse().getStatusCode().value());
             String body = exchange.getResponse().getBodyAsString().block();
             var message = objectMapper.readValue(body, ApiMessageView.class);
             assertEquals("org.zowe.apiml.gateway.requestContainEncodedSlash", message.getMessages().get(0).getMessageKey());
-        }
-
-    }
-
-    @Nested
-    @TestPropertySource(properties = "apiml.service.allowEncodedSlashes=false")
-    class FilterIsNotEnabled {
-
-        @Autowired
-        private Optional<AllowEncodedSlashesFilter> tomcatFilter;
-
-        @Test
-        void thenFilterIsNotCreated() {
-            assertTrue(tomcatFilter.isEmpty());
         }
 
     }
@@ -99,7 +83,7 @@ class AllowEncodedSlashesFilterTest {
             MessageService messageService = mock(MessageService.class);
             doReturn(mock(Message.class)).when(messageService).createMessage(any(), (Object[]) any());
             ObjectMapper objectMapperError = spy(objectMapper);
-            AllowEncodedSlashesFilter filter = new AllowEncodedSlashesFilter(
+            AllowEncodedSlashesFilterFactory filter = new AllowEncodedSlashesFilterFactory(
                 messageService, objectMapperError, mock(LocaleContextResolver.class)
             );
 
@@ -110,7 +94,7 @@ class AllowEncodedSlashesFilterTest {
 
             doThrow(new JsonGenerationException("error")).when(objectMapperError).writeValueAsBytes(any());
 
-            RuntimeException er = assertThrows(RuntimeException.class, () -> filter.filter(exchange, e -> Mono.empty()));
+            RuntimeException er = assertThrows(RuntimeException.class, () -> filter.apply("").filter(exchange, e -> Mono.empty()));
             assertEquals("com.fasterxml.jackson.core.JsonGenerationException: error", er.getMessage());
         }
 
