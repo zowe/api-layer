@@ -145,6 +145,27 @@ if [ $JAVA_VERSION -ge 61 ]; then
     fi
 fi
 
+client_max_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_maxTls:-${ZWE_zowe_network_client_tls_maxTls:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-\
+"TLSv1.3"}}}}}
+client_min_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_minTls:-${ZWE_zowe_network_client_tls_minTls:-${ZWE_configs_zowe_network_server_tls_minTls:-${ZWE_zowe_network_server_tls_minTls:-\
+"TLSv1.2"}}}}}
+
+server_max_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
+server_min_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
+
+# TLSv1.2 + TLSv1.3 will become TLSv1.2,TLSv1.3
+# TODO: If TLSv1.4 comes out, this will need to enumerate.
+if [ "${client_max_tls}" = "${client_min_tls}" ]; then
+  client_tls=$client_min_tls
+else
+  client_tls="${client_min_tls},${client_max_tls}"
+fi
+if [ "${server_max_tls}" = "${server_min_tls}" ]; then
+  server_tls=$server_min_tls
+else
+  server_tls="${server_min_tls},${server_max_tls}"
+fi
+
 METRICS_CODE=MS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
@@ -162,12 +183,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
-  -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-ZWE_configs_zowe_network_client_tls_maxTls:-ZWE_zowe_network_client_tls_maxTls:-ZWE_configs_zowe_network_server_tls_maxTls:-ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"} \
-  -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"} \
+  -Dapiml.httpclient.ssl.enabled-protocols=${client_tls} \
+  -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true} \
-  -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-ZWE_configs_zowe_network_server_tls_maxTls:-ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}  \
-  -Dserver.ssl.ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-ZWE_zowe_network_server_tls_ciphers:-} \
-  -Djdk.tls.client.cipherSuites=${ZWE_configs_zowe_network_client_tls_ciphers:-ZWE_zowe_network_client_tls_ciphers:-ZWE_configs_zowe_network_server_tls_ciphers:-ZWE_zowe_network_server_tls_ciphers:-} \
+  -Dserver.ssl.protocol=${server_tls} \
+  -Dserver.ssl.ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-}} \
+  -Djdk.tls.client.cipherSuites=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-}}}} \
   -Dserver.ssl.keyStore="${keystore_location}" \
   -Dserver.ssl.keyStoreType="${keystore_type}" \
   -Dserver.ssl.keyStorePassword="${keystore_pass}" \

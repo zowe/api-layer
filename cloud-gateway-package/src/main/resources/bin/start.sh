@@ -142,6 +142,27 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
   keystore_location=
 fi
 
+client_max_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_maxTls:-${ZWE_zowe_network_client_tls_maxTls:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-\
+"TLSv1.3"}}}}}
+client_min_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_minTls:-${ZWE_zowe_network_client_tls_minTls:-${ZWE_configs_zowe_network_server_tls_minTls:-${ZWE_zowe_network_server_tls_minTls:-\
+"TLSv1.2"}}}}}
+
+server_max_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
+server_min_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
+
+# TLSv1.2 + TLSv1.3 will become TLSv1.2,TLSv1.3
+# TODO: If TLSv1.4 comes out, this will need to enumerate.
+if [ "${client_max_tls}" = "${client_min_tls}" ]; then
+  client_tls=$client_min_tls
+else
+  client_tls="${client_min_tls},${client_max_tls}"
+fi
+if [ "${server_max_tls}" = "${server_min_tls}" ]; then
+  server_tls=$server_min_tls
+else
+  server_tls="${server_min_tls},${server_max_tls}"
+fi
+
 CLOUD_GATEWAY_CODE=CG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
@@ -163,7 +184,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dapiml.cloudGateway.registry.enabled=${ZWE_configs_cloudGateway_registry_enabled:-false} \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"} \
+    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
+    -Djdk.tls.client.cipherSuites=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-}}}} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \

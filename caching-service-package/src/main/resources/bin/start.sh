@@ -182,6 +182,27 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
   keystore_location=
 fi
 
+client_max_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_maxTls:-${ZWE_zowe_network_client_tls_maxTls:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-\
+"TLSv1.3"}}}}}
+client_min_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_minTls:-${ZWE_zowe_network_client_tls_minTls:-${ZWE_configs_zowe_network_server_tls_minTls:-${ZWE_zowe_network_server_tls_minTls:-\
+"TLSv1.2"}}}}}
+
+server_max_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
+server_min_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
+
+# TLSv1.2 + TLSv1.3 will become TLSv1.2,TLSv1.3
+# TODO: If TLSv1.4 comes out, this will need to enumerate.
+if [ "${client_max_tls}" = "${client_min_tls}" ]; then
+  client_tls=$client_min_tls
+else
+  client_tls="${client_min_tls},${client_max_tls}"
+fi
+if [ "${server_max_tls}" = "${server_min_tls}" ]; then
+  server_tls=$server_min_tls
+else
+  server_tls="${server_min_tls},${server_max_tls}"
+fi
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
@@ -201,7 +222,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
-  -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-ZWE_configs_zowe_network_client_tls_maxTls:-ZWE_zowe_network_client_tls_maxTls:-ZWE_configs_zowe_network_server_tls_maxTls:-ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"} \
+  -Dapiml.httpclient.ssl.enabled-protocols=${client_tls} \
   -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-reject} \
   -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
@@ -212,11 +233,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Dcaching.storage.infinispan.persistence.dataLocation=${ZWE_configs_storage_infinispan_persistence_dataLocation:-data} \
   -Dcaching.storage.infinispan.persistence.indexLocation=${ZWE_configs_storage_infinispan_persistence_indexLocation:-index} \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
-  -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"} \
+  -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-  -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-ZWE_configs_zowe_network_server_tls_maxTls:-ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}  \
-  -Dserver.ssl.ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-ZWE_zowe_network_server_tls_ciphers:-} \
-  -Djdk.tls.client.cipherSuites=${ZWE_configs_zowe_network_client_tls_ciphers:-ZWE_zowe_network_client_tls_ciphers:-ZWE_configs_zowe_network_server_tls_ciphers:-ZWE_zowe_network_server_tls_ciphers:-} \
+  -Dserver.ssl.protocol=${server_tls} \
+  -Dserver.ssl.ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-}} \
+  -Djdk.tls.client.cipherSuites=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-}}}} \
   -Dserver.ssl.keyStore="${keystore_location}" \
   -Dserver.ssl.keyStoreType="${keystore_type}" \
   -Dserver.ssl.keyStorePassword="${keystore_pass}" \
