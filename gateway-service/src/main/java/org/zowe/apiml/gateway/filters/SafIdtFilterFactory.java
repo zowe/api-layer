@@ -37,7 +37,7 @@ public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilter
 
     @Override
     public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/zaas/safIdt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        return String.format("%s://%s:%d/%s/scheme/safIdt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
     @Override

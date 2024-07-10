@@ -26,10 +26,10 @@ public class Endpoints {
 
     public final static String ROUTED_ZOSMF_AUTH = "/ibmzosmf/api/v1/services/authenticate";
 
-    public final static String ZAAS_TICKET_ENDPOINT = "/zaas/zaas/ticket";
-    public final static String ZAAS_ZOSMF_ENDPOINT = "/zaas/zaas/zosmf";
-    public final static String ZAAS_ZOWE_ENDPOINT = "/zaas/zaas/zoweJwt";
-    public final static String ZAAS_SAFIDT_ENDPOINT = "/zaas/zaas/safIdt";
+    public final static String ZAAS_TICKET_ENDPOINT = "/zaas/scheme/ticket";
+    public final static String ZAAS_ZOSMF_ENDPOINT = "/zaas/scheme/zosmf";
+    public final static String ZAAS_ZOWE_ENDPOINT = "/zaas/scheme/zoweJwt";
+    public final static String ZAAS_SAFIDT_ENDPOINT = "/zaas/scheme/safIdt";
 
     public final static String ROUTED_QUERY = "/gateway/api/v1/auth/query";
     public final static String ROUTED_PASSTICKET = "/gateway/api/v1/auth/ticket";

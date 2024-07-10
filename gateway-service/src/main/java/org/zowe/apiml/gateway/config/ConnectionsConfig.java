@@ -58,7 +58,6 @@ import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
-import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
@@ -349,13 +348,6 @@ public class ConnectionsConfig {
     @Bean
     public CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
-    }
-
-    @Bean
-    public MessageService messageService() {
-        MessageService messageService = YamlMessageServiceInstance.getInstance();
-        messageService.loadMessages("/gateway-log-messages.yml");
-        return messageService;
     }
 
 }

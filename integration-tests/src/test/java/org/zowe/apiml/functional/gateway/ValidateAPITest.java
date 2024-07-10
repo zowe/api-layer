@@ -34,7 +34,7 @@ import static io.restassured.RestAssured.given;
  * The controller receive the response from the service and then will post response.
  */
 @GatewayTest
-@Disabled
+@Disabled("The overall functionality needs to be reviewed, it doesn't support zosmf, see VerificationOnboardService.java")
 class ValidateAPITest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -51,13 +51,13 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testPostEndpoint() {
         given()
             .log().all()
-            .param("serviceID", "discoverableclient")
+            .body("serviceID=discoverableclient")
             .header("Cookie", "apimlAuthenticationToken=" + token)
         .when()
             .post(getLegacyEndpointURLPost())
             .then()
             .assertThat()
-            .statusCode(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+            .statusCode(HttpStatus.SC_BAD_REQUEST);
 
     }
 
@@ -107,7 +107,7 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testLegacyEndpointWithNoAuthentication() {
         given()
             .log().all()
-            .param("serviceID", "discoverableclient")
+            .body("serviceID=discoverableclient")
         .when()
             .post(getLegacyEndpointURLPost())
         .then()

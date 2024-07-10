@@ -16,7 +16,7 @@ public class ZoweSchemeTest extends TokenSchemeTest {
 
     @Override
     public String getTokenEndpoint() {
-        return "/zaas/zaas/zoweJwt";
+        return "/zaas/scheme/zoweJwt";
     }
 
     @Override
