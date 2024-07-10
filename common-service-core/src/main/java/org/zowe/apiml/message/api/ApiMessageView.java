@@ -13,6 +13,7 @@ package org.zowe.apiml.message.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ import java.util.List;
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@NoArgsConstructor
 @AllArgsConstructor
 public class ApiMessageView {
 

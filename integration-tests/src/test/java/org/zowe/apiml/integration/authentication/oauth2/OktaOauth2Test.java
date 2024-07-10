@@ -121,7 +121,7 @@ public class OktaOauth2Test {
                 .body(requestBody)
                 .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(HttpStatus.SC_OK);
+                .then().statusCode(HttpStatus.SC_NO_CONTENT);
         }
 
         @Nested

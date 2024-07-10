@@ -38,12 +38,14 @@ public class BasicAuthFilter implements WebFilter {
                 return chain.filter(exchange);
             }
             var auth = createAuthenticatedFromHeader(token, header);
-            return chain.filter(exchange).contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(auth));
+            return chain.filter(exchange).contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(auth));
         })).orElseGet(() -> chain.filter(exchange));
     }
 
     private Optional<String> resolveAuth(ServerHttpRequest request) {
-        return Optional.of(request.getHeaders()).map(head -> head.getFirst(HttpHeaders.AUTHORIZATION));
+        return Optional.of(request.getHeaders())
+            .map(head -> head.getFirst(HttpHeaders.AUTHORIZATION))
+            .filter(header -> StringUtils.startsWith(header, "Basic "));
     }
 
 }

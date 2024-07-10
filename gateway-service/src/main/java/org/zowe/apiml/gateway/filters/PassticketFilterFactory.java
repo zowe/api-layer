@@ -43,7 +43,7 @@ import java.util.Optional;
 public class PassticketFilterFactory extends AbstractAuthSchemeFactory<PassticketFilterFactory.Config, TicketResponse, String> {
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
-    private static final String TICKET_URL = "%s://%s:%d/%s/zaas/ticket";
+    private static final String TICKET_URL = "%s://%s:%d/%s/scheme/ticket";
 
     @Value("${apiml.security.auth.passticket.customUserHeader:}")
     private String customUserHeader;

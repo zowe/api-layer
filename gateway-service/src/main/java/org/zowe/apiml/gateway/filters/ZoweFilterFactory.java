@@ -36,7 +36,7 @@ public class ZoweFilterFactory extends AbstractTokenFilterFactory<AbstractTokenF
 
     @Override
     public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/zaas/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        return String.format("%s://%s:%d/%s/scheme/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
     @Override

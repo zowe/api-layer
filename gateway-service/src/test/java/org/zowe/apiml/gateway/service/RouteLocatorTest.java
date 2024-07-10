@@ -277,7 +277,7 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertEquals(2, filterDefinitions.size());
+                    assertEquals(3, filterDefinitions.size()); // common filters + pageredirectionfilter
                     assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
 
@@ -286,7 +286,9 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.FALSE);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertSame(COMMON_FILTERS, filterDefinitions);
+                    assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
+                    assertEquals(2, filterDefinitions.size());
+                    assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
                 }
 
 
@@ -295,7 +297,9 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(null);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertSame(COMMON_FILTERS, filterDefinitions);
+                    assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
+                    assertEquals(2, filterDefinitions.size());
+                    assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
                 }
 
             }
@@ -313,7 +317,9 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertSame(COMMON_FILTERS, filterDefinitions);
+                    assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
+                    assertEquals(2, filterDefinitions.size());
+                    assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
                 }
 
             }

@@ -16,6 +16,8 @@ apiml:
         scheme: https  # "https" or "http"
         preferIpAddress: false
         discoveryServiceUrls: https://localhost:10011/eureka/
+    connection:
+        timeout: 30000 # Timeout for connection to the services
     zaas:
         # The `apiml.zaas` node contains zaas-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the ZAAS. For example Catalog uses
@@ -24,7 +26,6 @@ apiml:
         # and is all run from single host.
         # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
         # properly.
-        timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
         allowTokenRefresh: true
@@ -87,9 +88,9 @@ server:
 
 http:
     connection:
-        timeout: ${apiml.zaas.timeoutMillis}
+        timeout: ${apiml.connection.timeout}
     socket:
-        timeout: ${apiml.zaas.timeoutMillis}
+        timeout: ${apiml.connection.timeout}
 
 management:
     endpoints:

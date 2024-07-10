@@ -77,7 +77,7 @@ instanceEnv:
     ZWE_haInstance_hostname: localhost
     ZOWE_PREFIX: ZWE
     ZWE_configs_apiml_service_allowEncodedSlashes: true
-    ZWE_configs_apiml_gateway_timeoutMillis: 10000
+    ZWE_configs_apiml_connection_timeout: 10000
     ZWE_configs_apiml_security_x509_enabled: true
     ZWE_configs_apiml_security_auth_provider: zosmf
     ZWE_configs_apiml_security_auth_zosmf_serviceId: mockzosmf

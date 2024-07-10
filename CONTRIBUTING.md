@@ -14,7 +14,7 @@ This document is a living summary of conventions and best practices for developm
   - [Documentation Guidelines](#documentation-guidelines)
   - [Planning Guidelines](#planning-guidelines)
   - [Retrospective Guidelines](#retrospective-guidelines)
-  - [Step by Step Guidelines](#step-by-step-guidelines)
+  - [Steps To Contribute](#steps-to-contribute)
 
 ## Contact Us
 

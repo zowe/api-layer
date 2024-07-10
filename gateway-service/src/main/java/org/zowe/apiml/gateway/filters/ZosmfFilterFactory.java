@@ -27,7 +27,7 @@ public class ZosmfFilterFactory extends AbstractTokenFilterFactory<AbstractToken
 
     @Override
     public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/zaas/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        return String.format("%s://%s:%d/%s/scheme/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
 }
