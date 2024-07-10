@@ -47,7 +47,6 @@ public class TokenAuthFilter implements WebFilter {
                     return chain.filter(exchange)
                         .contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
                 }
-              //  return Mono.error(new TokenNotValidException("Null token.")); }
                 return chain.filter(exchange);
             })
         ).orElseGet(() -> chain.filter(exchange));
