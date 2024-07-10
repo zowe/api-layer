@@ -12,6 +12,10 @@ package org.zowe.apiml.util.service;
 
 import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +34,6 @@ import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.util.UrlUtils;
 
-import jakarta.servlet.Servlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -48,8 +48,14 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 /**
  * This class simulate a service. You can create new instance dynamically in the test. It will register into discovery
@@ -209,7 +215,7 @@ public class VirtualService implements AutoCloseable {
      * @return this instance to next command
      */
     public VirtualService addServlet(String name, String pattern, Servlet servlet) {
-        Tomcat.addServlet(context, name, servlet.getClass().getName());
+        Tomcat.addServlet(context, name, servlet);
         context.addServletMappingDecoded(pattern, name);
 
         return this;
@@ -688,7 +694,8 @@ public class VirtualService implements AutoCloseable {
      * Servlet answer on /application/instance Http method and instanceId. This is base part of method to verify registration on
      * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
-    class InstanceServlet extends HttpServlet {
+    @NoArgsConstructor
+    public class InstanceServlet extends HttpServlet {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -732,7 +739,7 @@ public class VirtualService implements AutoCloseable {
      * Servlet returns the specified Http return code for all Http methods
      */
     @RequiredArgsConstructor
-    static class HttpStatusCodeServlet extends HttpServlet {
+    public static class HttpStatusCodeServlet extends HttpServlet {
 
         private final int httpStatus;
 
