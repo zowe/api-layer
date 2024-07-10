@@ -447,7 +447,7 @@ public class VirtualService implements AutoCloseable {
                         .put("renewalIntervalInSecs", renewalIntervalInSecs)
                         .put("durationInSecs", renewalIntervalInSecs * 3)
                     )
-                    .put("metadata", metadata)
+                    .put("metadata", new JSONObject(metadata))
                 ).toString()
             )
             .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId);
