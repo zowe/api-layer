@@ -4,6 +4,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.zowe.apiml.client.model.graphql.Author;
 import org.zowe.apiml.client.model.graphql.Book;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/api/v1/graphql")
+//@CrossOrigin(origins = "http://localhost:3000")
 public class BookController {
     @QueryMapping
     public Book bookById(@Argument String id) {

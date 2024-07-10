@@ -3,6 +3,7 @@ package org.zowe.apiml.integration.graphql;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -70,6 +71,7 @@ public class BookControllerTest {
             }
         }
         """;
+
         try {
             tester.document(document)
                 .execute()
