@@ -18,7 +18,6 @@ import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,17 +31,12 @@ import org.zowe.apiml.util.service.VirtualService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.when;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
@@ -56,7 +50,6 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 @TestsNotMeantForZowe
 @GatewayTest
-@Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
 class ServiceHaModeTest implements TestWithStartedInstances {
 
     private static final int TIMEOUT = 30;
@@ -124,11 +117,11 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#httpMethods")
-            @Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
             void verifyThatGatewayRetriesToTheLiveOne(Method method) {
                 routeAndVerifyRetry(service1.getGatewayUrls(), method, TIMEOUT);
             }
 
+            // TODO This method used to verify how many retries happened based on an optional response header with debug information
             private void routeAndVerifyRetry(List<String> gatewayUrls, Method method, int timeoutSec) {
                 final long time0 = System.currentTimeMillis();
 
@@ -139,8 +132,6 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                         try {
                             Response response = doRequest(method, url);
                             assertEquals(HttpStatus.SC_OK, response.getStatusCode());
-                            StringTokenizer retryList = new StringTokenizer(response.getHeader("RibbonRetryDebug"), "|");
-                            assertThat(retryList.countTokens(), is(greaterThan(1)));
                             break;
                         } catch (RuntimeException | AssertionError e) {
                             if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
@@ -186,18 +177,17 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#retryableHttpMethods")
-            @Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
             void verifyThatGatewayRetriesGet(Method method) {
                 routeAndVerifyRetries(service1.getGatewayUrls(), method, 2);
             }
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#nonRetryableHttpMethods")
-            @Disabled("May be returned once ZUUL is fixed, also RibbonRetryDebug needs to be implemented in new gateway")
             void verifyThatGatewayNotRetriesPost(Method method) {
                 routeAndVerifyRetries(service1.getGatewayUrls(), method, 1);
             }
 
+            // TODO This method used to verify how many retries happened based on an optional response header with debug information
             private void routeAndVerifyRetries(List<String> gatewayUrls, Method method, int maximumRetries) {
                 for (String gatewayUrl : gatewayUrls) {
                     IntStream.rangeClosed(0, 1).forEach(x -> {
@@ -207,9 +197,6 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                         if (response.getStatusCode() != HttpStatus.SC_OK && response.getStatusCode() != HttpStatus.SC_SERVICE_UNAVAILABLE) {
                             fail("Return should be 200 or 503 but it is: " + response.getStatusCode());
                         }
-                        StringTokenizer retryList = new StringTokenizer(response.getHeader("RibbonRetryDebug"), "|");
-                        assertThat(retryList.countTokens(), is(lessThanOrEqualTo(maximumRetries)));
-
                     });
                 }
             }
