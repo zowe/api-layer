@@ -21,7 +21,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.ZaasConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -39,13 +38,11 @@ import static org.awaitility.Awaitility.await;
 @Slf4j
 public class ApiMediationLayerStartupChecker {
     private final GatewayServiceConfiguration gatewayConfiguration;
-    private final ZaasConfiguration zaasConfiguration;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        zaasConfiguration = ConfigReader.environmentConfiguration().getZaasConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
         servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
