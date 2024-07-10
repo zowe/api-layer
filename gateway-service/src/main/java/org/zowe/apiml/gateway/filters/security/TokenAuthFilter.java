@@ -45,7 +45,7 @@ public class TokenAuthFilter implements WebFilter {
                 if (StringUtils.isNotBlank(resp.getUserId())) {
                     Authentication authentication = createAuthenticated(resp.getUserId(), jwt);
                     return chain.filter(exchange)
-                        .contextWrite((context) -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+                        .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
                 }
                 return chain.filter(exchange);
             })
