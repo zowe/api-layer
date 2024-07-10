@@ -35,7 +35,7 @@ runs:
               echo $gwHealth
 
               gatewayUp=$(echo $gwHealth | jq -r '.status')
-              authUp=$(echo $zaasHealth | jq -r '.components.gateway.details.zaas')
+              authUp=$(echo $gwHealth | jq -r '.components.gateway.details.zaas')
               acUp="$(echo $gwHealth | jq -r '.components.gateway.details.apicatalog')"
 
               csUp="DOWN"
