@@ -83,6 +83,7 @@ apiml:
         nonSecurePortEnabled: false
         securePortEnabled: true
     security:
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
 

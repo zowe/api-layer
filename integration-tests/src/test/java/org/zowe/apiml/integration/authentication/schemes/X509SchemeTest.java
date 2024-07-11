@@ -105,7 +105,6 @@ class X509SchemeTest implements TestWithStartedInstances {
         }
 
         @Test
-        @Disabled("SCGW doesn't have the headers cleanup filter anymore")
         void givenSelfSignedUntrustedCertificate_andMaliciousHeaderInRequest_thenEmptyBodyIsReturned() {
             given()
                 .config(SslContext.selfSignedUntrusted)
@@ -115,9 +114,9 @@ class X509SchemeTest implements TestWithStartedInstances {
             .when()
                 .get(X509SchemeTest.URL)
             .then()
-                .body("publicKey", is(""))
-                .body("dn", is(""))
-                .body("cn", is("")).statusCode(200)
+                .body("publicKey", is(nullValue()))
+                .body("dn", is(nullValue()))
+                .body("cn", is(nullValue())).statusCode(200)
                 .statusCode(200);
         }
 

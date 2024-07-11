@@ -38,7 +38,6 @@ class VersionTest {
     }
 
     @Nested
-    @Disabled("Requires migration of actuator as in old gateway")
     class GivenNoAuthentication {
 
         @Nested
