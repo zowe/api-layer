@@ -43,8 +43,8 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(ZaasController.CONTROLLER_PATH)
-public class ZaasController {
+@RequestMapping(SchemeController.CONTROLLER_PATH)
+public class SchemeController {
     public static final String CONTROLLER_PATH = "/zaas/scheme"; // NOSONAR
 
     private final AuthSourceService authSourceService;

@@ -38,7 +38,15 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
 
-
+/**
+ * This class uses Spring Cloud Gateway capabilities to compose routes to some ZAAS-provided endpoints.
+ *
+ * They remain for back-compatibility with API ML v2.x.x
+ * Authentication Schemes go through a different channel with Spring Cloud Gateway filters.
+ *
+ * @see SchemeController
+ * @see AuthController
+ */
 @Slf4j
 @Configuration
 public class AuthEndpointConfig {
