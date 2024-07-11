@@ -50,7 +50,7 @@ class CookieUtilTest {
         @Test
         void givenCookie_thenExtractIt() {
             HttpHeaders header = new HttpHeaders();
-            String expectedCookie = "apimlToken=cookie";
+            String expectedCookie = "apimlToken=token";
             header.put(HttpHeaders.COOKIE, Collections.singletonList(expectedCookie));
             Stream<HttpCookie> httpCookieStream = CookieUtil.readCookies(header);
             String extractedCookie = httpCookieStream.toList().get(0).toString();
