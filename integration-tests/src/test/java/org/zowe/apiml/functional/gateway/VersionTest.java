@@ -12,7 +12,6 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -48,9 +47,9 @@ class VersionTest {
             void returnValidVersion(String endpoint) {
                 // Gateway request to url
                 given()
-                .when()
+                    .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
-                .then()
+                    .then()
                     .statusCode(SC_OK)
                     .body("apiml.version", is(not(nullValue())))
                     .body("apiml.buildNumber", is(not(nullValue())))

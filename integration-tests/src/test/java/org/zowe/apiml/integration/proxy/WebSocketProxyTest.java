@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
@@ -41,9 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
