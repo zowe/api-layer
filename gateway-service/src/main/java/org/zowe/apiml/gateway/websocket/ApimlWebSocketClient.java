@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.gateway.websocket;
 
 import jakarta.websocket.Session;
 import org.apache.tomcat.websocket.WsWebSocketContainer;

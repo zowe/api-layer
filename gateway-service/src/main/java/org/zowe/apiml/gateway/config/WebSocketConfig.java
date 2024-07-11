@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
+import org.zowe.apiml.gateway.websocket.ApimlRequestUpgradeStrategy;
+import org.zowe.apiml.gateway.websocket.ApimlWebSocketClient;
 
 @Configuration
 public class WebSocketConfig {

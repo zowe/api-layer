@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.gateway.websocket;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,11 +26,14 @@ import org.springframework.web.reactive.socket.adapter.ContextWebSocketHandler;
 import org.springframework.web.reactive.socket.adapter.StandardWebSocketHandlerAdapter;
 import org.springframework.web.reactive.socket.server.upgrade.StandardWebSocketUpgradeStrategy;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.gateway.config.ApimlServerEndpointConfig;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import static reactor.core.publisher.Mono.*;
 
 public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrategy {
 
@@ -56,7 +59,7 @@ public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrateg
 
         // Trigger WebFlux preCommit actions and upgrade
         return exchange.getResponse().setComplete()
-            .then(Mono.deferContextual(contextView -> {
+            .then(deferContextual(contextView -> {
                 Endpoint endpoint = new StandardWebSocketHandlerAdapter(
                     ContextWebSocketHandler.decorate(handler, contextView),
                     session -> new ApimlWebSocketSession(session, handshakeInfo, bufferFactory));
@@ -69,9 +72,9 @@ public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrateg
                 try {
                     upgradeHttpToWebSocket(servletRequest, servletResponse, config, Collections.emptyMap());
                 } catch (Exception ex) {
-                    return Mono.error(ex);
+                    return error(ex);
                 }
-                return Mono.empty();
+                return empty();
             }));
     }
 
