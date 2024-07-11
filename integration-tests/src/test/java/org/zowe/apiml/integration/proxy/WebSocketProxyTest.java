@@ -197,7 +197,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
             class WhenInvalid {
 
                 @Test
-                @Disabled("re-enable when websocket SCGW has been validated")
                 void returnError() throws Exception {
                     final StringBuilder response = new StringBuilder();
 
