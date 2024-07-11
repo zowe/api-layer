@@ -50,9 +50,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class VerificationOnboardServiceTest {
 
-    @InjectMocks
-    private VerificationOnboardService verificationOnboardService;
-
     @Mock
     private DiscoveryClient discoveryClient;
 
@@ -61,6 +58,9 @@ class VerificationOnboardServiceTest {
 
     @Mock
     private ResponseEntity<String> responseEntity;
+
+    @InjectMocks
+    private VerificationOnboardService verificationOnboardService;
 
     @Test
     void whenCheckingOnboardedService_thenCorrectResults() {
@@ -135,8 +135,6 @@ class VerificationOnboardServiceTest {
         private void setUpZaasService() throws URISyntaxException {
             ServiceInstance serviceInstance = mock(ServiceInstance.class);
             when(serviceInstance.getUri()).thenReturn(new URI("https://localhost:1000/zaas"));
-            when(serviceInstance.getServiceId()).thenReturn("zaas");
-
             when(discoveryClient.getServices()).thenReturn(asList("zaas"));
             when(discoveryClient.getInstances("zaas")).thenReturn(asList(serviceInstance));
         }
