@@ -23,6 +23,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 
+/**
+ * Filter is used to clear values in request headers. Provide list of such headers in property source and they will
+ * be set to null. Proper header values can then be set in next filter.
+ */
 @Component
 public class HeaderSanitizerFilterFactory implements WebFilter, GlobalFilter, Ordered {
 
