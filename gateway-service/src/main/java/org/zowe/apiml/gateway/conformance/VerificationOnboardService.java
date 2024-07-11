@@ -204,13 +204,13 @@ public class VerificationOnboardService {
         // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
             URI uri = discoveryClient.getServices().stream()
+                .filter(service -> CoreService.ZAAS.getServiceId().equalsIgnoreCase(service))
                 .flatMap(service -> discoveryClient.getInstances(service).stream())
-                .filter(service -> CoreService.ZAAS.getServiceId().equalsIgnoreCase(service.getServiceId()))
                 .findFirst()
                 .map(ServiceInstance::getUri)
                 .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY));
 
-            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
+            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/validate/auth");
             ResponseEntity<String> validationResponse = restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
             if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
                 throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);
