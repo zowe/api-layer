@@ -65,7 +65,7 @@ public class SafIdtSchemeTest {
             ZaasTokenResponse response = ZaasTokenResponse.builder().token(SAF_IDT).headerName(SAF_TOKEN_HEADER).build();
 
             zaas = mockService("zaas").scope(MockService.Scope.TEST)
-                .addEndpoint("/zaas/zaas/safIdt")
+                .addEndpoint("/zaas/scheme/safIdt")
                 .responseCode(200)
                 .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                 .assertion(he -> {
@@ -106,7 +106,7 @@ public class SafIdtSchemeTest {
         void setup() throws IOException {
 
             zaas = mockService("zaas").scope(MockService.Scope.CLASS)
-                .addEndpoint("/zaas/zaas/safIdt")
+                .addEndpoint("/zaas/scheme/safIdt")
                 .responseCode(401)
                 .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                 .and().start();

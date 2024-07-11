@@ -119,15 +119,21 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
         List<FilterDefinition> serviceRelated = new LinkedList<>();
-        if (
-            forwardingClientCertEnabled &&
-            Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
-                .map(Boolean::parseBoolean).orElse(false)
+        if (forwardingClientCertEnabled
+                && Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
+                    .map(Boolean::parseBoolean)
+                    .orElse(false)
         ) {
             FilterDefinition forwardClientCertFilter = new FilterDefinition();
             forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
             serviceRelated.add(forwardClientCertFilter);
         }
+
+        FilterDefinition pageRedirectionFilter = new FilterDefinition();
+        pageRedirectionFilter.setName("PageRedirectionFilterFactory");
+        pageRedirectionFilter.addArg("serviceId", serviceInstance.getServiceId());
+        pageRedirectionFilter.addArg("instanceId", serviceInstance.getInstanceId());
+        serviceRelated.add(pageRedirectionFilter);
 
         return join(commonFilters, serviceRelated);
     }

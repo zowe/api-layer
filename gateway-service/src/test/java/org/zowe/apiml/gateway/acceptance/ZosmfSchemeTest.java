@@ -16,7 +16,7 @@ public class ZosmfSchemeTest extends TokenSchemeTest {
 
     @Override
     public String getTokenEndpoint() {
-        return "/zaas/zaas/zosmf";
+        return "/zaas/scheme/zosmf";
     }
 
     @Override

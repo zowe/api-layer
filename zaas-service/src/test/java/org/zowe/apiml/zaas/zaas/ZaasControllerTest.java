@@ -79,10 +79,10 @@ class ZaasControllerTest {
     private AuthSource authSource;
     private AuthSource.Parsed authParsedSource;
 
-    private static final String PASSTICKET_URL = "/zaas/zaas/ticket";
-    private static final String ZOSMF_TOKEN_URL = "/zaas/zaas/zosmf";
-    private static final String ZOWE_TOKEN_URL = "/zaas/zaas/zoweJwt";
-    private static final String SAFIDT_URL = "/zaas/zaas/safIdt";
+    private static final String PASSTICKET_URL = "/zaas/scheme/ticket";
+    private static final String ZOSMF_TOKEN_URL = "/zaas/scheme/zosmf";
+    private static final String ZOWE_TOKEN_URL = "/zaas/scheme/zoweJwt";
+    private static final String SAFIDT_URL = "/zaas/scheme/safIdt";
 
     private static final String USER = "test_user";
     private static final String PASSTICKET = "test_passticket";
