@@ -134,7 +134,7 @@ class VerificationOnboardServiceTest {
 
         private void setUpZaasService() throws URISyntaxException {
             ServiceInstance serviceInstance = mock(ServiceInstance.class);
-            when(serviceInstance.getUri()).thenReturn(new URI("https://localhost:1000/zaas"));
+            when(serviceInstance.getUri()).thenReturn(new URI("https://localhost:1000"));
             when(discoveryClient.getServices()).thenReturn(asList("zaas"));
             when(discoveryClient.getInstances("zaas")).thenReturn(asList(serviceInstance));
         }
