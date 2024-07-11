@@ -84,7 +84,7 @@ public class WebSecurity {
 
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
-    public static final String CONFORMANCE = CONTEXT_PATH + "/conformance";
+    public static final String CONFORMANCE = CONTEXT_PATH + "/conformance/**";
     public static final String VALIDATE = "/validate";
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
@@ -343,8 +343,13 @@ public class WebSecurity {
     public SecurityWebFilterChain securityWebFilterChainForActuator(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
-                "/application"
+                "/application/**"
             ))
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec
+                    .pathMatchers("/application/health", "/application/info", "/application/version")
+                    .permitAll()
+            )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
                     .anyExchange().authenticated()

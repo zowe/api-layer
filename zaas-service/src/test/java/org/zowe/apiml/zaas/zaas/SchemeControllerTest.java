@@ -60,7 +60,7 @@ import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 @ExtendWith(SpringExtension.class)
-class ZaasControllerTest {
+class SchemeControllerTest {
 
     @Mock
     private AuthSourceService authSourceService;
@@ -93,7 +93,7 @@ class ZaasControllerTest {
     @BeforeEach
     void setUp() throws IRRPassTicketGenerationException, JSONException {
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
-        ZaasController zaasController = new ZaasController(authSourceService, passTicketService, zosmfService, tokenCreationService);
+        SchemeController zaasController = new SchemeController(authSourceService, passTicketService, zosmfService, tokenCreationService);
         MessageService messageService = new YamlMessageService("/zaas-messages.yml");
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         ticketBody = new JSONObject()

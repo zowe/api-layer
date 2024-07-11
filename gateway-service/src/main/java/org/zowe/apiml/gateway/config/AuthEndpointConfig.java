@@ -38,7 +38,15 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
 
-
+/**
+ * This class uses Spring Cloud Gateway capabilities to compose routes to some ZAAS-provided endpoints.
+ *
+ * They remain for back-compatibility with API ML v2.x.x
+ * Authentication Schemes go through a different channel with Spring Cloud Gateway filters.
+ *
+ * @see SchemeController
+ * @see AuthController
+ */
 @Slf4j
 @Configuration
 public class AuthEndpointConfig {
@@ -133,7 +141,8 @@ public class AuthEndpointConfig {
             .andRoute(path("/gateway/api/v1/auth/keys/public/all"), resendTo("/api/v1/auth/keys/public/all"))
             .andRoute(path("/gateway/api/v1/auth/keys/public/current"), resendTo("/api/v1/auth/keys/public/current"))
             .andRoute(path("/gateway/api/v1/auth/oidc-token/validate"), resendTo("/api/v1/auth/oidc-token/validate"))
-            .andRoute(path("/gateway/api/v1/auth/oidc/webfinger"), resendTo("/api/v1/auth/oidc/webfinger"));
+            .andRoute(path("/gateway/api/v1/auth/oidc/webfinger"), resendTo("/api/v1/auth/oidc/webfinger"))
+            .andRoute(path("/gateway/auth/check"), resendTo("/auth/check"));
     }
 
 }

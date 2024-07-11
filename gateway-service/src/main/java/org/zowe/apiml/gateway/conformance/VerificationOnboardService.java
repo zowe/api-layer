@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -40,6 +41,7 @@ import java.util.Set;
  * a provided serviceId.
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class VerificationOnboardService {
 
@@ -210,10 +212,16 @@ public class VerificationOnboardService {
                 .map(ServiceInstance::getUri)
                 .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY));
 
-            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/validate/auth");
-            ResponseEntity<String> validationResponse = restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
-            if (validationResponse.getStatusCode() == HttpStatus.CONFLICT) {
-                throw new ValidationException(validationResponse.getBody(), ValidateAPIController.NON_CONFORMANT_KEY);
+            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
+            try {
+                restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
+            } catch (HttpClientErrorException.Conflict e) {
+                throw new ValidationException(e.getResponseBodyAsString(), ValidateAPIController.NON_CONFORMANT_KEY);
+            } catch (Exception e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error getting authentication support", e);
+                }
+                throw new ValidationException("Error validating the authentication support", ValidateAPIController.NO_METADATA_KEY);
             }
 
         }
