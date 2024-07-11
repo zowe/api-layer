@@ -159,6 +159,11 @@ public final class CookieUtil {
         return sb.toString();
     }
 
+    /**
+     * Read cookie from HTTP header and return it as stream, otherwise return empty list.
+     * @param httpHeaders the HTTP header
+     * @return stream of HttpCookie
+     */
     public static Stream<HttpCookie> readCookies(HttpHeaders httpHeaders) {
         return Optional.ofNullable(httpHeaders.get(HttpHeaders.COOKIE))
             .orElse(Collections.emptyList())

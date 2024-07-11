@@ -12,12 +12,16 @@ package org.zowe.apiml.util;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+
+import java.net.HttpCookie;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CookieUtilTest {
 
@@ -38,6 +42,27 @@ class CookieUtilTest {
         assertEquals("", CookieUtil.removeCookie("a=b", "a"));
         assertEquals("a=1;c=3", CookieUtil.removeCookie("a=1;b=2;c=3", "b"));
         assertEquals("", CookieUtil.removeCookie("a=1;a=2;a=3", "a"));
+    }
+
+    @Nested
+    class WhenReadCookie {
+
+        @Test
+        void givenCookie_thenExtractIt() {
+            HttpHeaders header = new HttpHeaders();
+            String expectedCookie = "apimlToken=cookie";
+            header.put(HttpHeaders.COOKIE, Collections.singletonList(expectedCookie));
+            Stream<HttpCookie> httpCookieStream = CookieUtil.readCookies(header);
+            String extractedCookie = httpCookieStream.toList().get(0).toString();
+            assertEquals(expectedCookie, extractedCookie);
+        }
+
+        @Test
+        void givenNoCookie_thenReturnEmpty() {
+            HttpHeaders header = new HttpHeaders();
+            Stream<HttpCookie> httpCookieStream = CookieUtil.readCookies(header);
+            assertTrue(httpCookieStream.toList().isEmpty());
+        }
     }
 
     @Nested
