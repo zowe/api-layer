@@ -169,13 +169,6 @@ messages:
       reason: "An error occurred during SAF verification. Review the reason in the error message."
       action: "Verify the Identity Token configuration."
 
-    - key: org.zowe.apiml.security.idt.auth.failed
-      number: ZWEAG151
-      type: ERROR
-      text: "SAF IDT is not generated because authentication or authorization failed. Reason: %s"
-      reason: "The user credentials were rejected during SAF verification. Review the reason in the error message."
-      action: "Provide a valid username and password."
-
     - key: org.zowe.apiml.zaas.security.schema.missingAuthentication
       number: ZWEAG160
       type: ERROR
@@ -196,48 +189,6 @@ messages:
       text: "ZAAS failed to obtain token."
       reason: "Authentication request to get token failed."
       action: "Contact your administrator."
-
-    - key: org.zowe.apiml.zaas.security.scheme.x509ParsingError
-      number: ZWEAG163
-      type: ERROR
-      text: "Error occurred while parsing X509 certificate."
-      reason: "%s"
-      action: "Configure your client to provide valid x509 certificate."
-
-    - key: org.zowe.apiml.zaas.security.scheme.x509ValidationError
-      number: ZWEAG164
-      type: ERROR
-      text: "Error occurred while validating X509 certificate. %s"
-      reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
-      action: "Configure your client to provide valid x509 certificate."
-
-    - key: org.zowe.apiml.zaas.security.scheme.x509ExtendedKeyUsageError
-      number: ZWEAG165
-      type: ERROR
-      text: "X509 certificate is missing the client certificate extended usage definition"
-      reason: "X509 certificate cannot be used for client authentication."
-      action: "Configure your client to provide valid x509 certificate."
-
-    - key: org.zowe.apiml.zaas.security.scheme.zosmfSchemeNotSupported
-      number: ZWEAG166
-      type: ERROR
-      text: "ZOSMF authentication scheme is not supported for this API ML instance."
-      reason: "z/OSMF is not used as security provider for API ML."
-      action: "Contact your administrator."
-
-    - key: org.zowe.apiml.zaas.security.schema.missingX509Authentication
-      number: ZWEAG167
-      type: ERROR
-      text: "No client certificate provided in the request"
-      reason: "The X509 client certificate was not provided with the request"
-      action: "Configure your client to provide valid certificate."
-
-    - key: org.zowe.apiml.zaas.security.invalidAuthentication
-      number: ZWEAG168
-      type: ERROR
-      text: "Invalid authentication provided in request"
-      reason: "The JWT token or client certificate is not valid"
-      action: "Configure your client to provide valid authentication."
 
     - key: org.zowe.apiml.zaas.security.scheme.missingApplid
       number: ZWEAG169

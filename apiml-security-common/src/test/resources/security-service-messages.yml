@@ -108,14 +108,6 @@ messages:
       reason: "The request body is not valid"
       action: "Use a valid body in the request. Format of a message: {validity: int , scopes: [string]}."
 
-    # Personal access token messages
-    - key: org.zowe.apiml.security.token.accessTokenBodyMissingScopes
-      number: ZWEAT606
-      type: ERROR
-      text: "Body in the HTTP request for Personal Access Token does not contain scopes"
-      reason: "The request body is not valid"
-      action: "Provide a list of services for which this token will be valid"
-
     # Revoke personal access token
     - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
       number: ZWEAT607

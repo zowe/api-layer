@@ -87,83 +87,12 @@ messages:
       reason: "Authentication is required."
       action: "Provide valid authentication."
 
-    # IDT messages (150 - 159)
-    - key: org.zowe.apiml.security.idt.failed
-      number: ZWEAG150
-      type: ERROR
-      text: "SAF IDT generation failed. Reason: %s"
-      reason: "An error occurred during SAF verification. Review the reason in the error message."
-      action: "Verify the Identity Token configuration."
-
-    - key: org.zowe.apiml.security.idt.auth.failed
-      number: ZWEAG151
-      type: ERROR
-      text: "SAF IDT is not generated because authentication or authorization failed. Reason: %s"
-      reason: "The user credentials were rejected during SAF verification. Review the reason in the error message."
-      action: "Provide a valid username and password."
-
-    - key: org.zowe.apiml.gateway.security.schema.missingAuthentication
-      number: ZWEAG160
-      type: ERROR
-      text: "No authentication provided in the request"
-      reason: "The JWT token or client certificate was not provided with the request"
-      action: "Configure your client to provide valid authentication."
-
-    - key: org.zowe.apiml.gateway.security.schema.x509.mappingFailed
-      number: ZWEAG161
-      type: ERROR
-      text: "No user was found"
-      reason: "It was not possible to map provided token or certificate to the mainframe identity."
-      action: "Ask your security administrator to connect your token or client certificate with your mainframe user."
-
-    - key: org.zowe.apiml.gateway.security.token.authenticationFailed
-      number: ZWEAG162
-      type: ERROR
-      text: "Gateway service failed to obtain token."
-      reason: "Authentication request to get token failed."
-      action: "Contact your administrator."
-
-    - key: org.zowe.apiml.gateway.security.scheme.x509ParsingError
-      number: ZWEAG163
-      type: ERROR
-      text: "Error occurred while parsing X509 certificate."
-      reason: "%s"
-      action: "Configure your client to provide valid x509 certificate."
-
-    - key: org.zowe.apiml.gateway.security.scheme.x509ValidationError
-      number: ZWEAG164
-      type: ERROR
-      text: "Error occurred while validating X509 certificate. %s"
-      reason: "X509 certificate cannot be validated or the certificate cannot be used for client authentication."
-      action: "Configure your client to provide valid x509 certificate."
-
-    - key: org.zowe.apiml.gateway.security.scheme.x509ExtendedKeyUsageError
-      number: ZWEAG165
-      type: ERROR
-      text: "X509 certificate is missing the client certificate extended usage definition"
-      reason: "X509 certificate cannot be used for client authentication."
-      action: "Configure your client to provide valid x509 certificate."
-
-    - key: org.zowe.apiml.gateway.security.scheme.zosmfSchemeNotSupported
-      number: ZWEAG166
-      type: ERROR
-      text: "ZOSMF authentication scheme is not supported for this API ML instance."
-      reason: "z/OSMF is not used as security provider for API ML."
-      action: "Contact your administrator."
-
     - key: org.zowe.apiml.gateway.security.schema.missingX509Authentication
       number: ZWEAG167
       type: ERROR
       text: "No client certificate provided in the request"
       reason: "The X509 client certificate was not provided with the request"
       action: "Configure your client to provide valid certificate."
-
-    - key: org.zowe.apiml.gateway.security.invalidAuthentication
-      number: ZWEAG168
-      type: ERROR
-      text: "Invalid authentication provided in request"
-      reason: "The JWT token or client certificate is not valid"
-      action: "Configure your client to provide valid authentication."
 
     - key: org.zowe.apiml.common.sslContextInitializationError
       number: ZWEAM400
@@ -182,14 +111,6 @@ messages:
       text: "The user is not authorized to the target resource: %s"
       reason: "The service has accepted the authentication of the user but the user does not have access rights to the resource."
       action: "Contact your security administrator to give you access."
-
-    # Revoke personal access token
-    - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
-      number: ZWEAT607
-      type: ERROR
-      text: "Body in the revoke request is not valid."
-      reason: "The request body is not valid"
-      action: "Use a valid body in the request. Format of a message: {userId: string, (optional)timestamp: long} or {serviceId: string, (optional)timestamp: long}."
 
     - key: org.zowe.apiml.gateway.servicesRequestFailed
       number: ZWESG100
