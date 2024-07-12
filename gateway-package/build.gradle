@@ -12,13 +12,13 @@ dependencies {
     gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
 }
 
-task packageGateway(type: Zip) {
+task packageApiGateway(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
     def resourceDir = 'src/main/resources/'
 
     into('/') {
-        from "$resourceDir/manifest.yaml"
+        from "$buildDir/convert/manifest.yaml"
         from "../schemas/gateway-schema.json"
     }
 
@@ -29,11 +29,38 @@ task packageGateway(type: Zip) {
     }
 }
 
-jar.dependsOn(packageGateway)
-build.dependsOn(packageGateway)
+// save build information to manifest
+packageApiGateway.doFirst {
+    String manifest = file('src/main/resources/manifest.yaml').text
+
+    def getCommitHash = 'git rev-parse --verify HEAD'.execute()
+    def commit_hash = new ByteArrayOutputStream()
+    def command_err = new ByteArrayOutputStream()
+    getCommitHash.consumeProcessOutput(commit_hash, command_err)
+    getCommitHash.waitForOrKill(1000)
+
+    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("BRANCH_NAME") ?: "")
+        .replaceAll("\\{\\{build.number\\}\\}", System.getenv("BUILD_NUMBER") ?: "")
+        .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
+        .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
+
+    def scriptOutputDir = new File("$buildDir/convert/");
+    if (!scriptOutputDir.exists()) {
+        scriptOutputDir.mkdirs();
+    }
+    File convertedManifest = new File("$buildDir/convert/manifest.yaml");
+    if (convertedManifest.exists()) {
+        convertedManifest.delete();
+    }
+    convertedManifest.createNewFile();
+    convertedManifest.write(manifest)
+}
+
+jar.dependsOn(packageApiGateway)
+build.dependsOn(packageApiGateway)
 
 artifacts {
-    zip packageGateway
+    zip packageApiGateway
 }
 
 publishing {
