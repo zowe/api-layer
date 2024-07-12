@@ -33,13 +33,19 @@ public class BasicAuthFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var authHeader = resolveAuth(exchange.getRequest());
-        return authHeader.map(header -> basicAuthProvider.getToken(header).flatMap(token -> {
-            if (StringUtils.isEmpty(token)) {
-                return chain.filter(exchange);
-            }
-            var auth = createAuthenticatedFromHeader(token, header);
-            return chain.filter(exchange).contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(auth));
-        })).orElseGet(() -> chain.filter(exchange));
+        return authHeader
+            .map(header -> basicAuthProvider.getToken(header)
+                .flatMap(token -> {
+                        if (StringUtils.isEmpty(token)) {
+                            return chain.filter(exchange);
+                        }
+                        var auth = createAuthenticatedFromHeader(token, header);
+                        return chain.filter(exchange)
+                            .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(auth));
+                    }
+                )
+            )
+            .orElseGet(() -> chain.filter(exchange));
     }
 
     private Optional<String> resolveAuth(ServerHttpRequest request) {
