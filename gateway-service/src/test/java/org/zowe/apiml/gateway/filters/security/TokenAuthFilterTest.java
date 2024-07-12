@@ -95,6 +95,7 @@ class TokenAuthFilterTest {
                     ));
             }
 
+            @SuppressWarnings("unchecked")
             @Test
             void givenTokenIsInHeaderValid_thenCreateAuthentication() {
                 mockTokenInHeader();

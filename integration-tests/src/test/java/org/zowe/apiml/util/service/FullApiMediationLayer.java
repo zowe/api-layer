@@ -80,7 +80,7 @@ public class FullApiMediationLayer {
     }
 
     private void prepareGateway() {
-        gatewayService = new RunningService("gateway", "gateway-package/src/main/resources/bin", null, null);
+        gatewayService = new RunningService("gateway", "gateway-service/build/libs", null, null);
     }
 
     private void prepareCatalog() {
@@ -136,7 +136,7 @@ public class FullApiMediationLayer {
             cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
             Map<String, String> zaasEnv = new HashMap<>(env);
             zaasEnv.put("ZWE_configs_port", "10023");
-            zaasService.startWithScript("gateway-package/src/main/resources/bin", zaasEnv);
+            zaasService.startWithScript("zaas-package/src/main/resources/bin", zaasEnv);
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
