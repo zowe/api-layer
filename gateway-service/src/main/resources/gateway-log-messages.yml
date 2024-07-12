@@ -43,13 +43,6 @@ messages:
       reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
       action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
 
-    - key: org.zowe.apiml.gateway.invalidRoute
-      number: ZWEAG712
-      type: ERROR
-      text: "The URI '%s' is an invalid format"
-      reason: "The URI does not follow the format /{serviceId}/{type}/{version}/{endpoint} or /{type}/{version}/{serviceId}/{endpoint}."
-      action: "Use a properly formatted URI."
-
     - key: org.zowe.apiml.gateway.verifier.wrongServiceId
       number: ZWEAG717
       type: ERROR
