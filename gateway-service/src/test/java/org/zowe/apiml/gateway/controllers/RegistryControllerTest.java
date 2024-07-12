@@ -58,7 +58,6 @@ class RegistryControllerTest {
                 .expectNext(apimlInfoTwo)
                 .verifyComplete();
 
-
             verify(gatewayIndexService).listRegistry(null, null, null);
             verify(centralApimlInfoMapper).buildApimlServiceInfo("apiml1", servicesOne);
             verify(centralApimlInfoMapper).buildApimlServiceInfo("apiml2", servicesTwo);
