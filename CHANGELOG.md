@@ -5,17 +5,17 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `2.17.0 (2024-07-12)`
 
 * Feature:  Cloud gateway support for AT-TLS (#3564) ([084f9b4](https://github.com/zowe/api-layer/commit/084f9b4)), closes [#3564](https://github.com/zowe/api-layer/issues/3564)
-* Feature:  customizable request buffer size for websocket connections (#3609) ([4a7ac74](https://github.com/zowe/api-layer/commit/4a7ac74)), closes [#3609](https://github.com/zowe/api-layer/issues/3609)
+* Feature:  Customizable request buffer size for WebSocket connections (#3609) ([4a7ac74](https://github.com/zowe/api-layer/commit/4a7ac74)), closes [#3609](https://github.com/zowe/api-layer/issues/3609)
 
 
-* Bugfix:  update attls icsf condition (#3635) ([3954f0c](https://github.com/zowe/api-layer/commit/3954f0c)), closes [#3635](https://github.com/zowe/api-layer/issues/3635)
-* Bugfix:  add missing PAT documetantion (#3618) ([224f897](https://github.com/zowe/api-layer/commit/224f897)), closes [#3618](https://github.com/zowe/api-layer/issues/3618)
+* Bugfix:  Update attls icsf condition (#3635) ([3954f0c](https://github.com/zowe/api-layer/commit/3954f0c)), closes [#3635](https://github.com/zowe/api-layer/issues/3635)
+* Bugfix:  Add missing PAT documetantion (#3618) ([224f897](https://github.com/zowe/api-layer/commit/224f897)), closes [#3618](https://github.com/zowe/api-layer/issues/3618)
 * Bugfix:  Add requestConnectionTimeout as a zowe.yaml property (#3629) ([ef1e451](https://github.com/zowe/api-layer/commit/ef1e451)), closes [#3629](https://github.com/zowe/api-layer/issues/3629)
 * Bugfix:  disable auto conversion for tagged files on z/os (#3619) ([75025bc](https://github.com/zowe/api-layer/commit/75025bc)), closes [#3619](https://github.com/zowe/api-layer/issues/3619)
 * Bugfix:  Do not load keystore when ATTLS is set, to allow for ICSF keys. Keystore reading of ICSF keys i ([bd4e738](https://github.com/zowe/api-layer/commit/bd4e738)), closes [#3612](https://github.com/zowe/api-layer/issues/3612)
 * Bugfix:  optionaly protect health endpoint (#3625) ([204e120](https://github.com/zowe/api-layer/commit/204e120)), closes [#3625](https://github.com/zowe/api-layer/issues/3625)
 * Bugfix:  Provide the correct external URL in the ZUUL Gateway if AT-TLS is enabled (#3565) ([ef78150](https://github.com/zowe/api-layer/commit/ef78150)), closes [#3565](https://github.com/zowe/api-layer/issues/3565)
-* Bugfix:  specify protocol in the start.sh (#3593) ([9992aba](https://github.com/zowe/api-layer/commit/9992aba)), closes [#3593](https://github.com/zowe/api-layer/issues/3593)
+* Bugfix:  Specify protocol in the start.sh (#3593) ([9992aba](https://github.com/zowe/api-layer/commit/9992aba)), closes [#3593](https://github.com/zowe/api-layer/issues/3593)
 * Bugfix:  UI titles and message consistency (#3502) ([bcf992d](https://github.com/zowe/api-layer/commit/bcf992d)), closes [#3502](https://github.com/zowe/api-layer/issues/3502)
 * Bugfix:  WebSocket client default timeout (#3613) ([7b8e29b](https://github.com/zowe/api-layer/commit/7b8e29b)), closes [#3613](https://github.com/zowe/api-layer/issues/3613)
 
