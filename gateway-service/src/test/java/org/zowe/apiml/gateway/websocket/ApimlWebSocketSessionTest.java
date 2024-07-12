@@ -22,7 +22,6 @@ import org.springframework.web.reactive.socket.CloseStatus;
 import reactor.core.publisher.Sinks;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ApimlWebSocketSessionTest {
+class ApimlWebSocketSessionTest {
 
     @Mock
     private ApimlWebSocketSession webSocketSession;
@@ -47,7 +46,7 @@ public class ApimlWebSocketSessionTest {
     @Test
     void givenAuthenticationException_WhenError_then1003() {
         webSocketSession.onError(new Throwable(new AuthenticationException("message")));
-        verify(webSocketSession, times(1)).close(eq(new CloseStatus(1003, "Invalid login credentials")));
+        verify(webSocketSession, times(1)).close(new CloseStatus(1003, "Invalid login credentials"));
     }
 
     @Test
@@ -65,6 +64,7 @@ public class ApimlWebSocketSessionTest {
 
         ReflectionTestUtils.setField(webSocketSession, "completionSink", emptyMock);
         webSocketSession.onError(e);
+        verify(emptyMock, times(1)).tryEmitError(e);
     }
 
 }

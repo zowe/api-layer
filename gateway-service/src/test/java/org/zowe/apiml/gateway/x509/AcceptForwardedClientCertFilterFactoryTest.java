@@ -55,10 +55,10 @@ class AcceptForwardedClientCertFilterFactoryTest {
         VPx2
         -----END CERTIFICATE-----""";
 
-    private static String ENCODED_CERT;
+    private static String encodedCert;
 
     static {
-        ENCODED_CERT = new String(Base64.getEncoder().encode(VALID_CERTIFICATE.getBytes()));
+        encodedCert = new String(Base64.getEncoder().encode(VALID_CERTIFICATE.getBytes()));
     }
 
     @Test
@@ -70,7 +70,7 @@ class AcceptForwardedClientCertFilterFactoryTest {
         var req = mock(ServerHttpRequest.class);
         var header = new HttpHeaders();
 
-        header.add(CLIENT_CERT_HEADER, ENCODED_CERT);
+        header.add(CLIENT_CERT_HEADER, encodedCert);
         when(req.getHeaders()).thenReturn(header);
         when(exchange.getRequest()).thenReturn(req);
         when(req.mutate()).thenReturn(new ClientCertFilterFactoryTest.ServerHttpRequestBuilderMock());
