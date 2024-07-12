@@ -47,8 +47,8 @@ class ClientCertFilterFactoryTest {
     private final X509Certificate[] x509Certificates = new X509Certificate[1];
 
     SslInfo sslInfo = mock(SslInfo.class);
-    ServerWebExchange exchange = mock(ServerWebExchange.class);
-    ServerHttpRequest request = mock(ServerHttpRequest.class);
+    static ServerWebExchange exchange = mock(ServerWebExchange.class);
+    static ServerHttpRequest request = mock(ServerHttpRequest.class);
     GatewayFilterChain chain = mock(GatewayFilterChain.class);
     ForwardClientCertFilterFactory filterFactory;
     ForwardClientCertFilterFactory.Config filterConfig = new ForwardClientCertFilterFactory.Config();
@@ -214,8 +214,9 @@ class ClientCertFilterFactoryTest {
         }
     }
 
-    private class ServerHttpRequestBuilderMock implements ServerHttpRequest.Builder {
+    public static class ServerHttpRequestBuilderMock implements ServerHttpRequest.Builder {
         HttpHeaders headers = new HttpHeaders();
+        SslInfo sslInfo;
 
         @Override
         public ServerHttpRequest.Builder method(HttpMethod httpMethod) {
@@ -251,7 +252,8 @@ class ClientCertFilterFactoryTest {
 
         @Override
         public ServerHttpRequest.Builder sslInfo(SslInfo sslInfo) {
-            return null;
+            this.sslInfo = sslInfo;
+            return this;
         }
 
         @Override
@@ -266,7 +268,7 @@ class ClientCertFilterFactoryTest {
         }
     }
 
-    private class ServerWebExchangeBuilderMock implements ServerWebExchange.Builder {
+    public static class ServerWebExchangeBuilderMock implements ServerWebExchange.Builder {
         ServerHttpRequest request;
 
         @Override
