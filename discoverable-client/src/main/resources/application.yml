@@ -132,6 +132,7 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
                 corsEnabled: true
+                corsAllowedOrigins: http://localhost:3000
                 lb:
                     type: headerRequest
 

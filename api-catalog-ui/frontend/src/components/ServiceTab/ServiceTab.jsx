@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -12,6 +13,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
+import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 
 export default class ServiceTab extends Component {
@@ -278,7 +280,8 @@ export default class ServiceTab extends Component {
                                 </Button>
                             </div>
                         )}
-                        {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
+                        {/*{selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}*/}
+                        {selectedVersion !== 'diff' && <GraphQLContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
                                 selectedVersion={this.state.previousVersion}
