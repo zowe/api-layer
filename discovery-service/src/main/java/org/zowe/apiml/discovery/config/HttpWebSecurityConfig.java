@@ -125,19 +125,17 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
+
+        if (!isHealthEndpointProtected) {
+            http.authorizeRequests(requests -> requests
+                .antMatchers("/application/health").permitAll());
+        }
+
         baseConfigure(http)
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
                 .authorizeRequests(requests -> requests
                         .antMatchers("/application/info").permitAll()
                         .antMatchers("/**").authenticated());
-
-        if (isHealthEndpointProtected) {
-            http.authorizeRequests(requests -> requests
-                .antMatchers("/application/health").authenticated());
-        } else {
-            http.authorizeRequests(requests -> requests
-                .antMatchers("/application/health").permitAll());
-        }
 
         if (isMetricsEnabled) {
             http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
