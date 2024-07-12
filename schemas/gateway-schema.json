@@ -16,13 +16,110 @@
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "apiml": {
+                                            "type": "object",
+                                            "description": "Zowe API ML specific properties.",
+                                            "properties": {
+                                                "service": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "forwardClientCertEnabled": {
+                                                            "type": "boolean",
+                                                            "description": "Enables forwarding client certificate from request to next gateway in a special request header.",
+                                                            "default": false
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "spring": {
+                                            "type": "object",
+                                            "description": "",
+                                            "properties": {
+                                                "security": {
+                                                    "type": "object",
+                                                    "description": "Security settings",
+                                                    "properties": {
+                                                        "oauth2": {
+                                                            "type": "object",
+                                                            "description": "Enable OAuth2 login flow",
+                                                            "properties": {
+                                                                "client": {
+                                                                    "type": "object",
+                                                                    "description": "OAuth2 client settings",
+                                                                    "properties": {
+                                                                        "registration": {
+                                                                            "type": "object",
+                                                                            "description": "OAuth2 Login flow provider-specific settings",
+                                                                            "patternProperties": {
+                                                                                "^[a-zA-Z0-9_]+$": {
+                                                                                    "type": "object",
+                                                                                    "description": "OAuth2 client registration settings",
+                                                                                    "properties": {
+                                                                                        "issuer": {
+                                                                                            "type": "string",
+                                                                                            "description": "The URI used to discover the configuration information for an OAuth 2.0 or OpenID Connect 1.0 Provider."
+                                                                                        },
+                                                                                        "clientId": {
+                                                                                            "type": "string",
+                                                                                            "description": "The client identifier."
+                                                                                        },
+                                                                                        "clientSecret": {
+                                                                                            "type": "string",
+                                                                                            "description": "The client secret."
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "provider": {
+                                                                            "type": "object",
+                                                                            "description": "OAuth2 client authentication provider settings",
+                                                                            "patternProperties": {
+                                                                                "^[a-zA-Z0-9_]+$": {
+                                                                                    "type": "object",
+                                                                                    "description": "OAuth2 client provider settings",
+                                                                                    "properties": {
+                                                                                        "authorizationUrl": {
+                                                                                            "type": "string",
+                                                                                            "description": "The Authorization Endpoint URI for the Authorization Server."
+                                                                                        },
+                                                                                        "tokenUri": {
+                                                                                            "type": "string",
+                                                                                            "description": "The Token Endpoint URI for the Authorization Server."
+                                                                                        },
+                                                                                        "userInfoUri": {
+                                                                                            "type": "string",
+                                                                                            "description": "The UserInfo Endpoint URI used to access the claims/attributes of the authenticated end-user."
+                                                                                        },
+                                                                                        "userNameAttribute": {
+                                                                                            "type": "string",
+                                                                                            "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user.",
+                                                                                            "default": "sub"
+                                                                                        },
+                                                                                        "jwkSetUri": {
+                                                                                            "type": "string",
+                                                                                            "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
                                         "port": {
                                             "$ref": "#/$defs/port",
-                                            "default": 7553
+                                            "default": 7563
                                         },
                                         "debug": {
                                             "type": "boolean",
-                                            "description": "Enable debug logs in gateway service"
+                                            "description": "Enable debug logs in discovery service"
                                         },
                                         "heap": {
                                             "type": "object",
@@ -35,271 +132,6 @@
                                                 "max": {
                                                     "type": "integer",
                                                     "description": "Maximum heap size in MB."
-                                                }
-                                            }
-                                        },
-                                        "apiml": {
-                                            "type": "object",
-                                            "description": "Zowe API ML specific properties.",
-                                            "properties": {
-                                                "security": {
-                                                    "type": "object",
-                                                    "description": "Authentication and authorization options",
-                                                    "properties": {
-                                                        "useInternalMapper": {
-                                                            "type": "boolean",
-                                                            "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
-                                                            "default": false
-                                                        },
-                                                        "auth": {
-                                                            "type": "object",
-                                                            "description": "Authentication against API ML.",
-                                                            "properties": {
-                                                                "provider": {
-                                                                    "type": "string",
-                                                                    "description": "Which provider should be used to verify user credentials.",
-                                                                    "enum": ["zosmf","saf"],
-                                                                    "default": "zosmf"
-                                                                },
-                                                                "zosmf": {
-                                                                    "type": "object",
-                                                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
-                                                                    "properties": {
-                                                                        "jwtAutoconfiguration": {
-                                                                            "type": "string",
-                                                                            "description": "Type of the token that is returned from zOSMF after login.",
-                                                                            "enum": ["JWT","LTPA","AUTO"],
-                                                                            "default": "auto"
-                                                                        },
-                                                                        "serviceId": {
-                                                                            "type": "string",
-                                                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
-                                                                            "default": "zosmf"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        "authorization": {
-                                                            "type": "object",
-                                                            "description": "Service info endpoints on gateway service can be protected by SAF resource check. Update this section to enable it.",
-                                                            "properties": {
-                                                                "provider": {
-                                                                    "type": "string",
-                                                                    "description": "Which provider will be used to validate access authorization.",
-                                                                    "enum": ["endpoint","native","dummy"]
-                                                                },
-                                                                "endpoint": {
-                                                                    "type": "object",
-                                                                    "description": "Where the access will be validate.",
-                                                                    "properties": {
-                                                                        "enabled": {
-                                                                            "type": "boolean",
-                                                                            "description": "Is this endpoint enabled?",
-                                                                            "default": false
-                                                                        },
-                                                                        "url": {
-                                                                            "type": "string",
-                                                                            "description": "Url to validate the authorization."
-                                                                        }
-                                                                    }
-                                                                },
-                                                                "resourceClass": {
-                                                                    "type": "string",
-                                                                    "description": "zOS resource to verify access.",
-                                                                    "default": "ZOWE"
-                                                                },
-                                                                "resourceNamePrefix": {
-                                                                    "type": "string",
-                                                                    "description": "Prefix of the resource.",
-                                                                    "default": "APIML."
-                                                                }
-                                                            }
-                                                        },
-                                                        "x509": {
-                                                            "type": "object",
-                                                            "description": "Client certificate authentication support.",
-                                                            "properties": {
-                                                                "enabled": {
-                                                                    "type": "boolean",
-                                                                    "description": "Enable if client certificate should be considered as a source of authentication.",
-                                                                    "default": false
-                                                                },
-                                                                "acceptForwardedCert":  {
-                                                                    "type": "boolean",
-                                                                    "description": "Enable if the the Client Certificate forwarded in a dedicated header should be accepted",
-                                                                    "default": false
-                                                                },
-                                                                "certificatesUrl": {
-                                                                    "type": "string",
-                                                                    "description": "URL of the Central Gateway and its endpoint where it provides its public certificates."
-                                                                },
-                                                                "externalMapperUrl": {
-                                                                    "type": "string",
-                                                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
-                                                                },
-                                                                "externalMapperUser": {
-                                                                    "type": "string",
-                                                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
-                                                                }
-                                                            }
-                                                        },
-                                                        "saf": {
-                                                            "type": "object",
-                                                            "description": "SAF IDT provider.",
-                                                            "properties": {
-                                                                "provider": {
-                                                                    "type": "string",
-                                                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
-                                                                    "enum": ["rest"],
-                                                                    "default": "rest"
-                                                                },
-                                                                "urls": {
-                                                                    "type": "string",
-                                                                    "description": "URLs of the SAF IDT provider used for the token generation and verification.",
-                                                                    "properties": {
-                                                                        "authenticate": {
-                                                                            "type": "string",
-                                                                            "description": "URL of the SAF IDT provider used to generate the SAF token on behalf of the specified user."
-                                                                        },
-                                                                        "verify": {
-                                                                            "type": "string",
-                                                                            "description": "URL of the SAF IDT provider used to validate the SAF token."
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                "service": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "allowEncodedSlashes": {
-                                                            "type": "boolean",
-                                                            "description": "Allow URLs on gateway to contain encoded slashes.",
-                                                            "default": true
-                                                        },
-                                                        "additionalRegistration": {
-                                                            "type": "array",
-                                                            "description": "List of additional Discovery Services URLs to register with and the routing patterns.",
-                                                            "minItems": 1,
-                                                            "items": {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "discoveryServiceUrls": {
-                                                                        "type": "string",
-                                                                        "description": "List of Discovery Services URLs in one security domain. You can separate multiple urls by comma or semicolon."
-                                                                    },
-                                                                    "routes": {
-                                                                        "$ref": "#/$defs/routes"
-                                                                    }
-                                                                },
-                                                                "required": ["discoveryServiceUrls","routes"]
-                                                            }
-                                                        },
-                                                        "corsEnabled": {
-                                                            "type": "boolean",
-                                                            "description": "Allow CORS on gateway.",
-                                                            "default": true
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "server": {
-                                            "type": "object",
-                                            "description": "Configure gateway server properties.",
-                                            "properties": {
-                                                "internal": {
-                                                    "type": "object",
-                                                    "description": "It is possible to enable another gateway port for internal communication.",
-                                                    "properties": {
-                                                        "enabled": {
-                                                            "type": "boolean",
-                                                            "description": "Should internal port be enabled?",
-                                                            "default": false
-                                                        },
-                                                        "port": {
-                                                            "$ref": "#/$defs/port",
-                                                            "default": 7550
-                                                        },
-                                                        "ssl": {
-                                                            "type": "object",
-                                                            "description": "Network encryption options for internal port. If internal is enabled, it will use Zowe SSL configuration as default.",
-                                                            "properties": {
-                                                                "enabled": {
-                                                                    "type": "boolean",
-                                                                    "description": "Should internal port use encryption?",
-                                                                    "default": false
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                "maxConnectionsPerRoute": {
-                                                    "type": "integer",
-                                                    "description": "How many connection should exists for single HTTP client?",
-                                                    "default": 100
-                                                },
-                                                "maxTotalConnections": {
-                                                    "type": "integer",
-                                                    "description": "How many connection should exists in total?",
-                                                    "default": 1000
-                                                },
-                                                "webSocket": {
-                                                    "type": "object",
-                                                    "description": "Customize websocket server parameters",
-                                                    "properties": {
-                                                        "maxIdleTimeout": {
-                                                            "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default idle timeout for its client role.",
-                                                            "default": 3600000
-                                                        },
-                                                        "connectTimeout": {
-                                                            "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default connect timeout for its client role.",
-                                                            "default": 15000
-                                                        },
-                                                        "stopTimeout": {
-                                                            "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default stop timeout for its client role.",
-                                                            "default": 30000
-                                                        },
-                                                        "asyncWriteTimeout": {
-                                                            "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default async write timeout for its client role.",
-                                                            "default": 60000
-                                                        }
-                                                    }
-                                                },
-                                                "ssl": {
-                                                    "type": "object",
-                                                    "description": "Network encryption for gateway service connections.",
-                                                    "properties": {
-                                                        "enabled": {
-                                                            "type": "boolean",
-                                                            "description": "Should gateway use encrypted communication?",
-                                                            "default": true
-                                                        }
-                                                    }
-                                                }
-
-                                            }
-                                        },
-                                        "spring": {
-                                            "type": "object",
-                                            "description": "Application framework parameters",
-                                            "properties": {
-                                                "profiles": {
-                                                    "type": "object",
-                                                    "description": "Profiles that can hold multiple configuration parameters.",
-                                                    "properties": {
-                                                        "active": {
-                                                            "type": "string",
-                                                            "description": "List of the active configuration profiles."
-                                                        }
-                                                    }
                                                 }
                                             }
                                         }
@@ -318,24 +150,6 @@
             "description": "TCP network port",
             "minimum": 1024,
             "maximum": 65535
-        },
-        "routes": {
-            "type": "array",
-            "description": "Routing parameters",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "gatewayUrl": {
-                        "type": "string",
-                        "description": "The portion of the gateway URL which is replaced by the serviceUrl path."
-                    },
-                    "serviceUrl": {
-                        "type": "string",
-                        "description": "The portion of the service instance URL path which replaces the gatewayUrl part."
-                    }
-                },
-                "required": ["gatewayUrl","serviceUrl"]
-            }
         }
     }
 }
