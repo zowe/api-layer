@@ -10,12 +10,12 @@ messages:
 
     # TLS,Certificate messages
     # 500-599
-    - key: org.zowe.apiml.zaas.security.x509.missingCertificate
-      number: ZWEAG500
-      type: ERROR
-      text: "Client certificate is missing in request."
-      reason: "No client certificate is present in the HTTPS request."
-      action: "Properly configure client to send client certificate."
+#    - key: org.zowe.apiml.zaas.security.x509.missingCertificate
+#      number: ZWEAG500
+#      type: ERROR
+#      text: "Client certificate is missing in request."
+#      reason: "No client certificate is present in the HTTPS request."
+#      action: "Properly configure client to send client certificate."
 
     # Various messages
     # 600-699
@@ -37,43 +37,8 @@ messages:
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
-    - key: org.zowe.apiml.zaas.contextNotPrepared
-      number: ZWEAG706
-      type: ERROR
-      text: "RequestContext is not prepared for load balancing."
-      reason: "Custom Ribbon load balancing is not in place before calling Ribbon."
-      action: "Contact Broadcom support."
-
-    - key: org.zowe.apiml.zaas.requestAborted
-      number: ZWEAG707
-      type: ERROR
-      text: "The request to the URL '%s' aborted without retrying on another instance. Caused by: %s"
-      reason: "Request to the server instance failed and will not be retried on another instance."
-      action: "Refer to Caused by details for troubleshooting."
-
-    - key: org.zowe.apiml.zaas.connectionRefused
-      number: ZWEAG708
-      type: ERROR
-      text: "The request to the URL '%s' failed after retrying on all known service instances. Caused by: %s"
-      reason: "Request to the server instance could not be executed on any known service instance."
-      action: "Verify the status of the requested instance."
-
-    - key: org.zowe.apiml.zaas.serviceUnavailable
-      number: ZWEAG709
-      type: ERROR
-      text: "Service is not available at URL '%s'. Error returned: '%s'"
-      reason: "The service is not available."
-      action: "Make sure that the service is running and is accessible by the URL provided in the message."
-
-    - key: org.zowe.apiml.zaas.loadBalancerDoesNotHaveAvailableServer
-      number: ZWEAG710
-      type: ERROR
-      text: "Load balancer does not have available server for client: %s"
-      reason: "The service is not available. It might be removed by the Circuit Breaker or by requesting specific instance that is not available"
-      action: "Try the request later or remove the request for specific instance."
-
     - key: org.zowe.apiml.security.unauthorized
-      number: ZWEAG711
+      number: ZWEAZ711
       type: ERROR
       text: "The principal '%s' is missing queried authorization."
       reason: "The principal does not have the queried access to resource name within resource class."
@@ -143,20 +108,6 @@ messages:
       text: "z/OSMF instance '%s' not found or incorrectly configured. ZAAS is shutting down."
       reason: "The ZAAS could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
       action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with the provided z/OSMF instance. The default timeout is 5 minutes. On a slower system, add the variable components.zaas.apiml.security.jwtInitializerTimeout:... and the value in minutes into Zowe's configuration to override this value."
-
-    - key: org.zowe.apiml.security.zosmfDomainIsEmpty
-      number: ZWEAG109
-      type: ERROR
-      text: "z/OSMF response does not contain field '%s'."
-      reason: "The z/OSMF domain cannot be read."
-      action: "Review the z/OSMF domain value contained in the response received from the 'zosmf/info' REST endpoint."
-
-    - key: org.zowe.apiml.security.errorParsingZosmfResponse
-      number: ZWEAG110
-      type: ERROR
-      text: "Error parsing z/OSMF response. Error returned: '%s"
-      reason: "An error occurred while parsing the z/OSMF JSON response."
-      action: "Check the JSON response received from the 'zosmf/info' REST endpoint."
 
     # Login messages (120 - 130)
     - key: org.zowe.apiml.security.login.invalidCredentials
