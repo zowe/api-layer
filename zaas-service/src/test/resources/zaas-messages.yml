@@ -38,7 +38,7 @@ messages:
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
     - key: org.zowe.apiml.security.unauthorized
-      number: ZWEAZ711
+      number: ZWEAG711
       type: ERROR
       text: "The principal '%s' is missing queried authorization."
       reason: "The principal does not have the queried access to resource name within resource class."
