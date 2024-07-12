@@ -4,9 +4,14 @@ ext {
 }
 
 configurations {
+    zaasServiceJar
     zip
 }
 def resourceDir = 'src/main/resources/'
+
+dependencies {
+    zaasServiceJar(project(path: ":zaas-service", configuration: "liteJarConfiguration"))
+}
 
 task packageApiGateway(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
@@ -18,7 +23,7 @@ task packageApiGateway(type: Zip) {
     }
 
     into('bin/') {
-        from "$resourceDir/bin/zaas-service.jar"
+        from configurations.zaasServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
