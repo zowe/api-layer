@@ -102,8 +102,8 @@ public class SecurityConfiguration {
             mainframeCredentialsConfiguration(
                     baseConfiguration(http.requestMatchers(matchers -> matchers.antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
-                    .authorizeRequests(requests -> requests
-                            .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
+                    .authorizeHttpRequests(requests -> requests
+                            .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider)
                     .authenticationProvider(new CertificateAuthenticationProvider());
@@ -157,28 +157,29 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(baseConfiguration(http))
-                    .authorizeRequests(requests -> requests
-                            .antMatchers("/static-api/**").authenticated()
-                            .antMatchers("/containers/**").authenticated()
-                            .antMatchers(APIDOC_ROUTES).authenticated()
-                            .antMatchers("/application/info").permitAll())
+                    .authorizeHttpRequests(requests -> requests
+                            .requestMatchers("/static-api/**").authenticated()
+                            .requestMatchers("/containers/**").authenticated()
+                            .requestMatchers(APIDOC_ROUTES).authenticated()
+                            .requestMatchers("/application/info").permitAll())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider);
 
 
             if (isHealthEndpointProtected) {
-                http.authorizeRequests(requests -> requests
-                    .antMatchers("/application/health").authenticated());
+             //   http.authorizeHttpRequests()
+                http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/application/health").authenticated());
             } else {
-                http.authorizeRequests(requests -> requests
-                    .antMatchers("/application/health").permitAll());
+                http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/application/health").permitAll());
             }
 
             if (isMetricsEnabled) {
-                http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
+                http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
             }
 
-            http.authorizeRequests(requests -> requests.antMatchers("/application/**").authenticated());
+            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -216,8 +217,8 @@ public class SecurityConfiguration {
     private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
         http
                 // login endpoint
-                .authorizeRequests(requests -> requests
-                        .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
                 .logout(logout -> logout
                         .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
                         .logoutSuccessHandler(logoutSuccessHandler())).apply(new CustomSecurityFilters());

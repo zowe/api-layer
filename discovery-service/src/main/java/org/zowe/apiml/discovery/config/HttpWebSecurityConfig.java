@@ -127,18 +127,18 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
 
         if (!isHealthEndpointProtected) {
-            http.authorizeRequests(requests -> requests
-                .antMatchers("/application/health").permitAll());
+            http.authorizeHttpRequests(requests -> requests
+                .requestMatchers("/application/health").permitAll());
         }
 
         baseConfigure(http)
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
-                .authorizeRequests(requests -> requests
-                        .antMatchers("/application/info").permitAll()
-                        .antMatchers("/**").authenticated());
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/application/info").permitAll()
+                        .requestMatchers("/**").authenticated());
 
         if (isMetricsEnabled) {
-            http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
+            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

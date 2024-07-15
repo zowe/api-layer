@@ -82,14 +82,14 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/favicon.ico"
         };
         return web -> {
-            web.ignoring().antMatchers(noSecurityAntMatchers);
+            web.ignoring().requestMatchers(noSecurityAntMatchers);
 
             if (!isHealthEndpointProtected) {
-                web.ignoring().antMatchers("/application/health");
+                web.ignoring().requestMatchers("/application/health");
             }
 
             if (isMetricsEnabled) {
-                web.ignoring().antMatchers("/application/hystrixstream");
+                web.ignoring().requestMatchers("/application/hystrixstream");
             }
         };
     }
@@ -100,14 +100,14 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.requestMatchers(matchers -> matchers.antMatchers(
+        baseConfigure(http.requestMatchers(matchers -> matchers.requestMatchers(
                 "/application/**",
                 "/*"
         )))
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider)
-                .authorizeRequests(requests -> requests
-                        .antMatchers("/**").authenticated())
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/**").authenticated())
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (isAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -124,14 +124,14 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.antMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeRequests(requests -> requests
+            http.authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authorizeRequests(requests -> requests.anyRequest().permitAll());
+            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
         }
         return http.build();
     }
@@ -147,7 +147,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 .authenticationProvider(gatewayTokenProvider)
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeRequests(requests -> requests.anyRequest().authenticated())
+            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                     .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
