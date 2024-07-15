@@ -24,7 +24,7 @@ import static io.restassured.RestAssured.given;
     }
 )
 
-public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest{
+public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
 
     @Nested
     class GivenHealthEndPointProtectionEnabled {
@@ -43,5 +43,4 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest{
 
         }
     }
-
 }
