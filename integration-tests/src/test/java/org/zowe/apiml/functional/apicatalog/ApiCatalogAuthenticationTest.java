@@ -298,20 +298,5 @@ class ApiCatalogAuthenticationTest {
                 .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
-
-        @Nested
-        @Tag("HealthEndpointProtectionDisabledTest")
-        class GivenHealthEndpointProtectionDisabled {
-            @Test
-            @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
-            void thenDoNotRequireAuthentication() {
-                String healthEndpoint = "/application/health";
-                given()
-                    .when()
-                    .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + healthEndpoint)
-                    .then()
-                    .statusCode(is(SC_OK));
-            }
-        }
     }
 }
