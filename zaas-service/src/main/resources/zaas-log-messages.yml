@@ -10,12 +10,6 @@ messages:
 
     # TLS,Certificate messages
     # 500-599
-#    - key: org.zowe.apiml.zaas.security.x509.missingCertificate
-#      number: ZWEAG500
-#      type: ERROR
-#      text: "Client certificate is missing in request."
-#      reason: "No client certificate is present in the HTTPS request."
-#      action: "Properly configure client to send client certificate."
 
     # Various messages
     # 600-699
