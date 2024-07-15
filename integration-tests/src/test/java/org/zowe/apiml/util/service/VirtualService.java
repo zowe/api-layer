@@ -295,6 +295,8 @@ public class VirtualService implements AutoCloseable {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .get(url)
                         .body();
+                    // FIXME it seems the routing is not deterministic, the first time it's only one instance, the second time it's not guaranteeing that it's the same one replying.
+                    // A possible fix would be to use deterministic routing once implemented.
                     assertEquals(HttpMethod.GET + " " + instanceId, responseBody.print());
                     break;
                 } catch (RuntimeException | AssertionError e) {
