@@ -16,10 +16,7 @@ import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -300,6 +297,21 @@ class ApiCatalogAuthenticationTest {
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
                 .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
+        }
+
+        @Nested
+        @Tag("HealthEndpointProtectionDisabledTest")
+        class GivenHealthEndpointProtectionDisabled {
+            @Test
+            @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
+            void thenDoNotRequireAuthentication() {
+                String healthEndpoint = "/application/health";
+                given()
+                    .when()
+                    .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + healthEndpoint)
+                    .then()
+                    .statusCode(is(SC_OK));
+            }
         }
     }
 }

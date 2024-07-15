@@ -11,14 +11,13 @@
 package org.zowe.apiml.functional.discovery;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import static io.restassured.RestAssured.given;
@@ -74,6 +73,22 @@ class DiscoveryServiceAuthenticationTest {
                         "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    class GivenHealthEndpointProtectionDisabled {
+
+        @Test
+        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
+        void thenDoNotRequireAuthentication() {
+            String healthEndpoint = "/application/health";
+            given()
+                .when()
+                .get(DiscoveryUtils.getDiscoveryUrl() + healthEndpoint)
+                .then()
+                .statusCode(is(SC_OK));
         }
     }
 }
