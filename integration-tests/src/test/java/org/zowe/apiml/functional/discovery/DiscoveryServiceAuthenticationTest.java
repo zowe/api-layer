@@ -17,7 +17,6 @@ import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import static io.restassured.RestAssured.given;
@@ -32,6 +31,7 @@ class DiscoveryServiceAuthenticationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private static final String ACTUATOR_ENDPOINT = "/application";
+    private static final String DISCOVERY_HEALTH_ENDPOINT =  "/application/health";
 
     @BeforeAll
     static void setup() throws Exception {
@@ -83,10 +83,9 @@ class DiscoveryServiceAuthenticationTest {
         @Test
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
         void thenDoNotRequireAuthentication() {
-            String healthEndpoint = "/application/health";
             given()
                 .when()
-                .get(DiscoveryUtils.getDiscoveryUrl() + healthEndpoint)
+                .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
                 .then()
                 .statusCode(is(SC_OK));
         }
