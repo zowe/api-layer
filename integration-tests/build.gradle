@@ -444,8 +444,7 @@ task runZaasTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'ZaasTest',
-            'HealthEndpointProtectionDisabledTest'
+            'ZaasTest'
         )
     }
 }
