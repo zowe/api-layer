@@ -1,0 +1,246 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schema/zaas-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "zaas": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7563
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug logs in ZAAS service"
+                                        },
+                                        "heap": {
+                                            "type": "object",
+                                            "description": "Configure JVM parameters for heap size",
+                                            "properties": {
+                                                "init": {
+                                                    "type": "integer",
+                                                    "description": "Initial heap size in MB."
+                                                },
+                                                "max": {
+                                                    "type": "integer",
+                                                    "description": "Maximum heap size in MB."
+                                                }
+                                            }
+                                        },
+                                        "apiml": {
+                                            "type": "object",
+                                            "description": "Zowe API ML specific properties.",
+                                            "properties": {
+                                                "security": {
+                                                    "type": "object",
+                                                    "description": "Authentication and authorization options",
+                                                    "properties": {
+                                                        "useInternalMapper": {
+                                                            "type": "boolean",
+                                                            "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
+                                                            "default": false
+                                                        },
+                                                        "auth": {
+                                                            "type": "object",
+                                                            "description": "Authentication against API ML.",
+                                                            "properties": {
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "description": "Which provider should be used to verify user credentials.",
+                                                                    "enum": ["zosmf","saf"],
+                                                                    "default": "zosmf"
+                                                                },
+                                                                "zosmf": {
+                                                                    "type": "object",
+                                                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
+                                                                    "properties": {
+                                                                        "jwtAutoconfiguration": {
+                                                                            "type": "string",
+                                                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                                                            "enum": ["JWT","LTPA","AUTO"],
+                                                                            "default": "auto"
+                                                                        },
+                                                                        "serviceId": {
+                                                                            "type": "string",
+                                                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
+                                                                            "default": "zosmf"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "authorization": {
+                                                            "type": "object",
+                                                            "description": "Service info endpoints on ZAAS service can be protected by SAF resource check. Update this section to enable it.",
+                                                            "properties": {
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "description": "Which provider will be used to validate access authorization.",
+                                                                    "enum": ["endpoint","native","dummy"]
+                                                                },
+                                                                "endpoint": {
+                                                                    "type": "object",
+                                                                    "description": "Where the access will be validate.",
+                                                                    "properties": {
+                                                                        "enabled": {
+                                                                            "type": "boolean",
+                                                                            "description": "Is this endpoint enabled?",
+                                                                            "default": false
+                                                                        },
+                                                                        "url": {
+                                                                            "type": "string",
+                                                                            "description": "Url to validate the authorization."
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "resourceClass": {
+                                                                    "type": "string",
+                                                                    "description": "zOS resource to verify access.",
+                                                                    "default": "ZOWE"
+                                                                },
+                                                                "resourceNamePrefix": {
+                                                                    "type": "string",
+                                                                    "description": "Prefix of the resource.",
+                                                                    "default": "APIML."
+                                                                }
+                                                            }
+                                                        },
+                                                        "x509": {
+                                                            "type": "object",
+                                                            "description": "Client certificate authentication support.",
+                                                            "properties": {
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "description": "Enable if client certificate should be considered as a source of authentication.",
+                                                                    "default": false
+                                                                },
+                                                                "acceptForwardedCert":  {
+                                                                    "type": "boolean",
+                                                                    "description": "Enable if the the Client Certificate forwarded in a dedicated header should be accepted",
+                                                                    "default": false
+                                                                },
+                                                                "certificatesUrl": {
+                                                                    "type": "string",
+                                                                    "description": "URL of the Central ZAAS and its endpoint where it provides its public certificates."
+                                                                },
+                                                                "externalMapperUrl": {
+                                                                    "type": "string",
+                                                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
+                                                                },
+                                                                "externalMapperUser": {
+                                                                    "type": "string",
+                                                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
+                                                                }
+                                                            }
+                                                        },
+                                                        "saf": {
+                                                            "type": "object",
+                                                            "description": "SAF IDT provider.",
+                                                            "properties": {
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
+                                                                    "enum": ["rest"],
+                                                                    "default": "rest"
+                                                                },
+                                                                "urls": {
+                                                                    "type": "string",
+                                                                    "description": "URLs of the SAF IDT provider used for the token generation and verification.",
+                                                                    "properties": {
+                                                                        "authenticate": {
+                                                                            "type": "string",
+                                                                            "description": "URL of the SAF IDT provider used to generate the SAF token on behalf of the specified user."
+                                                                        },
+                                                                        "verify": {
+                                                                            "type": "string",
+                                                                            "description": "URL of the SAF IDT provider used to validate the SAF token."
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "server": {
+                                            "type": "object",
+                                            "description": "Configure ZAAS server properties.",
+                                            "properties": {
+                                                "ssl": {
+                                                    "type": "object",
+                                                    "description": "Network encryption for ZAAS service connections.",
+                                                    "properties": {
+                                                        "enabled": {
+                                                            "type": "boolean",
+                                                            "description": "Should ZAAS use encrypted communication?",
+                                                            "default": true
+                                                        }
+                                                    }
+                                                }
+
+                                            }
+                                        },
+                                        "spring": {
+                                            "type": "object",
+                                            "description": "Application framework parameters",
+                                            "properties": {
+                                                "profiles": {
+                                                    "type": "object",
+                                                    "description": "Profiles that can hold multiple configuration parameters.",
+                                                    "properties": {
+                                                        "active": {
+                                                            "type": "string",
+                                                            "description": "List of the active configuration profiles."
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        },
+        "routes": {
+            "type": "array",
+            "description": "Routing parameters",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "gatewayUrl": {
+                        "type": "string",
+                        "description": "The portion of the ZAAS URL which is replaced by the serviceUrl path."
+                    },
+                    "serviceUrl": {
+                        "type": "string",
+                        "description": "The portion of the service instance URL path which replaces the gatewayUrl part."
+                    }
+                },
+                "required": ["gatewayUrl","serviceUrl"]
+            }
+        }
+    }
+}
