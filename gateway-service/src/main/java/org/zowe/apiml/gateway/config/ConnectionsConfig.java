@@ -66,6 +66,8 @@ import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.HttpClientSecurityUtils;
+import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -189,13 +191,23 @@ public class ConnectionsConfig {
         SslContext justTruststore = sslContext(false);
         SslContext withKeystore = sslContext(true);
 
+        var builderJustTruststore = SslProvider.builder().sslContext(justTruststore);
+        var builderWithKeystore = SslProvider.builder().sslContext(withKeystore);
+        if (!nonStrictVerifySslCertificatesOfServices) {
+            builderJustTruststore.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+            builderWithKeystore.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        }
+
+        // construct http clients with different SSL configuration - with / without client certs
+        var httpClientNoCert = httpClient.secure(builderJustTruststore.build());
+        var httpClientClientCert = httpClient.secure(builderWithKeystore.build());
         return new BeanPostProcessor() {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
                 if ("routingFilter".equals(beanName)) {
                     log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
                     // once is creating original bean by autoconfiguration replace it with custom implementation
-                    return new NettyRoutingFilterApiml(httpClient, headersFiltersProvider, properties, justTruststore, withKeystore);
+                    return new NettyRoutingFilterApiml(httpClientNoCert,httpClientClientCert, headersFiltersProvider, properties);
                 }
                 // do not touch any other bean
                 return bean;

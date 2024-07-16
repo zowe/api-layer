@@ -113,7 +113,7 @@ server:
     main:
         allow-circular-references: true
 
-logbackServiceName: ZWEAG1
+logbackServiceName: ZWEAGW1
 
 logging:
     level:
