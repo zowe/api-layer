@@ -114,6 +114,14 @@ else
     externalProtocol="http"
 fi
 
+# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
+then
+    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS}
+fi
+
+echo "Setting loader path: "${ZAAS_LOADER_PATH}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -210,6 +218,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djava.library.path=${LIBPATH} \
+    -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
 
 pid=$!
