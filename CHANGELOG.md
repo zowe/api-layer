@@ -20,7 +20,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  WebSocket client default timeout (#3613) ([7b8e29b](https://github.com/zowe/api-layer/commit/7b8e29b)), closes [#3613](https://github.com/zowe/api-layer/issues/3613)
 
 
-## `2.16.2 / Zowe 2.16.2 (2024-05-22)`
+## `2.16.2 / Zowe 2.16.0 (2024-05-22)`
 
 * Feature:  OIDC authentication flow v2 (#3527) ([4c81a7c](https://github.com/zowe/api-layer/commit/4c81a7c)), closes [#3527](https://github.com/zowe/api-layer/issues/3527)
 * Feature:  Add message for when API Mediation Layer starts (#3523) ([b734662](https://github.com/zowe/api-layer/commit/b734662)), closes [#3523](https://github.com/zowe/api-layer/issues/3523)
