@@ -68,7 +68,7 @@
                                                                         "jwtAutoconfiguration": {
                                                                             "type": "string",
                                                                             "description": "Type of the token that is returned from zOSMF after login.",
-                                                                            "enum": ["JWT","LTPA","AUTO"],
+                                                                            "enum": ["JWT","jwt","LTPA","ltpa","AUTO","auto"],
                                                                             "default": "auto"
                                                                         },
                                                                         "serviceId": {
