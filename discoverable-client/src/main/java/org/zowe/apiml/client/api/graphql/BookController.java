@@ -12,8 +12,7 @@ import org.zowe.apiml.client.model.graphql.Book;
 import java.util.List;
 
 @Controller
-@RequestMapping("/api/v1/graphql")
-//@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/v3/graphql")
 public class BookController {
     @QueryMapping
     public Book bookById(@Argument String id) {

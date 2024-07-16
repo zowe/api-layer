@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -33,6 +35,7 @@ function transformSwaggerToCurrentHost(swagger) {
 
     return swagger;
 }
+
 
 function setFilterBarStyle() {
     const filterInput = document.getElementsByClassName('operation-filter-input');
@@ -135,7 +138,6 @@ export default class SwaggerUIApiml extends Component {
                 selectedService.apiDoc.length !== 0
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
-
                 this.setState({
                     swaggerReady: true,
                     swaggerProps: {
