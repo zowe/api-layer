@@ -147,9 +147,6 @@ eureka:
                     ui-v1:
                         gatewayUrl: "/ui/v1"
                         serviceUrl: /apicatalog
-                    ui:
-                        gatewayUrl: "/ui"
-                        serviceUrl: /apicatalog
                     api-v1:
                         gatewayUrl: "/api/v1"
                         serviceUrl: /apicatalog
