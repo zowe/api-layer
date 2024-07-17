@@ -45,6 +45,13 @@ eureka:
             enabled: true
 
 spring:
+    cloud:
+        gateway:
+            filter:
+                secure-headers:
+                    disable: content-security-policy,permitted-cross-domain-policies,download-options
+                    referrer-policy: strict-origin-when-cross-origin
+                    frame-options: sameorigin
     application:
         name: gateway
     security:
@@ -85,7 +92,7 @@ apiml:
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
-            nonStrictVerifySslCertificatesOfServices: true
+            nonStrictVerifySslCertificatesOfServices: false
 
 server:
     http2:
