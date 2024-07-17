@@ -51,6 +51,11 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client-invalid-hostname:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-invalid-hostname
+                    APIML_SERVICE_SERVICEID: invalid-hostname
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             discovery-service-2:
@@ -714,66 +719,6 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsInternalPort:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 15
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runBaseTestsInternalPort --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   uses: ./.github/actions/dump-jacoco
-                if: always()
-
-            -   name: Store results
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
-                    path: |
-                        integration-tests/build/reports/**
-                        results/**
-
-            -   uses: ./.github/actions/teardown
-
     CITestsWithRedisReplica:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -964,7 +909,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4
@@ -1046,7 +990,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
@@ -1136,7 +1079,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4
@@ -1210,7 +1152,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4
@@ -1288,7 +1229,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4
@@ -1366,7 +1306,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4
@@ -1611,7 +1550,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,CITestsInternalPort,GatewayProxy,GatewayServiceRouting ]
+        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,GatewayProxy,GatewayServiceRouting ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1637,10 +1576,6 @@ jobs:
                     path: containercitestszosmfrsu2012
             -   uses: actions/download-artifact@v4
                 with:
-                    name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
-                    path: containercitestsinternalport
-            -   uses: actions/download-artifact@v4
-                with:
                     name: GatewayProxy-${{ env.JOB_ID }}
                     path: GatewayProxy
             -   uses: actions/download-artifact@v4
@@ -1654,7 +1589,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,containercitestsinternalport/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,containercitestszaas/results"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,containercitestszaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
