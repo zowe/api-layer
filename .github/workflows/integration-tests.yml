@@ -51,11 +51,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client-invalid-hostname:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-invalid-hostname
-                    APIML_SERVICE_SERVICEID: invalid-hostname
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             discovery-service-2:
