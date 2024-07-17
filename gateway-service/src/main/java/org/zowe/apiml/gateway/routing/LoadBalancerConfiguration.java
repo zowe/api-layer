@@ -15,8 +15,9 @@ import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.reactive.function.client.WebClient;
 
-//@Configuration
-//@LoadBalancerClients(@LoadBalancerClient(name = "value", configuration = DeterministicLoadBalancerConfiguration.class))
+/**
+ * Configuration class for setting up the load-balanced WebClient and applying the default load balancer configuration.
+ */
 @LoadBalancerClients(defaultConfiguration = DeterministicLoadBalancerConfiguration.class)
 public class LoadBalancerConfiguration {
     @Bean

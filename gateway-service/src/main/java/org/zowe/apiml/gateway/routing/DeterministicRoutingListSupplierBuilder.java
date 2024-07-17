@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplierBuilder;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 
+/**
+ * Builder class for creating a ServiceInstanceListSupplier with deterministic routing.
+ */
 @RequiredArgsConstructor
 public class DeterministicRoutingListSupplierBuilder {
     private final ServiceInstanceListSupplierBuilder builder;

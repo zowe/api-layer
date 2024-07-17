@@ -14,8 +14,17 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * Configuration class for setting up the DeterministicLoadBalancer.
+ */
 public class DeterministicLoadBalancerConfiguration {
 
+    /**
+     * Creates a ServiceInstanceListSupplier bean configured with deterministic routing.
+     *
+     * @param context the application context
+     * @return the configured ServiceInstanceListSupplier
+     */
     @Bean
     public ServiceInstanceListSupplier discoveryClientServiceInstanceListSupplier(ConfigurableApplicationContext context) {
         return new DeterministicRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
