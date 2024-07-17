@@ -1,7 +1,8 @@
 {
     "extends": ["config:recommended", "group:allNonMajor"],
-    
-    "schedule": ["after 9am on every weekday"],
+
+    "timezone": "Europe/Prague",
+    "schedule": ["after 10am every weekday","before 5pm every weekday","every weekend"],
     "labels": ["renovate"],
     "printConfig": true,
     "dependencyDashboard": true,
