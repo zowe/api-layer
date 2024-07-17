@@ -19,8 +19,11 @@ import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalanc
 import org.springframework.cloud.loadbalancer.core.SameInstancePreferenceServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,13 +47,20 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
      * Retrieves the list of service instances, filtered by the 'X-InstanceId' header if present.
      *
      * @param request the load balancer request
-     * @return a Flux of the filtered list of service instances
+     * @return a Flux of the filtered list of service instances, otherwise returns 404 message
      */
     @Override
     public Flux<List<ServiceInstance>> get(Request request) {
         if (instanceIdHeader) {
             return delegate.get(request)
-                .map(serviceInstances -> filterInstances(request.getContext(), serviceInstances))
+                .flatMap(serviceInstances -> {
+                    List<ServiceInstance> filteredInstances = filterInstances(request.getContext(), serviceInstances);
+                    if (filteredInstances.isEmpty()) {
+                        log.warn("No service instance found for the provided instance ID");
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+                    }
+                    return Flux.just(filteredInstances);
+                })
                 .doOnError(e -> log.debug("Error in determining service instances", e));
         }
         return super.get();
@@ -96,6 +106,6 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                 return filteredInstances;
             }
         }
-        return serviceInstances;
+        return new ArrayList<>();
     }
 }
