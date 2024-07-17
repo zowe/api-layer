@@ -53,9 +53,8 @@ public class RoutedServices {
             if (isServiceTypeMatch(serviceEntry, type)) {
                 RoutedService value = serviceEntry.getValue();
                 int size = value.getServiceUrl().length();
-                //Remove last slash for service url
-                String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
-                if (size > maxSize && serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
+                // TODO This was removing the last slash, see https://github.com/zowe/api-layer/issues/3652 to verify if it needs to be restored
+                if (size > maxSize && serviceUrl.toLowerCase().startsWith(value.getServiceUrl().toLowerCase())) {
                     result = value;
                     maxSize = size;
                 }
