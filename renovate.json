@@ -1,13 +1,13 @@
 {
     "extends": ["config:recommended", "group:allNonMajor"],
 
-    "timezone": "Europe/Prague",
-    "schedule": ["after 10am every weekday","before 5pm every weekday","every weekend"],
+    "timezone": "Europe/Berlin",
+    "schedule": ["after 10am every weekday","every weekend"],
     "labels": ["renovate"],
     "printConfig": true,
     "dependencyDashboard": true,
    
-    "baseBranches": ["v3.x.x","v2.x.x"],
+    "baseBranches": ["v3.x.x-renovate","v2.x.x-renovate"],
     "dryRun": "lookup",
     "assignees": ["mirek163"]
 }
