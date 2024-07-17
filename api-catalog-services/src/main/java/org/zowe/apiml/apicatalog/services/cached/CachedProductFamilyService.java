@@ -291,7 +291,8 @@ public class CachedProductFamilyService {
         }
 
         log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
-        return instanceHomePage;
+        // TODO This was removing the last slash, see https://github.com/zowe/api-layer/issues/3652 to verify if it needs to be restored
+        return instanceHomePage != null && instanceHomePage.endsWith("/") ? instanceHomePage : instanceHomePage + "/";
     }
 
     /**
