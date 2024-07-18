@@ -1,0 +1,79 @@
+spring.profiles.include: diag, debug
+apiml:
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        port: 10023
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
+    security:
+        allowTokenRefresh: true
+        webfinger:
+            fileLocation: config/local/webfinger.yml
+        personalAccessToken:
+            enabled: true
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry: zowe.okta.com
+            identityMapperUrl: https://localhost:10010/zss/api/v1/certificate/dn
+            identityMapperUser: APIMTST
+            jwks:
+                uri:
+        auth:
+            jwt:
+                customAuthHeader:
+            passticket:
+                customUserHeader:
+                customAuthHeader:
+            provider: zosmf
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+        ssl:
+            verifySslCertificatesOfServices: true
+        x509:
+            enabled: true
+            acceptForwardedCert: true
+            certificatesUrl: https://localhost:10010/gateway/certificates
+
+    banner: console
+
+spring:
+    config:
+        useLegacyProcessing: true
+    output:
+        ansi:
+            enabled: always
+
+server:
+    internal:
+        enabled: true
+        port: 10017
+        ssl:
+            keyAlias: localhost-multi
+            keyStore: keystore/localhost/localhost-multi.keystore.p12
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+---
+spring.config.activate.on-profile: attls
+
+apiml:
+    service:
+        scheme: http
+        discoveryServiceUrls: http://localhost:10011/eureka/
+    security:
+        saf:
+            urls:
+                authenticate: http://localhost:10013/zss/saf/authenticate
+                verify: http://localhost:10013/zss/saf/verify
+
+

@@ -32,11 +32,11 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @UtilityClass
 public class ZaasTestUtil {
 
-    static final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromGateway(ZAAS_TICKET_ENDPOINT);
-    static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromGateway(ZAAS_ZOSMF_ENDPOINT);
-    static final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromGateway(ZAAS_ZOWE_ENDPOINT);
+    static final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
+    static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
+    static final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
 
-    static final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromGateway(ZAAS_SAFIDT_ENDPOINT);
+    static final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
 
     static final String COOKIE = "apimlAuthenticationToken";
     static final String LTPA_COOKIE = "LtpaToken2";
@@ -45,9 +45,9 @@ public class ZaasTestUtil {
 
     static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
-        args.add(Arguments.of(getClientCertificate()));
+        args.add(Arguments.of(getClientCertificate(), "client certificate"));
         if (!ZOS_TARGET) {
-            args.add(Arguments.of(getDummyClientCertificate()));
+            args.add(Arguments.of(getDummyClientCertificate(), "dummy client certificate"));
         }
         return args.stream();
     }

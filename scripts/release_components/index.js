@@ -24,7 +24,7 @@ const version = process.argv[3];
     manifestJsonContent = JSON.parse(manifestJsonContent)
 
     Object.entries(manifestJsonContent.binaryDependencies).forEach(([key, value]) => {
-        if (key.includes("org.zowe.apiml") && !key.includes("org.zowe.apiml.cloud-gateway-package") && !key.includes("common-java-lib-package")) {
+        if (key.includes("org.zowe.apiml") && !key.includes("org.zowe.apiml.gateway-package") && !key.includes("common-java-lib-package")) {
             value.version = value.version.replace(value.version, `${version}`);
         }
     });

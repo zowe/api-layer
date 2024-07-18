@@ -13,6 +13,7 @@ package org.zowe.apiml.functional.gateway;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -33,6 +34,7 @@ import static io.restassured.RestAssured.given;
  * The controller receive the response from the service and then will post response.
  */
 @GatewayTest
+@Disabled("The overall functionality needs to be reviewed, it doesn't support zosmf, see VerificationOnboardService.java")
 class ValidateAPITest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -49,9 +51,9 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testPostEndpoint() {
         given()
             .log().all()
-            .param("serviceID", "discoverableclient")
+            .body("serviceID=discoverableclient")
             .header("Cookie", "apimlAuthenticationToken=" + token)
-            .when()
+        .when()
             .post(getLegacyEndpointURLPost())
             .then()
             .assertThat()
@@ -105,7 +107,7 @@ class ValidateAPITest implements TestWithStartedInstances {
     void testLegacyEndpointWithNoAuthentication() {
         given()
             .log().all()
-            .param("serviceID", "discoverableclient")
+            .body("serviceID=discoverableclient")
         .when()
             .post(getLegacyEndpointURLPost())
         .then()

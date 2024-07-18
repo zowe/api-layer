@@ -27,7 +27,18 @@ import java.util.*;
 public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
 
     private final String serviceId;
-    private static final String RESPONSE_MESSAGE_TEMPLATE = "{\n" + "\"messageAction\": \"${messageAction}\",\n" + "\"messageContent\": {\n" + "    \"The service ${serviceId} is not conformant\": \n" + "        ${messageContent}\n" + "},\n" + "\"messageKey\": \"${messageKey}\",\n" + "\"messageNumber\": \"${messageNumber}\",\n" + "\"messageReason\": \"${messageReason}\",\n" + "\"messageType\": \"${messageType}\"\n" + "}";
+    private static final String RESPONSE_MESSAGE_TEMPLATE = """
+        {
+            "messageAction": "${messageAction}",
+            "messageContent": {
+                "The service ${serviceId} is not conformant": ${messageContent}
+            },
+            "messageKey": "${messageKey}",
+            "messageNumber": "${messageNumber}",
+            "messageReason": "${messageReason}",
+            "messageType": "${messageType}"
+        }
+    """;
 
     ConformanceProblemsContainer(String serviceId) {
         super();
@@ -48,7 +59,7 @@ public class ConformanceProblemsContainer extends HashMap<String, Set<String>> {
     }
 
     public void add(String key, String value) {
-        if (value == null || value.equals("")) {
+        if (value == null || value.isEmpty()) {
             return;
         }
         this.add(key, new ArrayList<>(Collections.singleton(value)));

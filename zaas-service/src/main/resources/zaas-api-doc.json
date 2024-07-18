@@ -1,0 +1,681 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "REST API for the ZAAS, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
+        "version": "1.3.0",
+        "title": "ZAAS"
+    },
+    "tags": [
+        {
+            "name": "Security",
+            "description": "Mainframe authentication and authorization operations"
+        }
+    ],
+    "paths": {
+        "/zaas/api/v1/auth/login": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Authenticate mainframe user credentials and return authentication token.",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  * HTTP header containing the client certificate\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "operationId": "loginUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "description": "Specifies the user credentials to be authenticated."
+                },
+                "security": [
+                    {
+                        "LoginBasicAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Authenticated",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Cookie named apimlAuthenticationToken contains authentication\ntoken.",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/zaas/api/v1/auth/query": {
+            "get": {
+                "tags": ["Security"],
+                "summary": "Validate the authentication token.",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
+                "operationId": "validateUsingGET",
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Authentication"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/zaas/api/v1/auth/ticket": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Generate a passticket for the user associated with a token.",
+                "description": "Use the `/ticket` API to request a passticket for the user associated with a token.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request takes one parameter, the name of the application for which the passticket should be generated. This parameter must be supplied.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the ticket.\n",
+                "operationId": "GenerateTicketUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TicketRequest"
+                            }
+                        }
+                    },
+                    "description": "Specifies the name of the application for which the passticket should be generated."
+                },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TicketResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Incorrect applicationName parameter. The parameter is not provided, is invalid or not defined to security."
+                    },
+                    "401": {
+                        "description": "Zowe token is not provided, is invalid or is expired."
+                    },
+                    "403": {
+                        "description": "A client certificate is not provided or is expired."
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "The external security manager failed to generate a PassTicket for the user and application specified."
+                    }
+                }
+            }
+        },
+
+        "/zaas/api/v1/auth/refresh": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Refresh authentication token.",
+                "description": "**Note:** This endpoint is disabled by default.\n\nUse the `/refresh` API to request a new JWT authentication token for the user associated with provided token.\nThe old token is invalidated and new token is issued with refreshed expiration time.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*",
+                "operationId": "RefreshTokenUsingPOST",
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Authenticated",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Cookie named apimlAuthenticationToken contains authentication token.",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Zowe token is not provided, is invalid or is expired."
+                    },
+                    "403": {
+                        "description": "A client certificate is not provided or is expired."
+                    },
+                    "404": {
+                        "description": "Not Found. The endpoint is not enabled or not propperly configured"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Process of refreshing token has failed unexpectedly."
+                    }
+                }
+            }
+        },
+
+        "/zaas/api/v1/auth/logout": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Invalidate mainframe user session.",
+                "description": "Use the `/logout` API to invalidate mainframe user session.\n\n The cookie named `apimlAuthenticationToken` will be removed.\n",
+                "operationId": "logoutUsingPOST",
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Invalidated user session"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+
+        "/zaas/api/v1/auth/access-token/generate": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Authenticate mainframe user credentials and return personal access token.",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  * HTTP header containing the client certificate\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "operationId": "access-token-generate-POST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "description": "Specifies the user credentials to be authenticated."
+                },
+                "security": [
+                    {
+                        "LoginBasicAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Authenticated",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Cookie named apimlAuthenticationToken contains authentication\ntoken.",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "/zaas"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "LoginBasicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            },
+            "Bearer": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            "CookieAuth": {
+                "type": "apiKey",
+                "name": "apimlAuthenticationToken",
+                "in": "cookie"
+            }
+        },
+        "schemas": {
+            "LoginRequest": {
+                "type": "object",
+                "title": "Credentials",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "required": ["username", "password"],
+                "example": {
+                    "username": "John",
+                    "password": "qwerty"
+                }
+            },
+            "Authentication": {
+                "type": "object",
+                "title": "Authentication",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "Specifies the identity of the logged-in user."
+                    },
+                    "domain": {
+                        "type": "string",
+                        "description": "Specifies the name of the security domain where the user has been\nlogged-in."
+                    },
+                    "creation": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Specifies the UNIX timestamp of the login time, in UTC."
+                    },
+                    "expiration": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Specifies the UNIX timestamp of the token expiration time, in UTC."
+                    }
+                },
+                "example": {
+                    "userId": "John",
+                    "domain": "SAFRealm",
+                    "creation": "2019-05-13T12:47:04.000+0000",
+                    "expiration": "2019-05-14T12:47:04.000+0000"
+                }
+            },
+            "TicketRequest": {
+                "type": "object",
+                "title": "Application name",
+                "properties": {
+                    "applicationName": {
+                        "type": "string"
+                    }
+                },
+                "required": ["applicationName"],
+                "example": {
+                    "applicationName": "ZOWEAPPL"
+                }
+            },
+            "TicketResponse": {
+                "type": "object",
+                "title": "PassTicket",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "Specifies the token that was supplied in the header."
+                    },
+                    "userId": {
+                        "type": "string",
+                        "description": "Specifies the user associated with the token."
+                    },
+                    "applicationName": {
+                        "type": "string",
+                        "description": "Specifies the application name associated with the passticket. Note that the ZAAS user must be authorized to generate passtickets for this application name."
+                    },
+                    "ticket": {
+                        "type": "string",
+                        "description": "Specifies a passticket for the pair, userId and applicationName."
+                    }
+                },
+                "example": {
+                    "token": "eyJhbGciOiJSUzI1N",
+                    "userId": "John",
+                    "applicationName": "ZOWEAPPL",
+                    "ticket": "LZTKEEDQ"
+                }
+            },
+            "ServiceInfo": {
+                "type": "object",
+                "description": "Represents information about a service registered to API ML",
+                "properties": {
+                    "apiml": {
+                        "type": "object",
+                        "description": "Information about the service and its APIs",
+                        "properties": {
+                            "apiInfo": {
+                                "type": "array",
+                                "description": "List of APIs that are provided by the service",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "apiId": {
+                                            "type": "string",
+                                            "description": "Specifies the API identifier that is registered in the API ML installation. The API ID uniquely identifies the API in the API ML. The apiId can be used to locate the same APIs that are provided by different service instances. The API developer defines this ID. The apiId must be a string of up to 64 characters that uses lowercase alphanumeric characters and a dot (`.`).",
+                                            "example": "zowe.sample"
+                                        },
+                                        "basePath": {
+                                            "type": "string",
+                                            "description": "Specifies the URL prefix for all API paths, relative to the ZAAS host. It must start with a leading slash `/`",
+                                            "example": "/zowesample/api/v1"
+                                        },
+                                        "baseUrl": {
+                                            "type": "string",
+                                            "description": "Specifies an absolute URL prefix that is used to access the API service via the ZAAS",
+                                            "example": "https://sys1.acme.net:7554/zowesample/api/v1"
+                                        },
+                                        "defaultApi": {
+                                            "type": "boolean",
+                                            "description": "Specifies that this API is the default one shown in the API Catalog. If no apiInfo objects have `defaultApi` set to `true`, the default API is the one with the highest API version."
+                                        },
+                                        "documentationUrl": {
+                                            "type": "string",
+                                            "description": "Specifies the link to the external documentation. A link to the external documentation can be included along with the OpenAPI documentation.",
+                                            "example": "https://docs.zowe.org/"
+                                        },
+                                        "gatewayUrl": {
+                                            "type": "string",
+                                            "description": "Specifies the base path at the API Gateway where the API is available",
+                                            "example": "api/v1"
+                                        },
+                                        "swaggerUrl": {
+                                            "type": "string",
+                                            "example": "https://sys1.acme.net:7554/casample/api/v1/apiDocs"
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "description": "Specifies the API version. This parameter is used to correctly retrieve the API documentation according to requested version of the API.",
+                                            "example": "1.0.0"
+                                        }
+                                    }
+                                }
+                            },
+                            "authentication": {
+                                "type": "array",
+                                "description": "List of authentication schemes that are supported by all instances",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "applid": {
+                                            "type": "string",
+                                            "description": "This value specifies that a service accepts PassTickets in the Authorization header of the HTTP requests using the basic authentication scheme. This applies only when the schem is `httpBasicPassTicket`.",
+                                            "example": "TSTAPPL"
+                                        },
+                                        "scheme": {
+                                            "type": "string",
+                                            "description": "This parameter specifies a service authentication scheme.",
+                                            "example": "zoweJwt"
+                                        },
+                                        "supportsSso": {
+                                            "description": "Specifies whether the service supports Zowe Single-Sign-On",
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            },
+                            "service": {
+                                "type": "object",
+                                "description": "Information about the service",
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Sample Spring Boot API service that provides Zowe-conformant REST API"
+                                    },
+                                    "homePageUrl": {
+                                        "type": "string",
+                                        "description": "Home page of the service accessible via API Gateway",
+                                        "example": "https://sys1.acme.net:7554/casample/ui/v1/"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Specifies the human readable name of the API service instance",
+                                        "example": "Zowe Sample API Service"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "instances": {
+                        "type": "array",
+                        "description": "Dictionary of the instances of the service. The key is the instance ID.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "instanceId": {
+                                    "$ref": "#/components/schemas/InstanceInfo"
+                                }
+                            }
+                        }
+                    },
+                    "serviceId": {
+                        "type": "string",
+                        "description": "The service ID of the service. It uniquely identifies one or more instance of a microservice in the API ML and is used as part of the service URL path in the API ML Gateway address space. Additionally, the API ML Gateway uses the service ID for routing to the API service instances. When two API services use the same service ID, the API Gateway considers the services as clones of each other. An incoming API request can be routed to either of them through utilized load balancing mechanism.",
+                        "example": "zowesample"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The status of the service base on availability of its instances. It is UP when at least one instance is UP, otherwise DOWN.",
+                        "example": "UP"
+                    }
+                }
+            },
+            "InstanceInfo": {
+                "type": "object",
+                "description": "Represents one instance of the service the is registered to the API ML",
+                "properties": {
+                    "homePageUrl": {
+                        "type": "string",
+                        "description": "Home page of the instance",
+                        "example": "https://sys1.acme.net:10080/"
+                    },
+                    "hostname": {
+                        "type": "string",
+                        "description": "Hostname of the system where the instance is running",
+                        "example": "sys1.acme.net"
+                    },
+                    "customMetadata": {
+                        "type": "object",
+                        "description": "Additional metadata that can been provided by the API service for this instance",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "The status of the instance in the Discovery Service. Possible values: UP, DOWN, STARTING, OUT_OF_SERVICE, UNKNOWN",
+                        "example": "UP"
+                    },
+                    "ipAddr": {
+                        "type": "string",
+                        "description": "IP address of the system where the instance is running",
+                        "example": "192.168.1.139"
+                    },
+                    "port": {
+                        "type": "integer",
+                        "description": "Port of the instance",
+                        "example": 10080
+                    },
+                    "protocol": {
+                        "type": "string",
+                        "description": "protocol that is used by the instance (`https` or `http`)",
+                        "example": "https"
+                    },
+                    "healthCheckUrl": {
+                        "type": "string",
+                        "description": "Specifies the health check endpoint of this instance",
+                        "example": "https://sys1.acme.net:10080/actuator/health"
+                    },
+                    "statusPageUrl": {
+                        "type": "string",
+                        "description": "Specifies the status endpoint of this instance",
+                        "example": "https://sys1.acme.net:10080/actuator/info"
+                    }
+                }
+            },
+            "VersionInfoDetails": {
+                "description": "Version information",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "buildNumber": {
+                        "type": "string"
+                    },
+                    "commitHash": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "version": "1.4.0",
+                    "buildNumber": "123",
+                    "commitHash": "1a3b5c7"
+                }
+            },
+            "VersionInfo": {
+                "properties": {
+                    "zowe": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    },
+                    "apiml": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    }
+                }
+            },
+            "JWKSet": {
+                "properties": {
+                    "keys": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JWK"
+                        }
+                    }
+                },
+                "example": {
+                    "keys": [
+                        {
+                            "kty": "RSA",
+                            "e": "AQAB",
+                            "use": "sig",
+                            "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                            "alg": "RS256",
+                            "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
+                        },
+                        {
+                            "kty": "RSA",
+                            "e": "AQAB",
+                            "n": "jpEmp7mNnx8bi_nF2lqLEkN1cxUn1qLavU2EAy70XmX9rZSx1hlA1k8St1apD678oI-Ob38Mab-vTrnk9nvJgs6e67mtsm00OP1mpGHzQSY2WDwA5OGLv-9FeDI6HThAH1cEz148pRBtiN9VkVM-OzV2-vqH5hXO2vnSneUnnIlMVZ1-J7G5WIPJLDxodXWFqne8l56SYIRWz62rTK0Hwe0ghAMrsiTz0eVKgfVr76rP0hIYZMwC3b1bxfhjwUOuQxjEeYMh2jEL-5Nv2IcEfOzXYEOC_IrD_rLa4m4nfBs-JJiw4hOgHvjzdNz9EzV0D-HSWrInHXEd_gWjDn4sFw"
+                        }
+                    ]
+                }
+            },
+            "JWK": {
+                "properties": {
+                    "n": {
+                        "type": "string"
+                    },
+                    "e": {
+                        "type": "string"
+                    },
+                    "d": {
+                        "type": "string"
+                    },
+                    "p": {
+                        "type": "string"
+                    },
+                    "q": {
+                        "type": "string"
+                    },
+                    "dp": {
+                        "type": "string"
+                    },
+                    "dq": {
+                        "type": "string"
+                    },
+                    "qi": {
+                        "type": "string"
+                    },
+                    "oth": {
+                        "type": "object",
+                        "properties": {
+                            "r": {
+                                "type": "string"
+                            },
+                            "d": {
+                                "type": "string"
+                            },
+                            "t": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "example": {
+                    "kty": "RSA",
+                    "e": "AQAB",
+                    "use": "sig",
+                    "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                    "alg": "RS256",
+                    "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,282 @@
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: INFO
+        org.springframework: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        org.springframework.cloud.client.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.web.socket: WARN
+        org.zowe.apiml.zaas.error: INFO
+        org.eclipse.jetty: WARN
+        org.springframework.web.servlet.PageNotFound: ERROR
+        org.ehcache: WARN
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
+
+        # New Config
+        org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        javax.servlet: INFO
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.eclipse.jetty.util.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+
+apiml:
+    service:
+        # The `apiml.service` node contains information required by any APIML service
+        id: zaas  # Service ID of this service. It is fixed for ZAAS
+        hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
+                             # Default is valid only for localhost
+        port: 10023  # Default port name for ZAAS
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
+
+    connection:
+        timeout: 30000 # Timeout for connection to the services
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
+    zaas:
+        # The `apiml.gateway` node contains gateway-service only configuration
+        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
+                                             # for transforming the URLs in DVIPA mode.
+                                             # In Zowe, this is the same as apiml.service.hostname. Zowe has one ZAAS
+                                             # and is all run from single host.
+                                             # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
+                                             # properly.
+    security:
+        filterChainConfiguration: new
+        allowTokenRefresh: false
+        jwtInitializerTimeout: 5
+        personalAccessToken:
+            enabled: false
+        useInternalMapper: false
+        auth:
+            provider: zosmf
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry:
+            identityMapperUrl:
+            identityMapperUser:
+            jwks:
+                uri:
+            provider: zosmf
+        x509:
+            enabled: false
+            acceptForwardedCert: true
+            certificatesUrl:
+            externalMapperUrl:
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
+
+spring:
+    profiles:
+        group:
+            dev: debug, diag
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        discovery:
+            reactive:
+                enabled: false
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
+        log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
+        favicon:
+            enabled: false
+    output:
+        ansi:
+            enabled: detect
+    main:
+        banner-mode: ${apiml.banner:"off"}
+        allow-circular-references: true
+
+server:
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
+    ssl:
+        enabled: true
+        clientAuth: want
+        protocol: TLS
+        enabled-protocols: TLSv1.2+TLSv1.3
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+    maxConnectionsPerRoute: 100
+    maxTotalConnections: 1000
+    webSocket:
+        supportedProtocols: v12.stomp,v11.stomp
+    max-http-request-header-size: 48000
+
+http:
+    connection:
+        timeout: ${apiml.zaas.timeoutMillis}
+    socket:
+        timeout: ${apiml.zaas.timeoutMillis}
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,shutdown,hystrixstream
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
+        shutdown:
+            enabled: true
+eureka:
+    instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        securePortEnabled: true
+        #ports are computed in code
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: ${apiml.service.scheme}://${apiml.zaas.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        metadata-map:
+            apiml:
+                routes:
+                    api_v1:
+                        gatewayUrl: /api/v1
+                        serviceUrl: /zaas
+                apiInfo:
+                    - apiId: zowe.apiml.zaas
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs
+                      documentationUrl: https://zowe.github.io/docs-site/
+                service:
+                    title: ZAAS
+                    description: Zowe Authentication and Authorization Service.
+                    supportClientCertForwarding: true
+                authentication:
+                    sso: true
+
+    client:
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        healthcheck:
+            enabled: true
+
+---
+spring:
+    config.activate.on-profile: debug
+    mvc:
+        throw-exception-if-no-handler-found: true
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,routes,loggers,shutdown,hystrixstream,websockets
+    endpoint:
+        shutdown:
+            enabled: true
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: DEBUG
+        org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
+        org.springframework.security: DEBUG
+        org.ehcache: DEBUG
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
+
+---
+spring.config.activate.on-profile: diag
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+server:
+    max-http-request-header-size: 40000
+
+---
+spring.config.activate.on-profile: dev
+
+logbackServiceName: ZWEAZS1
+
+---
+spring.config.activate.on-profile: attls
+
+server:
+    internal:
+        ssl:
+            enabled: false
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http
+
+
+eureka:
+    instance:
+        securePortEnabled: false
+        metadata-map:
+            apiml:
+                apiInfo:
+                    -   apiId: zowe.apiml.zaas
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                        documentationUrl: https://zowe.github.io/docs-site/
+
+---
+spring.config.activate.on-profile: securityFilterchainDebug
+
+logging:
+    level:
+        org.springframework.security: DEBUG
+        org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
+        org.zowe.apiml.zaas.security: DEBUG
+
+---
+spring.config.activate.on-profile: zosmfDebug
+
+logging:
+    level:
+        root: INFO
+        org.zowe.apiml.zaas.security.service.zosmf: DEBUG

@@ -1,59 +1,16 @@
-spring.profiles.include: diag
 apiml:
+    gateway.registry.enabled: true
+    security.x509.registry.allowedUsers: Zowe Service
     service:
         apimlId: apiml1
+        forwardClientCertEnabled: true
         hostname: localhost
-        ipAddress: 127.0.0.1
         port: 10010
-        discoveryServiceUrls: https://localhost:10011/eureka/
-
-    security:
-        allowTokenRefresh: true
-        webfinger:
-            fileLocation: config/local/webfinger.yml
-        personalAccessToken:
-            enabled: true
-        oidc:
-            enabled: false
-            clientId:
-            clientSecret:
-            registry: zowe.okta.com
-            identityMapperUrl: https://localhost:10010/zss/api/v1/certificate/dn
-            identityMapperUser: APIMTST
-            jwks:
-                uri:
-        auth:
-            jwt:
-                customAuthHeader:
-            passticket:
-                customUserHeader:
-                customAuthHeader:
-            provider: zosmf
-            zosmf:
-                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
-        ssl:
-            verifySslCertificatesOfServices: true
-        x509:
-            enabled: true
-            acceptForwardedCert: true
-            certificatesUrl: https://localhost:10023/gateway/certificates
-
-    banner: console
-
-spring:
-    config:
-        useLegacyProcessing: true
-    output:
-        ansi:
-            enabled: always
-
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
 server:
-    internal:
-        enabled: true
-        port: 10017
-        ssl:
-            keyAlias: localhost-multi
-            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
         keyAlias: localhost
         keyPassword: password
@@ -63,19 +20,9 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
-
----
 spring:
-    profiles: attls
-
-apiml:
-    service:
-        scheme: http
-        discoveryServiceUrls: http://localhost:10011/eureka/
-    security:
-        saf:
-            urls:
-                authenticate: http://localhost:10013/zss/saf/authenticate
-                verify: http://localhost:10013/zss/saf/verify
-
-
+    output:
+        ansi:
+            enabled: always
+    profiles:
+        include: debug

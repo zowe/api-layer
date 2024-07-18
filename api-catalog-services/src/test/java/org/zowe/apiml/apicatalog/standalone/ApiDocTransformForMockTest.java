@@ -13,7 +13,7 @@ package org.zowe.apiml.apicatalog.standalone;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ApiDocTransformForMockTest {
 
     @Autowired
-    private GatewayConfigProperties gatewayConfigProperties;
+    private ServiceAddress gatewayConfigProperties;
 
     @Test
     void gatewayConfigPropertiesForMock() {

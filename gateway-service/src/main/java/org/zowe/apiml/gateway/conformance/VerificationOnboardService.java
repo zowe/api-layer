@@ -11,30 +11,43 @@
 package org.zowe.apiml.gateway.conformance;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
-import org.zowe.apiml.gateway.security.login.Providers;
-import org.zowe.apiml.gateway.security.service.TokenCreationService;
+import org.zowe.apiml.product.constants.CoreService;
 
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
  * a provided serviceId.
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class VerificationOnboardService {
 
     private final DiscoveryClient discoveryClient;
-    private final Providers providers;
+    @Qualifier("restTemplateWithoutKeystore")
     private final RestTemplate restTemplate;
-    private final TokenCreationService tokenCreationService;
 
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
@@ -71,7 +84,6 @@ public class VerificationOnboardService {
         }
         return Optional.empty();
     }
-
 
     /**
      * Retrieves swagger from the url
@@ -156,9 +168,11 @@ public class VerificationOnboardService {
         try {
             response = restTemplate.exchange(url, method, request, String.class);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            response = ResponseEntity.status(e.getRawStatusCode())
+            response = ResponseEntity.status(e.getStatusCode())
                 .headers(e.getResponseHeaders())
                 .body(e.getResponseBodyAsString());
+        } catch (Exception ex) {
+            response = ResponseEntity.status(HttpStatusCode.valueOf(500)).body(ex.getMessage());
         }
         return response;
     }
@@ -187,12 +201,29 @@ public class VerificationOnboardService {
         return swaggerParser.getProblemsWithEndpointUrls();
     }
 
-
     private String getAuthenticationCookie(String passedAuthenticationToken) {
-        final String message = "Cannot verify SSO functionality, apimlAuthenticationToken cookie wasn't provided and a passticket can't be generate with the zOSMF provider";
+        String errorMsg = "Error retrieving ZAAS connection details";
+        // FIXME This keeps the current behaviour
         if (passedAuthenticationToken.equals("dummy")) {
-            if (providers.isZosfmUsed()) throw new ValidationException(message, ValidateAPIController.NON_CONFORMANT_KEY);
-            return tokenCreationService.createJwtTokenWithoutCredentials("validate");
+            URI uri = discoveryClient.getServices().stream()
+                .filter(service -> CoreService.ZAAS.getServiceId().equalsIgnoreCase(service))
+                .flatMap(service -> discoveryClient.getInstances(service).stream())
+                .findFirst()
+                .map(ServiceInstance::getUri)
+                .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY));
+
+            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
+            try {
+                restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
+            } catch (HttpClientErrorException.Conflict e) {
+                throw new ValidationException(e.getResponseBodyAsString(), ValidateAPIController.NON_CONFORMANT_KEY);
+            } catch (Exception e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error getting authentication support", e);
+                }
+                throw new ValidationException("Error validating the authentication support", ValidateAPIController.NO_METADATA_KEY);
+            }
+
         }
         return passedAuthenticationToken;
     }

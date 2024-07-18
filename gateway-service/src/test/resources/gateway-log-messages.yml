@@ -1,0 +1,90 @@
+messages:
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    - key: org.zowe.apiml.gateway.requestContainEncodedCharacter
+      number: ZWEAG701
+      type: ERROR
+      text: "Service '%s' does not allow encoded characters in the request path: '%s'."
+      reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
+      action: "Contact the system administrator and request enablement of encoded characters in the service."
+
+    - key: org.zowe.apiml.gateway.requestContainEncodedSlash
+      number: ZWEAG702
+      type: ERROR
+      text: "Gateway does not allow encoded slashes in request: '%s'."
+      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
+      action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
+
+    - key: org.zowe.apiml.gateway.verifier.wrongServiceId
+      number: ZWEAG717
+      type: ERROR
+      text: "The service id provided is invalid: '%s'"
+      reason: "The provided id is not valid under conformance criteria."
+      action: "Verify the conformance criteria, provide valid service id."
+
+    - key: org.zowe.apiml.gateway.verifier.noMetadata
+      number: ZWEAG718
+      type: ERROR
+      text: "Cannot retrieve metadata: '%s'"
+      reason: "Metadata aren't accessible"
+      action: "Verify that the metadata are accessible and not empty"
+
+    - key: org.zowe.apiml.gateway.verifier.nonConformant
+      number: ZWEAG719
+      type: INFO
+      text: "The service is not conformant: %s"
+      reason: "The provided service does not satisfy the conformance criteria and is therefore not valid."
+      action: "Verify the conformance criteria."
+
+    # Legacy messages
+
+    - key: org.zowe.apiml.security.generic
+      number: ZWEAG100
+      type: ERROR
+      text: "Authentication exception: '%s' for URL '%s'"
+      reason: "A generic failure occurred during authentication."
+      action: "Refer to the specific authentication exception details for troubleshooting."
+
+    - key: org.zowe.apiml.security.invalidMethod
+      number: ZWEAG101
+      type: ERROR
+      text: "Authentication method '%s' is not supported for URL '%s'"
+      reason: "The HTTP request method is not supported by the URL."
+      action: "Use the correct HTTP request method supported by the URL."
+
+    - key: org.zowe.apiml.security.authRequired
+      number: ZWEAG105
+      type: ERROR
+      text: "Authentication is required for URL '%s'"
+      reason: "Authentication is required."
+      action: "Provide valid authentication."
+
+    - key: org.zowe.apiml.security.loginEndpointInDummyMode
+      number: ZWEAG106
+      type: WARNING
+      text: "Login endpoint is running in dummy mode. Use credentials '%s'/'%s' to log in. Do not use this option in the production environment."
+      reason: "The authentication is running in dummy mode."
+      action: "Ensure that this option is not being used in a production environment."
+
+    - key: org.zowe.apiml.gateway.security.schema.missingX509Authentication
+      number: ZWEAG167
+      type: ERROR
+      text: "No client certificate provided in the request"
+      reason: "The X509 client certificate was not provided with the request"
+      action: "Configure your client to provide valid certificate."

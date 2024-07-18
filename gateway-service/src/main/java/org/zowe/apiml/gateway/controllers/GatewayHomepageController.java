@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.controllers;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -18,7 +17,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.zowe.apiml.gateway.security.login.Providers;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -35,9 +34,9 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
+    private static final String ZAAS_SERVICEID = CoreService.ZAAS.getServiceId();
 
     private final DiscoveryClient discoveryClient;
-    private final Providers providers;
 
     private final BuildInfo buildInfo;
     private String buildString;
@@ -46,17 +45,14 @@ public class GatewayHomepageController {
 
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     Providers providers,
                                      @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
-        this(discoveryClient, providers, new BuildInfo(), apiCatalogServiceId);
+        this(discoveryClient, new BuildInfo(), apiCatalogServiceId);
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     Providers providers,
                                      BuildInfo buildInfo,
                                      String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
-        this.providers = providers;
         this.buildInfo = buildInfo;
         this.apiCatalogServiceId = apiCatalogServiceId;
 
@@ -64,7 +60,6 @@ public class GatewayHomepageController {
     }
 
     @GetMapping("/")
-    @HystrixCommand
     public String home(Model model) {
         initializeCatalogAttributes(model);
         initializeDiscoveryAttributes(model);
@@ -112,11 +107,12 @@ public class GatewayHomepageController {
     private void initializeAuthenticationAttributes(Model model) {
         String authStatusText = "The Authentication Service is not running";
         String authIconName = WARNING_ICON_NAME;
-        boolean authUp = authorizationServiceUp();
+        long zaasCount = authorizationServiceCount();
 
-        if (authUp) {
-            authStatusText = "The Authentication Service is running";
+        if (zaasCount > 0) {
             authIconName = SUCCESS_ICON_NAME;
+            authStatusText = zaasCount > 1 ?
+                zaasCount + " Authentication Service instances are running" : "The Authentication Service is running";
         }
 
         model.addAttribute("authStatusText", authStatusText);
@@ -134,15 +130,14 @@ public class GatewayHomepageController {
         String catalogStatusText = "The API Catalog is not running";
         String catalogIconName = WARNING_ICON_NAME;
         boolean linkEnabled = false;
-        boolean authServiceEnabled = authorizationServiceUp();
-
-        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(apiCatalogServiceId);
-        if (serviceInstances != null && authServiceEnabled) {
-            long catalogCount = serviceInstances.size();
+        long zaasCount = authorizationServiceCount();
+        List<ServiceInstance> catalogServiceInstances = discoveryClient.getInstances(apiCatalogServiceId);
+        if (catalogServiceInstances != null && zaasCount > 0) {
+            long catalogCount = catalogServiceInstances.size();
             if (catalogCount > 0) {
                 linkEnabled = true;
                 catalogIconName = SUCCESS_ICON_NAME;
-                catalogLink = getCatalogLink(serviceInstances.get(0));
+                catalogLink = getCatalogLink(catalogServiceInstances.get(0));
 
                 catalogStatusText = catalogCount > 1 ?
                     catalogCount + " API Catalog instances are running" : "The API Catalog is running";
@@ -155,18 +150,18 @@ public class GatewayHomepageController {
         model.addAttribute("catalogStatusText", catalogStatusText);
     }
 
+    private int authorizationServiceCount() {
+        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(ZAAS_SERVICEID);
+        if (zaasServiceInstances != null) {
+            return zaasServiceInstances.size();
+        }
+        return 0;
+    }
+
     private String getCatalogLink(ServiceInstance catalogInstance) {
         String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
         String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
         return serviceUrl + gatewayUrl;
-    }
-
-    private boolean authorizationServiceUp() {
-        if (providers.isZosfmUsed()) {
-            return providers.isZosmfAvailable();
-        }
-
-        return true;
     }
 
 }

@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.audit.Rauditx;
 import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 

@@ -18,19 +18,18 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
-apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
 def javaAgentPort = 6300
-def debugPort = 5120
+def debugPort = 5130
 def componentName = "gateway-service"
 
 setJib(componentName, javaAgentPort, debugPort)
-jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayApplication'
+jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayServiceApplication'
 
 ext['netty.version'] = libs.versions.netty.get()
-
+ext['reactor-bom.version'] = libs.versions.reactorBom.get()
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
     // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
@@ -52,107 +51,53 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    exclude group: "org.springframework", module: "spring-webmvc"
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
+    exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-reactor-netty'
+}
+
 dependencies {
-    api project(':apiml-security-common')
+    api project(':apiml-utility')
     api project(':apiml-tomcat-common')
-    api project(':apiml-extension-loader')
+    api project(':apiml-security-common')
 
-    implementation libs.zowe.zos.utils
-    implementation libs.spring.boot.starter.webflux
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.cloud.circuit.breaker
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.web
-    implementation libs.spring.boot.starter.websocket
+    implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.thymeleaf
-    implementation libs.spring.boot.starter.cache
-    implementation libs.spring.boot.starter.aop
-    implementation libs.spring.cloud.starter.hystrix
-    implementation libs.spring.cloud.starter.eureka.server
-    implementation libs.spring.security.web
-    implementation libs.spring.security.config
-    implementation libs.spring.security.core
-    implementation libs.spring.security.crypto
-    implementation libs.xstream
-    implementation libs.json.smart
+    implementation libs.spring.doc.webflux
+    implementation libs.netty.reactor.http
 
-    implementation libs.ribbon.eureka
+    implementation libs.bcpkix
+
+    implementation libs.swagger2.parser
     implementation libs.swagger3.parser
-    implementation libs.swagger.models
-    implementation libs.swagger.inflector
-    implementation libs.jackson.annotations
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.tomcat.coyote
-    implementation libs.tomcat.annotations.api
-    implementation libs.tomcat.embed.core
-    implementation libs.tomcat.embed.el
-    implementation libs.tomcat.embed.websocket
-    implementation libs.spring.cloud.starter.eureka
-    implementation libs.spring.cloud.commons
-    implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.cloud.starter.zuul
-    implementation libs.spring.cloud.starter.ribbon
-    implementation libs.jetty.websocket.common
-    implementation libs.jetty.websocket.client
-    implementation libs.jetty.client
-    implementation libs.jetty.http
-    implementation libs.jetty.io
-    implementation libs.jetty.util
-    implementation libs.jetty.websocket.api
-    implementation libs.jjwt
-    implementation libs.nimbus.jose.jwt
+    implementation libs.jaxbApi
 
-    implementation libs.thymeleaf
-    implementation libs.thymeleaf.spring5
-    implementation libs.logback.core
-    implementation libs.logback.classic
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.mock.mvc
+    testImplementation libs.commons.io
+    testImplementation libs.reactor.test
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.web.test.client
 
-    implementation libs.commons.io
-    implementation libs.guava
-    implementation libs.spring.aop
-    implementation libs.spring.beans
-    implementation libs.spring.context
-    implementation libs.spring.context.support
-    implementation libs.spring.core
-    implementation libs.spring.expression
-    implementation libs.spring.messaging
-    implementation libs.spring.web
-    implementation libs.spring.webmvc
-    implementation libs.spring.websocket
-    implementation libs.spring.webflux
-
-    implementation libs.eh.cache
-    implementation libs.spring.retry
-    implementation libs.awaitility
-
-    compileOnly libs.jakarta.inject
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-    annotationProcessor libs.spring.boot.configuration.processor
-
-    testImplementation libs.mockito.core
-    testImplementation libs.mockito.inline
-    testImplementation libs.spring.mock.mvc
-    testImplementation libs.spring.boot.starter.test
-    testImplementation libs.json.smart
-    testRuntimeOnly libs.http.client
-    testImplementation libs.rest.assured
-    testImplementation libs.rest.assured.json.path
-    testImplementation libs.rest.assured.xml.path
-    testImplementation libs.jakarta.inject
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-
-    testImplementation(testFixtures(project(":integration-tests")))
-
-    implementation libs.jjwt.impl
-    runtimeOnly libs.jjwt.jackson
 }
 
 bootJar {
     archiveFileName = "gateway-service.jar"
     manifest {
-        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
     archiveClassifier = "application"
 }
@@ -166,6 +111,27 @@ bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
+
+    jvmArgs([
+        '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED',
+        '--add-opens=java.base/java.net=ALL-UNNAMED'
+    ])
+
+    debugOptions {
+        port = 5010
+        suspend = false
+        server = true
+    }
+
+    workingDir = project.rootDir
+
     systemProperties = System.properties
 }
 
@@ -178,4 +144,8 @@ publishing {
             artifact bootJar
         }
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = libs.versions.gradle.get()
 }

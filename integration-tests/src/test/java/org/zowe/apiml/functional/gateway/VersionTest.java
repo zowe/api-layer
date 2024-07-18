@@ -19,9 +19,13 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 class VersionTest {
+
+    @SuppressWarnings("unused")
     private static String[] versionUrls() {
         return new String[]{
             "/application/version", "/gateway/version", "/gateway/api/v1/version"
@@ -36,16 +40,18 @@ class VersionTest {
 
     @Nested
     class GivenNoAuthentication {
+
         @Nested
         class WhenRequestingVersion {
+
             @ParameterizedTest(name = "ReturnValidVersion {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.gateway.VersionTest#versionUrls")
             void returnValidVersion(String endpoint) {
                 // Gateway request to url
                 given()
-                .when()
+                    .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
-                .then()
+                    .then()
                     .statusCode(SC_OK)
                     .body("apiml.version", is(not(nullValue())))
                     .body("apiml.buildNumber", is(not(nullValue())))

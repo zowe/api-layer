@@ -25,7 +25,7 @@ import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.io.File;
@@ -51,7 +51,7 @@ public class StandaloneLoaderService {
     private final CachedApiDocService cachedApiDocService;
     private final StandaloneAPIDocRetrievalService standaloneAPIDocRetrievalService;
     private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory;
-    private final GatewayConfigProperties gatewayConfigProperties;
+    private final ServiceAddress gatewayConfigProperties;
     private final ExampleService exampleService;
 
     public void initializeCache() {

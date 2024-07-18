@@ -14,7 +14,7 @@ import io.swagger.models.Path;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.parser.util.SwaggerDeserializationResult;
 import org.springframework.http.HttpMethod;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.util.*;
 
@@ -23,8 +23,8 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
 
     private final SwaggerDeserializationResult swagger;
 
-    OpenApiV2Validator(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
-        super(metadata, gatewayConfigProperties, serviceId);
+    OpenApiV2Validator(String swaggerDoc, Map<String, String> metadata, ServiceAddress gatewayServiceAddress, String serviceId) {
+        super(metadata, gatewayServiceAddress, serviceId);
         swagger = new SwaggerParser().readWithInfo(swaggerDoc);
     }
 
@@ -60,7 +60,7 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
 
     private String generateUrlForEndpoint(String endpoint) {
 
-        String baseUrl = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname();
+        String baseUrl = gatewayServiceAddress.getScheme() + "://" + gatewayServiceAddress.getHostname();
 
         String version = searchMetadata(metadata, "apiml", "routes", "gatewayUrl");
         String serviceUrl = searchMetadata(metadata, "apiml", "routes", "serviceUrl");
@@ -112,20 +112,20 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
 
 
     private io.swagger.models.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
-        switch (input) {
-            case GET:
+        switch (input.name()) {
+            case "GET":
                 return io.swagger.models.HttpMethod.GET;
-            case HEAD:
+            case "HEAD":
                 return io.swagger.models.HttpMethod.HEAD;
-            case OPTIONS:
+            case "OPTIONS":
                 return io.swagger.models.HttpMethod.OPTIONS;
-            case PATCH:
+            case "PATCH":
                 return io.swagger.models.HttpMethod.PATCH;
-            case POST:
+            case "POST":
                 return io.swagger.models.HttpMethod.POST;
-            case DELETE:
+            case "DELETE":
                 return io.swagger.models.HttpMethod.DELETE;
-            case PUT:
+            case "PUT":
                 return io.swagger.models.HttpMethod.PUT;
             default:
                 return null;

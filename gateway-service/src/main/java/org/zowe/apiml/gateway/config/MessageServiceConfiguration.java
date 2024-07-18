@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.gateway.config;
 
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 /**
  * Error service configuration
@@ -26,8 +26,8 @@ public class MessageServiceConfiguration {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
-        messageService.loadMessages("/security-common-log-messages.yml");
         messageService.loadMessages("/gateway-log-messages.yml");
         return messageService;
     }
+
 }

@@ -48,12 +48,6 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
-configurations.all {
-    // Required because infinispan.jboss.marshalling and infinispan.lock are not compatible with Spring Boot 3
-    exclude group: "org.infinispan", module: "infinispan-core"
-    exclude group: "org.infinispan", module: "infinispan-commons"
-}
-
 dependencies {
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
@@ -64,9 +58,7 @@ dependencies {
     implementation libs.spring.doc
     implementation libs.spring.retry
 
-    implementation libs.infinispan.spring.boot3.starter.embedded
-    implementation libs.infinispan.jboss.marshalling
-    implementation libs.infinispan.lock
+    implementation libs.bundles.infinispan
 
     implementation libs.janino
     implementation libs.jakarta.servlet.api

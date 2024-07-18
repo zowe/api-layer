@@ -18,7 +18,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
-import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -31,19 +30,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class GatewayHomepageControllerTest {
-    private Providers providers;
     private DiscoveryClient discoveryClient;
 
     private GatewayHomepageController gatewayHomepageController;
     private BuildInfo buildInfo;
 
     private final String API_CATALOG_ID = "apicatalog";
-    private final String AUTHORIZATION_SERVICE_ID = "zosmf";
+    private final String AUTHORIZATION_SERVICE_ID = "zaas";
 
     @BeforeEach
     void setup() {
         discoveryClient = mock(DiscoveryClient.class);
-        providers = mock(Providers.class);
 
         buildInfo = mock(BuildInfo.class);
 
@@ -51,7 +48,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID);
+            discoveryClient, buildInfo, API_CATALOG_ID);
     }
 
     @Test
@@ -75,7 +72,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, providers, buildInfo, API_CATALOG_ID);
+            discoveryClient, buildInfo, API_CATALOG_ID);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -102,7 +99,7 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
-        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, providers, buildInfo, null);
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, null);
         Model model = new ConcurrentModel();
         underTest.home(model);
 
@@ -114,8 +111,6 @@ class GatewayHomepageControllerTest {
     @Test
     void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
         discoveryReturnValidApiCatalog(1);
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailable()).thenReturn(false);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -136,7 +131,6 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
-        discoveryReturnValidZosmfAuthorizationInstance();
         when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(Collections.EMPTY_LIST);
 
         Model model = new ConcurrentModel();
@@ -147,12 +141,10 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenOneApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
-        discoveryReturnValidZosmfAuthorizationInstance();
         discoveryReturnValidApiCatalog(1);
-
+        discoveryReturnValidZaas(1);
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
-
 
         assertCatalogIsUpMessageShown(model.asMap());
         assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog is running"));
@@ -160,15 +152,24 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
-        discoveryReturnValidZosmfAuthorizationInstance();
         discoveryReturnValidApiCatalog(2);
-
+        discoveryReturnValidZaas(1);
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
-
         assertCatalogIsUpMessageShown(model.asMap());
         assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog instances are running"));
+    }
+
+    @Test
+    void givenMultipleZaasInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+        discoveryReturnValidZaas(2);
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.home(model);
+
+        Map<String, Object> actualModelMap = model.asMap();
+        assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
+        assertThat(actualModelMap, IsMapContaining.hasEntry("authStatusText", "2 Authentication Service instances are running"));
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
@@ -184,14 +185,6 @@ class GatewayHomepageControllerTest {
         assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
     }
 
-    private void discoveryReturnValidZosmfAuthorizationInstance() {
-        ServiceInstance authserviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
-            "host", 10000, true);
-        when(discoveryClient.getInstances("zosmf")).thenReturn(
-            Collections.singletonList(authserviceInstance)
-        );
-    }
-
     private void discoveryReturnValidApiCatalog(int numberOfInstances) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/ui/v1");
@@ -205,6 +198,21 @@ class GatewayHomepageControllerTest {
         }
 
         when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(apiCatalogServiceInstances);
+    }
+
+    private void discoveryReturnValidZaas(int numberOfInstances) {
+        Map<String, String> metadataMap = new HashMap<>();
+        metadataMap.put("apiml.routes.ui-v1.gatewayUrl", "/api/v1");
+        metadataMap.put("apiml.routes.ui-v1.serviceUrl", "/zaas");
+        ArrayList<ServiceInstance> zaasServiceInstances = new ArrayList<>();
+        for (int n = 0; n < numberOfInstances; n++) {
+            zaasServiceInstances.add(
+                new DefaultServiceInstance("instanceId" + n, "serviceId",
+                    "host", 10000 + n, true, metadataMap)
+            );
+        }
+
+        when(discoveryClient.getInstances(AUTHORIZATION_SERVICE_ID)).thenReturn(zaasServiceInstances);
     }
 
     @Test
@@ -237,7 +245,7 @@ class GatewayHomepageControllerTest {
         ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true);
 
-        when(discoveryClient.getInstances("discovery")).thenReturn(Arrays.asList(serviceInstance));
+        when(discoveryClient.getInstances("discovery")).thenReturn(List.of(serviceInstance));
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -268,8 +276,8 @@ class GatewayHomepageControllerTest {
     @Test
     void givenDummyProvider_whenHomePageCalled_thenHomePageModelShouldContain() {
         Model model = new ConcurrentModel();
+        discoveryReturnValidZaas(1);
         gatewayHomepageController.home(model);
-
         Map<String, Object> actualModelMap = model.asMap();
 
         assertThat(actualModelMap, IsMapContaining.hasEntry("authIconName", "success"));
@@ -278,8 +286,6 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenZOSMFProviderIsntRunning_whenHomePageCalled_thenHomePageModelShouldContainNotRunning() {
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailable()).thenReturn(false);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -292,9 +298,8 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenZOSMFProviderRunning_whenHomePageCalled_thenHomePageModelShouldContainRunning() {
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfAvailable()).thenReturn(true);
 
+        discoveryReturnValidZaas(1);
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 

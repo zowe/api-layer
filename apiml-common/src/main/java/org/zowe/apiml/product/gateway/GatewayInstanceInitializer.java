@@ -20,6 +20,7 @@ import org.springframework.context.event.EventListener;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
@@ -40,12 +41,12 @@ public class GatewayInstanceInitializer {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-    private GatewayConfigProperties process(InstanceInfo instanceInfo) {
+    private ServiceAddress process(InstanceInfo instanceInfo) {
         try {
             String gatewayHomePage = instanceInfo.getHomePageUrl();
             URI uri = new URI(gatewayHomePage);
             log.debug("Gateway homePageUrl: " + gatewayHomePage);
-            return GatewayConfigProperties.builder()
+            return ServiceAddress.builder()
                 .scheme(uri.getScheme())
                 .hostname(uri.getHost() + ":" + uri.getPort())
                 .build();
@@ -63,7 +64,7 @@ public class GatewayInstanceInitializer {
         instanceLookupExecutor.run(
             CoreService.GATEWAY.getServiceId(),
             instance -> {
-                GatewayConfigProperties foundGatewayConfigProperties = process(instance);
+                ServiceAddress foundGatewayConfigProperties = process(instance);
 
                 log.info(
                     "GatewayInstanceInitializer has been initialized with Gateway instance on url: {}://{}",

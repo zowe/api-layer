@@ -11,16 +11,43 @@
             "description": "API Mediation Layer security configuration."
         },
         {
-            "name": "apiml.security.oidc",
+            "name": "apiml.security.x509",
             "type": "java.util.Map",
-            "description": "Identity mapping configuration."
+            "description": "Client certificate configuration."
+        },
+        {
+            "name": "apiml.security.x509.registry",
+            "type": "java.util.Map",
+            "description": "Client certificate configuration of /registry endpoint."
+        },
+        {
+            "name": "apiml.gateway",
+            "type": "java.util.Map",
+            "description": "Gateway configuration."
+        },
+        {
+            "name": "apiml.gateway.registry",
+            "type": "java.util.Map",
+            "description": "Gateway configuration of a service registry endpoint."
         }
     ],
     "properties": [
         {
-            "name": "apiml.security.oidc.registry",
-            "type": "java.lang.String",
-            "description": "Specifies the distributed identities registry that will be used for identity mapping."
+            "name": "apiml.security.x509.registry.allowedUsers",
+            "type": "java.util.List",
+            "description": "Specifies the comma-separated list of users that are permitted to use /registry endpoints. The user is obtained from the common name in the provided client certificate."
+        },
+        {
+            "name": "apiml.gateway.registry.enabled",
+            "type": "java.lang.Boolean",
+            "defaultValue": false,
+            "description": "Specifies whether the /registry endpoint is enabled."
+        },
+        {
+            "name": "apiml.gateway.registry.metadata-key-allow-list",
+            "type": "java.util.Set",
+            "defaultValue": false,
+            "description": "Specifies what custom metadata are displayed in the /registry endpoint."
         }
     ]
 }

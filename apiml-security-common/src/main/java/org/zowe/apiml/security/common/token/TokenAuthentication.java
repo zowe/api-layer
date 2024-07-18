@@ -12,8 +12,10 @@ package org.zowe.apiml.security.common.token;
 
 import lombok.EqualsAndHashCode;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.zowe.apiml.security.common.login.LoginFilter;
 
 import java.util.Collections;
+import java.util.Optional;
 
 /**
  * This object is added to security context after successful authentication.
@@ -65,6 +67,11 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         final TokenAuthentication out = new TokenAuthentication(username, token);
         out.setAuthenticated(true);
         return out;
+    }
+
+    public static TokenAuthentication createAuthenticatedFromHeader(String token, String authHeader) {
+        var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
+        return createAuthenticated(loginRequest.get().getUsername(), token);
     }
 
 }

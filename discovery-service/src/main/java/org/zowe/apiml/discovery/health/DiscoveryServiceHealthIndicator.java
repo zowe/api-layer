@@ -29,10 +29,10 @@ public class DiscoveryServiceHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
-        String gatewayServiceId = CoreService.GATEWAY.getServiceId();
-        boolean gatewayDown = this.discoveryClient.getInstances(gatewayServiceId).isEmpty();
+        String zaasServiceId = CoreService.ZAAS.getServiceId();
+        boolean gatewayDown = this.discoveryClient.getInstances(zaasServiceId).isEmpty();
         builder
             .status(gatewayDown ? new Status("PARTIAL", "Authenticated endpoints not available.") : Status.UP)
-            .withDetail(gatewayServiceId, gatewayDown ? Status.DOWN : Status.UP);
+            .withDetail(zaasServiceId, gatewayDown ? Status.DOWN : Status.UP);
     }
 }

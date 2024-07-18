@@ -44,14 +44,23 @@ public class AuthConfigurationProperties {
     private String gatewayQueryEndpointOldFormat = "/api/v1/gateway/auth/query";
     private String gatewayTicketEndpointOldFormat = "/api/v1/gateway/auth/ticket";
 
+    private String zaasLoginEndpoint = "/zaas/api/v1/auth/login";
+    private String zaasLogoutEndpoint = "/zaas/api/v1/auth/logout";
+    private String zaasQueryEndpoint = "/zaas/api/v1/auth/query";
+    private String zaasTicketEndpoint = "/zaas/api/v1/auth/ticket";
+
     private String gatewayAccessTokenEndpoint = "/gateway/api/v1/auth/access-token/generate";
+    private String zaasAccessTokenEndpoint = "/zaas/api/v1/auth/access-token/generate";
 
-    private String revokeMultipleAccessTokens = "/gateway/auth/access-token/revoke/tokens";
+    private String gatewayRevokeMultipleAccessTokens = "/gateway/auth/access-token/revoke/tokens";
+    private String zaasRevokeMultipleAccessTokens = "/zaas/api/v1/auth/access-token/revoke/tokens";
 
-    private String evictAccessTokensAndRules = "/gateway/auth/access-token/evict";
+    private String gatewayEvictAccessTokensAndRules = "/gateway/auth/access-token/evict";
+    private String zaasEvictAccessTokensAndRules = "/zaas/api/v1/auth/access-token/evict";
 
     private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
     private String gatewayRefreshEndpoint = "/gateway/api/v1/auth/refresh";
+    private String zaasRefreshEndpoint = "/zaas/api/v1/auth/refresh";
 
     private String serviceLoginEndpoint = "/auth/login";
     private String serviceLogoutEndpoint = "/auth/logout";
@@ -102,6 +111,7 @@ public class AuthConfigurationProperties {
         private String cookieNamePAT = ApimlConstants.PAT_COOKIE_AUTH_NAME;
         private boolean cookieSecure = true;
         private String cookiePath = "/";
+        @Deprecated(since = "Servlet 6.0", forRemoval = true)
         private String cookieComment = "API Mediation Layer security token";
         private Integer cookieMaxAge = null;
         private SameSiteCookies cookieSameSite = SameSiteCookies.STRICT;

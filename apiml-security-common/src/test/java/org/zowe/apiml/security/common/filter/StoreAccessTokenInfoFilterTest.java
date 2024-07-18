@@ -20,7 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;

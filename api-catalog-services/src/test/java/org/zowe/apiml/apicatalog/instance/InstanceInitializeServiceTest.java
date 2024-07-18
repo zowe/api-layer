@@ -146,6 +146,14 @@ class InstanceInitializeServiceTest {
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
         instanceInfo = getStandardInstance(
+                CoreService.ZAAS.getServiceId(),
+                InstanceInfo.InstanceStatus.UP,
+                getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.ZAAS.getServiceId()),
+                "zaas",
+                "https://localhost:9090/");
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+        instanceInfo = getStandardInstance(
             CoreService.API_CATALOG.getServiceId(),
             InstanceInfo.InstanceStatus.UP,
             getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.API_CATALOG.getServiceId()),

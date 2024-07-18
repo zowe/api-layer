@@ -1,0 +1,231 @@
+messages:
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    - key: org.zowe.apiml.zaas.jwtInitConfigError
+      number: ZWEAG704
+      type: ERROR
+      text: "Configuration error '%s' when trying to read the public and private key for signing JWT: %s"
+      reason: "A problem occurred while trying to read the certificate-key pair from the keystore."
+      action: "Review the mandatory fields used in the configuration such as the keystore location path, the keystore and key password, and the keystore type."
+
+    - key: org.zowe.apiml.zaas.jwtKeyMissing
+      number: ZWEAG705
+      type: ERROR
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'. ZAAS is shutting down."
+      reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
+      action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
+
+    - key: org.zowe.apiml.security.unauthorized
+      number: ZWEAG711
+      type: ERROR
+      text: "The principal '%s' is missing queried authorization."
+      reason: "The principal does not have the queried access to resource name within resource class."
+      action: "No action needed."
+
+    # Legacy messages
+
+    - key: org.zowe.apiml.security.generic
+      number: ZWEAG100
+      type: ERROR
+      text: "Authentication exception: '%s' for URL '%s'"
+      reason: "A generic failure occurred during authentication."
+      action: "Refer to the specific authentication exception details for troubleshooting."
+
+    - key: org.zowe.apiml.security.invalidMethod
+      number: ZWEAG101
+      type: ERROR
+      text: "Authentication method '%s' is not supported for URL '%s'"
+      reason: "The HTTP request method is not supported by the URL."
+      action: "Use the correct HTTP request method supported by the URL."
+
+    - key: org.zowe.apiml.zaas.security.invalidToken
+      number: ZWEAG102
+      type: ERROR
+      text: "Token is not valid"
+      reason: "The JWT token is not valid."
+      action: "Provide a valid token."
+
+    - key: org.zowe.apiml.zaas.security.expiredToken
+      number: ZWEAG103
+      type: ERROR
+      text: "The token has expired"
+      reason: "The JWT token has expired."
+      action: "Obtain new token by performing an authentication request."
+
+    - key: org.zowe.apiml.security.serviceUnavailable
+      number: ZWEAG104
+      type: ERROR
+      text: "Authentication service is not available at URL '%s'. Error returned: '%s'"
+      reason: "The authentication service is not available."
+      action: "Make sure that the authentication service is running and is accessible by the URL provided in the message."
+
+    - key: org.zowe.apiml.security.authRequired
+      number: ZWEAG105
+      type: ERROR
+      text: "Authentication is required for URL '%s'"
+      reason: "Authentication is required."
+      action: "Provide valid authentication."
+
+    - key: org.zowe.apiml.security.loginEndpointInDummyMode
+      number: ZWEAG106
+      type: WARNING
+      text: "Login endpoint is running in dummy mode. Use credentials '%s'/'%s' to log in. Do not use this option in the production environment."
+      reason: "The authentication is running in dummy mode."
+      action: "Ensure that this option is not being used in a production environment."
+
+    - key: org.zowe.apiml.security.invalidAuthenticationProvider
+      number: ZWEAG107
+      type: WARNING
+      text: "Incorrect value: apiml.security.auth.provider = '%s'. The authentication provider is not set correctly. The default 'zosmf' authentication provider is being used."
+      reason: "An incorrect value of the apiml.security.auth.provider parameter is set in the configuration."
+      action: "Ensure that the value of apiml.security.auth.provider is set either to 'dummy' if you want to use dummy mode, or to 'zosmf' if you want to use the z/OSMF authentication provider."
+
+    - key: org.zowe.apiml.security.zosmfInstanceNotFound
+      number: ZWEAG108
+      type: ERROR
+      text: "z/OSMF instance '%s' not found or incorrectly configured. ZAAS is shutting down."
+      reason: "The ZAAS could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with the provided z/OSMF instance. The default timeout is 5 minutes. On a slower system, add the variable components.zaas.apiml.security.jwtInitializerTimeout:... and the value in minutes into Zowe's configuration to override this value."
+
+    # Login messages (120 - 130)
+    - key: org.zowe.apiml.security.login.invalidCredentials
+      number: ZWEAG120
+      type: ERROR
+      text: "Invalid username or password for URL '%s'"
+      reason: "The username and/or password are invalid."
+      action: "Provide a valid username and password."
+
+    - key: org.zowe.apiml.security.login.invalidInput
+      number: ZWEAG121
+      type: ERROR
+      text: "Authorization header is missing, or the request body is missing or invalid for URL '%s'"
+      reason: "The authorization header is missing, or the request body is missing or invalid."
+      action: "Provide valid authentication."
+
+    - key: org.zowe.apiml.security.login.invalidTokenType
+      number: ZWEAS123
+      type: ERROR
+      text: "Invalid token type in response from Authentication service."
+      reason: "Could not retrieve the proper authentication token from the Authentication service response."
+      action: "Review your APIML authentication provider configuration and ensure your Authentication service is working."
+
+    # Query messages (130 - 140)
+    - key: org.zowe.apiml.security.query.invalidToken
+      number: ZWEAG130
+      type: ERROR
+      text: "Token is not valid for URL '%s'"
+      reason: "The token is not valid."
+      action: "Provide a valid token."
+
+    - key: org.zowe.apiml.security.query.tokenNotProvided
+      number: ZWEAG131
+      type: ERROR
+      text: "No authorization token provided for URL '%s'"
+      reason: "No authorization token is provided."
+      action: "Provide a valid authorization token."
+
+    # Ticket messages (140 - 150)
+    - key: org.zowe.apiml.security.ticket.invalidApplicationName
+      number: ZWEAG140
+      type: ERROR
+      text: "The 'applicationName' parameter name is missing."
+      reason: "The application name is not provided."
+      action: "Provide the 'applicationName' parameter."
+
+    - key: org.zowe.apiml.security.ticket.generateFailed
+      number: ZWEAG141
+      type: ERROR
+      text: "The generation of the PassTicket failed. Reason: %s"
+      reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
+      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
+
+  # IDT messages (150 - 159)
+    - key: org.zowe.apiml.security.idt.failed
+      number: ZWEAG150
+      type: ERROR
+      text: "SAF IDT generation failed. Reason: %s"
+      reason: "An error occurred during SAF verification. Review the reason in the error message."
+      action: "Verify the Identity Token configuration."
+
+    - key: org.zowe.apiml.zaas.security.schema.missingAuthentication
+      number: ZWEAG160
+      type: ERROR
+      text: "No authentication provided in the request"
+      reason: "The JWT token or client certificate was not provided with the request"
+      action: "Configure your client to provide valid authentication."
+
+    - key: org.zowe.apiml.zaas.security.schema.x509.mappingFailed
+      number: ZWEAG161
+      type: ERROR
+      text: "No user was found"
+      reason: "It was not possible to map provided certificate to the mainframe identity."
+      action: "Ask your security administrator to connect your client certificate with your mainframe user."
+
+    - key: org.zowe.apiml.zaas.security.token.authenticationFailed
+      number: ZWEAG162
+      type: ERROR
+      text: "ZAAS failed to obtain token."
+      reason: "Authentication request to get token failed."
+      action: "Contact your administrator."
+
+    - key: org.zowe.apiml.zaas.security.scheme.missingApplid
+      number: ZWEAG169
+      type: ERROR
+      text: "The 'apiml.authentication.applid' parameter is not specified for a service."
+      reason: "The applid parameter is required for the calling service."
+      action: "Provide the 'apiml.authentication.applid' parameter."
+
+    # OIDC error messages
+    - key: org.zowe.apiml.security.oidc.invalidWebfingerConfiguration
+      number: ZWEAG180
+      type: ERROR
+      text: "There was an error while reading webfinger configuration"
+      reason: "Webfinger provider contains incorrect configuration."
+      action: "Contact the administrator to validate webfinger configuration in ZAAS."
+
+    - key: org.zowe.apiml.security.auth.zosmf.sslError
+      number: ZWEAG182
+      type: ERROR
+      text: >
+        SSL Misconfiguration, z/OSMF is not accessible.
+        Message: %s
+        Please verify the following:
+          - CN (Common Name) and z/OSMF hostname match.
+          - The certificate is valid
+          - TLS version matches
+          - z/OSMF server certificate is trusted in Zowe's truststore
+        Enable debugging to see further details in stack trace.
+      reason: "The z/OSMF connection is incorrectly configured."
+      action: "Verify z/OSMF connection details. Verify z/OSMF can be accessed with HTTPS. Configure sslDebug to see SSL debugging messages."
+
+    # ZAAS error messages (#600) TODO: Messaging requires clean up
+
+    - key: org.zowe.apiml.zaas.zoweJwt.noToken
+      number: ZWEAZ600
+      type: WARNING
+      text: "ZAAS cannot generate or obtain Zowe token. Reason: %s"
+      reason: Review the reason section of the message.
+      action: Make sure z/OSMF is available when using the z/OSMF authentication provider or whether Zowe can generate tokens for other authentication providers. Make also sure that the identity mapping is correctly configured and set for the requested authentication.
+
+    - key: org.zowe.apiml.zaas.zosmf.noZosmfTokenReceived
+      number: ZWEAZ601
+      type: WARNING
+      text: "z/OSMF is not available or z/OSMF response does not contain any token. Reason: %s"
+      reason: z/OSMF does not return JWT or LTPA tokens.
+      action: Make sure z/OSMF is available to API ML or review your z/OSMF configuration.

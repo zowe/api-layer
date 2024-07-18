@@ -44,7 +44,6 @@ eggs
 parts
 bin
 !gateway-package/src/main/resources/bin
-!cloud-gateway-package/src/main/resources/bin
 !api-catalog-package/src/main/resources/bin
 !discovery-package/src/main/resources/bin
 !caching-service-package/src/main/resources/bin
@@ -115,3 +114,6 @@ onboarding-enabler-nodejs-sample-app/tools/
 file/
 
 zowe-cli-id-federation-plugin/*.jcl
+
+data/*
+index/*

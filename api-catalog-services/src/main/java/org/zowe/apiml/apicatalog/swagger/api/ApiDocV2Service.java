@@ -23,7 +23,7 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import jakarta.validation.UnexpectedTypeException;
 import java.util.Collections;
@@ -69,7 +69,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
      * @param hidden    do not add link for automatically generated API doc
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, ApiInfo apiInfo, boolean hidden) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
         log.debug("Updating host for service with id: " + serviceId + " to: " + getHostname(serviceId));
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));

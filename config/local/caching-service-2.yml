@@ -1,0 +1,17 @@
+jgroups:
+    bind:
+        port: 7099
+        address: localhost
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            persistence:
+                dataLocation: data_replica
+            initialHosts: localhost[7098]
+apiml:
+    service:
+        port: 10022
+spring:
+    profiles:
+        include: dev

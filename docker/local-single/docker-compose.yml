@@ -1,5 +1,9 @@
 version: "3.3"
 services:
+    zaas-service:
+        image: ghcr.io/zowe/zaas-service:latest
+        ports:
+            - "10023:10023"
     api-catalog-services:
         image: ghcr.io/zowe/api-catalog-services:latest
         volumes:
@@ -30,7 +34,6 @@ services:
         image: ghcr.io/zowe/gateway-service:latest
         ports:
             - "10010:10010"
-            - "10017:10017"
     mock-services:
         image: ghcr.io/zowe/mock-services:latest
         ports:

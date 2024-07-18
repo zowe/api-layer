@@ -39,13 +39,13 @@ prepareVersioning
 copyDockerfileToInternalStructure $linux_distro $cpu_arch
 cleanUpWorkingFolder
 
-cloud_gateway_package="cloud-gateway-package"
+gateway_package="gateway-package"
 apiml_common_package="apiml-common-lib-package"
 
-buildPackage $cloud_gateway_package "packageCloudGateway"
+buildPackage $gateway_package "packageGateway"
 buildApimlCommonPackage
 
-preparePackage $cloud_gateway_package
+preparePackage $gateway_package
 preparePackage $apiml_common_package "apiml-common-lib"
 prepareBasicFiles
 

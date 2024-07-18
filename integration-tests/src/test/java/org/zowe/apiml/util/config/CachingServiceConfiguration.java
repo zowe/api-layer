@@ -17,6 +17,23 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CachingServiceConfiguration {
+public class CachingServiceConfiguration implements ServiceConfiguration {
+
     private String url;
+
+    @Override
+    public String getScheme() {
+        throw new IllegalStateException("Method is not implemented");
+    }
+
+    @Override
+    public String getHost() {
+        throw new IllegalStateException("Method is not implemented");
+    }
+
+    @Override
+    public int getPort() {
+        throw new IllegalStateException("Method is not implemented");
+    }
+
 }

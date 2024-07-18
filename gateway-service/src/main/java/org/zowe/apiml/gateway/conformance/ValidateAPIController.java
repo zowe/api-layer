@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.conformance;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -37,22 +36,18 @@ public class ValidateAPIController {
     private static final int MAXIMUM_SERVICE_ID_LENGTH = 64;
     private static final String INVALID_SERVICE_ID_REGEX_PATTERN = "[^a-z0-9]";
 
+    private static final String REGISTRATION_PROBLEMS = "Registration problems";
+    private static final String METADATA_PROBLEMS = "Metadata problems";
+    private static final String CONFORMANCE_PROBLEMS = "Conformance problems";
 
     static final String WRONG_SERVICE_ID_KEY = "org.zowe.apiml.gateway.verifier.wrongServiceId";
     static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
-
-    private static final String REGISTRATION_PROBLEMS = "Registration problems";
-    private static final String METADATA_PROBLEMS = "Metadata problems";
-    private static final String CONFORMANCE_PROBLEMS = "Conformance problems";
-
-
     private final MessageService messageService;
     private final VerificationOnboardService verificationOnboardService;
     private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
-
 
     /**
      * Accepts serviceID and checks conformance criteria
@@ -61,10 +56,9 @@ public class ValidateAPIController {
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
     @GetMapping(
-        value = "/gateway/conformance/{serviceId}",
+        value = {"/gateway/conformance/{serviceId}","/gateway/api/v1/conformance/{serviceId}"},
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @HystrixCommand
     public ResponseEntity<String> checkConformance(@PathVariable String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
@@ -105,7 +99,7 @@ public class ValidateAPIController {
     }
 
     private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
-        if (!swaggerUrl.isPresent()) {
+        if (swaggerUrl.isEmpty()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
         }
 
@@ -133,8 +127,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
-    @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HystrixCommand
+    @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
@@ -153,7 +146,6 @@ public class ValidateAPIController {
         return new ResponseEntity<>(foundNonConformanceIssues.createBadRequestAPIResponseBody(key, message.mapToApiMessage()), HttpStatus.BAD_REQUEST);
     }
 
-
     /**
      * Accepts serviceId and checks if the service is onboarded to the API Mediation Layer
      * If it's not than it doesn't fulfill Item 1 of conformance criteria
@@ -167,7 +159,6 @@ public class ValidateAPIController {
         }
     }
 
-
     /**
      * Retrieves metadata
      *
@@ -177,7 +168,6 @@ public class ValidateAPIController {
     private Map<String, String> getMetadata(ServiceInstance serviceInstance) {
         return serviceInstance.getMetadata();
     }
-
 
     /**
      * Checks if metadata was retrieved.
@@ -203,7 +193,6 @@ public class ValidateAPIController {
         }
     }
 
-
     /**
      * Accept serviceId and checks if it is Zowe conformant according to the specification,
      * Item 5 from the conformance criteria list. That means that the serviceId contains only lower case
@@ -226,4 +215,5 @@ public class ValidateAPIController {
 
         return result;
     }
+
 }
