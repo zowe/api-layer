@@ -9,19 +9,9 @@ import 'graphiql/graphiql.min.css';
 export default function GraphQLUIApiml(props) {
 
     const location = `${window.location.protocol}//${window.location.host}`;
-    const findGraphqlUrl = (apis) => {
-        for (const apiKey in apis) {
-            if (apis.hasOwnProperty(apiKey) && apis[apiKey]) {
-                const api = apis[apiKey];
-                if (api.graphqlUrl) {
-                    return api.graphqlUrl;
-                }
-            }
-        }
-        return null;
-    };
-    const graphqlUrl = new URL(findGraphqlUrl(props.selectedService.apis));
-    const pathName = graphqlUrl.pathname
+    const { graphqlUrl } = props;
+    const urlForPathName = new URL(graphqlUrl);
+    const pathName = urlForPathName.pathname
     const basePath = `${location}/${pathName}`;
 
     const fetcher = async (graphQLParams) => {
@@ -32,7 +22,6 @@ export default function GraphQLUIApiml(props) {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
-
                 },
                 body: JSON.stringify(graphQLParams),
                 credentials: 'same-origin',

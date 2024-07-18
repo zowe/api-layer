@@ -3,7 +3,7 @@ package org.zowe.apiml.client.model.graphql;
 import java.util.Arrays;
 import java.util.List;
 
-public record Author (String id, String firstName, String lastName) {
+public record Author (String authorId, String firstName, String lastName) {
 
     private static List<Author> authors = Arrays.asList(
         new Author("author-1", "Joshua", "Bloch"),
@@ -13,7 +13,7 @@ public record Author (String id, String firstName, String lastName) {
 
     public static Author getById(String id) {
         return authors.stream()
-            .filter(author -> author.id().equals(id))
+            .filter(author -> author.authorId().equals(id))
             .findFirst()
             .orElse(null);
     }

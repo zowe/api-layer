@@ -2,15 +2,21 @@ type Query {
     getAllBooks: [Book]
 }
 
+type Mutation {
+    addBook(name:String!, pageCount: Int!, authorId:String!): Book!
+    deleteBook(bookId:String!): Book!
+    updateBook(bookId:String!, name:String, pageCount: Int, authorId:String):Book!
+}
+
 type Book {
-    id: ID
+    bookId: ID
     name: String
     pageCount: Int
     author: Author
 }
 
 type Author {
-    id: ID
+    authorId: ID
     firstName: String
     lastName: String
 }

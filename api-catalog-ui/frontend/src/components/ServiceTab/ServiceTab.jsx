@@ -139,6 +139,18 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
+    getGraphqlUrl = (apis) => {
+        for (const apiKey in apis) {
+            if (apis.hasOwnProperty(apiKey) && apis[apiKey]) {
+                const api = apis[apiKey];
+                if (api.graphqlUrl) {
+                    return api.graphqlUrl;
+                }
+            }
+        }
+        return null;
+    };
+
     render() {
         const {
             match: {
@@ -156,6 +168,8 @@ export default class ServiceTab extends Component {
         const { hasHomepage } = this;
         const { apiVersions } = this;
         const { containsVersion } = this;
+        const graphqlUrl = this.getGraphqlUrl(this.props.selectedService.apis);
+        const title =  graphqlUrl ? "GraphQL" : "Swagger";
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         return (
@@ -239,7 +253,7 @@ export default class ServiceTab extends Component {
                             </Typography>
                             <br />
                             <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
-                                Swagger
+                                {title}
                             </Typography>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 {containsVersion && currentService && (
@@ -280,8 +294,8 @@ export default class ServiceTab extends Component {
                                 </Button>
                             </div>
                         )}
-                        {/*{selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}*/}
-                        {selectedVersion !== 'diff' && <GraphQLContainer selectedVersion={selectedVersion} />}
+                        {(graphqlUrl !== null && selectedVersion !== 'diff') && <GraphQLContainer  graphqlUrl={graphqlUrl} selectedVersion={selectedVersion} />}
+                        {(graphqlUrl === null && selectedVersion !== 'diff') && <SwaggerContainer selectedVersion={selectedVersion} />}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
                                 selectedVersion={this.state.previousVersion}
