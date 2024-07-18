@@ -35,11 +35,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthEndpointConfigTest extends AcceptanceTestWithMockServices {
 
-    MockService zaas;
 
     @BeforeAll
     void setup() throws IOException {
-        zaas = mockService("zaas").scope(MockService.Scope.CLASS)
+        mockService("zaas").scope(MockService.Scope.CLASS)
             .addEndpoint("/zaas/api/v1/auth/login")
                 .responseCode(204)
                 .assertion(he -> assertEquals("Basic dXNlcjpwYXNz", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))

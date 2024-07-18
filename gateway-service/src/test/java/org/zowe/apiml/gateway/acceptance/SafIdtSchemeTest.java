@@ -57,14 +57,12 @@ public class SafIdtSchemeTest {
     @AcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenValidAuth extends AcceptanceTestWithMockServices {
-        MockService zaas;
-        MockService service;
 
         @BeforeEach
         void setup() throws IOException {
             ZaasTokenResponse response = ZaasTokenResponse.builder().token(SAF_IDT).headerName(SAF_TOKEN_HEADER).build();
 
-            zaas = mockService("zaas").scope(MockService.Scope.TEST)
+            mockService("zaas").scope(MockService.Scope.TEST)
                 .addEndpoint("/zaas/scheme/safIdt")
                 .responseCode(200)
                 .assertion(he -> assertEquals("Bearer userJwt", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
@@ -77,7 +75,8 @@ public class SafIdtSchemeTest {
                 })
                 .bodyJson(response)
                 .and().start();
-            service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
+
+            mockService(SERVICE_ID).scope(MockService.Scope.TEST)
                 .authenticationScheme(AuthenticationScheme.SAF_IDT).applid("IZUDFLT")
                 .addEndpoint("/" + SERVICE_ID + "/test")
                 .assertion(he -> assertEquals(SAF_IDT, getHeaderValue(he, "x-saf-token")))
@@ -99,18 +98,16 @@ public class SafIdtSchemeTest {
     @AcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenNoAuth extends AcceptanceTestWithMockServices {
-        MockService zaas;
-        MockService service;
 
         @BeforeEach
         void setup() throws IOException {
 
-            zaas = mockService("zaas").scope(MockService.Scope.CLASS)
+            mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint("/zaas/scheme/safIdt")
                 .responseCode(401)
                 .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                 .and().start();
-            service = mockService(SERVICE_ID).scope(MockService.Scope.CLASS)
+            mockService(SERVICE_ID).scope(MockService.Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.SAF_IDT).applid("IZUDFLT")
                 .addEndpoint("/" + SERVICE_ID + "/test")
                 .assertion(he -> assertNull(getHeaderValue(he, "x-saf-token")))

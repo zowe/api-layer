@@ -193,12 +193,6 @@ public abstract class TokenSchemeTest {
                 .and().start();
         }
 
-        @AfterAll
-        void shutdown() {
-            zaas.close();
-            service.close();
-        }
-
         @Test
         void givenZaasWithInvalidResponse_whenCallingAService_thenDontPropagateCredentials() {
             given().when().get(getServiceUrl()).then().statusCode(200);
@@ -234,12 +228,6 @@ public abstract class TokenSchemeTest {
                 .addEndpoint("/service/test")
                 .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
                 .and().start();
-        }
-
-        @AfterAll
-        void shutdown() {
-            zaas.close();
-            service.close();
         }
 
         @Test
