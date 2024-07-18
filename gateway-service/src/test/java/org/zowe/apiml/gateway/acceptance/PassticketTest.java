@@ -60,7 +60,7 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
         @Test
         void whenRequestingPassticketForAllowedAPPLID_thenTranslate() throws IOException {
             String expectedAuthHeader = "Basic " + Base64.getEncoder().encodeToString((USER_ID + ":" + PASSTICKET).getBytes(StandardCharsets.UTF_8));
-            MockService mockService = mockService(SERVICE_ID)
+            var mockService = mockService(SERVICE_ID)
                 .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
                 .addEndpoint("/" + SERVICE_ID + "/test")
                     .assertion(he -> assertEquals(expectedAuthHeader, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))

@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.controllers;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.product.version.VersionInfo;
 import org.zowe.apiml.product.version.VersionService;
+import reactor.core.publisher.Mono;
 
 /**
  * API for providing information about Zowe and API ML versions
@@ -32,7 +32,10 @@ public class VersionController {
     private VersionService versionService;
 
     @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<VersionInfo> getVersion() {
-        return new ResponseEntity<>(versionService.getVersion(), HttpStatus.OK);
+    public Mono<ResponseEntity<VersionInfo>> getVersion() {
+        return Mono.just(ResponseEntity
+            .ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(versionService.getVersion()));
     }
 }
