@@ -67,7 +67,9 @@ jobs:
               #    renovate --dry-run \
               #             --log-file renovate.log \
               #             --log-file-level debug
-              shell: bash
-              run: renovate --dry-run
+
+              #shell: bash
+              #run: renovate --dry-run
+              run: sh 'renovate --dry-run'
 
 
