@@ -30,7 +30,7 @@ jobs:
 
         # Execute within the context of the renovate image
         container:
-            image: renovate/renovate:latest
+            image: renovatebot/renovate:24.29.1-slim
 
         steps:
             # Execute using the renovate action
