@@ -18,7 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 /**
  * Configuration class for setting up the load-balanced WebClient and applying the default load balancer configuration.
  */
-@LoadBalancerClients(defaultConfiguration = DeterministicLoadBalancerConfiguration.class)
+@LoadBalancerClients(defaultConfiguration = CustomLoadBalancerConfiguration.class)
 public class LoadBalancerConfiguration {
     @Bean
     @LoadBalanced

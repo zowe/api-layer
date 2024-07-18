@@ -10,16 +10,18 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 
 /**
- * Configuration class for setting up the DeterministicLoadBalancer and StickySessionRoutingListSupplierBuilder
+ * Configuration class for setting up the DeterministicRoutingListSupplierBuilder and StickySessionRoutingListSupplierBuilder
  * based on Gateway configuration.
  */
-public class DeterministicLoadBalancerConfiguration {
+public class CustomLoadBalancerConfiguration {
 
     /**
      * Creates a ServiceInstanceListSupplier bean configured with deterministic routing.
@@ -44,10 +46,12 @@ public class DeterministicLoadBalancerConfiguration {
      */
     @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "true")
     @Bean
-    public ServiceInstanceListSupplier discoveryClientCachedServiceInstanceListSupplier(ConfigurableApplicationContext context) {
+    public ServiceInstanceListSupplier discoveryClientCachedServiceInstanceListSupplier(
+        ConfigurableApplicationContext context, LoadBalancerCache cache,
+        @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}") int expirationTime) {
         return new StickySessionRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
             .withDiscoveryClient())
-            .withDeterministicRouting()
+            .withStickySessionRouting(cache, expirationTime)
             .build(context);
     }
 }
