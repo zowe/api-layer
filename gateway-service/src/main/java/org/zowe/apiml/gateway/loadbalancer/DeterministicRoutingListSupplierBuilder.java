@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.routing;
+package org.zowe.apiml.gateway.loadbalancer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplierBuilder;
@@ -24,7 +24,6 @@ public class DeterministicRoutingListSupplierBuilder {
     public ServiceInstanceListSupplierBuilder withDeterministicRouting() {
         ServiceInstanceListSupplierBuilder.DelegateCreator creator = (context, delegate) -> {
             LoadBalancerClientFactory loadBalancerClientFactory = context.getBean(LoadBalancerClientFactory.class);
-            System.out.println("Creating Deterministic Load Balancer");
             return new DeterministicLoadBalancer(delegate, loadBalancerClientFactory);
         };
         builder.with(creator);

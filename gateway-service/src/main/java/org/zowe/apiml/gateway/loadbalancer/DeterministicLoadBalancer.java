@@ -8,10 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.routing;
+package org.zowe.apiml.gateway.loadbalancer;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
@@ -35,9 +34,6 @@ import static org.zowe.apiml.constants.ApimlConstants.X_INSTANCEID;
 @Slf4j
 public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInstanceListSupplier {
 
-    @Value("${apiml.routing.instanceIdHeader:false}")
-    private boolean instanceIdHeader;
-
     public DeterministicLoadBalancer(ServiceInstanceListSupplier delegate, ReactiveLoadBalancer.Factory<ServiceInstance> factory) {
         super(delegate, factory);
         log.debug("DeterministicLoadBalancer instantiated");
@@ -51,19 +47,16 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
      */
     @Override
     public Flux<List<ServiceInstance>> get(Request request) {
-        if (instanceIdHeader) {
-            return delegate.get(request)
-                .flatMap(serviceInstances -> {
-                    List<ServiceInstance> filteredInstances = filterInstances(request.getContext(), serviceInstances);
-                    if (filteredInstances.isEmpty()) {
-                        log.warn("No service instance found for the provided instance ID");
-                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
-                    }
-                    return Flux.just(filteredInstances);
-                })
-                .doOnError(e -> log.debug("Error in determining service instances", e));
-        }
-        return super.get();
+        return delegate.get(request)
+            .flatMap(serviceInstances -> {
+                List<ServiceInstance> filteredInstances = filterInstances(request.getContext(), serviceInstances);
+                if (filteredInstances.isEmpty()) {
+                    log.warn("No service instance found for the provided instance ID");
+                    return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+                }
+                return Flux.just(filteredInstances);
+            })
+            .doOnError(e -> log.debug("Error in determining service instances", e));
     }
 
     private String getInstanceFromHeader(RequestDataContext context) {

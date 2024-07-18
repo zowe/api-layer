@@ -8,14 +8,16 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.routing;
+package org.zowe.apiml.gateway.loadbalancer;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 /**
- * Configuration class for setting up the DeterministicLoadBalancer.
+ * Configuration class for setting up the DeterministicLoadBalancer and StickySessionRoutingListSupplierBuilder
+ * based on Gateway configuration.
  */
 public class DeterministicLoadBalancerConfiguration {
 
@@ -25,9 +27,25 @@ public class DeterministicLoadBalancerConfiguration {
      * @param context the application context
      * @return the configured ServiceInstanceListSupplier
      */
+    @ConditionalOnProperty(name = "apiml.routing.instanceIdHeader", havingValue = "true")
     @Bean
     public ServiceInstanceListSupplier discoveryClientServiceInstanceListSupplier(ConfigurableApplicationContext context) {
         return new DeterministicRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
+            .withDiscoveryClient())
+            .withDeterministicRouting()
+            .build(context);
+    }
+
+    /**
+     * Creates a ServiceInstanceListSupplier bean configured with sticky session routing.
+     *
+     * @param context the application context
+     * @return the configured ServiceInstanceListSupplier
+     */
+    @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "true")
+    @Bean
+    public ServiceInstanceListSupplier discoveryClientCachedServiceInstanceListSupplier(ConfigurableApplicationContext context) {
+        return new StickySessionRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
             .withDiscoveryClient())
             .withDeterministicRouting()
             .build(context);
