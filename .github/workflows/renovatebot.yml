@@ -65,4 +65,4 @@ jobs:
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-              uses: mirek163/renovate-test@main
+              uses: mirek163/api-layer@main
