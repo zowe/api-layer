@@ -1,0 +1,77 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Run Renovate
+
+on:
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+    # Run at midnight UTC Monday morning
+    schedule:
+        - cron: '0 0 * * 1'
+
+
+    # Push on main branch if needed for rebasing from prs.
+    #   push:
+    #     branches: main
+
+    # Run when there is an update to a PR. This will cleanup branches, and rebase PRs after merges.
+    # Couple with the "IF" field on the job to limit to updates of the 'renovate/' branches.
+    pull_request_target:
+        types:
+            - closed
+            - edited
+            - reopened
+
+jobs:
+    dependency_scan:
+        # Requires docker, so we run on a node that is tagged with docker.
+        runs-on: [ docker ]
+
+        # Coupled with pull_request_target, to only execute when PR is from a reovate branch
+        if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
+
+        # Execute within the context of the renovate image
+        container:
+            image: docker-hub-virtual.usw1.packages.broadcom.com/renovate/renovate:latest
+            credentials:
+                username: ${{ vars.SED_ARTIFACTORY_USER }}
+                password: ${{ secrets.SED_ARTIFACTORY_TOKEN }}
+
+        steps:
+            # Execute using the renovate action
+            - name: Renovate!
+              env:
+                  ARTIFACTORY_CREDS_USR: ${{ vars.SED_ARTIFACTORY_USER }}
+                  ARTIFACTORY_CREDS_PSW: ${{ secrets.SED_ARTIFACTORY_TOKEN }}
+                  GRADLE_OPTS: -DsaseArtifactoryUsername=${{ vars.SED_ARTIFACTORY_USER }} -DsaseArtifactoryPassword=${{ secrets.SED_ARTIFACTORY_TOKEN }}
+                  RENOVATE_AUTO_APPROVE: true
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  artifactory-user: ${{ vars.SED_ARTIFACTORY_USER }}
+                  artifactory-token: ${{ secrets.SED_ARTIFACTORY_TOKEN }}
+
+                  # Limit Number of active renavate prs. Default: unlimited
+                  # pr-concurrency: 3
+
+                  # Limit number of prs per hour to create. Helpful to slow roll renovate into a repo. Default: unlimited
+                  # pr-hour-limit: 2
+
+                  # Change when any prs are generated. Default every Monday
+                  # Update to tuesdays
+                  # update-schedule: 'on the second day of the week'
+                  # Always create PRs.
+                  update-schedule: ''
+
+                  # Automatically adds 1 approving pr to any generated renovate prs.
+                  # Can be useful when 2 approving reviews are required.
+                  pr-auto-approve: true
+                  # User and token used to create approving review.
+                  # Required when pr-auto-approve is true.
+                  # github-approver-token: ${{ secrets.SECP_SASEPORTALDEV_GH_TOKEN }}
+                  # github-approver-user: saseportaldev
+
+                  package-rules: |-
+                      { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
+
+              uses: SED/SASE_sec-dependabot-test@main
