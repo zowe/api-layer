@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Run Renovate
 
 on:
@@ -24,24 +22,20 @@ on:
 
 jobs:
     dependency_scan:
-        # Requires docker, so we run on a node that is tagged with docker.
-       # runs-on: [ docker ]
-        runs-on: [ ubuntu-latest ]
-        # Coupled with pull_request_target, to only execute when PR is from a renovate branch
+        runs-on: ubuntu-latest
+
         if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
 
-        # Execute within the context of the renovate image
-        container:
-            image: renovate/renovate:latest
-
         steps:
-            # Execute using the renovate action
-            - name: Renovate!
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Run Renovate
+              uses: renovatebot/github-action@v38.1.1
               env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   RENOVATE_AUTO_APPROVE: true
               with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-
                   # Limit Number of active renovate PRs. Default: unlimited
                   # pr-concurrency: 3
 
@@ -59,10 +53,9 @@ jobs:
                   pr-auto-approve: true
                   # User and token used to create approving review.
                   # Required when pr-auto-approve is true.
-                  # github-approver-token: ${{ secrets.SECP_SASEPORTALDEV_GH_TOKEN }}
-                  # github-approver-user: saseportaldev
+                  # github-approver-token: ${{ secrets.GITHUB_APPROVER_TOKEN }}
+                  # github-approver-user: approver-username
 
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-              uses: ./.github/actions/teardown
