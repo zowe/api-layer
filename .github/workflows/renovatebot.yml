@@ -25,8 +25,8 @@ on:
 jobs:
     dependency_scan:
         # Requires docker, so we run on a node that is tagged with docker.
-        runs-on: [ docker ]
-
+       # runs-on: [ docker ]
+        runs-on: [ ubuntu-latest ]
         # Coupled with pull_request_target, to only execute when PR is from a renovate branch
         if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
 
