@@ -63,9 +63,11 @@ jobs:
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-              run: |
-                  renovate --dry-run \
-                           --log-file renovate.log \
-                           --log-file-level debug
+              #run: |
+              #    renovate --dry-run \
+              #             --log-file renovate.log \
+              #             --log-file-level debug
+
+              run: renovate --dry-run
 
 
