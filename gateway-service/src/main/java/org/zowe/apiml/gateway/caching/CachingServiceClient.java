@@ -35,6 +35,8 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.list.apiPath}")
     private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/";
 
+    private static final String CACHING_BALANCER_URL = "lb://caching-service";
+
     public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
@@ -43,11 +45,10 @@ public class CachingServiceClient {
     }
 
     private final WebClient webClient;
-    private final String gatewayProtocolHostPort;
 
     public Mono<Void> create(KeyValue keyValue) {
         return webClient.post()
-            .uri(gatewayProtocolHostPort)
+            .uri(CACHING_BALANCER_URL + CACHING_API_PATH)
             .bodyValue(keyValue)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
@@ -61,7 +62,7 @@ public class CachingServiceClient {
 
     public Mono<Void> update(KeyValue keyValue) {
         return webClient.put()
-            .uri(gatewayProtocolHostPort)
+            .uri(CACHING_BALANCER_URL + CACHING_API_PATH)
             .bodyValue(keyValue)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
@@ -75,7 +76,7 @@ public class CachingServiceClient {
 
     public Mono<KeyValue> read(String key) {
         return webClient.get()
-            .uri(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key)
+            .uri(CACHING_BALANCER_URL + CACHING_API_PATH + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
@@ -99,7 +100,7 @@ public class CachingServiceClient {
      */
     public Mono<Void> delete(String key) {
         return webClient.delete()
-            .uri(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key)
+            .uri(CACHING_BALANCER_URL + CACHING_API_PATH + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
