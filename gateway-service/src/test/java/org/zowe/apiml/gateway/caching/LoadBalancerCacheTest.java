@@ -183,7 +183,7 @@ class LoadBalancerCacheTest {
                 @Test
                 void andSuccess_thenSuccess() {
                     var record = new LoadBalancerCacheRecord("instance1");
-                    when(map.put(null, null)).thenReturn(record);
+                    when(map.put("lb.anuser:aserviceid", record)).thenReturn(record);
                     loadBalancerCache.store("anuser", "aserviceid", record);
                     verifyNoInteractions(cachingServiceClient);
                 }
@@ -195,8 +195,10 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() {
-                    var key = "";
+                    var key = "lb.anuser:aserviceid";
                     when(map.remove(key)).thenReturn(null);
+                    loadBalancerCache.delete("anuser", "aserviceid");
+                    verifyNoInteractions(cachingServiceClient);
                 }
 
             }
@@ -206,10 +208,11 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() {
-                    var key = "";
-
-
-
+                    var record = new LoadBalancerCacheRecord("instance1");
+                    var key = "lb.anuser:aserviceid";
+                    when(map.get(key)).thenReturn(record);
+                    assertEquals(record, loadBalancerCache.retrieve("anuser", "aserviceid").block());
+                    verifyNoInteractions(cachingServiceClient);
                 }
 
             }
