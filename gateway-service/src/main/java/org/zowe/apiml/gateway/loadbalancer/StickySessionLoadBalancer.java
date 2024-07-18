@@ -31,18 +31,32 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * A sticky session load balancer that ensures requests from the same user are routed to the same service instance.
+ */
 @Slf4j
 public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInstanceListSupplier {
 
     private final LoadBalancerCache cache;
     private final int expirationTime;
-    public StickySessionLoadBalancer(ServiceInstanceListSupplier delegate, ReactiveLoadBalancer.Factory<ServiceInstance> loadBalancerClientFactory, LoadBalancerCache cache, int expirationTime) {
+
+    public StickySessionLoadBalancer(ServiceInstanceListSupplier delegate,
+                                     ReactiveLoadBalancer.Factory<ServiceInstance> loadBalancerClientFactory,
+                                     LoadBalancerCache cache,
+                                     int expirationTime) {
         super(delegate, loadBalancerClientFactory);
         this.cache = cache;
         this.expirationTime = expirationTime;
         log.debug("StickySessionLoadBalancer instantiated");
     }
 
+    /**
+     * Gets a list of service instances based on the request. This method ensures that requests from the same user are
+     * routed to the same service instance, leveraging the cache to maintain sticky sessions.
+     *
+     * @param request the load balancer request
+     * @return a flux of service instance lists
+     */
     @Override
     public Flux<List<ServiceInstance>> get(Request request) {
         String serviceId = getServiceId();
@@ -52,9 +66,9 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         AtomicReference<String> principal = new AtomicReference<>();
         return delegate.get(request)
             .flatMap(serviceInstances -> getPrincipal().flatMapMany(user -> {
-                if (user.isEmpty()) {
+                if (user == null || user.isEmpty()) {
                     log.debug("No authentication present on request, not filtering the service: {}", serviceId);
-                    return Flux.empty();
+                    return Mono.empty();
                 } else {
                     principal.set(user);
                     return cache.retrieve(user, serviceId);
@@ -75,18 +89,30 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
             .doOnError(e -> log.debug("Error in determining service instances", e));
     }
 
+    /**
+     * Checks if the cached date is too old based on the expiration time.
+     *
+     * @param cachedDate the cached date
+     * @return true if the cached date is too old, false otherwise
+     */
     private boolean isTooOld(LocalDateTime cachedDate) {
         LocalDateTime now = LocalDateTime.now().minusHours(expirationTime);
         return now.isAfter(cachedDate);
     }
 
+    /**
+     * Retrieves the principal from the security context.
+     *
+     * @return a mono containing the principal as a string
+     */
     public static Mono<String> getPrincipal() {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Authentication::isAuthenticated)
             .map(Authentication::getPrincipal)
             .filter(principal -> principal != null && !principal.toString().isEmpty())
-            .map(Object::toString);
+            .map(Object::toString)
+            .switchIfEmpty(Mono.empty());
     }
 
     /**
