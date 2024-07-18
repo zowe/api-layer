@@ -19,9 +19,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.test.StepVerifier;
+
+import static org.mockito.Mockito.spy;
 
 @ExtendWith(MockitoExtension.class)
 class CachingServiceClientTest {
@@ -30,10 +33,15 @@ class CachingServiceClientTest {
     private ExchangeFunction exchangeFunction;
 
     private CachingServiceClient client;
+    private WebClient webClient;
 
     @BeforeEach
     void setUp () {
-        client = new CachingServiceClient();
+        webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
+        client = new CachingServiceClient(
+            webClient,
+            "8080"
+        );
     }
 
     @Nested
@@ -45,7 +53,7 @@ class CachingServiceClientTest {
             @Test
             void andServerSuccess_thenSuccess() {
 
-                StepVerifier.create(client.create(new KeyValue("null", "null")))
+                StepVerifier.create(client.create(new KeyValue("null", "null"));
 
             }
 

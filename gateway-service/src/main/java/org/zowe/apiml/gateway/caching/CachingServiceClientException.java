@@ -10,14 +10,16 @@
 
 package org.zowe.apiml.gateway.caching;
 
+import lombok.Getter;
+
+@Getter
 public class CachingServiceClientException extends RuntimeException {
 
-    public CachingServiceClientException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    private int statusCode;
 
-    public CachingServiceClientException(String message) {
+    public CachingServiceClientException(int statusCode, String message) {
         super(message);
+        this.statusCode = statusCode;
     }
 
 }

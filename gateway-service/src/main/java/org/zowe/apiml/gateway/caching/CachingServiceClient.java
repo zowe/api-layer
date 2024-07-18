@@ -54,7 +54,7 @@ public class CachingServiceClient {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException("Unable to create caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to create caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }
@@ -68,7 +68,7 @@ public class CachingServiceClient {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException("Unable to update caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to update caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }
@@ -86,7 +86,7 @@ public class CachingServiceClient {
                     }
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException("Unable to read caching key " + key + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to read caching key " + key + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }
@@ -105,7 +105,7 @@ public class CachingServiceClient {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException("Unable to delete caching key " + key + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to delete caching key " + key + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }

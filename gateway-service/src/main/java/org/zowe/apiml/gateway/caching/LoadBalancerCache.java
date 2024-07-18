@@ -18,9 +18,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -68,7 +67,7 @@ public class LoadBalancerCache {
     private Mono<Void> storeToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
             String serializedRecord = mapper.writeValueAsString(loadBalancerCacheRecord);
-            CachingServiceClient.KeyValue toStore = new CachingServiceClient.KeyValue(getKey(user, service), serializedRecord);
+            CachingServiceClient.KeyValue toStore = new KeyValue(getKey(user, service), serializedRecord);
             return createToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
         } catch (JsonProcessingException e) {
             log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
@@ -83,7 +82,7 @@ public class LoadBalancerCache {
                     return updateToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
                 } else {
                     log.debug("Failed to create record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, createException);
-                    return empty();
+                    return error(createException);
                 }
             })
             .doOnSuccess(v -> log.debug("Created record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord));
@@ -96,8 +95,7 @@ public class LoadBalancerCache {
     }
 
     private boolean isCausedByCacheConflict(Throwable e) {
-        return e.getCause() instanceof HttpClientErrorException &&
-            ((HttpClientErrorException) e.getCause()).getStatusCode().equals(HttpStatusCode.valueOf(HttpStatus.SC_CONFLICT));
+        return e instanceof CachingServiceClientException ex && ex.getStatusCode() == HttpStatus.SC_CONFLICT;
     }
 
     /**
@@ -150,7 +148,7 @@ public class LoadBalancerCache {
      * Data POJO that represents entry in load balancing service cache
      */
     @Data
-    public class LoadBalancerCacheRecord {
+    public static class LoadBalancerCacheRecord {
         private final String instanceId;
         private final LocalDateTime creationTime;
 
