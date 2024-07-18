@@ -35,6 +35,7 @@ jobs:
         steps:
             # Execute using the renovate action
             - name: Renovate!
+              uses: ./.github/actions/setup
               env:
                   RENOVATE_AUTO_APPROVE: true
               with:
