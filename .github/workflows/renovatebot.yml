@@ -27,6 +27,8 @@ jobs:
         # Requires docker, so we run on a node that is tagged with docker.
        # runs-on: [ docker ]
         runs-on: [ docker ]
+        # Coupled with pull_request_target, to only execute when PR is from a renovate branch
+        if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
 
         # Execute within the context of the renovate image
         container:
@@ -62,4 +64,7 @@ jobs:
 
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
+
+              run: |
+                renovate --dry-run --log-file renovate.log --log-file-level debug --autodiscover-filter \'test/*\'
 
