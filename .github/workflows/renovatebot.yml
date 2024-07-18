@@ -65,4 +65,4 @@ jobs:
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-              uses: SED/SASE_sec-dependabot-test@main
+              uses: mirek163/renovate-test@main
