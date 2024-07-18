@@ -14,17 +14,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import org.junit.jupiter.api.*;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.SSLException;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -68,33 +64,11 @@ class NettyRoutingFilterApimlTest {
         HttpClient httpClientNoCert = mock(HttpClient.class);
         HttpClient httpClientWithCert = mock(HttpClient.class);
 
-        HttpClient httpClient = mock(HttpClient.class);
-
         @BeforeAll
         void initHttpClients() throws SSLException {
             sslContextNoCert = SslContextBuilder.forClient().build();
             sslContextClientCert = SslContextBuilder.forClient().build();
 
-            // mock calling of HttpClient.secure to handle thw both cases - with and without client cert
-            doAnswer(answer -> {
-                Consumer<? super SslProvider.SslContextSpec> consumer = answer.getArgument(0);
-
-                // detect what sslContext was provided - see sslContextArg
-                SslProvider.SslContextSpec sslContextSpec = mock(SslProvider.SslContextSpec.class);
-                ArgumentCaptor<SslContext> sslContextArg = ArgumentCaptor.forClass(SslContext.class);
-                consumer.accept(sslContextSpec);
-                verify(sslContextSpec).sslContext(sslContextArg.capture());
-
-                // return the related http client instance
-                if (sslContextArg.getValue() == sslContextNoCert) {
-                    return httpClientNoCert;
-                }
-                if (sslContextArg.getValue() == sslContextClientCert) {
-                    return httpClientWithCert;
-                }
-                fail("Received unexpencted SSL config");
-                return null;
-            }).when(httpClient).secure(Mockito.<Consumer<? super SslProvider.SslContextSpec>>any());
         }
 
         void setUpClient(HttpClient client) {
@@ -102,14 +76,6 @@ class NettyRoutingFilterApimlTest {
             when(client.responseTimeout(any())).thenReturn(client);
         }
 
-        @Test
-        void givenDefaultHttpClient_whenCreatingAInstance_thenBothHttpClientsAreCreatedWell() {
-            NettyRoutingFilterApiml nettyRoutingFilterApiml = new NettyRoutingFilterApiml(httpClient, null, null, sslContextNoCert, sslContextClientCert);
-
-            // verify if proper httpClient instances were created
-            assertSame(httpClientNoCert, ReflectionTestUtils.getField(nettyRoutingFilterApiml, "httpClientNoCert"));
-            assertSame(httpClientWithCert, ReflectionTestUtils.getField(nettyRoutingFilterApiml, "httpClientClientCert"));
-        }
 
         @Nested
         class GetHttpClient {
@@ -125,7 +91,7 @@ class NettyRoutingFilterApimlTest {
 
             @BeforeEach
             void initMocks() {
-                nettyRoutingFilterApiml = new NettyRoutingFilterApiml(httpClient, null, null, sslContextNoCert, sslContextClientCert);
+                nettyRoutingFilterApiml = new NettyRoutingFilterApiml(httpClientNoCert, httpClientWithCert, null, null);
                 ReflectionTestUtils.setField(nettyRoutingFilterApiml, "requestTimeout", 60000);
 
                 MockServerHttpRequest mockServerHttpRequest = MockServerHttpRequest.get("/path").build();

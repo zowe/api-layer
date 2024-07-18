@@ -146,7 +146,6 @@ class GatewayHomepageControllerTest {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
-
         assertCatalogIsUpMessageShown(model.asMap());
         assertThat(model.asMap(), hasEntry("catalogStatusText", "The API Catalog is running"));
     }
@@ -157,7 +156,6 @@ class GatewayHomepageControllerTest {
         discoveryReturnValidZaas(1);
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
-
 
         assertCatalogIsUpMessageShown(model.asMap());
         assertThat(model.asMap(), hasEntry("catalogStatusText", "2 API Catalog instances are running"));
@@ -184,7 +182,7 @@ class GatewayHomepageControllerTest {
     private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
         assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
         assertThat(preparedModelView, hasEntry("catalogLinkEnabled", true));
-        assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1/"));
+        assertThat(preparedModelView, hasEntry("catalogLink", "/apicatalog/ui/v1"));
     }
 
     private void discoveryReturnValidApiCatalog(int numberOfInstances) {

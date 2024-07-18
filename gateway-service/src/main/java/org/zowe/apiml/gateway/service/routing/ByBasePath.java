@@ -21,10 +21,9 @@ import org.zowe.apiml.util.StringUtils;
 
 /**
  * Routing rule by path modify the path of the request. It makes this replacement:
- *
- *  from: /<serviceId>/<gatewayUrl>/<path>
- *  to: /<serviceUrl>/<path>
- *
+ * <p>
+ * from: /<serviceId>/<gatewayUrl>/<path>
+ * to: /<serviceUrl>/<path>
  */
 @Component
 public class ByBasePath extends RouteDefinitionProducer {
@@ -35,7 +34,7 @@ public class ByBasePath extends RouteDefinitionProducer {
         super(properties);
     }
 
-    static String constructUrl(String...parts) {
+    static String constructUrl(String... parts) {
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
             part = StringUtils.removeFirstAndLastOccurrence(part, "/");
@@ -63,13 +62,17 @@ public class ByBasePath extends RouteDefinitionProducer {
 
     @Override
     protected void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
-        FilterDefinition filter = new FilterDefinition();
-        filter.setName("RewritePath");
+        var rewriteWithSlash = new FilterDefinition();
+        rewriteWithSlash.setName("RewritePath");
+        rewriteWithSlash.addArg("regexp", constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "/(?<remaining>.*)"));
+        rewriteWithSlash.addArg("replacement", constructUrl(routedService.getServiceUrl(), "${remaining}"));
+        routeDefinition.getFilters().add(rewriteWithSlash);
 
-        filter.addArg("regexp", constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "?(?<remaining>.*)"));
-        filter.addArg("replacement", constructUrl(routedService.getServiceUrl(), "${remaining}"));
-
-        routeDefinition.getFilters().add(filter);
+        var rewriteWithoutSlash = new FilterDefinition();
+        rewriteWithoutSlash.setName("RewritePath");
+        rewriteWithoutSlash.addArg("regexp", constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl()));
+        rewriteWithoutSlash.addArg("replacement", constructUrl(routedService.getServiceUrl()));
+        routeDefinition.getFilters().add(rewriteWithoutSlash);
     }
 
     @Override
