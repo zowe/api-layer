@@ -1,3 +1,4 @@
+# This is a basic workflow to help you get started with Actions
 
 name: Run Renovate
 
@@ -23,20 +24,24 @@ on:
 
 jobs:
     dependency_scan:
-        runs-on: ubuntu-latest
-
+        # Requires docker, so we run on a node that is tagged with docker.
+       # runs-on: [ docker ]
+        runs-on: [ ubuntu ]
+        # Coupled with pull_request_target, to only execute when PR is from a renovate branch
         if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4.1.7
+        # Execute within the context of the renovate image
+        container:
+            image: renovate/renovate:latest
 
-            - name: Self-hosted Renovate
-              uses: renovatebot/github-action@v40.2.2
+        steps:
+            # Execute using the renovate action
+            - name: Renovate!
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   RENOVATE_AUTO_APPROVE: true
               with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
                   # Limit Number of active renovate PRs. Default: unlimited
                   # pr-concurrency: 3
 
@@ -54,8 +59,10 @@ jobs:
                   pr-auto-approve: true
                   # User and token used to create approving review.
                   # Required when pr-auto-approve is true.
-                  # github-approver-token: ${{ secrets.GITHUB_APPROVER_TOKEN }}
-                  # github-approver-user: approver-username
+                  # github-approver-token: ${{ secrets.SECP_SASEPORTALDEV_GH_TOKEN }}
+                  # github-approver-user: saseportaldev
 
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
+
+              uses: SED/SASE_sec-dependabot-test@main
