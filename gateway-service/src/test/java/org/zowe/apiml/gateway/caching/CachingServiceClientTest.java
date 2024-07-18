@@ -10,10 +10,92 @@
 
 package org.zowe.apiml.gateway.caching;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 public class CachingServiceClientTest {
+
+    @Mock
+    private WebClient webClient;
+
+    @InjectMocks
+    private CachingServiceClient client;
+
+    @BeforeEach
+    void setUp () {
+        ReflectionTestUtils.setField(client, "null", value);
+        ReflectionTestUtils.setField(client, "null", value);
+    }
+
+    @Nested
+    class GivenCachingServiceClient {
+
+        @Nested
+        class WhenCreate {
+
+            @Test
+            void andServerSuccess_thenSuccess() {
+
+                StepVerifier.create(client.create(new KeyValue("null", "null")))
+
+            }
+
+            @Test
+            void andServerError_thenError() {
+
+            }
+
+        }
+
+        @Nested
+        class WhenDelete {
+
+        }
+
+        @Nested
+        class WhenRead {
+
+            @Test
+            void andServerSuccess_thenSuccessAndContent() {
+
+            }
+
+            @Test
+            void andServerError_thenError() {
+
+            }
+
+            @Test
+            void andNotFound_thenEmpty() {
+
+            }
+
+        }
+
+        @Nested
+        class WhenUpdate {
+
+            @Test
+            void andServerSuccess_thenSucess() {
+
+            }
+
+            @Test
+            void andServerError_thenError() {
+
+            }
+
+        }
+
+    }
 
 }

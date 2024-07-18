@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -26,6 +27,7 @@ import static reactor.core.publisher.Mono.error;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CachingServiceClient {
 
     @Value("${apiml.cachingServiceClient.apiPath}")
@@ -66,7 +68,7 @@ public class CachingServiceClient {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new RuntimeException(""));
+                    return error(new CachingServiceClientException("Unable to update caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }
@@ -78,14 +80,24 @@ public class CachingServiceClient {
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return handler.bodyToMono(KeyValue.class);
+                } else if (handler.statusCode().is4xxClientError()) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Key with ID " + key + "not found. Status code from caching service: " + handler.statusCode());
+                    }
+                    return empty();
                 } else {
-                    return error(new CachingServiceClientException("key"));
+                    return error(new CachingServiceClientException("Unable to read caching key " + key + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }
 
+    /**
+     * Deletes {@link KeyValue} from Caching Service
+     *
+     * @param key Key to delete
+     * @return mono with status success / error
+     */
     public Mono<Void> delete(String key) {
-        // gatewayProtocolHostPort + CACHING_API_PATH + "/" + key
         return webClient.delete()
             .uri(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
@@ -93,7 +105,7 @@ public class CachingServiceClient {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException(key));
+                    return error(new CachingServiceClientException("Unable to delete caching key " + key + ". Caching service returned: " + handler.statusCode()));
                 }
             });
     }
