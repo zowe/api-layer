@@ -35,7 +35,12 @@ jobs:
         steps:
             # Execute using the renovate action
             - name: Renovate!
-              uses: ./.github/actions/setup
+              run: |
+                  renovate --dry-run \
+                           --log-file renovate.log \
+                           --log-file-level debug
+
+
               env:
                   RENOVATE_AUTO_APPROVE: true
               with:
@@ -64,9 +69,4 @@ jobs:
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-
-              run: |
-                  renovate --dry-run \
-                           --log-file renovate.log \
-                           --log-file-level debug
 
