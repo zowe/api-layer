@@ -21,7 +21,6 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -78,33 +77,22 @@ public class LoadBalancerCache {
     }
 
     private Mono<Void> createToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.KeyValue toStore) {
-        try {
-            return remoteCache.create(toStore)
-
-                .onErrorMap(createException -> {
-                    if (isCausedByCacheConflict(createException)) {
-                        return updateToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
-                    } else {
-                        log.debug("Failed to create record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, createException);
-                    }
-                })
-                .doOnSuccess(v -> log.debug("Created record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord));
-        } catch (CachingServiceClientException createException) {
-            if (isCausedByCacheConflict(createException)) {
-                updateToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
-            } else {
-                log.debug("Failed to create record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, createException);
-            }
-        }
+        return remoteCache.create(toStore)
+            .onErrorResume(createException -> {
+                if (isCausedByCacheConflict(createException)) {
+                    return updateToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
+                } else {
+                    log.debug("Failed to create record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, createException);
+                    return empty();
+                }
+            })
+            .doOnSuccess(v -> log.debug("Created record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord));
     }
 
     private Mono<Void> updateToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.KeyValue toStore) {
-        try {
-            return remoteCache.update(toStore)
-                .doOnSuccess(v -> log.debug("Updated record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord));
-        } catch (CachingServiceClientException updateException) {
-            log.debug("Failed to update record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, updateException);
-        }
+        return remoteCache.update(toStore)
+            .doOnSuccess(v -> log.debug("Updated record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord))
+            .doOnError(updateException -> log.debug("Failed to update record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, updateException));
     }
 
     private boolean isCausedByCacheConflict(Throwable e) {

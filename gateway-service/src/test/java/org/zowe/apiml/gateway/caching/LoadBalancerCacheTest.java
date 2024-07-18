@@ -10,10 +10,50 @@
 
 package org.zowe.apiml.gateway.caching;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class LoadBalancerCacheTest {
+class LoadBalancerCacheTest {
+
+    @Mock
+    private CachingServiceClient cachingServiceClient;
+
+    @InjectMocks
+    private LoadBalancerCache loadBalancerCache;
+
+    @BeforeEach
+    void setUp() {
+
+    }
+
+    @Nested
+    class GivenLoadBalancerCache {
+
+        @Nested
+        class WhenCreate {
+
+        }
+
+        @Nested
+        class WhenDelete {
+
+        }
+
+        @Nested
+        class WhenUpdate {
+
+        }
+
+        @Nested
+        class WhenRetrieve {
+
+        }
+
+    }
 
 }

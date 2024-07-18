@@ -24,7 +24,7 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-public class CachingServiceClientTest {
+class CachingServiceClientTest {
 
     @Mock
     private ExchangeFunction exchangeFunction;
