@@ -65,4 +65,4 @@ jobs:
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-              uses: ./.github/actions/setup
+              uses: ./.github/actions/teardown
