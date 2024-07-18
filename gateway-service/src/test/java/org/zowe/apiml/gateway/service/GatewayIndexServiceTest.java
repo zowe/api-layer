@@ -182,6 +182,7 @@ class GatewayIndexServiceTest {
             assertThat(gatewayIndexService.listRegistry(null, "unknownApiId", null)).isEmpty();
             assertThat(gatewayIndexService.listRegistry("unknownId", "unknownApiId", null)).isEmpty();
         }
+
     }
 
 }

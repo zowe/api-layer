@@ -19,21 +19,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 public class CachingServiceClientTest {
 
     @Mock
-    private WebClient webClient;
+    private ExchangeFunction exchangeFunction;
 
-    @InjectMocks
     private CachingServiceClient client;
 
     @BeforeEach
     void setUp () {
-        ReflectionTestUtils.setField(client, "null", value);
-        ReflectionTestUtils.setField(client, "null", value);
+        client = new CachingServiceClient();
     }
 
     @Nested
