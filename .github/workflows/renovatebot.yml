@@ -69,7 +69,11 @@ jobs:
               #             --log-file-level debug
 
               #shell: bash
+          #- name: Run Renovate
+              run: |
+                  docker run
               #run: renovate --dry-run
-              run: sh 'renovate --dry-run'
+
+              #run: sh 'renovate --dry-run'
 
 
