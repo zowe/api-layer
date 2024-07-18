@@ -26,9 +26,7 @@ jobs:
     dependency_scan:
         # Requires docker, so we run on a node that is tagged with docker.
        # runs-on: [ docker ]
-        runs-on: [ ubuntu ]
-        # Coupled with pull_request_target, to only execute when PR is from a renovate branch
-        if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
+        runs-on: [ docker ]
 
         # Execute within the context of the renovate image
         container:
@@ -65,4 +63,3 @@ jobs:
                   package-rules: |-
                       { "matchPackagePatterns":[".*"], "matchUpdateTypes":["minor","patch"], "automerge":true }
 
-              uses: SED/SASE_sec-dependabot-test@main
