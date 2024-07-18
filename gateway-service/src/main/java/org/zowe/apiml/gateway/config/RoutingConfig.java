@@ -47,6 +47,10 @@ public class RoutingConfig {
             filters.add(allowEncodedSlashes);
         }
 
+        var secureHeaders = new FilterDefinition();
+        secureHeaders.setName("SecureHeaders");
+        filters.add(secureHeaders);
+
         FilterDefinition circuitBreakerFilter = new FilterDefinition();
         circuitBreakerFilter.setName("CircuitBreaker");
         filters.add(circuitBreakerFilter);

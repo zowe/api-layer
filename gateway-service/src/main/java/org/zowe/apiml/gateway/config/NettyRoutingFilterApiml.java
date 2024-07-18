@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.config;
 
 import io.netty.channel.ChannelOption;
-import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,17 +38,15 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     private int requestTimeout;
 
     public NettyRoutingFilterApiml(
-        HttpClient httpClient,
+        HttpClient httpClientNoCert,
+        HttpClient httpClientClientCert,
         ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider,
-        HttpClientProperties properties,
-        SslContext justTruststore,
-        SslContext withKeystore
+        HttpClientProperties properties
     ) {
         super(null, headersFiltersProvider, properties);
+        this.httpClientNoCert = httpClientNoCert;
+        this.httpClientClientCert = httpClientClientCert;
 
-        // construct http clients with different SSL configuration - with / without client certs
-        httpClientNoCert = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(justTruststore));
-        httpClientClientCert = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(withKeystore));
     }
 
     static Integer getInteger(Object connectTimeoutAttr) {
@@ -74,14 +71,14 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
             // if there is configured timeout, respect it
             Integer connectTimeout = getInteger(connectTimeoutAttr);
             return httpClient
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
-                    .responseTimeout(Duration.ofMillis(connectTimeout));
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
+                .responseTimeout(Duration.ofMillis(connectTimeout));
         }
 
         // otherwise just return selected HttpClient with the default configured timeouts
         return httpClient
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, requestTimeout)
-                .responseTimeout(Duration.ofMillis(requestTimeout));
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, requestTimeout)
+            .responseTimeout(Duration.ofMillis(requestTimeout));
     }
 
 }

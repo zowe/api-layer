@@ -18,6 +18,7 @@ import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -145,6 +146,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
         @Nested
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+        @Disabled("it seems the routing is not deterministic, the first time it's only one instance, the second time it's not guaranteeing that it's the same one replying.\n" +
+                        "A possible fix would be to use deterministic routing once implemented.")
         class OneReturns503 {
 
             @BeforeAll

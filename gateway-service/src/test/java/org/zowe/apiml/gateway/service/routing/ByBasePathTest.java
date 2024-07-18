@@ -81,8 +81,8 @@ class ByBasePathTest {
 
         @ParameterizedTest(name = "to map URLs of service {0} from {1} to {2} is constructed pattern {3} and replacement {4} arguments")
         @CsvSource({
-            "service,/api/v1/,/x/,/service/api/v1/?(?<remaining>.*),/x/${remaining}",
-            "service,api/v1,x,/service/api/v1/?(?<remaining>.*),/x/${remaining}",
+            "service,/api/v1/,/x/,/service/api/v1/(?<remaining>.*),/x/${remaining}",
+            "service,api/v1,x,/service/api/v1/(?<remaining>.*),/x/${remaining}",
         })
         void givenInstanceConfig_whenSetFilters_thenConstructRegexFilter(
                 String serviceId, String gatewayUrl, String serviceUrl, String pattern, String replacement
@@ -94,7 +94,7 @@ class ByBasePathTest {
 
             new ByBasePath(new DiscoveryLocatorProperties()).setFilters(routeDefinition, serviceInstance, routedService);
 
-            assertEquals(1, routeDefinition.getFilters().size());
+            assertEquals(2, routeDefinition.getFilters().size());
             FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
             assertEquals("RewritePath", filterDefinition.getName());
             assertEquals(pattern, filterDefinition.getArgs().get("regexp"));

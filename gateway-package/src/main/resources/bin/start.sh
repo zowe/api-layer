@@ -114,6 +114,14 @@ else
     externalProtocol="http"
 fi
 
+# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
+then
+    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS}
+fi
+
+echo "Setting loader path: "${ZAAS_LOADER_PATH}
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -178,7 +186,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
-    -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_service_forwardClientCertEnabled:-false} \
+    -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
@@ -186,7 +194,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-5} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-10000} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-} \
@@ -196,9 +204,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_gateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
+    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${keystore_type}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
@@ -210,6 +218,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djava.library.path=${LIBPATH} \
+    -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
 
 pid=$!
