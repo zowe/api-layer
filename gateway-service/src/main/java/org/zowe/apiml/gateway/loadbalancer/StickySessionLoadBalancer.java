@@ -16,11 +16,9 @@ import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.SameInstancePreferenceServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -76,8 +74,8 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
             }).flatMap(record -> {
                 List<ServiceInstance> filteredInstances = filterInstances(record, serviceInstances);
                 if (filteredInstances.isEmpty()) {
-                    log.warn("No service instance found for the provided instance ID");
-                    return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+                    log.debug("No cached information found, the original service instances will be used for the load balancing");
+                    return Flux.just(serviceInstances);
                 }
                 var result = Flux.just(filteredInstances);
 
