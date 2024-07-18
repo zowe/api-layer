@@ -23,14 +23,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
+import static reactor.core.publisher.Mono.just;
 
 @ExtendWith(MockitoExtension.class)
 class LoadBalancerCacheTest {
@@ -77,7 +80,7 @@ class LoadBalancerCacheTest {
                 }
 
                 @Test
-                void andError_thenError() throws JsonProcessingException {
+                void andGenericError_thenError() throws JsonProcessingException {
                     var record = new LoadBalancerCacheRecord("instance1");
                     when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(record))))
                         .thenReturn(error(new CachingServiceClientException(500, "error")));
@@ -107,33 +110,60 @@ class LoadBalancerCacheTest {
             class WhenDelete {
 
                 @Test
-                void andSuccess_thenSuccessResult() {
+                void andSuccess_thenSuccessResult() throws JsonProcessingException {
+                    when(cachingServiceClient.delete("lb.anuser:aserviceid"))
+                        .thenReturn(empty());
 
+                    StepVerifier.create(loadBalancerCache.delete("anuser", "aserviceid"))
+                        .expectComplete()
+                        .verifyThenAssertThat();
                 }
 
                 @Test
-                void andError_thenErrorResult() {
+                void andGenericError_thenErrorResult() {
+                    when(cachingServiceClient.delete("lb.anuser:aserviceid"))
+                        .thenReturn(error(new CachingServiceClientException(500, "error")));
 
+                        StepVerifier.create(loadBalancerCache.delete("anuser", "aserviceid"))
+                            .expectErrorMatches(exception -> exception.getMessage().equals("error"))
+                            .verify();
                 }
-            }
-
-            @Nested
-            class WhenUpdate {
-
-                @Test
-                void andSuccess_thenSuccessResult() {
-
-                }
-
-                @Test
-                void andError_thenErrorResult() {
-
-                }
-
             }
 
             @Nested
             class WhenRetrieve {
+
+                @Test
+                void andSuccess_thenReturnValue() throws JsonProcessingException {
+                    var key = "lb.anuser:aserviceid";
+                    var record = new LoadBalancerCacheRecord("instanceId");
+                    var keyValue = new KeyValue(key, mapper.writeValueAsString(record));
+                    when(cachingServiceClient.read(key)).thenReturn(just(keyValue));
+
+                    StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
+                        .expectNext(record)
+                        .verifyComplete();
+                }
+
+                @Test
+                void andNotFound_thenReturnEmpty() throws JsonProcessingException {
+                    var key = "lb.anuser:aserviceid";
+                    when(cachingServiceClient.read(key)).thenReturn(empty());
+
+                    StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
+                        .expectComplete()
+                        .verify();
+                }
+
+                @Test
+                void andGenericError_thenReturnError() {
+                    var key = "lb.anuser:aserviceid";
+                    when(cachingServiceClient.read(key)).thenReturn(Mono.error(new CachingServiceClientException(500, "error")));
+
+                    StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
+                        .expectErrorMatches(e -> e instanceof CachingServiceClientException exception && exception.getMessage().equals("error") && exception.getStatusCode() == 500)
+                        .verify();
+                }
 
             }
 
@@ -152,10 +182,10 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() {
-
-                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", null))
-                        .expectComplete()
-                        .verifyThenAssertThat();
+                    var record = new LoadBalancerCacheRecord("instance1");
+                    when(map.put(null, null)).thenReturn(record);
+                    loadBalancerCache.store("anuser", "aserviceid", record);
+                    verifyNoInteractions(cachingServiceClient);
                 }
 
             }
@@ -163,15 +193,24 @@ class LoadBalancerCacheTest {
             @Nested
             class WhenDelete {
 
-            }
-
-            @Nested
-            class WhenUpdate {
+                @Test
+                void andSuccess_thenSuccess() {
+                    var key = "";
+                    when(map.remove(key)).thenReturn(null);
+                }
 
             }
 
             @Nested
             class WhenRetrieve {
+
+                @Test
+                void andSuccess_thenSuccess() {
+                    var key = "";
+
+
+
+                }
 
             }
 
