@@ -207,7 +207,7 @@ public class ConnectionsConfig {
                 if ("routingFilter".equals(beanName)) {
                     log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
                     // once is creating original bean by autoconfiguration replace it with custom implementation
-                    return new NettyRoutingFilterApiml(httpClientNoCert,httpClientClientCert, headersFiltersProvider, properties);
+                    return new NettyRoutingFilterApiml(httpClientNoCert, httpClientClientCert, headersFiltersProvider, properties);
                 }
                 // do not touch any other bean
                 return bean;
