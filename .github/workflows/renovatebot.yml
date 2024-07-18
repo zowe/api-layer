@@ -10,10 +10,9 @@ on:
     schedule:
         - cron: '0 0 * * 1'
 
-
-    # Push on main branch if needed for rebasing from prs.
-    #   push:
-    #     branches: main
+    # Push on main branch if needed for rebasing from PRs.
+    # push:
+    #   branches: main
 
     # Run when there is an update to a PR. This will cleanup branches, and rebase PRs after merges.
     # Couple with the "IF" field on the job to limit to updates of the 'renovate/' branches.
@@ -28,42 +27,34 @@ jobs:
         # Requires docker, so we run on a node that is tagged with docker.
         runs-on: [ docker ]
 
-        # Coupled with pull_request_target, to only execute when PR is from a reovate branch
+        # Coupled with pull_request_target, to only execute when PR is from a renovate branch
         if: github.head_ref == '' || startsWith(github.head_ref, 'renovate/')
 
         # Execute within the context of the renovate image
         container:
-            image: docker-hub-virtual.usw1.packages.broadcom.com/renovate/renovate:latest
-            credentials:
-                username: ${{ vars.SED_ARTIFACTORY_USER }}
-                password: ${{ secrets.SED_ARTIFACTORY_TOKEN }}
+            image: renovate/renovate:latest
 
         steps:
             # Execute using the renovate action
             - name: Renovate!
               env:
-                  ARTIFACTORY_CREDS_USR: ${{ vars.SED_ARTIFACTORY_USER }}
-                  ARTIFACTORY_CREDS_PSW: ${{ secrets.SED_ARTIFACTORY_TOKEN }}
-                  GRADLE_OPTS: -DsaseArtifactoryUsername=${{ vars.SED_ARTIFACTORY_USER }} -DsaseArtifactoryPassword=${{ secrets.SED_ARTIFACTORY_TOKEN }}
                   RENOVATE_AUTO_APPROVE: true
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
-                  artifactory-user: ${{ vars.SED_ARTIFACTORY_USER }}
-                  artifactory-token: ${{ secrets.SED_ARTIFACTORY_TOKEN }}
 
-                  # Limit Number of active renavate prs. Default: unlimited
+                  # Limit Number of active renovate PRs. Default: unlimited
                   # pr-concurrency: 3
 
-                  # Limit number of prs per hour to create. Helpful to slow roll renovate into a repo. Default: unlimited
+                  # Limit number of PRs per hour to create. Helpful to slow roll renovate into a repo. Default: unlimited
                   # pr-hour-limit: 2
 
-                  # Change when any prs are generated. Default every Monday
-                  # Update to tuesdays
+                  # Change when any PRs are generated. Default every Monday
+                  # Update to Tuesdays
                   # update-schedule: 'on the second day of the week'
                   # Always create PRs.
                   update-schedule: ''
 
-                  # Automatically adds 1 approving pr to any generated renovate prs.
+                  # Automatically adds 1 approving PR to any generated renovate PRs.
                   # Can be useful when 2 approving reviews are required.
                   pr-auto-approve: true
                   # User and token used to create approving review.
