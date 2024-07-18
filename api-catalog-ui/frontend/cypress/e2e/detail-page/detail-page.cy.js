@@ -67,7 +67,7 @@ describe('>>> Detail page test', () => {
             '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div.tabs-swagger > div.serviceTab > div.header > a'
         )
             .should('have.attr', 'href')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`); // TODO This originally /ui/v1 but now /ui is selected for service homepage URL, see https://github.com/zowe/api-layer/issues/3652 to verify if it needs to be restored
 
         cy.get('pre.version').should('contain', '1.0.0');
 
