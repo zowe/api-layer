@@ -65,4 +65,7 @@ jobs:
 
 
               run: |
-                  docker run --rm -v ${{ github.workspace }}:/app renovate/renovate:latest renovate --dry-run --log-file renovate.log --log-file-level debug --autodiscover-filter 'test/*'
+                  renovate --dry-run \
+                           --log-file renovate.log \
+                           --log-file-level debug \
+                           --autodiscover-filter 'test/*'
