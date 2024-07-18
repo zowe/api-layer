@@ -53,7 +53,7 @@ class CachingServiceClientTest {
             @Test
             void andServerSuccess_thenSuccess() {
 
-                StepVerifier.create(client.create(new KeyValue("null", "null"));
+                StepVerifier.create(client.create(new KeyValue("null", "null")));
 
             }
 
