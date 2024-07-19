@@ -277,7 +277,7 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertEquals(3, filterDefinitions.size()); // common filters + pageredirectionfilter
+                    assertEquals(4, filterDefinitions.size()); // common filters + pageredirectionfilter + distributedloadbalancerfilterß
                     assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
 
@@ -287,7 +287,7 @@ class RouteLocatorTest {
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
-                    assertEquals(2, filterDefinitions.size());
+                    assertEquals(3, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
                 }
 
@@ -298,7 +298,7 @@ class RouteLocatorTest {
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
-                    assertEquals(2, filterDefinitions.size());
+                    assertEquals(3, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
                 }
 
@@ -318,7 +318,7 @@ class RouteLocatorTest {
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
-                    assertEquals(2, filterDefinitions.size());
+                    assertEquals(3, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
                 }
 

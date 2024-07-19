@@ -64,6 +64,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
         if (location == null) {
             return Optional.empty();
         }
+
+        // FIXME getInstancesById is a blocking call, replace with Flux.fromCallable()
         return ((List<?>) eurekaClient.getInstancesById(config.instanceId)).stream()
             .findAny()
             .map(InstanceInfo.class::cast)
