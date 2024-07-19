@@ -18,13 +18,13 @@ import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalanc
 import org.springframework.cloud.loadbalancer.core.SameInstancePreferenceServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
+import org.zowe.apiml.gateway.filters.DistributedLoadBalancerFilterFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -107,24 +107,12 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
     }
 
     private Mono<String> getSub(Object requestContext) {
-        if (requestContext instanceof RequestDataContext) {
-            return getSubFromRequestAttribute((RequestDataContext) requestContext);
+        if (requestContext instanceof RequestDataContext ctx) {
+            // TODO cookie might not be there
+            var token = ctx.getClientRequest().getCookies().get("apimlAuthenticationToken").get(0);
+            return Mono.just(DistributedLoadBalancerFilterFactory.extractSubFromToken(token));
         }
-        return null;
-    }
-
-    private Mono<String> getSubFromRequestAttribute(RequestDataContext context) {
-        if (context != null && context.getClientRequest() != null) {
-            Map<String, Object> attributes = context.getClientRequest().getAttributes();
-            if (attributes != null) {
-                if (attributes.get("Token-Subject") != null) {
-                    return Mono.just(attributes.get("Token-Subject").toString());
-                }
-                return Mono.empty();
-            }
-        }
-        return Mono.empty();
-
+        return Mono.just("");
     }
 
     /**

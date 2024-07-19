@@ -61,21 +61,22 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
      */
     @Override
     public GatewayFilter apply(DistributedLoadBalancerFilterFactory.Config config) {
-        return (exchange, chain) -> Mono.fromCallable(() -> eurekaClient.getInstancesById(config.instanceId))
-            .map(instances -> {
-                if (shouldIgnore(instances)) {
-                    return chain.filter(exchange);
-                }
-                String sub = extractSubFromToken(exchange.getRequest());
-                    if (sub.isEmpty()) {
-                        log.debug("No authentication present on request, the distributed load balancer will not be performed for the service {}", config.getServiceId());
-                        return Flux.empty();
-                    } else {
-                        exchange.getAttributes().put("Token-Subject", sub);
-                        LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(config.getInstanceId());
-                        return cache.store(sub, config.getServiceId(), loadBalancerCacheRecord);
+        return (exchange, chain) -> chain.filter(exchange)
+            .and(Mono.fromCallable(() -> eurekaClient.getInstancesById(config.instanceId))
+                .map(instances -> {
+                    if (shouldIgnore(instances)) {
+                        return chain.filter(exchange);
                     }
-            }).and(chain.filter(exchange));
+                    var token = Objects.requireNonNull(exchange.getRequest().getCookies().getFirst(APIML_TOKEN)).getValue();
+                    String sub = extractSubFromToken(token);
+                        if (sub.isEmpty()) {
+                            log.debug("No authentication present on request, the distributed load balancer will not be performed for the service {}", config.getServiceId());
+                            return Flux.empty();
+                        } else {
+                            LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(config.getInstanceId());
+                            return cache.store(sub, config.getServiceId(), loadBalancerCacheRecord);
+                        }
+                }));
     }
 
     private static String removeJwtSign(String jwtToken) {
@@ -103,13 +104,10 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
         }
     }
 
-    private String extractSubFromToken(ServerHttpRequest request) {
-        if (request != null) {
-            String token = Objects.requireNonNull(request.getCookies().getFirst(APIML_TOKEN)).getValue();
-            if (!token.isEmpty()) {
-                Claims claims = getJwtClaims(token);
-                return claims.getSubject();
-            }
+    public static String extractSubFromToken(String token) {
+        if (!token.isEmpty()) {
+            Claims claims = getJwtClaims(token);
+            return claims.getSubject();
         }
         return null;
     }
