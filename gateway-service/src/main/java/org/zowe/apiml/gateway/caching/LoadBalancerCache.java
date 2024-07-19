@@ -41,7 +41,7 @@ public class LoadBalancerCache {
     public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
     public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
-        this.remoteCache = cachingServiceClient;
+        this.remoteCache = null;
         localCache = new ConcurrentHashMap<>();
         mapper.registerModule(new JavaTimeModule());
     }
@@ -121,7 +121,7 @@ public class LoadBalancerCache {
         }
         LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(getKey(user, service));
         log.debug("Retrieved record from local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-        return just(loadBalancerCacheRecord);
+        return loadBalancerCacheRecord == null ? empty() : just(loadBalancerCacheRecord);
     }
 
     /**
@@ -141,7 +141,7 @@ public class LoadBalancerCache {
     }
 
     private String getKey(String user, String service) {
-        return LOAD_BALANCER_KEY_PREFIX + user + ":" + service;
+        return LOAD_BALANCER_KEY_PREFIX + user.toLowerCase() + ":" + service.toLowerCase();
     }
 
     /**
