@@ -54,8 +54,7 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
         return (exchange, chain) -> Mono.fromCallable(() -> eurekaClient.getInstancesById(config.serviceId))
             .flatMap(instance -> {
                 if (!(instance instanceof InstanceInfo instanceInfo)) {
-                    log.error("Instance not found or not of type InstanceInfo for service: {}", config.serviceId);
-                    return Mono.error(new IllegalStateException("Instance not found or not of type InstanceInfo"));
+                    return chain.filter(exchange);
                 }
 
                 if (!lbTypeIsAuthentication(instanceInfo)) {

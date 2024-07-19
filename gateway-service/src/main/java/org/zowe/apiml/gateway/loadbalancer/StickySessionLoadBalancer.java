@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static reactor.core.publisher.Flux.just;
+import static reactor.core.publisher.Mono.empty;
+
 /**
  * A sticky session load balancer that ensures requests from the same user are routed to the same service instance.
  */
@@ -66,7 +69,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
             .flatMap(serviceInstances -> getPrincipal().flatMapMany(user -> {
                 if (user == null || user.isEmpty()) {
                     log.debug("No authentication present on request, not filtering the service: {}", serviceId);
-                    return Mono.empty();
+                    return empty();
                 } else {
                     principal.set(user);
                     return cache.retrieve(user, serviceId);
@@ -75,12 +78,12 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
                 List<ServiceInstance> filteredInstances = filterInstances(record, serviceInstances);
                 if (filteredInstances.isEmpty()) {
                     log.debug("No cached information found, the original service instances will be used for the load balancing");
-                    return Flux.just(serviceInstances);
+                    return just(serviceInstances);
                 }
-                var result = Flux.just(filteredInstances);
+                var result = just(filteredInstances);
 
                 if (isTooOld(record.getCreationTime())) {
-                    result = cache.delete(principal.get(), serviceId).thenMany(Flux.just(filteredInstances));
+                    result = cache.delete(principal.get(), serviceId).thenMany(just(filteredInstances));
                 }
                 return result;
             }).defaultIfEmpty(serviceInstances))
@@ -110,7 +113,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
             .map(Authentication::getPrincipal)
             .filter(principal -> principal != null && !principal.toString().isEmpty())
             .map(Object::toString)
-            .switchIfEmpty(Mono.empty());
+            .switchIfEmpty(empty());
     }
 
     /**
