@@ -28,6 +28,8 @@ import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.test.StepVerifier;
 
+import java.util.function.Predicate;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
@@ -64,6 +66,10 @@ class CachingServiceClientTest {
             when(clientResponse.statusCode()).thenReturn(HttpStatusCode.valueOf(statusCode));
         }
 
+        private Predicate<Throwable> assertCachingServiceClientException(int statusCode) {
+            return e -> e instanceof CachingServiceClientException ex && ex.getMessage().contains(String.valueOf(statusCode));
+        }
+
         @Nested
         class WhenCreate {
 
@@ -87,7 +93,7 @@ class CachingServiceClientTest {
                 mockResponse(500);
 
                 StepVerifier.create(client.create(kv))
-                    .verifyErrorMatches(e -> e instanceof CachingServiceClientException ex && ex.getMessage().contains("500"));
+                    .verifyErrorMatches(assertCachingServiceClientException(500));
             }
 
             @Test
@@ -98,13 +104,40 @@ class CachingServiceClientTest {
                 mockResponse(404);
 
                 StepVerifier.create(client.create(kv))
-                    .verifyErrorMatches(e -> e instanceof CachingServiceClientException ex && ex.getMessage().contains("404"));
+                    .verifyErrorMatches(assertCachingServiceClientException(404));
             }
 
         }
 
         @Nested
         class WhenDelete {
+
+            @Test
+            void andServerSuccess_thenSuccessAndContent() {
+                var key = "key1";
+                mockResponse(200);
+
+                StepVerifier.create(client.delete(key))
+                    .expectComplete()
+                    .verify();
+
+            }
+
+            @Test
+            void andServerError_thenError() {
+                mockResponse(500);
+
+                StepVerifier.create(client.delete("key2"))
+                    .verifyErrorMatches(assertCachingServiceClientException(500));
+            }
+
+            @Test
+            void andClientError_thenError() {
+                mockResponse(404);
+
+                StepVerifier.create(client.delete("key2"))
+                    .verifyErrorMatches(assertCachingServiceClientException(404));
+            }
 
         }
 
@@ -113,17 +146,39 @@ class CachingServiceClientTest {
 
             @Test
             void andServerSuccess_thenSuccessAndContent() {
+                mockResponse(200);
+                var kv = new KeyValue("key", "value");
+                when(clientResponse.bodyToMono(KeyValue.class)).thenReturn(just(kv));
 
+                StepVerifier.create(client.read("key"))
+                    .expectNext(kv)
+                    .verifyComplete();
             }
 
             @Test
             void andServerError_thenError() {
+                mockResponse(500);
 
+                StepVerifier.create(client.read("key"))
+                    .verifyErrorMatches(assertCachingServiceClientException(500));
             }
 
             @Test
             void andNotFound_thenEmpty() {
+                mockResponse(404);
 
+                StepVerifier.create(client.read("key"))
+                    .expectComplete()
+                    .verify();
+            }
+
+            @Test
+            void andOtherClientErorr_thenEmpty() {
+                mockResponse(400);
+
+                StepVerifier.create(client.read("key"))
+                    .expectComplete()
+                    .verify();
             }
 
         }
@@ -133,12 +188,30 @@ class CachingServiceClientTest {
 
             @Test
             void andServerSuccess_thenSucess() {
+                mockResponse(200);
+                var kv = new KeyValue("key", "value");
 
+                StepVerifier.create(client.update(kv))
+                    .expectComplete()
+                    .verify();
             }
 
             @Test
             void andServerError_thenError() {
+                mockResponse(500);
+                var kv = new KeyValue("key", "value");
 
+                StepVerifier.create(client.update(kv))
+                    .verifyErrorMatches(assertCachingServiceClientException(500));
+            }
+
+            @Test
+            void andClientError_thenError() {
+                mockResponse(404);
+                var kv = new KeyValue("key", "value");
+
+                StepVerifier.create(client.update(kv))
+                    .verifyErrorMatches(assertCachingServiceClientException(404));
             }
 
         }
