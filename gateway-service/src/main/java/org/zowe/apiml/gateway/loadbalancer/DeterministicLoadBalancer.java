@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.loadbalancer;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
@@ -49,10 +50,14 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     public Flux<List<ServiceInstance>> get(Request request) {
         return delegate.get(request)
             .flatMap(serviceInstances -> {
-                List<ServiceInstance> filteredInstances = filterInstances(request.getContext(), serviceInstances);
-                if (filteredInstances.isEmpty()) {
-                    log.warn("No service instance found for the provided instance ID");
-                    return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+                var instanceId = getInstanceId(request.getContext());
+                var filteredInstances = serviceInstances;
+                if (!StringUtils.isEmpty(instanceId)) {
+                    filteredInstances = filterInstances(instanceId, serviceInstances);
+                    if (filteredInstances.isEmpty()) {
+                        log.warn("No service instance found for the provided instance ID");
+                        return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+                    }
                 }
                 return Flux.just(filteredInstances);
             })
@@ -85,12 +90,12 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     /**
      * Filters the list of service instances to include only those with the specified instance ID.
      *
-     * @param requestContext the context
+     * @param instanceId       ID of the service instance
      * @param serviceInstances the list of service instances to filter
      * @return the filtered list of service instances
      */
-    private List<ServiceInstance> filterInstances(Object requestContext, List<ServiceInstance> serviceInstances) {
-        String instanceId = getInstanceId(requestContext);
+    private List<ServiceInstance> filterInstances(String instanceId, List<ServiceInstance> serviceInstances) {
+
         if (instanceId != null) {
             List<ServiceInstance> filteredInstances = serviceInstances.stream()
                 .filter(instance -> instanceId.equals(instance.getInstanceId()))

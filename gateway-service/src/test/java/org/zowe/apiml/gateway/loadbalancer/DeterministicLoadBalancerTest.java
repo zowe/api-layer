@@ -42,6 +42,8 @@ class DeterministicLoadBalancerTest {
 
     @Nested
     class GivenListOfServices {
+        List<ServiceInstance> originalInstances = Arrays.asList(serviceInstance1, serviceInstance2, service2Instance2);
+
         ServiceInstanceListSupplier delegate = new ServiceInstanceListSupplier() {
             @Override
             public String getServiceId() {
@@ -55,7 +57,7 @@ class DeterministicLoadBalancerTest {
 
             @Override
             public Flux<List<ServiceInstance>> get(Request request) {
-                return Flux.just(Arrays.asList(serviceInstance1, serviceInstance2, service2Instance2));
+                return Flux.just(originalInstances);
             }
         };
 
@@ -97,10 +99,7 @@ class DeterministicLoadBalancerTest {
             var context = new RequestDataContext(requestData);
 
             var request = new DefaultRequest<>(context);
-            StepVerifier.create(loadBalancer.get(request)).consumeErrorWith((throwable) -> {
-                assertInstanceOf(ResponseStatusException.class, throwable);
-                assertTrue(throwable.getMessage().startsWith("404 NOT_FOUND"));
-            }).verify();
+            StepVerifier.create(loadBalancer.get(request)).assertNext(instances -> assertEquals(instances.size(), originalInstances.size())).expectComplete().verify();
         }
     }
 
