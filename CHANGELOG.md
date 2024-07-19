@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 2.17.2 / Zowe 2.17.0 (2024-07-15)`
+## `APIML 2.17.2 / Zowe 2.17.0 (2024-07-18)`
 
 * Feature:  Cloud gateway support for AT-TLS (#3564) ([084f9b4](https://github.com/zowe/api-layer/commit/084f9b4)), closes [#3564](https://github.com/zowe/api-layer/issues/3564)
 * Feature:  Customizable request buffer size for WebSocket connections (#3609) ([4a7ac74](https://github.com/zowe/api-layer/commit/4a7ac74)), closes [#3609](https://github.com/zowe/api-layer/issues/3609)
