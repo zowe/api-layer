@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.filters;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -31,10 +30,17 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterFactory<DistributedLoadBalancerFilterFactory.Config> {
     private final LoadBalancerCache cache;
     private final EurekaClient eurekaClient;
+
+    public DistributedLoadBalancerFilterFactory(
+            EurekaClient eurekaClient,
+            LoadBalancerCache loadBalancerCache) {
+        super(Config.class);
+        this.eurekaClient = eurekaClient;
+        this.cache = loadBalancerCache;
+    }
 
     /**
      * Store the user and service information into the cache,
