@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.LbHaTest;
 import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
@@ -130,6 +131,25 @@ class DistributedLoadBalancingTest {
                 .header(X_INSTANCEID);
 
             assertThat(routedInstanceId, is(notNullValue()));
+        }
+
+        @Nested
+        class GivenStickySessionLoadBalancer {
+
+            @Test
+            void whenAuthenticationLoadBalancerType_thenRoute() {
+                assumeTrue(haGatewayRequests.existing() > 1);
+                assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
+
+                String jwt = gatewayToken();
+
+                given()
+                    .cookie(COOKIE_NAME, jwt)
+                    .when()
+                    .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
+                    .then()
+                    .statusCode(HttpStatus.OK.value());
+            }
         }
     }
 

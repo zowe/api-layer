@@ -151,6 +151,7 @@ public class LoadBalancerCache {
     public static class LoadBalancerCacheRecord {
         private final String instanceId;
         private final LocalDateTime creationTime;
+        public static LoadBalancerCacheRecord NONE = new LoadBalancerCacheRecord(null, null);
 
         public LoadBalancerCacheRecord(String instanceId) {
             this(instanceId, LocalDateTime.now());

@@ -13,12 +13,10 @@ package org.zowe.apiml.gateway.loadbalancer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.Request;
+import org.springframework.cloud.client.loadbalancer.RequestDataContext;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.SameInstancePreferenceServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,6 +24,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -66,15 +65,21 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         }
         AtomicReference<String> principal = new AtomicReference<>();
         return delegate.get(request)
-            .flatMap(serviceInstances -> getPrincipal().flatMapMany(user -> {
-                if (user == null || user.isEmpty()) {
-                    log.debug("No authentication present on request, not filtering the service: {}", serviceId);
+            .flatMap(serviceInstances -> getSub(request.getContext())
+                .switchIfEmpty(Mono.just(""))
+                .flatMap(user -> {
+                    if (user == null || user.isEmpty()) {
+                        log.debug("No authentication present on request, not filtering the service: {}", serviceId);
+                        return empty();
+                    } else {
+                        principal.set(user);
+                        return cache.retrieve(user, serviceId).onErrorResume(t -> Mono.empty());
+                    }
+                }).switchIfEmpty(Mono.just(LoadBalancerCache.LoadBalancerCacheRecord.NONE))
+            .flatMapMany(record -> {
+                if (record == LoadBalancerCache.LoadBalancerCacheRecord.NONE) {
                     return empty();
-                } else {
-                    principal.set(user);
-                    return cache.retrieve(user, serviceId);
                 }
-            }).flatMap(record -> {
                 List<ServiceInstance> filteredInstances = filterInstances(record, serviceInstances);
                 if (filteredInstances.isEmpty()) {
                     log.debug("No cached information found, the original service instances will be used for the load balancing");
@@ -86,7 +91,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
                     result = cache.delete(principal.get(), serviceId).thenMany(just(filteredInstances));
                 }
                 return result;
-            }).defaultIfEmpty(serviceInstances))
+            }).switchIfEmpty(Mono.just(serviceInstances)))
             .doOnError(e -> log.debug("Error in determining service instances", e));
     }
 
@@ -101,19 +106,25 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         return now.isAfter(cachedDate);
     }
 
-    /**
-     * Retrieves the principal from the security context.
-     *
-     * @return a mono containing the principal as a string
-     */
-    public static Mono<String> getPrincipal() {
-        return ReactiveSecurityContextHolder.getContext()
-            .map(SecurityContext::getAuthentication)
-            .filter(Authentication::isAuthenticated)
-            .map(Authentication::getPrincipal)
-            .filter(principal -> principal != null && !principal.toString().isEmpty())
-            .map(Object::toString)
-            .switchIfEmpty(empty());
+    private Mono<String> getSub(Object requestContext) {
+        if (requestContext instanceof RequestDataContext) {
+            return getSubFromRequestAttribute((RequestDataContext) requestContext);
+        }
+        return null;
+    }
+
+    private Mono<String> getSubFromRequestAttribute(RequestDataContext context) {
+        if (context != null && context.getClientRequest() != null) {
+            Map<String, Object> attributes = context.getClientRequest().getAttributes();
+            if (attributes != null) {
+                if (attributes.get("Token-Subject") != null) {
+                    return Mono.just(attributes.get("Token-Subject").toString());
+                }
+                return Mono.empty();
+            }
+        }
+        return Mono.empty();
+
     }
 
     /**

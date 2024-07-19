@@ -77,8 +77,6 @@ apiml:
         timeToLive: 10000
     routing:
         instanceIdHeader: false
-    loadBalancer:
-            distribute: false
     service:
         apimlId: apiml1
         corsEnabled: true

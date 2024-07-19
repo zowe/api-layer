@@ -44,7 +44,6 @@ public class CustomLoadBalancerConfiguration {
      * @param context the application context
      * @return the configured ServiceInstanceListSupplier
      */
-    @ConditionalOnProperty(name = "apiml.loadBalancer.distribute", havingValue = "true")
     @Bean
     public ServiceInstanceListSupplier discoveryClientCachedServiceInstanceListSupplier(
         ConfigurableApplicationContext context, LoadBalancerCache cache,
