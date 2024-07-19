@@ -23,6 +23,7 @@ import org.zowe.apiml.gateway.loadbalancer.StickySessionLoadBalancer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,8 +36,8 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
     private final EurekaClient eurekaClient;
 
     public DistributedLoadBalancerFilterFactory(
-            EurekaClient eurekaClient,
-            LoadBalancerCache loadBalancerCache) {
+        EurekaClient eurekaClient,
+        LoadBalancerCache loadBalancerCache) {
         super(Config.class);
         this.eurekaClient = eurekaClient;
         this.cache = loadBalancerCache;
@@ -52,15 +53,10 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
     @Override
     public GatewayFilter apply(DistributedLoadBalancerFilterFactory.Config config) {
         return (exchange, chain) -> Mono.fromCallable(() -> eurekaClient.getInstancesById(config.serviceId))
-            .flatMap(instance -> {
-                if (!(instance instanceof InstanceInfo instanceInfo)) {
+            .flatMap(instances -> {
+                if (shouldIgnore(instances)) {
                     return chain.filter(exchange);
                 }
-
-                if (!lbTypeIsAuthentication(instanceInfo)) {
-                    return chain.filter(exchange);
-                }
-
                 return StickySessionLoadBalancer.getPrincipal().flatMapMany(user -> {
                     if (user.isEmpty()) {
                         log.debug("No authentication present on request, not filtering the service: {}", config.getServiceId());
@@ -71,6 +67,10 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
                     }
                 }).then();
             });
+    }
+
+    boolean shouldIgnore(List instances) {
+        return instances.isEmpty() || !(instances.get(0) instanceof InstanceInfo instanceInfo) || !lbTypeIsAuthentication(instanceInfo);
     }
 
     /**
