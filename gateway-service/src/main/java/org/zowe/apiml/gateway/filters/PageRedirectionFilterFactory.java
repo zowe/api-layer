@@ -21,6 +21,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -28,10 +29,13 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Stream;
+
+import static reactor.core.publisher.Mono.empty;
+import static reactor.core.publisher.Mono.fromCallable;
 
 /**
  * PageRedirectionFilterFactory is a Spring Cloud Gateway Filter Factory that adapts a response from a routed service
@@ -49,7 +53,6 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     private final EurekaMetadataParser metadataParser;
     private TransformService transformService;
 
-    // TODO: solve multiple instances, there is not necessary to have multiple
     public PageRedirectionFilterFactory(
             EurekaClient eurekaClient,
             @Qualifier("getEurekaMetadataParser") EurekaMetadataParser metadataParser,
@@ -60,41 +63,55 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
         this.transformService = new TransformService(gatewayClient);
     }
 
-    private Optional<String> getNewLocationUrl(Config config, String location) {
+    private Mono<String> getNewLocationUrl(Config config, String location) {
         if (location == null) {
-            return Optional.empty();
+            return empty();
         }
 
-        // FIXME getInstancesById is a blocking call, replace with Flux.fromCallable()
-        return ((List<?>) eurekaClient.getInstancesById(config.instanceId)).stream()
-            .findAny()
-            .map(InstanceInfo.class::cast)
-            .map(serviceInstance -> {
-                Map<String, String> metadata = serviceInstance.getMetadata();
-                RoutedServices routes = metadataParser.parseRoutes(metadata);
-
-                try {
-                    String newUrl = transformService.transformURL(ServiceType.ALL, StringUtils.toRootLowerCase(config.serviceId), location, routes, false);
-                    if (isAttlsEnabled) {
-                        newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
-                    }
-                    return newUrl;
-                } catch (URLTransformationException e) {
-                    log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
-                    return null;
-                }
+        return fromCallable(() -> eurekaClient.getInstancesById(config.instanceId))
+            .map(instances -> ((Stream<?>)instances.stream())
+                    .findAny()
+                        .map(InstanceInfo.class::cast)
+                        .map(serviceInstance -> {
+                                Map<String, String> metadata = serviceInstance.getMetadata();
+                                RoutedServices routes = metadataParser.parseRoutes(metadata);
+                                try {
+                                    String newUrl = transformService.transformURL(ServiceType.ALL, StringUtils.toRootLowerCase(config.serviceId), location, routes, false);
+                                    if (isAttlsEnabled) {
+                                        newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
+                                    }
+                                    return newUrl;
+                                } catch (URLTransformationException e) {
+                                    log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
+                                    return "";
+                                }
+                            }
+                        )
+                        .orElse("")
+            )
+            .doOnError(t -> {
+                log.error(t.getMessage());
             });
     }
 
     @Override
     public GatewayFilter apply(Config config) {
-        return (exchange, chain) -> chain.filter(exchange).doOnSuccess(resp -> {
-            var response = exchange.getResponse();
-            if (response.getStatusCode().is3xxRedirection()) {
-                getNewLocationUrl(config, response.getHeaders().getFirst(HttpHeaders.LOCATION))
-                    .ifPresent(newUrl -> response.getHeaders().set(HttpHeaders.LOCATION, newUrl));
-            }
-        });
+        return (exchange, chain) -> getUrlFromResponse(exchange, config)
+            .doOnSuccess(url -> {
+                if (StringUtils.isNotBlank(url)) {
+                    var response = exchange.getResponse();
+                    response.getHeaders().set(HttpHeaders.LOCATION, url);
+                }
+            })
+            .and(chain.filter(exchange));
+    }
+
+    private Mono<String> getUrlFromResponse(ServerWebExchange exchange, Config config) {
+        var response = exchange.getResponse();
+        if (response.getStatusCode().is3xxRedirection()) {
+            return getNewLocationUrl(config, response.getHeaders().getFirst(HttpHeaders.LOCATION));
+        }
+        return empty();
     }
 
     @Data

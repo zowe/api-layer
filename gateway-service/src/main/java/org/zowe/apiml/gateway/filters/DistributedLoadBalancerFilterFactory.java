@@ -69,7 +69,7 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
             });
     }
 
-    boolean shouldIgnore(List instances) {
+    boolean shouldIgnore(List<?> instances) {
         return instances.isEmpty() || !(instances.get(0) instanceof InstanceInfo instanceInfo) || !lbTypeIsAuthentication(instanceInfo);
     }
 
