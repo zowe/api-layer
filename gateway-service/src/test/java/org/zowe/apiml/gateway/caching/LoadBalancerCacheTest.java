@@ -29,6 +29,7 @@ import reactor.test.StepVerifier;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static reactor.core.publisher.Mono.empty;
@@ -212,6 +213,16 @@ class LoadBalancerCacheTest {
                     var key = "lb.anuser:aserviceid";
                     when(map.get(key)).thenReturn(record);
                     assertEquals(record, loadBalancerCache.retrieve("anuser", "aserviceid").block());
+                    verifyNoInteractions(cachingServiceClient);
+                }
+
+                @Test
+                void andNotFound_thenEmpty() {
+                    var key = "lb.anuser:aserviceid";
+                    when(map.get(key)).thenReturn(null);
+                    var result = loadBalancerCache.retrieve("anuser", "aserviceid");
+                    assertNotNull(result);
+                    assertEquals(Mono.empty(), result);
                     verifyNoInteractions(cachingServiceClient);
                 }
 
