@@ -2,7 +2,25 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.16.2 (2024-05-22)`
+## `APIML 2.17.2 / Zowe 2.17.0 (2024-07-18)`
+
+* Feature:  Cloud gateway support for AT-TLS (#3564) ([084f9b4](https://github.com/zowe/api-layer/commit/084f9b4)), closes [#3564](https://github.com/zowe/api-layer/issues/3564)
+* Feature:  Customizable request buffer size for WebSocket connections (#3609) ([4a7ac74](https://github.com/zowe/api-layer/commit/4a7ac74)), closes [#3609](https://github.com/zowe/api-layer/issues/3609)
+
+
+* Bugfix:  Update attls icsf condition (#3635) ([3954f0c](https://github.com/zowe/api-layer/commit/3954f0c)), closes [#3635](https://github.com/zowe/api-layer/issues/3635)
+* Bugfix:  Add missing PAT documetantion (#3618) ([224f897](https://github.com/zowe/api-layer/commit/224f897)), closes [#3618](https://github.com/zowe/api-layer/issues/3618)
+* Bugfix:  Add requestConnectionTimeout as a zowe.yaml property (#3629) ([ef1e451](https://github.com/zowe/api-layer/commit/ef1e451)), closes [#3629](https://github.com/zowe/api-layer/issues/3629)
+* Bugfix:  disable auto conversion for tagged files on z/os (#3619) ([75025bc](https://github.com/zowe/api-layer/commit/75025bc)), closes [#3619](https://github.com/zowe/api-layer/issues/3619)
+* Bugfix:  Do not load keystore when ATTLS is set, to allow for ICSF keys. Keystore reading of ICSF keys i ([bd4e738](https://github.com/zowe/api-layer/commit/bd4e738)), closes [#3612](https://github.com/zowe/api-layer/issues/3612)
+* Bugfix:  optionaly protect health endpoint (#3625) ([204e120](https://github.com/zowe/api-layer/commit/204e120)), closes [#3625](https://github.com/zowe/api-layer/issues/3625)
+* Bugfix:  Provide the correct external URL in the ZUUL Gateway if AT-TLS is enabled (#3565) ([ef78150](https://github.com/zowe/api-layer/commit/ef78150)), closes [#3565](https://github.com/zowe/api-layer/issues/3565)
+* Bugfix:  Specify protocol in the start.sh (#3593) ([9992aba](https://github.com/zowe/api-layer/commit/9992aba)), closes [#3593](https://github.com/zowe/api-layer/issues/3593)
+* Bugfix:  UI titles and message consistency (#3502) ([bcf992d](https://github.com/zowe/api-layer/commit/bcf992d)), closes [#3502](https://github.com/zowe/api-layer/issues/3502)
+* Bugfix:  WebSocket client default timeout (#3613) ([7b8e29b](https://github.com/zowe/api-layer/commit/7b8e29b)), closes [#3613](https://github.com/zowe/api-layer/issues/3613)
+
+
+## `2.16.2 / Zowe 2.16.0 (2024-05-22)`
 
 * Feature:  OIDC authentication flow v2 (#3527) ([4c81a7c](https://github.com/zowe/api-layer/commit/4c81a7c)), closes [#3527](https://github.com/zowe/api-layer/issues/3527)
 * Feature:  Add message for when API Mediation Layer starts (#3523) ([b734662](https://github.com/zowe/api-layer/commit/b734662)), closes [#3523](https://github.com/zowe/api-layer/issues/3523)
@@ -11,27 +29,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  include OIDC JWKSet in the gateway JWKs (#3499) ([a588a8f](https://github.com/zowe/api-layer/commit/a588a8f)), closes [#3499](https://github.com/zowe/api-layer/issues/3499)
 * Feature:  Move OIDC access token from cookie to special header (#3513) ([6248308](https://github.com/zowe/api-layer/commit/6248308)), closes [#3513](https://github.com/zowe/api-layer/issues/3513)
 * Feature:  Allow further customization of websocket webclient (#3315) ([7e8d855](https://github.com/zowe/api-layer/commit/7e8d855)), closes [#3315](https://github.com/zowe/api-layer/issues/3315)
-
-
-* Bugfix:  Prevent logging failure messages irrelevant to all problems. (#3542) ([714fa6a](https://github.com/zowe/api-layer/commit/714fa6a)), closes [#3542](https://github.com/zowe/api-layer/issues/3542)
-* Bugfix:  Fix reading OIDC configuration from system environment (#3537) ([c1a1c9f](https://github.com/zowe/api-layer/commit/c1a1c9f)), closes [#3537](https://github.com/zowe/api-layer/issues/3537)
-* Bugfix:  Read from env instead of properties (#3535) ([87352b1](https://github.com/zowe/api-layer/commit/87352b1)), closes [#3535](https://github.com/zowe/api-layer/issues/3535)
-* Bugfix:  Fix SSL Context switching (backport of #3531) (#3532) ([cefeae3](https://github.com/zowe/api-layer/commit/cefeae3)), closes [#3531](https://github.com/zowe/api-layer/issues/3531) [#3532](https://github.com/zowe/api-layer/issues/3532)
-* Bugfix:  Allow key exchange port configuration (#3453) ([d82322e](https://github.com/zowe/api-layer/commit/d82322e)), closes [#3453](https://github.com/zowe/api-layer/issues/3453)
-* Bugfix:  Change scheme of service homepage when AT-TLS is enabled and fix bug in UI (#3346) ([c75280c](https://github.com/zowe/api-layer/commit/c75280c)), closes [#3346](https://github.com/zowe/api-layer/issues/3346)
-* Bugfix:  Check for nullpointer exception when jwk key cannot be retrieved (#3503) ([7c00dba](https://github.com/zowe/api-layer/commit/7c00dba)), closes [#3503](https://github.com/zowe/api-layer/issues/3503)
-* Bugfix:  Correct the API ML started message (#3524) ([faace92](https://github.com/zowe/api-layer/commit/faace92)), closes [#3524](https://github.com/zowe/api-layer/issues/3524)
-* Bugfix:  Fix issue when PAT passed as authorization header with auth scheme zoweJwt (#3505) ([5585231](https://github.com/zowe/api-layer/commit/5585231)), closes [#3505](https://github.com/zowe/api-layer/issues/3505)
-* Bugfix:  Fix header position (#3345) ([9a9f8e3](https://github.com/zowe/api-layer/commit/9a9f8e3)), closes [#3345](https://github.com/zowe/api-layer/issues/3345)
-* Bugfix:  Log real status code (#3326) ([8a42c17](https://github.com/zowe/api-layer/commit/8a42c17)), closes [#3326](https://github.com/zowe/api-layer/issues/3326)
-* Bugfix:  More general exception handling to detect TCP Stack restart (#3462) ([33daf4c](https://github.com/zowe/api-layer/commit/33daf4c)), closes [#3462](https://github.com/zowe/api-layer/issues/3462)
-* Bugfix:  Respect configuration enabling JWT Token Refresh Functionality #3468 (#3474) ([b4146be](https://github.com/zowe/api-layer/commit/b4146be)), closes [#3468](https://github.com/zowe/api-layer/issues/3468) [#3474](https://github.com/zowe/api-layer/issues/3474)
-* Bugfix:  Fix Zowe logo and trademark info (#3338) ([0d895ac](https://github.com/zowe/api-layer/commit/0d895ac)), closes [#3338](https://github.com/zowe/api-layer/issues/3338)
-* Bugfix:  Fix base path in API Catalog (#3297) ([309aac0](https://github.com/zowe/api-layer/commit/309aac0)), closes [#3297](https://github.com/zowe/api-layer/issues/3297)
-* Bugfix:  Fix disabling EhCache (#3280) ([a3067b9](https://github.com/zowe/api-layer/commit/a3067b9)), closes [#3280](https://github.com/zowe/api-layer/issues/3280)
-
-## `2.16.0 / Zowe 2.16.0 (2024-05-13)`
-
 * Feature:  The log message `ZWEAM001I` is issued when API Mediation Layer starts (#3523) ([b734662](https://github.com/zowe/api-layer/commit/b734662)), closes [#3523](https://github.com/zowe/api-layer/issues/3523)
 * Feature:  SSL is now disabled when profile `attls` is active to simplify AT-TLS configuration (#3521) ([f28aec8](https://github.com/zowe/api-layer/commit/f28aec8)), closes [#3521](https://github.com/zowe/api-layer/issues/3521)
 * Feature:  Valid OIDC tokens are now forwarded to the downstream service when the distributed ID is not mapped (#3497) ([60777c1](https://github.com/zowe/api-layer/commit/60777c1)), closes [#3497](https://github.com/zowe/api-layer/issues/3497)
@@ -39,6 +36,20 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  Moved OIDC access token from cookie to special header. If the user ID from the token cannot be mapped to a mainframe account, the access token is now sent via the request header OIDC-token (#3513) ([6248308](https://github.com/zowe/api-layer/commit/6248308)), closes [#3513](https://github.com/zowe/api-layer/issues/3513)
 
 
+* Bugfix:  Prevent logging failure messages irrelevant to all problems. (#3542) ([714fa6a](https://github.com/zowe/api-layer/commit/714fa6a)), closes [#3542](https://github.com/zowe/api-layer/issues/3542)
+* Bugfix:  Fix reading OIDC configuration from system environment (#3537) ([c1a1c9f](https://github.com/zowe/api-layer/commit/c1a1c9f)), closes [#3537](https://github.com/zowe/api-layer/issues/3537)
+* Bugfix:  Read from env instead of properties (#3535) ([87352b1](https://github.com/zowe/api-layer/commit/87352b1)), closes [#3535](https://github.com/zowe/api-layer/issues/3535)
+* Bugfix:  Fix SSL Context switching (backport of #3531) (#3532) ([cefeae3](https://github.com/zowe/api-layer/commit/cefeae3)), closes [#3531](https://github.com/zowe/api-layer/issues/3531) [#3532](https://github.com/zowe/api-layer/issues/3532)
+* Bugfix:  Change scheme of service homepage when AT-TLS is enabled and fix bug in UI (#3346) ([c75280c](https://github.com/zowe/api-layer/commit/c75280c)), closes [#3346](https://github.com/zowe/api-layer/issues/3346)
+* Bugfix:  Check for nullpointer exception when jwk key cannot be retrieved (#3503) ([7c00dba](https://github.com/zowe/api-layer/commit/7c00dba)), closes [#3503](https://github.com/zowe/api-layer/issues/3503)
+* Bugfix:  Correct the API ML started message (#3524) ([faace92](https://github.com/zowe/api-layer/commit/faace92)), closes [#3524](https://github.com/zowe/api-layer/issues/3524)
+* Bugfix:  Fix issue when PAT passed as authorization header with auth scheme zoweJwt (#3505) ([5585231](https://github.com/zowe/api-layer/commit/5585231)), closes [#3505](https://github.com/zowe/api-layer/issues/3505)
+* Bugfix:  Fix header position (#3345) ([9a9f8e3](https://github.com/zowe/api-layer/commit/9a9f8e3)), closes [#3345](https://github.com/zowe/api-layer/issues/3345)
+* Bugfix:  Log real status code (#3326) ([8a42c17](https://github.com/zowe/api-layer/commit/8a42c17)), closes [#3326](https://github.com/zowe/api-layer/issues/3326)
+* Bugfix:  More general exception handling to detect TCP Stack restart (#3462) ([33daf4c](https://github.com/zowe/api-layer/commit/33daf4c)), closes [#3462](https://github.com/zowe/api-layer/issues/3462)
+* Bugfix:  Fix Zowe logo and trademark info (#3338) ([0d895ac](https://github.com/zowe/api-layer/commit/0d895ac)), closes [#3338](https://github.com/zowe/api-layer/issues/3338)
+* Bugfix:  Fix base path in API Catalog (#3297) ([309aac0](https://github.com/zowe/api-layer/commit/309aac0)), closes [#3297](https://github.com/zowe/api-layer/issues/3297)
+* Bugfix:  Fix disabling EhCache (#3280) ([a3067b9](https://github.com/zowe/api-layer/commit/a3067b9)), closes [#3280](https://github.com/zowe/api-layer/issues/3280)
 * Bugfix:  Allow key exchange port configuration (#3453) ([d82322e](https://github.com/zowe/api-layer/commit/d82322e)), closes [#3453](https://github.com/zowe/api-layer/issues/3453)
 * Bugfix:  Changed the scheme of the service homepage when AT-TLS is enabled and fix a bug in UI (#3346) ([c75280c](https://github.com/zowe/api-layer/commit/c75280c)), closes [#3346](https://github.com/zowe/api-layer/issues/3346)
 * Bugfix:  Checked for NullPointerException when the JWK key cannot be retrieved (#3503) ([7c00dba](https://github.com/zowe/api-layer/commit/7c00dba)), closes [#3503](https://github.com/zowe/api-layer/issues/3503)
@@ -48,6 +59,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Allow for more general exception handling to detect TCP Stack restart (#3462) ([33daf4c](https://github.com/zowe/api-layer/commit/33daf4c)), closes [#3462](https://github.com/zowe/api-layer/issues/3462)
 * Bugfix:  Respect configuration enabling JWT Token Refresh Functionality #3468 (#3474) ([b4146be](https://github.com/zowe/api-layer/commit/b4146be)), closes [#3468](https://github.com/zowe/api-layer/issues/3468) [#3474](https://github.com/zowe/api-layer/issues/3474)
 * Bugfix:  Fix the Zowe logo and trademark info in the API Catalog (#3338) ([0d895ac](https://github.com/zowe/api-layer/commit/0d895ac)), closes [#3338](https://github.com/zowe/api-layer/issues/3338)
+
 
 ## `2.15.0 / Zowe 2.15.0 (2024-02-21)`
 
