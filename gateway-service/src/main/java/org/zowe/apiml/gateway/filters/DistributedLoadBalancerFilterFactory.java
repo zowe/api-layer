@@ -75,7 +75,7 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
                         LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(config.getInstanceId());
                         return cache.store(sub, config.getServiceId(), loadBalancerCacheRecord);
                     }
-            }).then();
+            }).and(chain.filter(exchange));
     }
 
     private static String removeJwtSign(String jwtToken) {
