@@ -69,13 +69,13 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
                     }
                     var token = Objects.requireNonNull(exchange.getRequest().getCookies().getFirst(APIML_TOKEN)).getValue();
                     String sub = extractSubFromToken(token);
-                        if (sub.isEmpty()) {
-                            log.debug("No authentication present on request, the distributed load balancer will not be performed for the service {}", config.getServiceId());
-                            return Flux.empty();
-                        } else {
-                            LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(config.getInstanceId());
-                            return cache.store(sub, config.getServiceId(), loadBalancerCacheRecord);
-                        }
+                    if (sub == null || sub.isEmpty()) {
+                        log.debug("No authentication present on request, the distributed load balancer will not be performed for the service {}", config.getServiceId());
+                        return Flux.empty();
+                    } else {
+                        LoadBalancerCacheRecord loadBalancerCacheRecord = new LoadBalancerCacheRecord(config.getInstanceId());
+                        return cache.store(sub, config.getServiceId(), loadBalancerCacheRecord);
+                    }
                 }));
     }
 
