@@ -25,6 +25,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -109,7 +110,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
     private Mono<String> getSub(Object requestContext) {
         if (requestContext instanceof RequestDataContext ctx) {
             // TODO cookie might not be there
-            var token = ctx.getClientRequest().getCookies().get("apimlAuthenticationToken").get(0);
+            var token = Optional.ofNullable(ctx.getClientRequest().getCookies().get("apimlAuthenticationToken")).map(list -> list.get(0)).orElse("");
             return Mono.just(DistributedLoadBalancerFilterFactory.extractSubFromToken(token));
         }
         return Mono.just("");

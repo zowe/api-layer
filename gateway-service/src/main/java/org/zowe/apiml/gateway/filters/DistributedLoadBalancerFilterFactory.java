@@ -109,7 +109,7 @@ public class DistributedLoadBalancerFilterFactory extends AbstractGatewayFilterF
             Claims claims = getJwtClaims(token);
             return claims.getSubject();
         }
-        return null;
+        return "";
     }
 
     boolean shouldIgnore(List<?> instances) {
