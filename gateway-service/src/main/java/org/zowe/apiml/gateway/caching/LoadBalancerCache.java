@@ -32,6 +32,7 @@ import static reactor.core.publisher.Mono.just;
 
 @Component
 @Slf4j
+// TODO Use eureka client to verify if caching service is active?
 public class LoadBalancerCache {
 
     private final Map<String, LoadBalancerCacheRecord> localCache;
@@ -41,7 +42,7 @@ public class LoadBalancerCache {
     public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
     public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
-        this.remoteCache = null;
+        this.remoteCache = cachingServiceClient;
         localCache = new ConcurrentHashMap<>();
         mapper.registerModule(new JavaTimeModule());
     }
