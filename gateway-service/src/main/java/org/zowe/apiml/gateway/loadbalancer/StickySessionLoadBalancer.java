@@ -10,13 +10,10 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
-import com.netflix.appinfo.InstanceInfo;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
@@ -30,14 +27,12 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -148,6 +143,14 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         return result;
     }
 
+    /**
+     * Selected the preferred instance if not null, if the preferred instance is not found or is null a new preference is created
+     *
+     * @param instanceId The preferred instanceId
+     * @param user The user
+     * @param serviceInstances The default serviceInstances available
+     * @return Flux with a list containing only one selected instance
+     */
     private Flux<List<ServiceInstance>> chooseOne(String instanceId, String user, List<ServiceInstance> serviceInstances) {
         Stream<ServiceInstance> stream = serviceInstances.stream();
         if (instanceId != null) {
@@ -158,12 +161,19 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
             .thenMany(just(Collections.singletonList(chosenInstance)));
     }
 
+    /**
+     * Shortcut to create a new instance preference
+     *
+     * @param user
+     * @param serviceInstances
+     * @return
+     */
     private Flux<List<ServiceInstance>> chooseOne(String user, List<ServiceInstance> serviceInstances) {
         return chooseOne(null, user, serviceInstances);
     }
 
     boolean shouldIgnore(List<ServiceInstance> instances) {
-        return instances.isEmpty() || !lbTypeIsAuthentication(instances.get(0))
+        return instances.isEmpty() || !lbTypeIsAuthentication(instances.get(0));
     }
 
     private boolean lbTypeIsAuthentication(ServiceInstance instance) {
@@ -196,14 +206,17 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
                 .parseUnsecuredClaims(withoutSign)
                 .getPayload();
         } catch (RuntimeException exception) {
-            throw new JwtException(String.format("Exception when trying to parse the JWT token %s", jwt));
+            log.debug("Exception when trying to parse the JWT token %s", jwt);
+            return null;
         }
     }
 
     private static String extractSubFromToken(String token) {
         if (!token.isEmpty()) {
             Claims claims = getJwtClaims(token);
-            return claims.getSubject();
+            if (claims != null) {
+                return claims.getSubject();
+            }
         }
         return "";
     }
