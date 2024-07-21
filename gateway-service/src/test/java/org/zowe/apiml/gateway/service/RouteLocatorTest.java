@@ -277,7 +277,7 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertEquals(4, filterDefinitions.size()); // common filters + pageredirectionfilter + distributedloadbalancerfilterß
+                    assertEquals(3, filterDefinitions.size()); // common filters + pageredirectionfilter
                     assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
 

@@ -135,11 +135,6 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.addArg("instanceId", serviceInstance.getInstanceId());
         serviceRelated.add(pageRedirectionFilter);
 
-        FilterDefinition distributedLoadBalancerFilter = new FilterDefinition();
-        distributedLoadBalancerFilter.setName("DistributedLoadBalancerFilterFactory");
-        distributedLoadBalancerFilter.addArg("serviceId", serviceInstance.getServiceId());
-        distributedLoadBalancerFilter.addArg("instanceId", serviceInstance.getInstanceId());
-        serviceRelated.add(distributedLoadBalancerFilter);
 
         return join(commonFilters, serviceRelated);
     }
