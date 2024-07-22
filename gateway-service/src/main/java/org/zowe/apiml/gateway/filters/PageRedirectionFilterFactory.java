@@ -105,7 +105,9 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             }
             return "";
         }).flatMap(newUrl -> {
-            exchange.getResponse().getHeaders().set(HttpHeaders.LOCATION, newUrl);
+            if (StringUtils.isNotBlank(newUrl)) {
+                exchange.getResponse().getHeaders().set(HttpHeaders.LOCATION, newUrl);
+            }
             return empty();
         });
     }
