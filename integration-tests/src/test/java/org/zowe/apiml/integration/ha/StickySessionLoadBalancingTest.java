@@ -20,6 +20,7 @@ import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import static io.restassured.RestAssured.given;
+import static java.lang.System.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +46,9 @@ public class StickySessionLoadBalancingTest {
 
         @Test
         void shouldLoadBalanceSameInstance() {
-            assumeTrue(System.getenv("APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE").equals("authentication"), "Skipping test: condition not met");
+            String lbTypeEnv = getenv("APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE");
+            String lbType = lbTypeEnv != null ? lbTypeEnv : "";
+            assumeTrue(lbType.equals("authentication"), "Skipping test: condition not met");
 
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));

@@ -258,6 +258,8 @@ task runCITests(type: Test) {
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'HATest',
+            'DeterministicLbHaTest',
+            'StickySessionLbHaTest',
             'ChaoticHATest',
             'OktaOauth2Test',
             'MultipleRegistrationsTest'
@@ -516,7 +518,7 @@ task runDeterministicLbHaTests(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'DeterministicLbHaTests'
+            'DeterministicLbHaTest'
         )
     }
 
@@ -532,7 +534,7 @@ task runStickySessionLbHaTests(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'StickySessionLbHaTests'
+            'StickySessionLbHaTest'
         )
     }
 
