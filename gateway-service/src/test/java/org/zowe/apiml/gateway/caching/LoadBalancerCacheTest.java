@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.caching;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.netflix.discovery.EurekaClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -45,13 +46,16 @@ class LoadBalancerCacheTest {
     @Mock
     private Map<String, LoadBalancerCacheRecord> map;
 
+    @Mock
+    private EurekaClient eurekaClient;
+
     private LoadBalancerCache loadBalancerCache;
 
     private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @BeforeEach
     void setUp() {
-        loadBalancerCache = new LoadBalancerCache(cachingServiceClient);
+        loadBalancerCache = new LoadBalancerCache(eurekaClient, cachingServiceClient);
         ReflectionTestUtils.setField(loadBalancerCache, "localCache", map);
     }
 

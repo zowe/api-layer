@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
+import io.jsonwebtoken.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplierBuilder;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
@@ -20,10 +21,10 @@ public class StickySessionRoutingListSupplierBuilder {
 
     private final ServiceInstanceListSupplierBuilder builder;
 
-    public ServiceInstanceListSupplierBuilder withStickySessionRouting(LoadBalancerCache cache, int expirationTime) {
+    public ServiceInstanceListSupplierBuilder withStickySessionRouting(LoadBalancerCache cache, int expirationTime, Clock clock) {
         ServiceInstanceListSupplierBuilder.DelegateCreator creator = (context, delegate) -> {
             LoadBalancerClientFactory loadBalancerClientFactory = context.getBean(LoadBalancerClientFactory.class);
-            return new StickySessionLoadBalancer(delegate, loadBalancerClientFactory, cache, expirationTime);
+            return new StickySessionLoadBalancer(delegate, loadBalancerClientFactory, cache, clock, expirationTime);
         };
         builder.with(creator);
         return builder;

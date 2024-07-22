@@ -15,9 +15,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.netflix.discovery.EurekaClient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.HttpStatus;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import reactor.core.publisher.Mono;
@@ -32,19 +34,30 @@ import static reactor.core.publisher.Mono.just;
 
 @Component
 @Slf4j
-// TODO Use eureka client to verify if caching service is active?
 public class LoadBalancerCache {
+
+    private static final String CACHING_SERVICE_ID = "caching-service";
 
     private final Map<String, LoadBalancerCacheRecord> localCache;
     private final CachingServiceClient remoteCache;
+    private final EurekaClient eurekaClient;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
-    public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
+    public LoadBalancerCache(
+        EurekaClient eurekaClient,
+        CachingServiceClient cachingServiceClient) {
         this.remoteCache = cachingServiceClient;
+        this.eurekaClient = eurekaClient;
         localCache = new ConcurrentHashMap<>();
         mapper.registerModule(new JavaTimeModule());
+    }
+
+    @Cacheable
+    private Mono<Boolean> cachingServiceAvailavility() {
+        return Mono.fromCallable(() -> eurekaClient.getApplication(CACHING_SERVICE_ID))
+            .map(app -> !app.getInstances().isEmpty());
     }
 
     /**
@@ -57,12 +70,16 @@ public class LoadBalancerCache {
      * @return Mono success / error
      */
     public Mono<Void> store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
-        if (remoteCache != null) {
-            return storeToRemoteCache(user, service, loadBalancerCacheRecord);
-        }
-        localCache.put(getKey(user, service), loadBalancerCacheRecord);
-        log.debug("Stored record to local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-        return empty();
+        return cachingServiceAvailavility()
+            .flatMap(available -> {
+                if (available) {
+                    return storeToRemoteCache(user, service, loadBalancerCacheRecord);
+                } else {
+                    localCache.put(getKey(user, service), loadBalancerCacheRecord);
+                    log.debug("Stored record to local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                    return empty();
+                }
+            });
     }
 
     private Mono<Void> storeToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
@@ -107,22 +124,26 @@ public class LoadBalancerCache {
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
     public Mono<LoadBalancerCacheRecord> retrieve(String user, String service) {
-        if (remoteCache != null) {
-            return remoteCache.read(getKey(user, service))
-                .map(kv -> {
-                    LoadBalancerCacheRecord loadBalancerCacheRecord;
-                    try {
-                        loadBalancerCacheRecord = mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
-                    } catch (JsonProcessingException e) {
-                        throw new LoadBalancerCacheException(e);
-                    }
-                    log.debug("Retrieved record from remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-                    return loadBalancerCacheRecord;
-                });
-        }
-        LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(getKey(user, service));
-        log.debug("Retrieved record from local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-        return loadBalancerCacheRecord == null ? empty() : just(loadBalancerCacheRecord);
+        return cachingServiceAvailavility()
+            .flatMap(available -> {
+                if (available) {
+                    return remoteCache.read(getKey(user, service))
+                    .map(kv -> {
+                        LoadBalancerCacheRecord loadBalancerCacheRecord;
+                        try {
+                            loadBalancerCacheRecord = mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
+                        } catch (JsonProcessingException e) {
+                            throw new LoadBalancerCacheException(e);
+                        }
+                        log.debug("Retrieved record from remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                        return loadBalancerCacheRecord;
+                    });
+                } else {
+                    LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(getKey(user, service));
+                    log.debug("Retrieved record from local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                    return loadBalancerCacheRecord == null ? empty() : just(loadBalancerCacheRecord);
+                }
+            });
     }
 
     /**
@@ -132,13 +153,17 @@ public class LoadBalancerCache {
      * @param service Service towards which is the user routed
      */
     public Mono<Void> delete(String user, String service) {
-        if (remoteCache != null) {
-            return remoteCache.delete(getKey(user, service))
-                .doOnSuccess(v -> log.debug("Deleted record from remote cache for user: {}, service: {}", user, service));
-        }
-        localCache.remove(getKey(user, service));
-        log.debug("Deleted record from local cache for user: {}, service: {}", user, service);
-        return empty();
+        return cachingServiceAvailavility()
+            .flatMap(available -> {
+                if (available) {
+                    return remoteCache.delete(getKey(user, service))
+                        .doOnSuccess(v -> log.debug("Deleted record from remote cache for user: {}, service: {}", user, service));
+                } else {
+                    localCache.remove(getKey(user, service));
+                    log.debug("Deleted record from local cache for user: {}, service: {}", user, service);
+                    return empty();
+                }
+            });
     }
 
     private String getKey(String user, String service) {
@@ -165,6 +190,7 @@ public class LoadBalancerCache {
             this.instanceId = instanceId;
             this.creationTime = creationTime;
         }
+
     }
 
 }

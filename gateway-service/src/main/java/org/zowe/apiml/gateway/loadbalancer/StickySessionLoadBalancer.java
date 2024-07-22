@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.loadbalancer;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import lombok.extern.slf4j.Slf4j;
@@ -49,14 +50,17 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         {"typ":"JWT","alg":"none"}""".getBytes(StandardCharsets.UTF_8));
 
     private final LoadBalancerCache cache;
+    private final Clock clock;
     private final int expirationTime;
 
     public StickySessionLoadBalancer(ServiceInstanceListSupplier delegate,
                                      ReactiveLoadBalancer.Factory<ServiceInstance> loadBalancerClientFactory,
                                      LoadBalancerCache cache,
+                                     Clock clock,
                                      int expirationTime) {
         super(delegate, loadBalancerClientFactory);
         this.cache = cache;
+        this.clock = clock;
         this.expirationTime = expirationTime;
         log.debug("StickySessionLoadBalancer instantiated");
     }
@@ -87,7 +91,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
                         return cache.retrieve(user, serviceId).onErrorResume(t -> Mono.empty());
                     }
                 })
-                .switchIfEmpty(Mono.just(LoadBalancerCache.LoadBalancerCacheRecord.NONE))
+                .switchIfEmpty(Mono.just(LoadBalancerCacheRecord.NONE))
                 .flatMapMany(record -> filterInstances(principal.get(), serviceId, record, serviceInstances))
             )
             .doOnError(e -> log.debug("Error in determining service instances", e));
@@ -115,8 +119,8 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
     /**
      * Filters the list of service instances to include only those with the specified instance ID.
      *
-     * @param user
-     * @param serviceId
+     * @param user The user
+     * @param serviceId The serviceId
      * @param record the cache record
      * @param serviceInstances the list of service instances to filter
      *
@@ -185,7 +189,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         return false;
     }
 
-    private static String removeJwtSign(String jwtToken) {
+    private String removeJwtSign(String jwtToken) {
         if (jwtToken == null) return null;
 
         int firstDot = jwtToken.indexOf('.');
@@ -195,23 +199,26 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         return HEADER_NONE_SIGNATURE + jwtToken.substring(firstDot, lastDot + 1);
     }
 
-    private static Claims getJwtClaims(String jwt) {
+    private Claims getJwtClaims(String jwt) {
         /*
          * Removes signature, because we don't have key to verify z/OS tokens, and we just need to read claim.
          * Verification is done by SAF itself. JWT library doesn't parse signed key without verification.
          */
         try {
             String withoutSign = removeJwtSign(jwt);
-            return Jwts.parser().unsecured().build()
-                .parseUnsecuredClaims(withoutSign)
-                .getPayload();
+            return Jwts.parser()
+                .unsecured()
+                .clock(clock)
+                .build()
+                    .parseUnsecuredClaims(withoutSign)
+                    .getPayload();
         } catch (RuntimeException exception) {
             log.debug("Exception when trying to parse the JWT token %s", jwt);
             return null;
         }
     }
 
-    private static String extractSubFromToken(String token) {
+    private String extractSubFromToken(String token) {
         if (!token.isEmpty()) {
             Claims claims = getJwtClaims(token);
             if (claims != null) {
