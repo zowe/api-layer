@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -32,6 +34,7 @@ import java.util.function.Predicate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static reactor.core.publisher.Mono.empty;
@@ -51,15 +54,23 @@ class CachingServiceClientTest {
 
     private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp () {
+        var serviceInstanceFactory = mock(ReactiveLoadBalancer.Factory.class);
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        client = new CachingServiceClient(webClient);
+        client = new CachingServiceClient(webClient, serviceInstanceFactory);
         lenient().when(clientResponse.releaseBody()).thenReturn(empty());
     }
 
     @Nested
     class GivenCachingServiceClient {
+
+        @BeforeEach
+        void setUp() {
+            webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
+            ReflectionTestUtils.setField(client, "webClient", webClient);
+        }
 
         private void mockResponse(int statusCode) {
             when(exchangeFunction.exchange(any(ClientRequest.class))).thenReturn(just(clientResponse));

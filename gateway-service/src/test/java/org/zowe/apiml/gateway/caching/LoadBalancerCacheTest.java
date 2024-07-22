@@ -73,7 +73,7 @@ class LoadBalancerCacheTest {
             void setUp() {
                 var application = mock(Application.class);
                 var instanceInfo = mock(InstanceInfo.class);
-                when(eurekaClient.getApplication("caching-service")).thenReturn(application);
+                when(eurekaClient.getApplication("cachingservice")).thenReturn(application);
                 when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
             }
 
@@ -192,7 +192,7 @@ class LoadBalancerCacheTest {
             @BeforeEach
             void setUp() {
                 var application = mock(Application.class);
-                when(eurekaClient.getApplication("caching-service")).thenReturn(application);
+                when(eurekaClient.getApplication("cachingservice")).thenReturn(application);
                 when(application.getInstances()).thenReturn(Collections.emptyList());
             }
 

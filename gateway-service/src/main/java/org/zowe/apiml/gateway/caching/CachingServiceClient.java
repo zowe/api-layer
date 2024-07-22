@@ -15,18 +15,23 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
+import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class CachingServiceClient {
 
@@ -42,6 +47,19 @@ public class CachingServiceClient {
     }
 
     private final WebClient webClient;
+
+    public CachingServiceClient(
+        @Qualifier("webClientClientCert") WebClient webClientClientCert,
+        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory
+    ) {
+        this.webClient = createLoadBalanced(webClientClientCert, serviceInstanceFactory);
+    }
+
+    private WebClient createLoadBalanced(WebClient webClient, ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
+        return webClient.mutate()
+            .filter(new ReactorLoadBalancerExchangeFilterFunction(serviceInstanceFactory, Collections.emptyList()))
+            .build();
+    }
 
     public Mono<Void> create(KeyValue keyValue) {
         return webClient.post()

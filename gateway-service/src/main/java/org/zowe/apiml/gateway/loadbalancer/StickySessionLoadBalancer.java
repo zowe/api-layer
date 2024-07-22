@@ -115,6 +115,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
 
     /**
      * Filters the list of service instances to include only those with the specified instance ID.
+     * Optional operation, it verifies if the conditions are met to actually filter the list of instances.
      *
      * @param user             The user
      * @param serviceId        The serviceId

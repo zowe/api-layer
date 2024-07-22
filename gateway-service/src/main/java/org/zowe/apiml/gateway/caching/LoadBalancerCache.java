@@ -36,7 +36,7 @@ import static reactor.core.publisher.Mono.just;
 @Slf4j
 public class LoadBalancerCache {
 
-    private static final String CACHING_SERVICE_ID = "caching-service";
+    private static final String CACHING_SERVICE_ID = "cachingservice";
 
     private final Map<String, LoadBalancerCacheRecord> localCache;
     private final CachingServiceClient remoteCache;
