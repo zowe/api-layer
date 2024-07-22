@@ -17,14 +17,14 @@ import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 
 @RequiredArgsConstructor
-public class StickySessionRoutingListSupplierBuilder {
+public class DeterministicRoutingListSupplierBuilder {
 
     private final ServiceInstanceListSupplierBuilder builder;
 
     public ServiceInstanceListSupplierBuilder withStickySessionRouting(LoadBalancerCache cache, int expirationTime, Clock clock) {
         ServiceInstanceListSupplierBuilder.DelegateCreator creator = (context, delegate) -> {
             LoadBalancerClientFactory loadBalancerClientFactory = context.getBean(LoadBalancerClientFactory.class);
-            return new StickySessionLoadBalancer(delegate, loadBalancerClientFactory, cache, clock, expirationTime);
+            return new DeterministicLoadBalancer(delegate, loadBalancerClientFactory, cache, clock, expirationTime);
         };
         builder.with(creator);
         return builder;

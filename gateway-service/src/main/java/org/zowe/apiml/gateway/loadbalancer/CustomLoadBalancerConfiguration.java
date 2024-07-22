@@ -35,7 +35,7 @@ public class CustomLoadBalancerConfiguration {
     public ServiceInstanceListSupplier stickySessionServiceInstanceListSupplier(
         ConfigurableApplicationContext context, LoadBalancerCache cache,
         @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}") int expirationTime) {
-        return new StickySessionRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
+        return new DeterministicRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
             .withDiscoveryClient())
             .withStickySessionRouting(cache, expirationTime, new DefaultClock())
             .build(context);

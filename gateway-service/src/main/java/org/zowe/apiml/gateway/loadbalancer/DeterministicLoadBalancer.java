@@ -46,7 +46,7 @@ import static reactor.core.publisher.Mono.empty;
  * A sticky session load balancer that ensures requests from the same user are routed to the same service instance.
  */
 @Slf4j
-public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInstanceListSupplier {
+public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInstanceListSupplier {
 
     private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("""
         {"typ":"JWT","alg":"none"}""".getBytes(StandardCharsets.UTF_8));
@@ -55,7 +55,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
     private final Clock clock;
     private final int expirationTime;
 
-    public StickySessionLoadBalancer(ServiceInstanceListSupplier delegate,
+    public DeterministicLoadBalancer(ServiceInstanceListSupplier delegate,
                                      ReactiveLoadBalancer.Factory<ServiceInstance> loadBalancerClientFactory,
                                      LoadBalancerCache cache,
                                      Clock clock,
