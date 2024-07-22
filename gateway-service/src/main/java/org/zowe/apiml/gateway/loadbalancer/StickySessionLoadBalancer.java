@@ -15,6 +15,7 @@ import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
@@ -28,11 +29,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -119,21 +116,20 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
     /**
      * Filters the list of service instances to include only those with the specified instance ID.
      *
-     * @param user The user
-     * @param serviceId The serviceId
-     * @param record the cache record
+     * @param user             The user
+     * @param serviceId        The serviceId
+     * @param record           the cache record
      * @param serviceInstances the list of service instances to filter
-     *
      * @return the filtered list of service instances
      */
     private Flux<List<ServiceInstance>> filterInstances(
-            String user,
-            String serviceId,
-            LoadBalancerCacheRecord record,
-            List<ServiceInstance> serviceInstances) {
+        String user,
+        String serviceId,
+        LoadBalancerCacheRecord record,
+        List<ServiceInstance> serviceInstances) {
 
         Flux<List<ServiceInstance>> result = just(serviceInstances);
-        if (shouldIgnore(serviceInstances)) {
+        if (shouldIgnore(serviceInstances, user)) {
             return result;
         }
         if (isNotBlank(record.getInstanceId()) && isTooOld(record.getCreationTime())) {
@@ -150,8 +146,8 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
     /**
      * Selected the preferred instance if not null, if the preferred instance is not found or is null a new preference is created
      *
-     * @param instanceId The preferred instanceId
-     * @param user The user
+     * @param instanceId       The preferred instanceId
+     * @param user             The user
      * @param serviceInstances The default serviceInstances available
      * @return Flux with a list containing only one selected instance
      */
@@ -176,8 +172,8 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         return chooseOne(null, user, serviceInstances);
     }
 
-    boolean shouldIgnore(List<ServiceInstance> instances) {
-        return instances.isEmpty() || !lbTypeIsAuthentication(instances.get(0));
+    boolean shouldIgnore(List<ServiceInstance> instances, String user) {
+        return StringUtils.isEmpty(user) || instances.isEmpty() || !lbTypeIsAuthentication(instances.get(0));
     }
 
     private boolean lbTypeIsAuthentication(ServiceInstance instance) {
@@ -210,8 +206,8 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
                 .unsecured()
                 .clock(clock)
                 .build()
-                    .parseUnsecuredClaims(withoutSign)
-                    .getPayload();
+                .parseUnsecuredClaims(withoutSign)
+                .getPayload();
         } catch (RuntimeException exception) {
             log.debug("Exception when trying to parse the JWT token %s", jwt);
             return null;
