@@ -24,6 +24,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
@@ -49,13 +50,14 @@ class DeterministicLoadBalancingTest {
         void whenRoutedInstanceExists_thenReturn200() {
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
+            var expectedInstance = "discoverable-client:discoverableclient:10012";
 
             String jwt = gatewayToken();
 
             String routedInstanceId = given()
                 .cookie(COOKIE_NAME, jwt)
             .when()
-                .header(X_INSTANCEID, "discoverable-client:discoverableclient:10012")
+                .header(X_INSTANCEID, expectedInstance)
                 .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
             .then()
                 .statusCode(is(200))
@@ -63,7 +65,7 @@ class DeterministicLoadBalancingTest {
                 .header(X_INSTANCEID);
 
             assertThat(routedInstanceId, is(notNullValue()));
-            assertEquals("discoverable-client:discoverableclient:10012", routedInstanceId);
+            assertEquals(expectedInstance, routedInstanceId);
         }
 
         @Test
@@ -83,7 +85,7 @@ class DeterministicLoadBalancingTest {
             .extract()
                 .header(X_INSTANCEID);
 
-            assertThat(routedInstanceId, is(notNullValue()));
+            assertNull(routedInstanceId);
         }
     }
 
