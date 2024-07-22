@@ -35,6 +35,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -219,19 +220,54 @@ class StickySessionLoadBalancerTest {
 
                         @Test
                         void whenInstanceDoesNotExist_thenUpdatePreference() {
+                            when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance3")));
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
 
+                            StepVerifier.create(loadBalancer.get(request))
+                            .assertNext(chosenInstances -> {
+                                assertNotNull(chosenInstances);
+                                assertEquals(1, chosenInstances.size());
+                                assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                            })
+                            .expectComplete()
+                            .verify();
                         }
 
                         @Test
                         void whenCacheEntryExpired_thenUpdatePreference() {
+                            when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance2", LocalDateTime.of(2023, 2, 20, 2, 2))));
+                            when(lbCache.delete("USER", "service")).thenReturn(Mono.empty());
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
 
+                            StepVerifier.create(loadBalancer.get(request))
+                            .assertNext(chosenInstances -> {
+                                assertNotNull(chosenInstances);
+                                assertEquals(1, chosenInstances.size());
+                                assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                            })
+                            .expectComplete()
+                            .verify();
                         }
 
                     }
 
                     @Test
                     void whenNoPreferece_thenCreateOne() {
+                        when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
 
+                        when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
+
+                            StepVerifier.create(loadBalancer.get(request))
+                            .assertNext(chosenInstances -> {
+                                assertNotNull(chosenInstances);
+                                assertEquals(1, chosenInstances.size());
+                                assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                            })
+                            .expectComplete()
+                            .verify();
                     }
 
                 }
