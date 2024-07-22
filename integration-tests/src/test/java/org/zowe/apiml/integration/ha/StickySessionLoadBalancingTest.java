@@ -19,9 +19,6 @@ import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -36,7 +33,6 @@ public class StickySessionLoadBalancingTest {
 
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
-    private static final Map<String, String> env = new HashMap<>();
     private final String HOST_HEADER = "host";
 
     @BeforeEach
@@ -49,7 +45,7 @@ public class StickySessionLoadBalancingTest {
 
         @Test
         void shouldLoadBalanceSameInstance() {
-            assumeTrue(env.get("ZWE_configs_apiml_service_customMetadata_apiml_lb_type").equals("authentication"), "Skipping test: condition not met");
+            assumeTrue(System.getenv("APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE").equals("authentication"), "Skipping test: condition not met");
 
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
