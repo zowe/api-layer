@@ -56,35 +56,34 @@ public class StickySessionLoadBalancingTest {
 
             String jwt = gatewayToken();
 
-            String routedInstanceId = given()
+            String routedInstanceHost = given()
                 .cookie(COOKIE_NAME, jwt)
                 .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
                 .header(HOST_HEADER);
 
-            assertThat(routedInstanceId, is(notNullValue()));
+            assertThat(routedInstanceHost, is(notNullValue()));
 
-            // Try first on local instance
             String[] results1 = new String[10];
             for (int i = 0; i < 10; i++) {
-                String routedInstanceIdOnOtherGateway = given()
+                String sequentialRoutedInstanceHost = given()
                     .cookie(COOKIE_NAME, jwt)
                     .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
                     .header(HOST_HEADER);
-                results1[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
+                results1[i] = routedInstanceHost.equals(sequentialRoutedInstanceHost) ? "match" : "nomatch";
             }
 
             String resultLog1 = String.join(",", results1);
-            assertThat("Result of testing against same gateway instance", resultLog1, containsString("match,match,match,match,match,match,match,match,match,match"));
+            assertThat("Result of testing sticky session load balancing against discoverable client", resultLog1, containsString("match,match,match,match,match,match,match,match,match,match"));
 
 
-            // Try second on the other instance
+            // Try second on the other GW instance
             String[] results2 = new String[10];
             for (int i = 0; i < 10; i++) {
-                String routedInstanceIdOnOtherGateway = given()
+                String sequentialRoutedInstanceHost = given()
                     .cookie(COOKIE_NAME, jwt)
                     .get("https://gateway-service-2:10010" + DISCOVERABLE_GREET)
                     .header(HOST_HEADER);
-                results2[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
+                results2[i] = routedInstanceHost.equals(sequentialRoutedInstanceHost) ? "match" : "nomatch";
             }
 
             String resultLog2 = String.join(",", results2);
