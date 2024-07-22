@@ -506,9 +506,9 @@ task runHATests(type: Test) {
 
 }
 
-task runLbHaTests(type: Test) {
+task runDeterministicLbHaTests(type: Test) {
     group "Integration tests"
-    description "Run tests verifying Load balancing under High Availability"
+    description "Run tests verifying Deterministic Load balancing under High Availability"
 
     outputs.cacheIf { false }
 
@@ -516,7 +516,23 @@ task runLbHaTests(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'LbHaTest'
+            'DeterministicLbHaTests'
+        )
+    }
+
+}
+
+task runStickySessionLbHaTests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying Distrubuted Load balancing under High Availability"
+
+    outputs.cacheIf { false }
+
+    systemProperty "environment.ha", true
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'StickySessionLbHaTests'
         )
     }
 
