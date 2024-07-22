@@ -57,7 +57,8 @@ public class LoadBalancerCache {
     @Cacheable
     private Mono<Boolean> cachingServiceAvailavility() {
         return Mono.fromCallable(() -> eurekaClient.getApplication(CACHING_SERVICE_ID))
-            .map(app -> !app.getInstances().isEmpty());
+            .map(app -> !app.getInstances().isEmpty())
+            .switchIfEmpty(Mono.just(false));
     }
 
     /**
