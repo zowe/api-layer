@@ -19,6 +19,8 @@ import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import java.net.URISyntaxException;
+
 import static io.restassured.RestAssured.given;
 import static java.lang.System.*;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -45,7 +47,7 @@ public class StickySessionLoadBalancingTest {
     class GivenAuthenticationLbTypeConfig {
 
         @Test
-        void shouldLoadBalanceSameInstance() {
+        void shouldLoadBalanceSameInstance() throws URISyntaxException {
             String lbTypeEnv = getenv("APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE");
             String lbType = lbTypeEnv != null ? lbTypeEnv : "";
             assumeTrue(lbType.equals("authentication"), "Skipping test: condition not met");
@@ -57,7 +59,7 @@ public class StickySessionLoadBalancingTest {
 
             String routedInstanceHost = given()
                 .cookie(COOKIE_NAME, jwt)
-                .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
+                .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
                 .header(HOST_HEADER);
 
             assertThat(routedInstanceHost, is(notNullValue()));
@@ -66,7 +68,7 @@ public class StickySessionLoadBalancingTest {
             for (int i = 0; i < 10; i++) {
                 String sequentialRoutedInstanceHost = given()
                     .cookie(COOKIE_NAME, jwt)
-                    .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
+                    .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
                     .header(HOST_HEADER);
                 results1[i] = routedInstanceHost.equals(sequentialRoutedInstanceHost) ? "match" : "nomatch";
             }
@@ -80,7 +82,7 @@ public class StickySessionLoadBalancingTest {
             for (int i = 0; i < 10; i++) {
                 String sequentialRoutedInstanceHost = given()
                     .cookie(COOKIE_NAME, jwt)
-                    .get("https://gateway-service-2:10010" + DISCOVERABLE_GREET)
+                    .get(haGatewayRequests.getGatewayUrl(1, DISCOVERABLE_GREET))
                     .header(HOST_HEADER);
                 results2[i] = routedInstanceHost.equals(sequentialRoutedInstanceHost) ? "match" : "nomatch";
             }

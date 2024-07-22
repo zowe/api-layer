@@ -19,6 +19,8 @@ import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import java.net.URISyntaxException;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,7 +49,7 @@ class DeterministicLoadBalancingTest {
     class GivenDeterministicRoutingViaHeader {
 
         @Test
-        void whenRoutedInstanceExists_thenReturn200() {
+        void whenRoutedInstanceExists_thenReturn200() throws URISyntaxException {
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
             var expectedInstance = "discoverable-client:discoverableclient:10012";
@@ -58,7 +60,7 @@ class DeterministicLoadBalancingTest {
                 .cookie(COOKIE_NAME, jwt)
             .when()
                 .header(X_INSTANCEID, expectedInstance)
-                .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
+                .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
             .then()
                 .statusCode(is(200))
                 .extract()
@@ -69,7 +71,7 @@ class DeterministicLoadBalancingTest {
         }
 
         @Test
-        void whenRoutedDoesNotInstanceExist_thenReturn404() {
+        void whenRoutedDoesNotInstanceExist_thenReturn404() throws URISyntaxException {
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
 
@@ -79,7 +81,7 @@ class DeterministicLoadBalancingTest {
                 .cookie(COOKIE_NAME, jwt)
             .when()
                 .header(X_INSTANCEID, "wrong-discoverable-client:wrong-discoverable-client:10012")
-                .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
+                .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
             .then()
                 .statusCode(is(404))
             .extract()
