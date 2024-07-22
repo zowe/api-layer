@@ -24,4 +24,12 @@ class TokenAuthenticationTest {
         assertTrue(ta.isAuthenticated());
     }
 
+    @Test
+    void testCreateAuthenticatedFromHeader() {
+        TokenAuthentication ta = TokenAuthentication.createAuthenticatedFromHeader("user", "Basic dXNlcjpwYXNzd29yZA==");
+        assertEquals("user", ta.getPrincipal());
+        assertEquals("user", ta.getCredentials());
+        assertTrue(ta.isAuthenticated());
+    }
+
 }

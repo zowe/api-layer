@@ -24,10 +24,10 @@ package org.zowe.apiml.cache;
 public interface EntryExpiration {
 
     /**
-     * Method could be use in cache annotation to determinate if record is still valid or expirated.
+     * Method could be use in cache annotation to determinate if record is still valid or expired.
      *
      * @return true if record is expired, otherwise false
      */
-    public boolean isExpired();
+    boolean isExpired();
 
 }

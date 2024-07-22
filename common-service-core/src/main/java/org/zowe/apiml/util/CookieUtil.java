@@ -12,6 +12,14 @@ package org.zowe.apiml.util;
 
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
+
+import java.net.HttpCookie;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * A utility class for Cookies administration
@@ -149,6 +157,22 @@ public final class CookieUtil {
 
         if (!changed) return cookieHeader;
         return sb.toString();
+    }
+
+    /**
+     * Read cookie from HTTP header and return it as stream, otherwise return empty list.
+     * @param httpHeaders the HTTP header
+     * @return stream of HttpCookie
+     */
+    public static Stream<HttpCookie> readCookies(HttpHeaders httpHeaders) {
+        return Optional.ofNullable(httpHeaders.get(HttpHeaders.COOKIE))
+            .orElse(Collections.emptyList())
+            .stream()
+            .map(v -> StringUtils.split(v, ";"))
+            .flatMap(Arrays::stream)
+            .map(StringUtils::trim)
+            .map(HttpCookie::parse)
+            .flatMap(List::stream);
     }
 
 }

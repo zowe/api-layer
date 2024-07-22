@@ -10,48 +10,45 @@
 
 package org.zowe.apiml.gateway.controllers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.version.VersionInfo;
 import org.zowe.apiml.product.version.VersionInfoDetails;
 import org.zowe.apiml.product.version.VersionService;
 
-import static org.hamcrest.core.Is.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@WebFluxTest(controllers = VersionController.class, excludeAutoConfiguration = { ReactiveSecurityAutoConfiguration.class })
+@MockBean(MessageService.class)
 class VersionControllerTest {
-    @Mock
+
+    @MockBean
     private VersionService versionService;
 
-    private MockMvc mockMvc;
-
-    @BeforeEach
-    void setUp() {
-        VersionController versionController = new VersionController(versionService);
-        mockMvc = MockMvcBuilders.standaloneSetup(versionController).build();
-    }
+    @Autowired
+    private WebTestClient webTestClient;
 
     @Test
     void givenSpecificVersions_whenVersionEndpointCalled_thenVersionInfoShouldBeGivenInSuccessfulResponse() throws Exception {
-        Mockito.when(versionService.getVersion()).thenReturn(getDummyVersionInfo());
-        this.mockMvc.perform(get("/gateway/version"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.zowe.version", is("0.0.0")))
-            .andExpect(jsonPath("$.zowe.buildNumber", is("000")))
-            .andExpect(jsonPath("$.zowe.commitHash", is("1a3b5c7")))
-
-            .andExpect(jsonPath("$.apiml.version", is("0.0.0")))
-            .andExpect(jsonPath("$.apiml.buildNumber", is("000")))
-            .andExpect(jsonPath("$.apiml.commitHash", is("1a3b5c7")));
+        when(versionService.getVersion()).thenReturn(getDummyVersionInfo());
+        this.webTestClient
+            .get()
+            .uri("/gateway/version")
+            .exchange()
+            .expectStatus()
+                .is2xxSuccessful()
+            .expectBody()
+                .jsonPath("$.zowe.version").isEqualTo("0.0.0")
+                .jsonPath("$.zowe.buildNumber").isEqualTo("000")
+                .jsonPath("$.zowe.commitHash").isEqualTo("1a3b5c7")
+                .jsonPath("$.apiml.version").isEqualTo("0.0.0")
+                .jsonPath("$.apiml.buildNumber").isEqualTo("000")
+                .jsonPath("$.apiml.commitHash").isEqualTo("1a3b5c7");
     }
 
     private VersionInfo getDummyVersionInfo() {
@@ -61,4 +58,5 @@ class VersionControllerTest {
         versionInfo.setApiml(versionInfoDetails);
         return versionInfo;
     }
+
 }

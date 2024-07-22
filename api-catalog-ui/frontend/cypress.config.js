@@ -14,12 +14,12 @@ module.exports = defineConfig({
     env: {
         catalogHomePage: 'https://localhost:10010/apicatalog/ui/v1',
         gatewayOktaRedirect:
-            'https://localhost:10023/cloud-gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Flocalhost%3A10023%2Fapplication',
-        viewportWidth: 1400,
-        viewportHeight: 980,
+            'https://localhost:10010/gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Flocalhost%3A10010%2Fapplication',
         username: 'USER',
         password: 'validPassword',
     },
+    viewportWidth: 1400,
+    viewportHeight: 980,
     chromeWebSecurity: false,
     reporter: 'junit',
     defaultCommandTimeout: 30000,

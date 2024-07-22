@@ -11,6 +11,10 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
@@ -28,10 +32,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -96,7 +97,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             }
 
             UsernamePasswordAuthenticationToken authentication
-                    = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
+                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
             Authentication auth = null;
 
@@ -141,9 +142,14 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @return the decoded credentials
      */
     public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
-        return Optional.ofNullable(
-                request.getHeader(HttpHeaders.AUTHORIZATION)
-            ).filter(
+        var headers = Optional.ofNullable(
+            request.getHeader(HttpHeaders.AUTHORIZATION)
+        );
+        return getCredentialFromAuthorizationHeader(headers);
+    }
+
+    public static Optional<LoginRequest> getCredentialFromAuthorizationHeader(Optional<String> headers) {
+        return headers.filter(
                 header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
             ).map(
                 header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
@@ -151,6 +157,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             .filter(base64Credentials -> !base64Credentials.isEmpty())
             .map(LoginFilter::mapBase64Credentials);
     }
+
 
     /**
      * Decode the encoded credentials
@@ -198,11 +205,23 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
-        try {
-            if (request.getInputStream().available() == 0) {
+        // method available could return 0 even there are some data, depends on the implementation
+        try (
+            var is = request.getInputStream();
+            var bis = new BufferedInputStream(is)
+        ) {
+            if (is.isFinished()) {
+                logger.trace("The input stream is already closed");
                 return Optional.empty();
             }
-            return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
+            bis.mark(1);
+            if (bis.read() < 0) {
+                // no data available
+                return Optional.empty();
+            }
+            // return to the beginning (to do not skip first character: '{')
+            bis.reset();
+            return Optional.of(mapper.readValue(bis, LoginRequest.class));
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");

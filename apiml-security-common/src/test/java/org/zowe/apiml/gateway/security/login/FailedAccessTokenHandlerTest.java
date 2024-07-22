@@ -21,6 +21,7 @@ import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
 import jakarta.servlet.ServletException;
+import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
 
 import static org.mockito.Mockito.*;
 

@@ -33,15 +33,14 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Base64;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
@@ -105,14 +104,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
         throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
-        client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
+        client.setSslContext(HttpClientUtils.ignoreSslContext());
         URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
-        return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
-    }
-
-    private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
-        throws Exception {
-        return appendingWebSocketSession(url, null, response, countToNotify);
+        return client.execute(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 
 
@@ -172,39 +166,33 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.wait(WAIT_TIMEOUT_MS);
                         }
 
-                        System.out.println("Response: " + response.toString());
-                        assertEquals(0, response.toString().indexOf("CloseStatus[code=1003,"));
+                        assertEquals(0, response.toString().indexOf("CloseStatus[code=1011,"), "" +
+                            "Expected response with `CloseStatus[code=1011,`, but was `" + response + "`"
+                        );
                     }
 
                     @Test
                     void whenServiceIsNotCorrect() throws Exception {
-                        final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/wrong-service/ws/v1/uppercase"), VALID_AUTH_HEADERS, response, 1);
+                        var exception = assertThrows(ExecutionException.class, () -> appendingWebSocketSession(discoverableClientGatewayUrl("/wrong-service/ws/v1/uppercase"), VALID_AUTH_HEADERS, new StringBuilder(), 1));
 
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertEquals("CloseStatus[code=1003, reason=Requested service wrong-service is not known by the gateway]",
-                            response.toString());
+                        assertEquals("jakarta.websocket.DeploymentException: The HTTP response from the server [404] did not permit the HTTP upgrade to WebSocket",
+                            exception.getMessage());
                     }
 
                     @Test
                     void whenUrlFormatIsNotCorrect() throws Exception {
-                        final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);
 
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
+                        var exception = assertThrows(ExecutionException.class, () -> appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), VALID_AUTH_HEADERS, new StringBuilder(), 1));
 
-                        assertEquals("CloseStatus[code=1003, reason=Invalid URL format]", response.toString());
+                        assertEquals("jakarta.websocket.DeploymentException: The HTTP response from the server [404] did not permit the HTTP upgrade to WebSocket",
+                            exception.getMessage());
                     }
                 }
             }
 
             @Nested
             class WhenInvalid {
+
                 @Test
                 void returnError() throws Exception {
                     final StringBuilder response = new StringBuilder();

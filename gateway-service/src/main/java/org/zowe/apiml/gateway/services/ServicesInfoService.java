@@ -21,7 +21,8 @@ import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
@@ -29,23 +30,13 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.services.ServiceInfoUtils;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
-import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
-import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
-import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
-import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
+import static org.zowe.apiml.services.ServiceInfoUtils.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,7 +47,7 @@ public class ServicesInfoService {
 
     private final EurekaClient eurekaClient;
     private final EurekaMetadataParser eurekaMetadataParser;
-    private final GatewayConfigProperties gatewayConfigProperties;
+    private final GatewayClient gatewayClient;
     private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
@@ -79,7 +70,7 @@ public class ServicesInfoService {
                     return serviceInfo.getApiml().getApiInfo().stream().anyMatch(apiInfo ->
                             StringUtils.equals(apiInfo.getApiId(), apiId));
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public ServiceInfo getServiceInfo(String serviceId) {
@@ -96,8 +87,9 @@ public class ServicesInfoService {
     }
 
     private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
+        ServiceAddress gatewayAddress = gatewayClient.getGatewayConfigProperties();
         return String.format("%s://%s%s",
-                gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname(), getBasePath(apiInfo, instanceInfo));
+                gatewayAddress.getScheme(), gatewayAddress.getHostname(), getBasePath(apiInfo, instanceInfo));
     }
 
     private ServiceInfo getServiceInfo(Application application) {
@@ -149,7 +141,7 @@ public class ServicesInfoService {
                             .codeSnippet(apiInfo.getCodeSnippet())
                             .isDefaultApi(apiInfo.isDefaultApi())
                             .build())
-                    .collect(Collectors.toList()));
+                    .toList());
         }
 
         return completeList.stream()
@@ -160,7 +152,7 @@ public class ServicesInfoService {
                 .values()
                 .stream()
                 .map(Optional::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private ServiceInfo.Service getService(List<InstanceInfo> appInstances) {
@@ -182,7 +174,7 @@ public class ServicesInfoService {
                 })
                 .filter(Objects::nonNull)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private String getGatewayUrl(String url, String serviceId, ServiceType type, RoutedServices routes) {

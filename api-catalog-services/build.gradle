@@ -72,8 +72,13 @@ dependencies {
     implementation libs.spring.retry
 
     implementation libs.apache.velocity
-    implementation libs.openapidiff
-    implementation libs.swagger.inflector
+
+    implementation(libs.openapidiff) {
+        exclude group: "io.swagger.core.v3", module: "swagger-core"
+    }
+    implementation(libs.swagger.inflector) {
+        exclude group: "io.swagger.core.v3", module: "swagger-core"
+    }
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc

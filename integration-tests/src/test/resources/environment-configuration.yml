@@ -7,10 +7,18 @@ gatewayServiceConfiguration:
     scheme: https
     host: localhost
     port: 10010
-    internalPorts: 10017
+    internalPorts: 10010
     externalPort: 10010
     instances: 1
     servicesEndpoint: gateway/api/v1/services
+centralGatewayServiceConfiguration:
+    scheme: https
+    host: localhost
+    port: 10199
+zaasConfiguration:
+    scheme: https
+    host: localhost
+    port: 10023
 discoveryServiceConfiguration:
     scheme: https
     user: user
@@ -40,10 +48,6 @@ apiCatalogStandaloneConfiguration:
     instances: 1
 cachingServiceConfiguration:
     url:
-cloudGatewayConfiguration:
-    scheme: https
-    host: localhost
-    port: 10023
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
@@ -73,7 +77,7 @@ instanceEnv:
     ZWE_haInstance_hostname: localhost
     ZOWE_PREFIX: ZWE
     ZWE_configs_apiml_service_allowEncodedSlashes: true
-    ZWE_configs_apiml_gateway_timeoutMillis: 10000
+    ZWE_configs_apiml_connection_timeout: 10000
     ZWE_configs_apiml_security_x509_enabled: true
     ZWE_configs_apiml_security_auth_provider: zosmf
     ZWE_configs_apiml_security_auth_zosmf_serviceId: mockzosmf

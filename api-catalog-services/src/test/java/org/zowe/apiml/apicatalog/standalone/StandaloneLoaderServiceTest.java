@@ -25,7 +25,7 @@ import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.io.File;
@@ -71,7 +71,7 @@ class StandaloneLoaderServiceTest {
                     doReturn(s).when(abstractApiDocService).transformApiDoc(any(), any());
                     return abstractApiDocService;
                 },
-                GatewayConfigProperties.builder().scheme("https").hostname("localhost:10014").build(),
+                ServiceAddress.builder().scheme("https").hostname("localhost:10014").build(),
                 mock(ExampleService.class)
             );
 

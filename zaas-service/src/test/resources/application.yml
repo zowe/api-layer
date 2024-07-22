@@ -1,0 +1,190 @@
+logging:
+    level:
+        ROOT: TRACE
+
+apiml:
+    service:
+        # The `apiml.service` node contains information required by any APIML service
+        id: zaas  # Service ID of this service. It is fixed for ZAAS
+        hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
+        # Default is valid only for localhost
+        port: 10023  # Default port name for zaas service
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
+        discoveryServiceUrls: https://localhost:10011/eureka/
+    zaas:
+        # The `apiml.zaas` node contains zaas-service only configuration
+        hostname: ${apiml.service.hostname}  # The hostname for other services to access the zaas. For example Catalog uses
+          # for transforming the URLs in DVIPA mode.
+          # In Zowe, this is the same as apiml.service.hostname. Zowe has one ZAAS
+        # and is all run from single host.
+        # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
+        # properly.
+        timeoutMillis: 30000  # Timeout for connection to the services
+    security:
+        personalAccessToken:
+            enabled: true
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry:
+            identityMapperUrl: http://localhost:8542/certificate/dn
+            identityMapperUser: validUserForMap
+            jwks:
+                uri:
+        filterChainConfiguration: new
+        allowTokenRefresh: true
+        jwtInitializerTimeout: 5
+        ssl:
+            verifySslCertificatesOfServices: true
+        x509:
+            externalMapperUrl: http://localhost:8542/certificate/x509/map
+            externalMapperUser: validUserForMap
+        auth:
+            provider: dummy
+            zosmf:
+                serviceId: zosmf  # Replace me with the correct z/OSMF service id
+                jwtAutoconfiguration: jwt
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
+
+spring:
+    profiles:
+        #include: diag
+        group:
+            dev: debug, diag
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        compatibilityVerifier:
+            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
+        favicon:
+            enabled: false
+    output:
+        ansi:
+            enabled: detect
+    main:
+        allow-bean-definition-overriding: true
+        allow-circular-references: true
+        banner-mode: ${apiml.banner:"off"}
+
+server:
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
+    ssl:
+        enabled: true
+        clientAuth: want
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyPassword: password
+        keyAlias: localhost
+        trustStore: ../keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+    max-http-request-header-size: 40000
+
+http:
+    connection:
+        timeout: ${apiml.zaas.timeoutMillis}
+    socket:
+        timeout: ${apiml.zaas.timeoutMillis}
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
+
+eureka:
+    instance:
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        #ports are computed in code
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: ${apiml.service.scheme}://${apiml.zaas.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        metadata-map:
+            apiml:
+                routes:
+                    api_v1:
+                        gatewayUrl: /api/v1
+                        serviceUrl: /zaas
+                apiInfo:
+                    - apiId: zowe.apiml.zaas
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      documentationUrl: https://zowe.github.io/docs-site/
+                service:
+                    title: ZAAS
+                    description: Zowe Authentication and Authorization Service.
+    client:
+        fetchRegistry: false
+        registerWithEureka: false
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        healthcheck:
+            enabled: true
+
+---
+spring:
+    config.activate.on-profile: debug
+    mvc:
+        throw-exception-if-no-handler-found: true
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,routes,loggers
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: INFO
+        org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
+        org.ehcache: INFO
+
+---
+spring.config.activate.on-profile: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+spring.config.activate.on-profile: dev
+
+logbackServiceName: ZWEAGW1

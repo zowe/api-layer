@@ -32,12 +32,11 @@ public class HAGatewayRequests {
 
     public HAGatewayRequests(String scheme) {
         String[] gatewayHosts = environmentConfiguration().getGatewayServiceConfiguration().getHost().split(",");
-        String[] internalPorts = environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts().split(",");
+        int externalPort = environmentConfiguration().getGatewayServiceConfiguration().getExternalPort();
         for (int i = 0; i < gatewayHosts.length; i++) {
             String host = gatewayHosts[i];
-            String internalPort = internalPorts[i];
 
-            gatewayServices.add(new GatewayRequests(scheme, host, internalPort));
+            gatewayServices.add(new GatewayRequests(scheme, host, externalPort));
         }
 
         log.info("Created HAGatewayRequests");

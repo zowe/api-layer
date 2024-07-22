@@ -16,8 +16,6 @@ import org.springframework.boot.web.servlet.error.ErrorController;
  * This class is used to reconcile the breaking change between Spring Boot 2.5 and Zuul. The breaking change
  * is due to ErrorController.getErrorPath being removed in Spring Boot 2.5. A BeanPostProcessor is used
  * to proxy ZuulHandlerMapping, intercepting the code execution that leads to the NoSuchMethodError.
- * <p>
- * NOTE: This should be removed when the APIML migrates away from Zuul to Spring Cloud Gateway.
  */
 public interface ApimlErrorController extends ErrorController {
     String getErrorPath();

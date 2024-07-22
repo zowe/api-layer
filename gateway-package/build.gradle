@@ -4,13 +4,18 @@ ext {
 }
 
 configurations {
+    gatewayServiceJar
     zip
 }
-def resourceDir = 'src/main/resources/'
+
+dependencies {
+    gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
+}
 
 task packageApiGateway(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
@@ -18,39 +23,11 @@ task packageApiGateway(type: Zip) {
     }
 
     into('bin/') {
-        from "$resourceDir/bin/gateway-service.jar"
+        from configurations.gatewayServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
 }
-
-task downloadFile {
-    doLast {
-        // Specify the URL of the file to download
-        def fileURL = 'https://zowe.jfrog.io/artifactory/libs-release/org/zowe/apiml/gateway-fat-jar/2.14.6/gateway-fat-jar-2.14.6-application.jar'
-
-        RegularFile gatewayJar = layout.projectDirectory.file("src/main/resources/bin/gateway-service.jar")
-
-        // Set the destination directory and file name
-        def destination = gatewayJar.asFile
-        if (!destination.exists()) {
-            // Make sure the directory exists
-            destination.parentFile.mkdirs()
-
-            // Download the file
-            new URL(fileURL).withInputStream { i ->
-                destination.withOutputStream {
-                    it << i
-                }
-            }
-            println "Downloaded file to ${destination.absolutePath}"
-        } else {
-            println "File already exists ${destination.absolutePath}"
-        }
-    }
-}
-
-packageApiGateway.dependsOn downloadFile
 
 // save build information to manifest
 packageApiGateway.doFirst {
@@ -67,18 +44,15 @@ packageApiGateway.doFirst {
         .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
         .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
 
-    Provider<Directory> output = layout.buildDirectory.dir("convert")
-    def scriptOutputDir = output.get().asFile
+    def scriptOutputDir = new File("$buildDir/convert/");
     if (!scriptOutputDir.exists()) {
-        scriptOutputDir.mkdirs()
+        scriptOutputDir.mkdirs();
     }
-
-    Provider<RegularFile> manifestOutput = layout.buildDirectory.file("convert/manifest.yaml")
-    File convertedManifest = manifestOutput.get().asFile
+    File convertedManifest = new File("$buildDir/convert/manifest.yaml");
     if (convertedManifest.exists()) {
-        convertedManifest.delete()
+        convertedManifest.delete();
     }
-    convertedManifest.createNewFile()
+    convertedManifest.createNewFile();
     convertedManifest.write(manifest)
 }
 

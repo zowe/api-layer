@@ -14,17 +14,16 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.springframework.http.HttpMethod;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.util.*;
-
 
 public class OpenApiV3Validator extends AbstractSwaggerValidator {
     private final SwaggerParseResult swagger;
 
 
-    public OpenApiV3Validator(String swaggerDoc, Map<String, String> metadata, GatewayConfigProperties gatewayConfigProperties, String serviceId) {
-        super(metadata, gatewayConfigProperties, serviceId);
+    public OpenApiV3Validator(String swaggerDoc, Map<String, String> metadata, ServiceAddress gatewayServiceAddress, String serviceId) {
+        super(metadata, gatewayServiceAddress, serviceId);
         swagger = new OpenAPIV3Parser().readContents(swaggerDoc);
     }
 
@@ -59,7 +58,7 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
 
     private String generateUrlForEndpoint(String endpoint) {
 
-        String baseUrl = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname();
+        String baseUrl = gatewayServiceAddress.getScheme() + "://" + gatewayServiceAddress.getHostname();
 
         String version = searchMetadata(metadata, "apiml", "routes", "gatewayUrl");
         String serviceUrl = searchMetadata(metadata, "apiml", "routes", "serviceUrl");
@@ -100,20 +99,20 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
     }
 
     private PathItem.HttpMethod convertSpringHttpToSwagger(HttpMethod input) {
-        switch (input) {
-            case GET:
+        switch (input.name()) {
+            case "GET":
                 return PathItem.HttpMethod.GET;
-            case HEAD:
+            case "HEAD":
                 return PathItem.HttpMethod.HEAD;
-            case OPTIONS:
+            case "OPTIONS":
                 return PathItem.HttpMethod.OPTIONS;
-            case PATCH:
+            case "PATCH":
                 return PathItem.HttpMethod.PATCH;
-            case POST:
+            case "POST":
                 return PathItem.HttpMethod.POST;
-            case DELETE:
+            case "DELETE":
                 return PathItem.HttpMethod.DELETE;
-            case PUT:
+            case "PUT":
                 return PathItem.HttpMethod.PUT;
             default:
                 return null;

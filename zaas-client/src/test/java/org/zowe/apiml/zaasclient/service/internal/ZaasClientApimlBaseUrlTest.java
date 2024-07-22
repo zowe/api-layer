@@ -24,7 +24,7 @@ class ZaasClientApimlBaseUrlTest {
     private static final String ZOWE_V2_BASE_URL = "/gateway/api/v1/auth";
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/v1/gateway/auth", "api/v1/gateway/auth", "/gateway/api/v1/auth", "gateway/api/v1/auth"})
+    @ValueSource(strings = {"/gateway/api/v1/auth", "/gateway/api/v1/auth"})
     void givenBaseUrl_thenTransformToOrDontChangeZoweV2BaseUrl(String baseUrl) {
         ConfigProperties configProperties = new ConfigProperties();
         configProperties.setApimlBaseUrl(baseUrl);
@@ -37,10 +37,6 @@ class ZaasClientApimlBaseUrlTest {
         "api/v1/zaasClient/auth,/api/v1/zaasClient/auth",
         "anyUrl,/anyUrl",
         "anyUrl/,/anyUrl/",
-        "/api/v1/gateway,/gateway/api/v1",
-        "api/v1/gateway,/gateway/api/v1",
-        "/api/v1/gateway/x,/gateway/api/v1/x",
-        "api/v1/gateway/x,/gateway/api/v1/x",
         "/gateway/api/v1,/gateway/api/v1",
         "gateway/api/v1,/gateway/api/v1",
         "/gateway/api/v1/x,/gateway/api/v1/x",

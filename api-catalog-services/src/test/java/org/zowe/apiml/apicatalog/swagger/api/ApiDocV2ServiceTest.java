@@ -29,7 +29,7 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
@@ -62,7 +62,7 @@ class ApiDocV2ServiceTest {
     private static final String URL_ENCODED_SPACE = "%20";
 
     private ApiDocV2Service apiDocV2Service;
-    private GatewayConfigProperties gatewayConfigProperties;
+    private ServiceAddress gatewayConfigProperties;
     private GatewayClient gatewayClient;
 
     @BeforeEach
@@ -345,7 +345,7 @@ class ApiDocV2ServiceTest {
 
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
-            GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder().scheme("https").hostname("localhost").build();
+            ServiceAddress gatewayConfigProperties = ServiceAddress.builder().scheme("https").hostname("localhost").build();
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
             AtomicReference<Swagger> swaggerHolder = new AtomicReference<>();
@@ -437,8 +437,8 @@ class ApiDocV2ServiceTest {
         return swagger;
     }
 
-    private GatewayConfigProperties getProperties() {
-        return GatewayConfigProperties.builder()
+    private ServiceAddress getProperties() {
+        return ServiceAddress.builder()
             .scheme("https")
             .hostname("localhost:10010")
             .build();

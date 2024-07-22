@@ -11,58 +11,63 @@
 package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.services.ServiceInfo;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.CURRENT_VERSION;
 import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER;
 
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(ServicesInfoController.SERVICES_URL)
-@PreAuthorize("hasAuthority('TRUSTED_CERTIFICATE') or hasSafServiceResourceAccess('SERVICES', 'READ')")
+@RequestMapping({ServicesInfoController.SERVICES_SHORT_URL, ServicesInfoController.SERVICES_FULL_URL})
+@PreAuthorize("hasAuthority('TRUSTED_CERTIFICATE') or @safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class ServicesInfoController {
 
-    public static final String SERVICES_URL = "/gateway/services";
+    public static final String SERVICES_SHORT_URL = "/gateway/services";
+    public static final String SERVICES_FULL_URL = "/gateway/api/v1/services";
 
     private final ServicesInfoService servicesInfoService;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @HystrixCommand
-    public ResponseEntity<List<ServiceInfo>> getServices(@RequestParam(required = false) String apiId) {
+    @GetMapping
+    @ResponseBody
+    public Mono<ResponseEntity<List<ServiceInfo>>> getServices(@RequestParam(required = false) String apiId) {
         List<ServiceInfo> services = servicesInfoService.getServicesInfo(apiId);
-        HttpStatus status = (services.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
 
-        return ResponseEntity
-                .status(status)
+        if (services.isEmpty()) {
+            return Mono.just(ResponseEntity
+                .status(NOT_FOUND)
                 .header(VERSION_HEADER, CURRENT_VERSION)
-                .body(services);
+                .build());
+        }
+
+        return Mono.just(ResponseEntity
+            .ok()
+            .header(VERSION_HEADER, CURRENT_VERSION)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(services));
     }
 
-    @GetMapping(value = "/{serviceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HystrixCommand
-    public ResponseEntity<ServiceInfo> getService(@PathVariable String serviceId) {
+    @GetMapping("/{serviceId}")
+    @ResponseBody
+    public Mono<ResponseEntity<ServiceInfo>> getService(@PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
-        HttpStatus status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ?
-                HttpStatus.NOT_FOUND : HttpStatus.OK;
+        var status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ? NOT_FOUND : OK;
 
-        return ResponseEntity
-                .status(status)
-                .header(VERSION_HEADER, CURRENT_VERSION)
-                .body(serviceInfo);
+        return Mono.just(ResponseEntity
+            .status(status)
+            .header(VERSION_HEADER, CURRENT_VERSION)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(serviceInfo));
     }
 
 }

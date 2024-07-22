@@ -19,7 +19,6 @@ log() {
 createFile() {
     log "Creating $2"
     sed -e "s|{APIML_VERSION}|${APIML_VERSION}|g" \
-        -e "s|{GATEWAY_VERSION}|${GATEWAY_VERSION}|g" \
         -e "s|{MOCK_ZOSMF_HOST}|${MOCK_ZOSMF_HOST}|g" \
         -e "s|{SENTINEL}|${SENTINEL}|g" \
         -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
@@ -60,7 +59,7 @@ genKeyPairCert() {
       -keypass local_ca_password \
       -storepass local_ca_password \
       -storetype PKCS12 \
-      -ext "SAN=dns:localhost,ip:127.0.0.1,ip:::1,dns:gateway-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
+      -ext "SAN=dns:localhost,ip:127.0.0.1,ip:::1,dns:gateway-service,dns:zaas-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
       -ext "KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment" \
       -ext "ExtendedKeyUsage=clientAuth,serverAuth" \
       -rfc \
@@ -80,7 +79,6 @@ KEYSTORE_DIR="${WORKSPACE}/keystore"
 COMPOSE_DIR="${SCRIPT_PWD}/compose"
 CONFIG_DIR="${SCRIPT_PWD}/config"
 REDIS_COMPOSE_FILE="redis.yml"
-GATEWAY_VERSION="7749575670-947"
 
 LINUX_SETTING="#"
 NOT_LINUX_SETTING=""

@@ -29,9 +29,8 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
 /**
  * Verify behaviour of the Websocket under HA and chaotic testing
@@ -80,7 +79,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
     private WebSocketSession appendingWebSocketSession(URI uri, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
         throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
-        client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
+        client.setSslContext(HttpClientUtils.ignoreSslContext());
         return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 

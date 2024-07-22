@@ -1,0 +1,12 @@
+jgroups:
+    bind:
+        port: 7098
+        address: localhost
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            initialHosts: localhost[7099]
+spring:
+    profiles:
+        include: dev

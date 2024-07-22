@@ -1,0 +1,26 @@
+{
+    "groups": [
+        {
+            "name": "apiml",
+            "type": "java.util.Map",
+            "description": "API Mediation Layer configuration option."
+        },
+        {
+            "name": "apiml.security",
+            "type": "java.util.Map",
+            "description": "API Mediation Layer security configuration."
+        },
+        {
+            "name": "apiml.security.oidc",
+            "type": "java.util.Map",
+            "description": "Identity mapping configuration."
+        }
+    ],
+    "properties": [
+        {
+            "name": "apiml.security.oidc.registry",
+            "type": "java.lang.String",
+            "description": "Specifies the distributed identities registry that will be used for identity mapping."
+        }
+    ]
+}

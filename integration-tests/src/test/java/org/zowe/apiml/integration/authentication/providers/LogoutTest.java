@@ -24,7 +24,6 @@ import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT;
-import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT_OLD_FORMAT;
 
 /**
  * Basic set of logout related tests that needs to pass against every valid authentication provider.
@@ -35,7 +34,7 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT_OLD_FORMAT;
 class LogoutTest implements TestWithStartedInstances {
 
     protected static String[] logoutUrlsSource() {
-        return new String[]{SecurityUtils.getGatewayLogoutUrl(ROUTED_LOGOUT), SecurityUtils.getGatewayLogoutUrl(ROUTED_LOGOUT_OLD_FORMAT)};
+        return new String[]{SecurityUtils.getGatewayLogoutUrl(ROUTED_LOGOUT) };
     }
 
     @BeforeEach

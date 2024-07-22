@@ -18,7 +18,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
+import static java.lang.Integer.parseInt;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 
 @Slf4j
@@ -50,6 +52,8 @@ public class ConfigReader {
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
+                        CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
+                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
                         DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
 
@@ -74,12 +78,13 @@ public class ConfigReader {
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
+                            centralGatewayServiceConfiguration,
+                            zaasConfiguration,
                             discoveryServiceConfiguration,
                             discoverableClientConfiguration,
                             new ApiCatalogServiceConfiguration(),
                             new ApiCatalogServiceConfiguration(),
                             new CachingServiceConfiguration(),
-                            new CloudGatewayConfiguration(),
                             tlsConfiguration,
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
@@ -95,39 +100,47 @@ public class ConfigReader {
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
-                    configuration.getGatewayServiceConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
-                    configuration.getGatewayServiceConfiguration().setExternalPort(Integer.parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
-                    configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
-                    configuration.getGatewayServiceConfiguration().setInternalPorts(System.getProperty("gateway.internalPorts", String.valueOf(configuration.getGatewayServiceConfiguration().getInternalPorts())));
+                    configuration.getGatewayServiceConfiguration().setPort(parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
+                    configuration.getGatewayServiceConfiguration().setExternalPort(parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
+                    configuration.getGatewayServiceConfiguration().setInstances(parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
+
+                    CentralGatewayServiceConfiguration config = configuration.getCentralGatewayServiceConfiguration();
+                    Optional.ofNullable(config).ifPresent(c -> {
+                            c.setScheme(System.getProperty("centralgateway.scheme", config.getScheme()));
+                            c.setHost(System.getProperty("centralgateway.host", config.getHost()));
+                            c.setPort(parseInt(System.getProperty("centralgateway.port", String.valueOf(config.getPort()))));
+                        }
+                    );
+
+                    configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
+                    configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
+                    configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
+
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
                     configuration.getDiscoveryServiceConfiguration().setPassword(System.getProperty("discovery.password", configuration.getDiscoveryServiceConfiguration().getPassword()));
                     configuration.getDiscoveryServiceConfiguration().setHost(System.getProperty("discovery.host", configuration.getDiscoveryServiceConfiguration().getHost()));
                     configuration.getDiscoveryServiceConfiguration().setAdditionalHost(System.getProperty("discovery.additionalHost", configuration.getDiscoveryServiceConfiguration().getAdditionalHost()));
-                    configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
-                    configuration.getDiscoveryServiceConfiguration().setAdditionalPort(Integer.parseInt(System.getProperty("discovery.additionalPort", String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort()))));
-                    configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
+                    configuration.getDiscoveryServiceConfiguration().setPort(parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
+                    configuration.getDiscoveryServiceConfiguration().setAdditionalPort(parseInt(System.getProperty("discovery.additionalPort", String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort()))));
+                    configuration.getDiscoveryServiceConfiguration().setInstances(parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
                     configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
 
                     configuration.getApiCatalogServiceConfiguration().setUrl(System.getProperty("apicatalog.url", configuration.getApiCatalogServiceConfiguration().getUrl()));
                     configuration.getApiCatalogServiceConfiguration().setHost(System.getProperty("apicatalog.host", configuration.getApiCatalogServiceConfiguration().getHost()));
-                    configuration.getApiCatalogServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("apicatalog.instances", String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
+                    configuration.getApiCatalogServiceConfiguration().setInstances(parseInt(System.getProperty("apicatalog.instances", String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
                     configuration.getApiCatalogServiceConfiguration().setScheme(System.getProperty("apicatalog.scheme", configuration.getApiCatalogServiceConfiguration().getScheme()));
-                    configuration.getApiCatalogServiceConfiguration().setPort(Integer.parseInt(System.getProperty("apicatalog.port", String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
+                    configuration.getApiCatalogServiceConfiguration().setPort(parseInt(System.getProperty("apicatalog.port", String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
 
                     configuration.getDiscoverableClientConfiguration().setApplId(System.getProperty("discoverableclient.applId", configuration.getDiscoverableClientConfiguration().getApplId()));
                     configuration.getDiscoverableClientConfiguration().setHost(System.getProperty("discoverableclient.host", configuration.getDiscoverableClientConfiguration().getHost()));
-                    configuration.getDiscoverableClientConfiguration().setInstances(Integer.parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));
+                    configuration.getDiscoverableClientConfiguration().setInstances(parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));
                     configuration.getDiscoverableClientConfiguration().setScheme(System.getProperty("discoverableclient.scheme", configuration.getDiscoverableClientConfiguration().getScheme()));
-                    configuration.getDiscoverableClientConfiguration().setPort(Integer.parseInt(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
+                    configuration.getDiscoverableClientConfiguration().setPort(parseInt(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
-
-                    configuration.getCloudGatewayConfiguration().setScheme(System.getProperty("cloud-gateway.scheme", configuration.getCloudGatewayConfiguration().getScheme()));
-                    configuration.getCloudGatewayConfiguration().setHost(System.getProperty("cloud-gateway.host", configuration.getCloudGatewayConfiguration().getHost()));
-                    configuration.getCloudGatewayConfiguration().setPort(Integer.parseInt(System.getProperty("cloud-gateway.port", String.valueOf(configuration.getCloudGatewayConfiguration().getPort()))));
 
                     configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
                     configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
@@ -163,7 +176,7 @@ public class ConfigReader {
         ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
         zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
         String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
-        zosmfConfiguration.setPort(Integer.parseInt(port));
+        zosmfConfiguration.setPort(parseInt(port));
         zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
         zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
     }

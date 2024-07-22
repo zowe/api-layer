@@ -47,7 +47,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
-import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -163,14 +163,14 @@ public class SecurityUtils {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         String cookie = given()
-            .contentType(JSON)
-            .body(loginRequest)
+                .contentType(JSON)
+                .body(loginRequest)
             .when()
-            .post(gatewayLoginEndpoint)
+                .post(gatewayLoginEndpoint)
             .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+                .statusCode(is(SC_NO_CONTENT))
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
 
         RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         return cookie;

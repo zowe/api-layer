@@ -211,7 +211,7 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
-            'CloudGatewayProxyTest',
+            'GatewayProxyTest',
             'SafIdTokenTest'
         )
     }
@@ -293,9 +293,9 @@ task runContainerTests(type: Test) {
             'ChaoticHATest',
             'InfinispanStorageTest',
             'OktaOauth2Test',
-            'CloudGatewayProxyTest',
-            'CloudGatewayServiceRouting',
-            'CloudGatewayCentralRegistry',
+            'GatewayProxyTest',
+            'GatewayServiceRouting',
+            'GatewayCentralRegistry',
             'ZaasTest'
         )
     }
@@ -328,9 +328,9 @@ task runBaseTests(type: Test) {
             'ChaoticHATest',
             'InfinispanStorageTest',
             'OktaOauth2Test',
-            'CloudGatewayProxyTest',
-            'CloudGatewayServiceRouting',
-            'CloudGatewayCentralRegistry',
+            'GatewayProxyTest',
+            'GatewayServiceRouting',
+            'GatewayCentralRegistry',
             'MultipleRegistrationsTest'
         )
     }
@@ -351,43 +351,43 @@ task runRegistrationTests(type: Test) {
     }
 }
 
-task runCloudGatewayProxyTest(type: Test) {
+task runGatewayProxyTest(type: Test) {
     group "integration tests"
-    description "Run tests verifying cloud gateway can route to correct gateway"
+    description "Run tests verifying central gateway can route to correct gateway"
 
     outputs.cacheIf { false }
 
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'CloudGatewayProxyTest'
+            'GatewayProxyTest'
         )
     }
 }
-task runCloudGatewayServiceRoutingTest(type: Test) {
+task runGatewayServiceRoutingTest(type: Test) {
     group "integration tests"
-    description "Run tests verifying cloud gateway can locate service and translate auth scheme"
+    description "Run tests verifying central gateway can locate service and translate auth scheme"
 
     outputs.cacheIf { false }
 
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'CloudGatewayServiceRouting'
+            'GatewayServiceRouting'
         )
     }
 }
 
-task runCloudGatewayCentralRegistryTest(type: Test) {
+task runGatewayCentralRegistryTest(type: Test) {
     group "integration tests"
-    description "Run tests verifying cloud gateway central registry endpoint"
+    description "Run tests verifying central gateway central registry endpoint"
 
     outputs.cacheIf { false }
 
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'CloudGatewayCentralRegistry'
+            'GatewayCentralRegistry'
         )
     }
 }

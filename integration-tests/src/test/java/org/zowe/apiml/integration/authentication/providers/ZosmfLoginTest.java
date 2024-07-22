@@ -12,7 +12,6 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
-import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -27,15 +26,13 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
@@ -63,23 +60,22 @@ class ZosmfLoginTest implements TestWithStartedInstances {
 
         @Test
         void givenValidCertificate_thenReturnExistingDatasets() {
-
             String dsname1 = "SYS1.PARMLIB";
             String dsname2 = "SYS1.PROCLIB";
 
-            List<NameValuePair> arguments = new ArrayList<>();
-            arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
+            URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*"));
 
             given()
                 .config(SslContext.clientCertValid)
                 .header("X-CSRF-ZOSMF-HEADER", "")
-                .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
-                .then()
+            .when()
+                .get(uri)
+            .then()
                 .statusCode(is(SC_OK))
                 .body(
                     "items.dsname", hasItems(dsname1, dsname2)
-                );
+                )
+                .onFailMessage("Accessing " + uri);
         }
     }
 
@@ -93,11 +89,12 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
-                        .when()
+                    .when()
                         .post(loginUrl)
-                        .then()
+                    .then()
                         .statusCode(is(SC_NO_CONTENT))
-                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .cookie(COOKIE_NAME, not(is(emptyString())))
+                        .onFailMessage("Accessing " + loginUrl)
                         .extract()
                         .detailedCookie(COOKIE_NAME);
 
@@ -111,11 +108,12 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                     given()
                         .config(SslContext.clientCertValid)
                         .auth().basic("Bob", "The Builder")
-                        .when()
+                    .when()
                         .post(loginUrl)
-                        .then()
+                    .then()
                         .statusCode(is(SC_NO_CONTENT))
-                        .cookie(COOKIE_NAME, not(isEmptyString()))
+                        .cookie(COOKIE_NAME, not(is(emptyString())))
+                        .onFailMessage("Accessing " + loginUrl)
                         .extract().detailedCookie(COOKIE_NAME);
 
                 assertValidAuthToken(cookie, Optional.of(USERNAME));

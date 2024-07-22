@@ -1,0 +1,83 @@
+---
+name: zaas
+# Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
+id: org.zowe.apiml.zaas-package
+# Component version is defined in gradle.properties for Gradle project
+# Human readable component name
+title: ZAAS
+# Human readable component description
+description: Zowe Authentication and Authorization Service.
+license: EPL-2.0
+schemas:
+    configs: zaas-schema.json
+repository:
+  type: git
+  url: https://github.com/zowe/api-layer.git
+build:
+  branch: "{{build.branch}}"
+  number: "{{build.number}}"
+  commitHash: "{{build.commitHash}}"
+  timestamp: {{build.timestamp}}
+commands:
+  start: bin/start.sh
+  validate: bin/validate.sh
+# if we need to automatically tag file encoding on z/OS during installation
+autoEncoding:
+  # tag all files
+  - "."
+apimlServices:
+  dynamic:
+    - serviceId: zaas
+configs:
+  port: 7554
+  debug: false
+  sslDebug: ""
+  apimlId:
+
+  apiml:
+    security:
+      auth:
+        provider: zosmf
+        zosmf:
+          jwtAutoconfiguration: auto
+          serviceId: ibmzosmf
+      authorization:
+        endpoint:
+          enabled: false
+          # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/saf-auth
+          url:
+        provider: ""
+        resourceClass: ZOWE
+        resourceNamePrefix: "APIML."
+      x509:
+        enabled: false
+        # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/certificate/x509/map
+        externalMapperUrl:
+        # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
+        externalMapperUser:
+        # Enables consumption of forwarded client certificate from proxy gateway in a special request header
+        acceptForwardedCert: true
+      oidc:
+        enabled: false
+        clientId:
+        clientSecret:
+        registry:
+        # default value is https://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port}/zss/api/v1/certificate/dn
+        identityMapperUrl:
+        # default value is Zowe runtime user defined in zowe.yaml "zowe.setup.security.users.zowe"
+        identityMapperUser:
+      saf:
+          provider:
+          urls:
+              authenticate:
+              verify:
+
+  server:
+    maxConnectionsPerRoute: 100
+    maxTotalConnections: 1000
+    ssl:
+      enabled: true
+
+  spring:
+    profiles:
+      active:

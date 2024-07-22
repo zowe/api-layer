@@ -41,19 +41,17 @@ class QueryTest implements TestWithStartedInstances {
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String BASE_PATH = "/gateway/api/v1";
-    private final static String BASE_PATH_OLD_FORMAT = "/api/v1/gateway";
     private final static String QUERY_ENDPOINT = "/auth/query";
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String COOKIE = "apimlAuthenticationToken";
 
     public static final String QUERY_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT);
-    public static final String QUERY_ENDPOINT_URL_OLD_FORMAT = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH_OLD_FORMAT, QUERY_ENDPOINT);
 
     private String token;
 
     static String[] queryUrlsSource() {
-        return new String[]{QUERY_ENDPOINT_URL, QUERY_ENDPOINT_URL_OLD_FORMAT};
+        return new String[]{QUERY_ENDPOINT_URL};
     }
 
     @BeforeEach
@@ -101,7 +99,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenInvalidTokenInBearerHeader(String queryUrl) {
                 String invalidToken = "1234";
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
                 String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
                 given()
@@ -120,7 +118,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenInvalidTokenInCookie(String queryUrl) {
                 String invalidToken = "1234";
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
                 String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
 
                 given()
@@ -137,7 +135,7 @@ class QueryTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenNoToken {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenNoToken(String queryUrl) {
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
                 String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
                 given()
@@ -154,7 +152,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInWrongCookie(String queryUrl) {
                 String invalidCookie = "badCookie";
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
                 String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
                 given()
@@ -177,7 +175,7 @@ class QueryTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidToken(String queryUrl) {
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3));
+                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
                 String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
 
                 given()

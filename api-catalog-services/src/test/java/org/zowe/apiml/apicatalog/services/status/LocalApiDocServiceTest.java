@@ -29,7 +29,7 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -526,8 +526,8 @@ class LocalApiDocServiceTest {
         return metadata;
     }
 
-    private GatewayConfigProperties getProperties() {
-        return GatewayConfigProperties.builder()
+    private ServiceAddress getProperties() {
+        return ServiceAddress.builder()
             .scheme(GATEWAY_SCHEME)
             .hostname(GATEWAY_HOST)
             .build();

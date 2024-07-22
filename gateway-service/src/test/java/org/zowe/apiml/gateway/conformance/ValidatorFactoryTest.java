@@ -18,7 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +36,7 @@ class ValidatorFactoryTest {
     final String DUMMY_SERVICE_ID = "sampleservice";
 
     @Mock
-    GatewayConfigProperties gatewayConfigProperties;
+    ServiceAddress serviceAddressProperties;
 
     public String swaggerFromPath(String path) throws IOException {
         File file = new File(path);
@@ -53,7 +53,7 @@ class ValidatorFactoryTest {
             String sampleSwagger = swaggerFromPath(path);
 
             List<String> result;
-            result = ValidatorFactory.parseSwagger(sampleSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID).getMessages();
+            result = ValidatorFactory.parseSwagger(sampleSwagger, null, serviceAddressProperties, DUMMY_SERVICE_ID).getMessages();
             assertEquals(0, result.size());
 
         }
@@ -67,7 +67,7 @@ class ValidatorFactoryTest {
 
             String brokenSwagger = sampleSwagger2.replace("2.0", "42");
 
-            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, serviceAddressProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -79,7 +79,7 @@ class ValidatorFactoryTest {
 
             String brokenSwagger = sampleSwagger3.replace("3.0", "42");
 
-            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, serviceAddressProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Swagger documentation is not conformant to either OpenAPI V2 nor V3"));
         }
@@ -92,7 +92,7 @@ class ValidatorFactoryTest {
 
             String brokenSwagger = sampleSwagger.substring(0, 250);
 
-            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, gatewayConfigProperties, DUMMY_SERVICE_ID));
+            Exception e = assertThrows(ValidationException.class, () -> ValidatorFactory.parseSwagger(brokenSwagger, null, serviceAddressProperties, DUMMY_SERVICE_ID));
 
             assertTrue(e.getMessage().contains("Could not parse Swagger documentation"));
         }
@@ -120,12 +120,12 @@ class ValidatorFactoryTest {
         @ParameterizedTest
         @ValueSource(strings = {"src/test/resources/api-doc-v2.json", "src/test/resources/api-doc.json"})
         void whenSwagger_thenCorrectlyParses(String path) throws IOException {
-            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
-            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+            when(serviceAddressProperties.getHostname()).thenReturn("hostname");
+            when(serviceAddressProperties.getScheme()).thenReturn("https");
 
             String sampleSwagger = swaggerFromPath(path);
 
-            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, serviceAddressProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
@@ -140,8 +140,8 @@ class ValidatorFactoryTest {
             metadata.put("apiml.apiInfo.0.gatewayUrl", "/api/x1");
             metadata.put("apiml.routes.api_v1.gatewayUrl", "/api/z1");
 
-            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
-            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+            when(serviceAddressProperties.getHostname()).thenReturn("hostname");
+            when(serviceAddressProperties.getScheme()).thenReturn("https");
 
             String sampleSwagger = swaggerFromPath(path);
 
@@ -149,7 +149,7 @@ class ValidatorFactoryTest {
                 sampleSwagger = sampleSwagger.replace("sampleservice/api/v1", "sampleservice/x1");
             }
 
-            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, serviceAddressProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
@@ -164,8 +164,8 @@ class ValidatorFactoryTest {
             metadata.put("apiml.apiInfo.0.gatewayUrl", "/v1");
             metadata.put("apiml.routes.api_v1.gatewayUrl", "/v1");
 
-            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
-            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+            when(serviceAddressProperties.getHostname()).thenReturn("hostname");
+            when(serviceAddressProperties.getScheme()).thenReturn("https");
 
             String sampleSwagger = swaggerFromPath(path);
 
@@ -173,7 +173,7 @@ class ValidatorFactoryTest {
                 sampleSwagger = sampleSwagger.replace("sampleservice/api/v1", "sampleservice/v1");
             }
 
-            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, serviceAddressProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
 
@@ -186,12 +186,12 @@ class ValidatorFactoryTest {
         @ParameterizedTest
         @ValueSource(strings = {"get", "post", "delete", "patch", "head", "options", "delete", "put"})
         void whenSwagger2andDifferentOperations_thenCorrectlyParses(String operation) throws IOException {
-            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
-            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+            when(serviceAddressProperties.getHostname()).thenReturn("hostname");
+            when(serviceAddressProperties.getScheme()).thenReturn("https");
 
             String sampleSwagger = swaggerFromPath("src/test/resources/api-doc-v2.json").replace("get", operation);
 
-            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, serviceAddressProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));
@@ -202,12 +202,12 @@ class ValidatorFactoryTest {
         @ParameterizedTest
         @ValueSource(strings = {"get", "post", "delete", "patch", "head", "options", "delete", "put"})
         void whenSwagger3andDifferentOperations_thenCorrectlyParses(String operation) throws IOException {
-            when(gatewayConfigProperties.getHostname()).thenReturn("hostname");
-            when(gatewayConfigProperties.getScheme()).thenReturn("https");
+            when(serviceAddressProperties.getHostname()).thenReturn("hostname");
+            when(serviceAddressProperties.getScheme()).thenReturn("https");
 
             String sampleSwagger = swaggerFromPath("src/test/resources/api-doc.json").replace("get", operation);
 
-            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, gatewayConfigProperties, DUMMY_SERVICE_ID);
+            AbstractSwaggerValidator result = ValidatorFactory.parseSwagger(sampleSwagger, metadata, serviceAddressProperties, DUMMY_SERVICE_ID);
             Set<Endpoint> endpoints = result.getAllEndpoints();
             assertFalse(endpoints.isEmpty());
             assertTrue(endpoints.iterator().next().getUrl().startsWith("https://hostname/sampleservice/"));

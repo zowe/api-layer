@@ -1,240 +1,14 @@
-logging:
-    level:
-        ROOT: INFO
-        org.zowe.apiml: INFO
-        org.springframework: WARN
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        com.netflix.discovery.DiscoveryClient: OFF
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.web.socket: WARN
-        org.zowe.apiml.gateway.ws: INFO
-        org.zowe.apiml.gateway.error: INFO
-        org.eclipse.jetty: WARN
-        org.springframework.web.servlet.PageNotFound: ERROR
-        org.ehcache: WARN
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
-
-        # New Config
-        org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        javax.servlet: INFO
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.eclipse.jetty.util.ssl: ERROR
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-
-apiml:
-    # The `apiml` node contains API Mediation Layer specific configuration
-    routing:
-        mode: new
-        instanceIdHeader: false
-    loadBalancer:
-        distribute: false
-    service:
-        # The `apiml.service` node contains information required by any APIML service
-        id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
-        hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
-                             # Default is valid only for localhost
-        port: 10010  # Default port name for gateway service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        scheme: https  # "https" or "http"
-        preferIpAddress: false
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
-        additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
-
-    httpclient:
-        conn-pool:
-            requestConnectionTimeout: ${apiml.gateway.timeoutMillis}
-
-    catalog:
-        serviceId: apicatalog
-    gateway:
-        # The `apiml.gateway` node contains gateway-service only configuration
-        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
-                                             # for transforming the URLs in DVIPA mode.
-                                             # In Zowe, this is the same as apiml.service.hostname. Zowe has one Gateway
-                                             # and is all run from single host.
-                                             # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
-                                             # properly.
-        timeoutMillis: 30000  # Timeout for connection to the services
-    security:
-        filterChainConfiguration: new
-        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
-        allowTokenRefresh: false
-        jwtInitializerTimeout: 5
-        personalAccessToken:
-            enabled: false
-        useInternalMapper: false
-        oidc:
-            enabled: false
-            clientId:
-            clientSecret:
-            registry:
-            identityMapperUrl:
-            identityMapperUser:
-            jwks:
-                uri:
-        auth:
-            jwt:
-                customAuthHeader:
-            passticket:
-                customUserHeader:
-                customAuthHeader:
-            provider: zosmf
-        x509:
-            enabled: false
-            acceptForwardedCert: false
-            certificatesUrl:
-            externalMapperUrl:
-        saf:
-            provider: rest
-            urls:
-                authenticate: https://localhost:10013/zss/saf/authenticate
-                verify: https://localhost:10013/zss/saf/verify
-
-spring:
-    config:
-        useLegacyProcessing: true
-    application:
-        name: ${apiml.service.id}
-    cloud:
-        discovery:
-            reactive:
-                enabled: false
-        compatibilityVerifier:
-            enabled: false # Should be removed when upgrade to Spring Cloud 3.x
-        client:
-            hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
-    mvc:
-        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
-        log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
-        favicon:
-            enabled: false
-    output:
-        ansi:
-            enabled: detect
-    main:
-        banner-mode: ${apiml.banner:"off"}
-        allow-circular-references: true
-
-server:
-    internal:
-        enabled: false
-        port: ${server.port}
-        ssl:
-            keyAlias: ${server.ssl.keyAlias:localhost}
-            keyPassword: ${server.ssl.keyPassword:password}
-            keyStoreType: ${server.ssl.keyStoreType:PKCS12}
-            keyStore: ${server.ssl.keyStore:keystore}
-            trustStoreType: ${server.ssl.trustStoreType:PKCS12}
-            trustStore: ${server.ssl.trustStore:truststore}
-            keyStorePassword: ${server.ssl.keyStorePassword:password}
-            trustStorePassword: ${server.ssl.trustStorePassword:password}
-            clientAuth: ${server.ssl.clientAuth}
-    max-http-header-size: 48000
-    address: ${apiml.service.ipAddress}
-    port: ${apiml.service.port}
-    ssl:
-        enabled: true
-        clientAuth: want
-        protocol: TLS
-        enabled-protocols: TLSv1.2+TLSv1.3
-        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
-        keyStoreType: PKCS12
-        trustStoreType: PKCS12
-    maxConnectionsPerRoute: 100
-    maxTotalConnections: 1000
-    webSocket:
-        supportedProtocols: v12.stomp,v11.stomp
-
-zuul:
-    sslHostnameValidationEnabled: false
-    addProxyHeaders: true
-    traceRequestBody: true
-    ignoreSecurityHeaders: false
-    includeDebugHeader: false
-    sensitiveHeaders: Expires,Date
-    semaphore:
-        maxSemaphores: ${server.maxTotalConnections}
-    ignoredPatterns:
-        - /ws/**
-        - /*/ws/**
-        - /sse/**
-        - /*/sse/**
-    host:
-        connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
-        maxTotalConnections: ${server.maxTotalConnections}
-        maxPerRouteConnections: ${server.maxConnectionsPerRoute}
-    forceOriginalQueryStringEncoding: true
-    retryable: true
-    decodeUrl: false # Flag to indicate whether to decode the matched URL or use it as is
-    ignoredServices: discovery # to disable routing to the Discovery service, see a potential security issue with AT-TLS enabled
-
-ribbon:
-    ConnectTimeout: ${apiml.gateway.timeoutMillis}
-    ReadTimeout: ${apiml.gateway.timeoutMillis}
-    ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
-    MaxAutoRetries: 0
-    retryableStatusCodes: 503
-    MaxAutoRetriesNextServer: 5
-    OkToRetryOnAllOperations: false
-    GZipPayload: false # this stops Gateway from deflating gzip responses from services
-    MaxConnectionsPerHost: ${server.maxConnectionsPerRoute}
-    MaxTotalConnections: ${server.maxTotalConnections}
-
-http:
-    connection:
-        timeout: ${apiml.gateway.timeoutMillis}
-    socket:
-        timeout: ${apiml.gateway.timeoutMillis}
-
-hystrix:
-    command:
-        default:
-            fallback:
-                enabled: false
-            circuitBreaker:
-                enabled: false
-            execution:
-                timeout:
-                    enabled: false
-                isolation:
-                    thread:
-                        timeoutInMilliseconds: ${apiml.gateway.timeoutMillis}
-                    strategy: SEMAPHORE
-                    semaphore:
-                        maxConcurrentRequests: ${server.maxTotalConnections}
-
-management:
-    endpoints:
-        migrate-legacy-ids: true
-        web:
-            base-path: /application
-            exposure:
-                include: health,info,shutdown,hystrixstream
-    health:
-        defaults:
-            enabled: false
-    endpoint:
-        health:
-            showDetails: always
-        shutdown:
-            enabled: true
 eureka:
     instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
         #ports are computed in code
-        preferIpAddress: ${apiml.service.preferIpAddress}
-        homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
-        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
-        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        port: ${apiml.service.port}
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+        securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
                 catalog:
@@ -245,21 +19,22 @@ eureka:
                         version: 1.0.0
                 routes:
                     api_v1:
-                        gatewayUrl: /api/v1
-                        serviceUrl: /gateway
+                        gatewayUrl: /
+                        serviceUrl: /
                 apiInfo:
                     - apiId: zowe.apiml.gateway
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
                       documentationUrl: https://zowe.github.io/docs-site/
                 service:
                     title: API Gateway
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                     supportClientCertForwarding: true
+                    apimlId: ${apiml.service.apimlId:${apiml.service.hostname}_${apiml.service.port}}
+                    externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
                 authentication:
                     sso: true
-
     client:
         fetchRegistry: true
         registerWithEureka: true
@@ -269,72 +44,125 @@ eureka:
         healthcheck:
             enabled: true
 
----
 spring:
-    profiles: debug
-    mvc:
-        throw-exception-if-no-handler-found: true
+    cloud:
+        gateway:
+            filter:
+                secure-headers:
+                    disable: content-security-policy,permitted-cross-domain-policies,download-options
+                    referrer-policy: strict-origin-when-cross-origin
+                    frame-options: sameorigin
+    application:
+        name: gateway
+    security:
+        oauth2:
+            client:
+                registration:
+                    okta:
+                        redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
 
-management:
-    endpoints:
-        migrate-legacy-ids: true
-        web:
-            base-path: /application
-            exposure:
-                include: health,info,routes,loggers,shutdown,hystrixstream,websockets
-    endpoint:
-        shutdown:
-            enabled: true
+springdoc:
+    api-docs:
+        path: /gateway/api-docs
+    writer-with-order-by-keys: true
+apiml:
+    catalog:
+        serviceId: apicatalog
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    connection:
+        timeout: 60000
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
+    service:
+        apimlId: apiml1
+        corsEnabled: true
+        allowEncodedSlashes: true
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 10010
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+    security:
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        ssl:
+            nonStrictVerifySslCertificatesOfServices: false
+
+server:
+    http2:
+        enabled: false
+    port: ${apiml.service.port}
+    ssl:
+        clientAuth: want
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: false
+                    lowerCaseServiceId: true
+    application:
+        name: gateway
+    main:
+        allow-circular-references: true
+
+logbackServiceName: ZWEAGW1
 
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.springframework: INFO
-        org.apache: INFO
-        org.apache.http: DEBUG
-        com.netflix: INFO
-        org.hibernate: INFO
-        org.springframework.web.servlet.PageNotFound: WARN
-        org.ehcache: INFO
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
-        org.zowe.apiml.gateway.ws: DEBUG
-
----
-spring:
-    profiles: diag
+        com.netflix: WARN
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support: WARN
+        reactor.netty.http.client: INFO
+        reactor.netty.http.client.HttpClientConnect: OFF
 
 management:
+    endpoint:
+      gateway:
+          enabled: false
+      health:
+          showDetails: always
+      shutdown:
+          enabled: true
     endpoints:
-        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
-                include: "*"
+                include: health,info,gateway,shutdown
+---
+spring.config.activate.on-profile: debug
 
-server:
-    max-http-header-size: 40000
-
-zuul.debug.request: true
+logging:
+    level:
+        org.zowe.apiml: DEBUG
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.web.reactive: DEBUG
+        reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
+        com.netflix: DEBUG
 
 ---
-spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
-
-logbackServiceName: ZWEAGW1
-
----
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attls
 
 server:
-    internal:
-        ssl:
-            enabled: false
     attls:
         enabled: true
     ssl:
@@ -346,31 +174,5 @@ apiml:
     service:
         corsEnabled: true
         scheme: http
-eureka:
-    instance:
-        metadata-map:
-            apiml:
-                apiInfo:
-                    -   apiId: zowe.apiml.gateway
-                        gatewayUrl: api/v1
-                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
-                        documentationUrl: https://zowe.github.io/docs-site/
-
----
-spring:
-    profiles: securityFilterchainDebug
-
-logging:
-    level:
-        org.springframework.security: DEBUG
-        org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter: DEBUG
-        org.zowe.apiml.gateway.security: DEBUG
-
----
-spring:
-    profiles: zosmfDebug
-
-logging:
-    level:
-        root: INFO
-        org.zowe.apiml.gateway.security.service.zosmf: DEBUG
+        nonSecurePortEnabled: true
+        securePortEnabled: false

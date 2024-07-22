@@ -11,7 +11,6 @@
 package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,6 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 /**
  * Verify integration of the API ML Passticket support with the zOS provider of the Passticket.
  */
-@Slf4j
 @GeneralAuthenticationTest
 class PassTicketTest implements TestWithStartedInstances {
 
@@ -50,6 +48,8 @@ class PassTicketTest implements TestWithStartedInstances {
 
     private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
     private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
+
+    private final static String ZAAS_PASSTICKET_PATH = "/zaas/api/v1/auth/ticket";
 
     private final static String COOKIE = "apimlAuthenticationToken";
     private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
@@ -118,7 +118,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenNoToken() {
-                String expectedMessage = "No authorization token provided for URL '" + url.getPath() + "'";
+                String expectedMessage = "No authorization token provided for URL '" + ZAAS_PASSTICKET_PATH + "'";
 
                 given()
                     .contentType(JSON)
@@ -133,7 +133,7 @@ class PassTicketTest implements TestWithStartedInstances {
             @Test
             void givenInvalidTokenInCookie() {
                 String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + url.getPath() + "'";
+                String expectedMessage = "Token is not valid for URL '" + ZAAS_PASSTICKET_PATH + "'";
 
                 given()
                     .contentType(JSON)
@@ -149,7 +149,7 @@ class PassTicketTest implements TestWithStartedInstances {
             @Test
             void givenInvalidTokenInHeader() {
                 String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + url.getPath() + "'";
+                String expectedMessage = "Token is not valid for URL '" + ZAAS_PASSTICKET_PATH + "'";
 
                 given()
                     .contentType(JSON)
@@ -221,7 +221,7 @@ class PassTicketTest implements TestWithStartedInstances {
         class ReturnMethodNotAllowed {
             @Test
             void givenInvalidHttpMethod() {
-                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + url.getPath() + "'";
+                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + ZAAS_PASSTICKET_PATH + "'";
 
                 given()
                     .contentType(JSON)

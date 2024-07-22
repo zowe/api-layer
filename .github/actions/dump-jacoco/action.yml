@@ -7,7 +7,8 @@ runs:
         -   name: Dump jacoco result
             shell: bash
             run: |
+                java -jar ./scripts/jacococli.jar dump --address zaas-service --port 6301 --destfile ./results/zaas-service.exec
                 java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
                 java -jar ./scripts/jacococli.jar dump --address caching-service --port 6306 --destfile ./results/caching-service.exec
-                java -jar ./scripts/jacococli.jar dump --address discovery-service --port 6301 --destfile ./results/discovery-service.exec
+                java -jar ./scripts/jacococli.jar dump --address discovery-service --port 6302 --destfile ./results/discovery-service.exec
                 java -jar ./scripts/jacococli.jar dump --address api-catalog-services --port 6304 --destfile ./results/api-catalog-services.exec
