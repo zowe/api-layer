@@ -26,8 +26,10 @@ import org.springframework.cloud.client.loadbalancer.RequestData;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Flux;
@@ -270,6 +272,61 @@ class DeterministicLoadBalancerTest {
                             .verify();
                     }
 
+                }
+
+            }
+
+        }
+
+        /**
+         *
+         *
+         */
+        @Nested
+        class GivenStickyBalancerIgnored {
+
+            @Nested
+            class GivenInstanceIdHeaderIsPresent {
+
+                @Mock
+                private RequestData requestData;
+
+                @BeforeEach
+                void setUp() {
+                    var context = new RequestDataContext(requestData);
+                    MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
+                    cookie.add("apimlAuthenticationToken", "invalidToken");
+
+                    when(request.getContext()).thenReturn(context);
+                    when(requestData.getCookies()).thenReturn(cookie);
+                }
+
+                @Test
+                void whenInstanceIdExists_thenChoseeIt() {
+                    var headers = new HttpHeaders();
+                    headers.add("X-InstanceId", "instance2");
+                    when(requestData.getHeaders()).thenReturn(headers);
+
+                    StepVerifier.create(loadBalancer.get(request))
+                        .assertNext(chosenInstances -> {
+                            assertNotNull(chosenInstances);
+                            assertEquals(1, chosenInstances.size());
+                            assertEquals("instance2", chosenInstances.get(0).getInstanceId());
+                        })
+                        .expectComplete()
+                        .verify();
+                }
+
+                @Test
+                void whenInstanceIdDoesNotExist_thenFail() {
+                    var headers = new HttpHeaders();
+                    headers.add("X-InstanceId", "instance3");
+                    when(requestData.getHeaders()).thenReturn(headers);
+
+                    StepVerifier.create(loadBalancer.get(request))
+                        .expectErrorMatches(e ->
+                            e instanceof ResponseStatusException ex && ex.getStatusCode().value() == 404 && ex.getReason().equals("Service instance not found for the provided instance ID"))
+                        .verify();
                 }
 
             }

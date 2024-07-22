@@ -40,7 +40,6 @@ public class CachingServiceClient {
 
     private static final String CACHING_BALANCER_URL = "lb://cachingservice";
 
-
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
     static {
         defaultHeaders.add("Content-Type", "application/json");
