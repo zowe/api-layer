@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
-import io.jsonwebtoken.Clock;
+import io.jsonwebtoken.impl.DefaultClock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
@@ -48,11 +48,10 @@ public class CustomLoadBalancerConfiguration {
     @Bean
     public ServiceInstanceListSupplier discoveryClientCachedServiceInstanceListSupplier(
         ConfigurableApplicationContext context, LoadBalancerCache cache,
-        @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}") int expirationTime,
-        Clock clock) {
+        @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}") int expirationTime) {
             return new StickySessionRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
                 .withDiscoveryClient())
-                .withStickySessionRouting(cache, expirationTime, clock)
+                .withStickySessionRouting(cache, expirationTime, new DefaultClock())
                 .build(context);
     }
 }
