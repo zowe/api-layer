@@ -10,98 +10,272 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
+import io.jsonwebtoken.Clock;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.cloud.client.DefaultServiceInstance;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.loadbalancer.*;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
+import org.springframework.cloud.client.loadbalancer.Request;
+import org.springframework.cloud.client.loadbalancer.RequestData;
+import org.springframework.cloud.client.loadbalancer.RequestDataContext;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.zowe.apiml.gateway.caching.LoadBalancerCache;
+import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Arrays;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.constants.ApimlConstants.X_INSTANCEID;
 
+@ExtendWith(MockitoExtension.class)
+@TestInstance(Lifecycle.PER_CLASS)
 class DeterministicLoadBalancerTest {
 
-    ServiceInstance serviceInstance1 = new DefaultServiceInstance("instance1", "service1", "localhost", 10010, true);
-    ServiceInstance serviceInstance2 = new DefaultServiceInstance("instance2", "service1", "localhost", 10010, true);
-    ServiceInstance service2Instance2 = new DefaultServiceInstance("instance2", "service2", "localhost", 10010, true);
+    private static final String VALID_TOKEN = "eyJraWQiOiJvekdfeVNNSFJzVlFGbU4xbVZCZVMtV3RDdXBZMXItSzdld2JlbjA5SUJnIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJ1dWlkIjoiNjQ1Yjg5NDYtOWY1NC00NmY4LWJiMDMtNDFiMjM5NTg2OWExIiwic3ViIjoiVVNFUiIsImlzcyI6InpPU01GIiwiaWF0IjoxNzIxNTUyNzUyLCJleHAiOjE3MjE1NTQ1NTJ9.CQyz5mRCntZ1W63yquKw-1pZAjeUBrlm_27-gtMJkeIhUsnqOJng2lmjWj1pa1H7D_uyS-suXoYu5t2JttrBNHm8BGJdigdD5J0GoGepMtfKXbORNhxf0S3U-lTbeKxSTQXcV5GUp05A3GaKdE65KOogOvaJBM79a5K7NJsIPAPgz03kJ3JOZUsCGW8NOrKcnujgyxJ9c4wGnvOlCtxItM-dlcIgz--iJVEynQ-RB0lICYCjQ_R_C7ND0tMo-o5UGCN6GxTOO16N5TpH47Krd46Z43skmN3sqGhk0jQ3kIVemeF434i3gYUjV42nOEEvysWyL12LiKqQFsHVbZMA8w";
+    private static final int DEFAULT_EXPIRATION_HS = 1;
 
-    LoadBalancerClientsProperties properties = new LoadBalancerClientsProperties();
-    LoadBalancerClientFactory factory = new LoadBalancerClientFactory(properties);
-    RequestData requestData = mock(RequestData.class);
+    @Mock
+    private ServiceInstanceListSupplier delegate;
 
-    @Nested
-    class GivenListOfServices {
-        List<ServiceInstance> originalInstances = Arrays.asList(serviceInstance1, serviceInstance2, service2Instance2);
+    @Mock
+    private LoadBalancerCache lbCache;
 
-        ServiceInstanceListSupplier delegate = new ServiceInstanceListSupplier() {
-            @Override
-            public String getServiceId() {
-                return "";
-            }
+    @Mock
+    private LoadBalancerClientFactory factory;
 
-            @Override
-            public Flux<List<ServiceInstance>> get() {
-                return Flux.just();
-            }
+    @SuppressWarnings("rawtypes")
+    @Mock
+    private Request request;
 
-            @Override
-            public Flux<List<ServiceInstance>> get(Request request) {
-                return Flux.just(originalInstances);
-            }
-        };
+    @Mock
+    private ServiceInstance instance1;
 
-        @Test
-        void givenExistingInstanceId_thenReturnCorrectInstance() {
-            var loadBalancer = new DeterministicLoadBalancer(delegate, factory);
+    @Mock
+    private ServiceInstance instance2;
 
-            var headers = new HttpHeaders();
-            headers.add(X_INSTANCEID, "instance1");
-            when(requestData.getHeaders()).thenReturn(headers);
-            var context = new RequestDataContext(requestData);
+    @Mock
+    private Clock clock;
 
-            var request = new DefaultRequest<>(context);
-            StepVerifier.create(loadBalancer.get(request)).assertNext((services) -> assertEquals("instance1", services.get(0).getInstanceId())).expectComplete().verify();
-        }
+    private DeterministicLoadBalancer loadBalancer;
 
-        @Test
-        void givenIncorrectInstanceId_thenThrowException() {
-            var loadBalancer = new DeterministicLoadBalancer(delegate, factory);
+    private final List<ServiceInstance> DEFAULT_LIST = new ArrayList<>();
 
-            var headers = new HttpHeaders();
-            headers.add(X_INSTANCEID, "wrongInstanceId");
-            when(requestData.getHeaders()).thenReturn(headers);
-            var context = new RequestDataContext(requestData);
+    @BeforeEach
+    void setUp() {
+        DEFAULT_LIST.clear();
+        DEFAULT_LIST.add(instance1);
+        DEFAULT_LIST.add(instance2);
 
-            var request = new DefaultRequest<>(context);
-            StepVerifier.create(loadBalancer.get(request)).consumeErrorWith((throwable) -> {
-                assertInstanceOf(ResponseStatusException.class, throwable);
-                assertTrue(throwable.getMessage().startsWith("404 NOT_FOUND"));
-            }).verify();
-        }
+        lenient().when(instance1.getInstanceId()).thenReturn("instance1");
+        lenient().when(instance1.getServiceId()).thenReturn("service");
+        lenient().when(instance2.getInstanceId()).thenReturn("instance2");
+        lenient().when(instance2.getServiceId()).thenReturn("service");
 
-        @Test
-        void givenMissingHeader_thenThrowException() {
-            var loadBalancer = new DeterministicLoadBalancer(delegate, factory);
-
-            var headers = new HttpHeaders();
-            when(requestData.getHeaders()).thenReturn(headers);
-            var context = new RequestDataContext(requestData);
-
-            var request = new DefaultRequest<>(context);
-            StepVerifier.create(loadBalancer.get(request)).assertNext(instances -> assertEquals(instances.size(), originalInstances.size())).expectComplete().verify();
-        }
+        var properties = new LoadBalancerProperties();
+        when(factory.getProperties(any())).thenReturn(properties);
+        when(delegate.getServiceId()).thenReturn("service");
+        when(delegate.get(request)).thenReturn(Flux.just(DEFAULT_LIST));
+        this.loadBalancer = new DeterministicLoadBalancer(delegate, factory, lbCache, clock, DEFAULT_EXPIRATION_HS);
     }
 
-    ;
+    @Nested
+    class GivenDeterministicLoadBalancer {
+
+        @Test
+        void whenNoToken_thenUseDefaultList() {
+            when(request.getContext()).thenReturn(null);
+
+            StepVerifier.create(loadBalancer.get(request))
+                .assertNext(chosenInstances -> {
+                    assertNotNull(chosenInstances);
+                    assertEquals(2, chosenInstances.size());
+                })
+                .expectComplete()
+                .verify();
+        }
+
+        @Nested
+        class GivenTokenExists {
+
+            @Test
+            void whenTokenIsInvalid_thenUseDefaultList() {
+                var requestData = mock(RequestData.class);
+                var context = new RequestDataContext(requestData);
+
+                MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
+                cookie.add("apimlAuthenticationToken", "invalidToken");
+
+                when(requestData.getCookies()).thenReturn(cookie);
+
+                when(request.getContext()).thenReturn(context);
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(2, chosenInstances.size());
+                    })
+                    .expectComplete()
+                    .verify();
+            }
+
+            @Nested
+            class GivenTokenIsValid {
+
+                @BeforeEach
+                void setUp() {
+                    var requestData = mock(RequestData.class);
+                    var context = new RequestDataContext(requestData);
+
+                    MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
+                    cookie.add("apimlAuthenticationToken", VALID_TOKEN);
+
+                    when(requestData.getCookies()).thenReturn(cookie);
+                    when(request.getContext()).thenReturn(context);
+                    when(clock.now()).thenReturn(Date.from(Instant.ofEpochSecond(1721552753)));
+                }
+
+                @Test
+                void whenServiceDoesNotHaveMetadata_thenUseDefaultList() {
+                    when(instance1.getMetadata()).thenReturn(null);
+                    when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
+
+                    StepVerifier.create(loadBalancer.get(request))
+                        .assertNext(chosenInstances -> {
+                            assertNotNull(chosenInstances);
+                            assertEquals(2, chosenInstances.size());
+                        })
+                        .expectComplete()
+                        .verify();
+                }
+
+                @Test
+                void whenServiceDoesNotUseSticky_thenUseDefaultList() {
+                    Map<String, String> metadata = new HashMap<>();
+                    metadata.put("apiml.lb.type", "somethingelse");
+                    when(instance1.getMetadata()).thenReturn(metadata);
+
+                    when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
+
+                    StepVerifier.create(loadBalancer.get(request))
+                        .assertNext(chosenInstances -> {
+                            assertNotNull(chosenInstances);
+                            assertEquals(2, chosenInstances.size());
+                        })
+                        .expectComplete()
+                        .verify();
+                }
+
+                @Nested
+                class GivenServiceUsesSticky {
+
+                    @BeforeEach
+                    void setUp() {
+                        Map<String, String> metadata = new HashMap<>();
+                        metadata.put("apiml.lb.type", "authentication");
+                        when(instance1.getMetadata()).thenReturn(metadata);
+                    }
+
+                    @Nested
+                    class GivenCacheHasPreference {
+
+                        @Test
+                        void whenInstanceExists_thenUpdateList() {
+                            when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
+
+                            StepVerifier.create(loadBalancer.get(request))
+                                .assertNext(chosenInstances -> {
+                                    assertNotNull(chosenInstances);
+                                    assertEquals(1, chosenInstances.size());
+                                    assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                })
+                                .expectComplete()
+                                .verify();
+                        }
+
+                        @Test
+                        void whenInstanceDoesNotExist_thenUpdatePreference() {
+                            when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance3")));
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
+
+                            StepVerifier.create(loadBalancer.get(request))
+                            .assertNext(chosenInstances -> {
+                                assertNotNull(chosenInstances);
+                                assertEquals(1, chosenInstances.size());
+                                assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                            })
+                            .expectComplete()
+                            .verify();
+                        }
+
+                        @Test
+                        void whenCacheEntryExpired_thenUpdatePreference() {
+                            when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance2", LocalDateTime.of(2023, 2, 20, 2, 2))));
+                            when(lbCache.delete("USER", "service")).thenReturn(Mono.empty());
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
+
+                            StepVerifier.create(loadBalancer.get(request))
+                            .assertNext(chosenInstances -> {
+                                assertNotNull(chosenInstances);
+                                assertEquals(1, chosenInstances.size());
+                                assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                            })
+                            .expectComplete()
+                            .verify();
+                        }
+
+                    }
+
+                    @Test
+                    void whenNoPreferece_thenCreateOne() {
+                        when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
+
+                        when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
+
+                            StepVerifier.create(loadBalancer.get(request))
+                            .assertNext(chosenInstances -> {
+                                assertNotNull(chosenInstances);
+                                assertEquals(1, chosenInstances.size());
+                                assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                            })
+                            .expectComplete()
+                            .verify();
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
 }

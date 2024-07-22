@@ -38,7 +38,7 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache";
 
-    private static final String CACHING_BALANCER_URL = "lb://caching-service";
+    private static final String CACHING_BALANCER_URL = "lb://cachingservice";
 
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
