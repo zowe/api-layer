@@ -129,7 +129,7 @@ apiml:
                 corsEnabled: true
                 corsAllowedOrigins: http://localhost:3000
                 lb:
-                    type: authentication
+                    type: headerRequest
 
 server:
     error:

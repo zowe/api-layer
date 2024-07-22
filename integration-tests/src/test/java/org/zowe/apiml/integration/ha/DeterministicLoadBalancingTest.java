@@ -23,8 +23,11 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 
 @DeterministicLbHaTest
@@ -44,7 +47,6 @@ class DeterministicLoadBalancingTest {
 
         @Test
         void whenRoutedInstanceExists_thenReturn200() {
-
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
 
@@ -52,20 +54,20 @@ class DeterministicLoadBalancingTest {
 
             String routedInstanceId = given()
                 .cookie(COOKIE_NAME, jwt)
-                .when()
+            .when()
                 .header(X_INSTANCEID, "discoverable-client:discoverableclient:10012")
                 .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
-                .then()
+            .then()
                 .statusCode(is(200))
                 .extract()
                 .header(X_INSTANCEID);
 
             assertThat(routedInstanceId, is(notNullValue()));
+            assertEquals("discoverable-client:discoverableclient:10012", routedInstanceId);
         }
 
         @Test
         void whenRoutedDoesNotInstanceExist_thenReturn404() {
-
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
 
@@ -73,12 +75,12 @@ class DeterministicLoadBalancingTest {
 
             String routedInstanceId = given()
                 .cookie(COOKIE_NAME, jwt)
-                .when()
+            .when()
                 .header(X_INSTANCEID, "wrong-discoverable-client:wrong-discoverable-client:10012")
                 .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
-                .then()
+            .then()
                 .statusCode(is(404))
-                .extract()
+            .extract()
                 .header(X_INSTANCEID);
 
             assertThat(routedInstanceId, is(notNullValue()));
