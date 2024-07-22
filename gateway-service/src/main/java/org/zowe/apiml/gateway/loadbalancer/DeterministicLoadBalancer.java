@@ -265,7 +265,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                 .parseUnsecuredClaims(withoutSign)
                 .getPayload();
         } catch (RuntimeException exception) {
-            log.debug("Exception when trying to parse the JWT token %s", jwt);
+            log.debug("Exception when trying to parse the JWT token {}", jwt);
             return null;
         }
     }

@@ -17,8 +17,8 @@ import java.lang.annotation.*;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
-@Tag("LbHaTest")
+@Tag("DeterministicLbHaTest")
 @Target({ TYPE, METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface LbHaTest {
+public @interface DeterministicLbHaTest {
 }

@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -28,15 +27,14 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import reactor.test.StepVerifier;
 
 import java.util.function.Predicate;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
 
@@ -56,10 +54,9 @@ class CachingServiceClientTest {
 
     @SuppressWarnings("unchecked")
     @BeforeEach
-    void setUp () {
-        var serviceInstanceFactory = mock(ReactiveLoadBalancer.Factory.class);
+    void setUp() {
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        client = new CachingServiceClient(webClient, serviceInstanceFactory);
+        client = new CachingServiceClient(webClient, new GatewayClient(ServiceAddress.builder().build()));
         lenient().when(clientResponse.releaseBody()).thenReturn(empty());
     }
 

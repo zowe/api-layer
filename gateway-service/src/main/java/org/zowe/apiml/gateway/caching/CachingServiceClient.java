@@ -17,16 +17,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.product.gateway.GatewayClient;
 import reactor.core.publisher.Mono;
-
-import java.util.Collections;
 
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
@@ -38,9 +34,10 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache";
 
-    private static final String CACHING_BALANCER_URL = "lb://cachingservice";
+    private final String CACHING_BALANCER_URL;
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
+
     static {
         defaultHeaders.add("Content-Type", "application/json");
     }
@@ -49,22 +46,20 @@ public class CachingServiceClient {
 
     public CachingServiceClient(
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
-        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory
+        GatewayClient gatewayClient
     ) {
-        this.webClient = createLoadBalanced(webClientClientCert, serviceInstanceFactory);
+        this.CACHING_BALANCER_URL = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
+        this.webClient = webClientClientCert;
     }
 
-    private WebClient createLoadBalanced(WebClient webClient, ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
-        return webClient.mutate()
-            .filter(new ReactorLoadBalancerExchangeFilterFunction(serviceInstanceFactory, Collections.emptyList()))
-            .build();
-    }
 
     public Mono<Void> create(KeyValue keyValue) {
         return webClient.post()
-            .uri(CACHING_BALANCER_URL + CACHING_API_PATH)
+            .uri(CACHING_BALANCER_URL)
             .bodyValue(keyValue)
-            .headers(c -> c.addAll(defaultHeaders))
+            .headers(c -> {
+                c.addAll(defaultHeaders);
+            })
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
@@ -76,7 +71,7 @@ public class CachingServiceClient {
 
     public Mono<Void> update(KeyValue keyValue) {
         return webClient.put()
-            .uri(CACHING_BALANCER_URL + CACHING_API_PATH)
+            .uri(CACHING_BALANCER_URL)
             .bodyValue(keyValue)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
@@ -90,7 +85,7 @@ public class CachingServiceClient {
 
     public Mono<KeyValue> read(String key) {
         return webClient.get()
-            .uri(CACHING_BALANCER_URL + CACHING_API_PATH + "/" + key)
+            .uri(CACHING_BALANCER_URL + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
@@ -114,7 +109,7 @@ public class CachingServiceClient {
      */
     public Mono<Void> delete(String key) {
         return webClient.delete()
-            .uri(CACHING_BALANCER_URL + CACHING_API_PATH + "/" + key)
+            .uri(CACHING_BALANCER_URL + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
