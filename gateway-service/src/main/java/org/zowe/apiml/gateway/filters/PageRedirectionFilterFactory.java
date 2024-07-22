@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static reactor.core.publisher.Mono.empty;
-import static reactor.core.publisher.Mono.fromCallable;
 
 /**
  * PageRedirectionFilterFactory is a Spring Cloud Gateway Filter Factory that adapts a response from a routed service
@@ -63,55 +63,51 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
         this.transformService = new TransformService(gatewayClient);
     }
 
-    private Mono<String> getNewLocationUrl(Config config, String location) {
+    private String getNewLocationUrl(Config config, String location) {
         if (location == null) {
-            return empty();
+            return "";
         }
 
-        return fromCallable(() -> eurekaClient.getInstancesById(config.instanceId))
-            .map(instances -> ((Stream<?>)instances.stream())
-                    .findAny()
-                        .map(InstanceInfo.class::cast)
-                        .map(serviceInstance -> {
-                                Map<String, String> metadata = serviceInstance.getMetadata();
-                                RoutedServices routes = metadataParser.parseRoutes(metadata);
-                                try {
-                                    String newUrl = transformService.transformURL(ServiceType.ALL, StringUtils.toRootLowerCase(config.serviceId), location, routes, false);
-                                    if (isAttlsEnabled) {
-                                        newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
-                                    }
-                                    return newUrl;
-                                } catch (URLTransformationException e) {
-                                    log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
-                                    return "";
-                                }
+        return ((Stream<?>) eurekaClient.getInstancesById(config.instanceId).stream())
+            .findAny()
+                .map(InstanceInfo.class::cast)
+                .map(serviceInstance -> {
+                        Map<String, String> metadata = serviceInstance.getMetadata();
+                        RoutedServices routes = metadataParser.parseRoutes(metadata);
+                        try {
+                            String newUrl = transformService.transformURL(ServiceType.ALL, StringUtils.toRootLowerCase(config.serviceId), location, routes, false);
+                            if (isAttlsEnabled) {
+                                newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
                             }
-                        )
-                        .orElse("")
-            )
-            .doOnError(t -> {
-                log.error(t.getMessage());
-            });
+                            return newUrl;
+                        } catch (URLTransformationException e) {
+                            log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
+                            return "";
+                        }
+                    }
+                )
+                .orElse("");
     }
 
     @Override
     public GatewayFilter apply(Config config) {
-        return (exchange, chain) -> getUrlFromResponse(exchange, config)
-            .doOnSuccess(url -> {
-                if (StringUtils.isNotBlank(url)) {
-                    var response = exchange.getResponse();
-                    response.getHeaders().set(HttpHeaders.LOCATION, url);
-                }
-            })
-            .and(chain.filter(exchange));
+        return (exchange, chain) -> {
+            return chain.filter(exchange)
+                .and(processNewLocationUrl(exchange, chain, config));
+        };
     }
 
-    private Mono<String> getUrlFromResponse(ServerWebExchange exchange, Config config) {
-        var response = exchange.getResponse();
-        if (response.getStatusCode().is3xxRedirection()) {
-            return getNewLocationUrl(config, response.getHeaders().getFirst(HttpHeaders.LOCATION));
-        }
-        return empty();
+    private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, GatewayFilterChain chain, Config config) {
+        return Mono.fromCallable(() -> {
+            var response = exchange.getResponse();
+            if (response.getStatusCode().is3xxRedirection()) {
+                return getNewLocationUrl(config, response.getHeaders().getFirst(HttpHeaders.LOCATION));
+            }
+            return "";
+        }).flatMap(newUrl -> {
+            exchange.getResponse().getHeaders().set(HttpHeaders.LOCATION, newUrl);
+            return empty();
+        });
     }
 
     @Data

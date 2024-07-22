@@ -135,7 +135,6 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.addArg("instanceId", serviceInstance.getInstanceId());
         serviceRelated.add(pageRedirectionFilter);
 
-
         return join(commonFilters, serviceRelated);
     }
 
