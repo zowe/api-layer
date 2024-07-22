@@ -13,7 +13,9 @@ package org.zowe.apiml.gateway.caching;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -27,10 +29,12 @@ import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static reactor.core.publisher.Mono.empty;
@@ -64,6 +68,14 @@ class LoadBalancerCacheTest {
 
         @Nested
         class GivenRemoteCacheExists {
+
+            @BeforeEach
+            void setUp() {
+                var application = mock(Application.class);
+                var instanceInfo = mock(InstanceInfo.class);
+                when(eurekaClient.getApplication("caching-service")).thenReturn(application);
+                when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
+            }
 
             @AfterEach
             void onFinish() {
@@ -175,11 +187,13 @@ class LoadBalancerCacheTest {
         }
 
         @Nested
-        class GivenRemoveCacheDoesNotExist {
+        class GivenRemoteCacheDoesNotExist {
 
             @BeforeEach
             void setUp() {
-                ReflectionTestUtils.setField(loadBalancerCache, "remoteCache", null);
+                var application = mock(Application.class);
+                when(eurekaClient.getApplication("caching-service")).thenReturn(application);
+                when(application.getInstances()).thenReturn(Collections.emptyList());
             }
 
             @Nested
@@ -189,7 +203,11 @@ class LoadBalancerCacheTest {
                 void andSuccess_thenSuccess() {
                     var record = new LoadBalancerCacheRecord("instance1");
                     when(map.put("lb.anuser:aserviceid", record)).thenReturn(record);
-                    loadBalancerCache.store("anuser", "aserviceid", record);
+
+                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", record))
+                        .expectComplete()
+                        .verify();
+
                     verifyNoInteractions(cachingServiceClient);
                 }
 
@@ -202,7 +220,11 @@ class LoadBalancerCacheTest {
                 void andSuccess_thenSuccess() {
                     var key = "lb.anuser:aserviceid";
                     when(map.remove(key)).thenReturn(null);
-                    loadBalancerCache.delete("anuser", "aserviceid");
+
+                    StepVerifier.create(loadBalancerCache.delete("anuser", "aserviceid"))
+                        .expectComplete()
+                        .verify();
+
                     verifyNoInteractions(cachingServiceClient);
                 }
 
@@ -223,10 +245,16 @@ class LoadBalancerCacheTest {
                 @Test
                 void andNotFound_thenEmpty() {
                     var key = "lb.anuser:aserviceid";
-                    when(map.get(key)).thenReturn(null);
-                    var result = loadBalancerCache.retrieve("anuser", "aserviceid");
-                    assertNotNull(result);
-                    assertEquals(Mono.empty(), result);
+                    when(map.get(key)).thenReturn(new LoadBalancerCacheRecord("instance"));
+
+                    StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
+                        .assertNext(record -> {
+                            assertNotNull(record);
+                            assertEquals("instance", record.getInstanceId());
+                        })
+                        .expectComplete()
+                        .verify();
+
                     verifyNoInteractions(cachingServiceClient);
                 }
 
