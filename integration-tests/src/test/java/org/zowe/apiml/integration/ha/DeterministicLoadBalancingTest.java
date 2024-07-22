@@ -74,7 +74,7 @@ class DeterministicLoadBalancingTest {
             String routedInstanceId = given()
                 .cookie(COOKIE_NAME, jwt)
                 .when()
-                .header(X_INSTANCEID, "wrong-discoverable-client:discoverableclient:10012")
+                .header(X_INSTANCEID, "wrong-discoverable-client:wrong-discoverable-client:10012")
                 .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
                 .then()
                 .statusCode(is(404))
