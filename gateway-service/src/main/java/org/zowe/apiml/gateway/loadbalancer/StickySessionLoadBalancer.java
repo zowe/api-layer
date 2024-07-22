@@ -22,6 +22,9 @@ import org.springframework.cloud.client.loadbalancer.RequestDataContext;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.SameInstancePreferenceServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Flux;
@@ -31,9 +34,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.zowe.apiml.constants.ApimlConstants.X_INSTANCEID;
 import static reactor.core.publisher.Flux.just;
 import static reactor.core.publisher.Mono.empty;
 
@@ -89,7 +94,7 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
                     }
                 })
                 .switchIfEmpty(Mono.just(LoadBalancerCacheRecord.NONE))
-                .flatMapMany(record -> filterInstances(principal.get(), serviceId, record, serviceInstances))
+                .flatMapMany(record -> filterInstances(principal.get(), serviceId, record, serviceInstances, request.getContext()))
             )
             .doOnError(e -> log.debug("Error in determining service instances", e));
     }
@@ -127,11 +132,17 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         String user,
         String serviceId,
         LoadBalancerCacheRecord record,
-        List<ServiceInstance> serviceInstances) {
+        List<ServiceInstance> serviceInstances,
+        Object requestContext) {
 
-        Flux<List<ServiceInstance>> result = just(serviceInstances);
+        Flux<List<ServiceInstance>> result;
         if (shouldIgnore(serviceInstances, user)) {
-            return result;
+            var instanceId = getInstanceId(requestContext);
+            try {
+                return just(checkInstanceIdHeader(instanceId, serviceInstances));
+            } catch (ResponseStatusException ex) {
+                return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+            }
         }
         if (isNotBlank(record.getInstanceId()) && isTooOld(record.getCreationTime())) {
             result = cache.delete(user, serviceId)
@@ -143,6 +154,50 @@ public class StickySessionLoadBalancer extends SameInstancePreferenceServiceInst
         }
         return result;
     }
+
+    /**
+     * Retrieves the 'X-InstanceId' attribute from the request context.
+     *
+     * @param requestContext the request context
+     * @return the instance ID, or null if not found
+     */
+    private String getInstanceId(Object requestContext) {
+        if (requestContext instanceof RequestDataContext) {
+            return getInstanceFromHeader((RequestDataContext) requestContext);
+        }
+        return null;
+    }
+
+    private String getInstanceFromHeader(RequestDataContext context) {
+        if (context != null && context.getClientRequest() != null) {
+            HttpHeaders headers = context.getClientRequest().getHeaders();
+            if (headers != null) {
+                return headers.getFirst(X_INSTANCEID);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Filters the list of service instances to include only those with the specified instance ID.
+     *
+     * @param instanceId       ID of the service instance
+     * @param serviceInstances the list of service instances to filter
+     * @return the filtered list of service instances
+     */
+    private List<ServiceInstance> checkInstanceIdHeader(String instanceId, List<ServiceInstance> serviceInstances) {
+        if (instanceId != null) {
+            List<ServiceInstance> filteredInstances = serviceInstances.stream()
+                .filter(instance -> instanceId.equals(instance.getInstanceId()))
+                .collect(Collectors.toList());
+            if (!filteredInstances.isEmpty()) {
+                return filteredInstances;
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID");
+        }
+        return serviceInstances;
+    }
+
 
     /**
      * Selected the preferred instance if not null, if the preferred instance is not found or is null a new preference is created

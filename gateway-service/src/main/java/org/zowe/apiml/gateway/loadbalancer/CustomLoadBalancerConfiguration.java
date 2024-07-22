@@ -11,8 +11,8 @@
 package org.zowe.apiml.gateway.loadbalancer;
 
 import io.jsonwebtoken.impl.DefaultClock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -25,33 +25,20 @@ import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 public class CustomLoadBalancerConfiguration {
 
     /**
-     * Creates a ServiceInstanceListSupplier bean configured with deterministic routing.
-     *
-     * @param context the application context
-     * @return the configured ServiceInstanceListSupplier
-     */
-    @ConditionalOnProperty(name = "apiml.routing.instanceIdHeader", havingValue = "true")
-    @Bean
-    public ServiceInstanceListSupplier discoveryClientServiceInstanceListSupplier(ConfigurableApplicationContext context) {
-        return new DeterministicRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
-            .withDiscoveryClient())
-            .withDeterministicRouting()
-            .build(context);
-    }
-
-    /**
      * Creates a ServiceInstanceListSupplier bean configured with sticky session routing.
      *
      * @param context the application context
      * @return the configured ServiceInstanceListSupplier
      */
     @Bean
-    public ServiceInstanceListSupplier discoveryClientCachedServiceInstanceListSupplier(
+    @Qualifier("stickySessionLb")
+    public ServiceInstanceListSupplier stickySessionServiceInstanceListSupplier(
         ConfigurableApplicationContext context, LoadBalancerCache cache,
         @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}") int expirationTime) {
-            return new StickySessionRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
-                .withDiscoveryClient())
-                .withStickySessionRouting(cache, expirationTime, new DefaultClock())
-                .build(context);
+        return new StickySessionRoutingListSupplierBuilder(ServiceInstanceListSupplier.builder()
+            .withDiscoveryClient())
+            .withStickySessionRouting(cache, expirationTime, new DefaultClock())
+            .build(context);
     }
+
 }
