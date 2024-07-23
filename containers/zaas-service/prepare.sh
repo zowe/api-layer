@@ -39,13 +39,14 @@ prepareVersioning
 copyDockerfileToInternalStructure $linux_distro $cpu_arch
 cleanUpWorkingFolder
 
-gateway_package="gateway-package"
+zaas_package="zaas-package"
 apiml_common_package="apiml-common-lib-package"
 
-buildPackage $gateway_package "packageApiGateway"
+buildPackage $zaas_package "packageZaas"
 buildApimlCommonPackage
 
-preparePackage $gateway_package
+preparePackage $zaas_package
+preparePackage $apiml_common_package "apiml-common-lib"
 prepareBasicFiles
 
 copyToBuildContext $linux_distro $cpu_arch
