@@ -32,6 +32,10 @@ jobs:
               with:
                 name: ReleaseSnapshotAuto-${{ github.run_number }}
                 path: |
-                    results/**
+                    gateway-service/build/reports/**
+                    discovery-service/build/reports/**
+                    caching-service/build/reports/**
+                    api-catalog-services/build/reports/**
+                    zaas-service/build/reports/**
 
             - uses: ./.github/actions/teardown
