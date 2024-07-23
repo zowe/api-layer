@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -140,15 +139,11 @@ export default class ServiceTab extends Component {
     };
 
     getGraphqlUrl = (apis) => {
-        for (const apiKey in apis) {
-            if (apis.hasOwnProperty(apiKey) && apis[apiKey]) {
-                const api = apis[apiKey];
-                if (api.graphqlUrl) {
-                    return api.graphqlUrl;
-                }
-            }
+        if (!apis || typeof apis !== 'object') {
+            return null;
         }
-        return null;
+        const apiKey = Object.keys(apis).find((key) => apis[key] && apis[key].graphqlUrl);
+        return apiKey ? apis[apiKey].graphqlUrl : null;
     };
 
     render() {
@@ -169,7 +164,7 @@ export default class ServiceTab extends Component {
         const { apiVersions } = this;
         const { containsVersion } = this;
         const graphqlUrl = this.getGraphqlUrl(this.props.selectedService.apis);
-        const title =  graphqlUrl ? "GraphQL" : "Swagger";
+        const title = graphqlUrl ? 'GraphQL' : 'Swagger';
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         return (
@@ -294,8 +289,12 @@ export default class ServiceTab extends Component {
                                 </Button>
                             </div>
                         )}
-                        {(graphqlUrl !== null && selectedVersion !== 'diff') && <GraphQLContainer  graphqlUrl={graphqlUrl} selectedVersion={selectedVersion} />}
-                        {(graphqlUrl === null && selectedVersion !== 'diff') && <SwaggerContainer selectedVersion={selectedVersion} />}
+                        {graphqlUrl !== null && selectedVersion !== 'diff' && (
+                            <GraphQLContainer graphqlUrl={graphqlUrl} selectedVersion={selectedVersion} />
+                        )}
+                        {graphqlUrl === null && selectedVersion !== 'diff' && (
+                            <SwaggerContainer selectedVersion={selectedVersion} />
+                        )}
                         {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
                                 selectedVersion={this.state.previousVersion}

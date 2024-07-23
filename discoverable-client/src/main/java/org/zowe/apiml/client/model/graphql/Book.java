@@ -4,20 +4,20 @@ import java.util.*;
 public record Book (String bookId, String name, Integer pageCount, String authorId) {
 
     private static List<Book> books = new ArrayList<>(List.of(
-        new Book("book-1", "Effective Java", 416, "author-1"),
+        new Book("book-1", "Effective Java", 0, "author-1"),
         new Book("book-2", "Hitchhiker's Guide to the Galaxy", 208, "author-2"),
         new Book("book-3", "Down Under", 436, "author-3"))
     );
+
+    public static List<Book> getAllBooks() {
+        return books.stream().toList();
+    }
 
     public static Book getById(String bookId) {
         return books.stream()
             .filter(book -> book.bookId().equals(bookId))
             .findFirst()
             .orElse(null);
-    }
-
-    public static List<Book> getAllBooks() {
-        return books.stream().toList();
     }
 
     public static Book addBook(String name, Integer pageCount, String authorId){

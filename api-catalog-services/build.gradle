@@ -112,6 +112,8 @@ processResources {
 task copyUi(type: Copy) {
     group = "ui"
 
+    dependsOn ":api-catalog-ui:build"
+
     inputs.dir(uiModule + '/frontend/build')
     outputs.dir('src/main/resources/static')
 
