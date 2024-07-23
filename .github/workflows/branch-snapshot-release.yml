@@ -36,5 +36,13 @@ jobs:
                   BRANCH_NAME: ${{ github.ref_name }}
                   BUILD_NUMBER: ${{ github.run_number }}
 
+            - name: Store test results
+              uses: actions/upload-artifact@v4
+              if: failure()
+              with:
+                name: ReleaseAutomated-${{ github.run_number }}
+                path: |
+                    results/**
+
             - uses: ./.github/actions/teardown
 
