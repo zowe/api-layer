@@ -346,7 +346,6 @@ task runRegistrationTests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'RegistrationTest'
-
         )
     }
 }
@@ -539,6 +538,5 @@ task runChaoticHATests(type: Test) {
             'ChaoticHATest'
         )
     }
-
 
 }

@@ -173,7 +173,7 @@ public class SecurityConfiguration {
     }
 
     private HttpSecurity baseConfiguration(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable).cors().disable() // NOSONAR
+        http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
 
             .headers(httpSecurityHeadersConfigurer ->
                 httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)

@@ -32,7 +32,7 @@ spring:
     graphql:
         graphiql:
             enabled: true
-        path:  "api/v3/graphql"
+        path:  "/api/v1/graphql"
 
 eureka:
     client:
@@ -97,11 +97,6 @@ apiml:
                           String name = "John";
                           Greeting greeting = new Greeting(new Date(), String.format(template, name));
                           System.out.println(greeting.getContent());
-            -   apiId: zowe.apiml.discoverableclient.ws
-                version: 1.0.0
-                gatewayUrl: graphql/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/graphv1
-                documentationUrl: https://www.zowe.org
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2
@@ -109,8 +104,8 @@ apiml:
                 documentationUrl: https://www.zowe.org
             -   apiId: zowe.apiml.discoverableclient.graphql
                 version: 1.0.0
-                gatewayUrl: api/v3
-                graphqlUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/api/v3/graphql
+                gatewayUrl: api/v1
+                graphqlUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/api/v1/graphql
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -222,5 +217,4 @@ apiml:
 server:
     ssl:
         enabled: false
-
 

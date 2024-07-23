@@ -27,7 +27,7 @@ public class BookControllerTest {
 
         WebTestClient client =
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v3/graphql")
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
                 .build();
 
         HttpGraphQlTester tester = HttpGraphQlTester.create(client);
@@ -59,7 +59,7 @@ public class BookControllerTest {
 
         WebTestClient client =
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v3/graphql")
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
                 .build();
 
         HttpGraphQlTester tester = HttpGraphQlTester.create(client);

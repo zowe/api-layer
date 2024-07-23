@@ -135,6 +135,7 @@ export default class SwaggerUIApiml extends Component {
                 selectedService.apiDoc.length !== 0
             ) {
                 const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
+
                 this.setState({
                     swaggerReady: true,
                     swaggerProps: {

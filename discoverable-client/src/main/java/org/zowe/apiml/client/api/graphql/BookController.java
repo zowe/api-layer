@@ -12,7 +12,7 @@ import org.zowe.apiml.client.model.graphql.Book;
 import java.util.List;
 
 @Controller
-@RequestMapping("/api/v3/graphql")
+@RequestMapping("/api/v1/graphql")
 public class BookController {
 
     @QueryMapping
