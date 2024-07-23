@@ -52,7 +52,7 @@ public class RunningService {
                                 .map(javaHome -> javaHome + "/bin/")
                                 .orElse("");
 
-        if (envs != null) {
+        if (envs != null && envs.length > 0) {
             path = Arrays.stream(envs).collect(joining(" ")) + "&&" + path;
         }
 
@@ -66,9 +66,13 @@ public class RunningService {
         parametersAfter
             .forEach((key, value) -> shellCommand.add(key + '=' + value));
 
-        ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
-        builder1.directory(new File("../"));
-        process = builder1.inheritIO().start();
+        try {
+            ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
+            builder1.directory(new File("../"));
+            process = builder1.inheritIO().start();
+        } catch (Exception e) {
+            log.error("Failed starting: " + this.id, e);
+        }
     }
 
     public void startWithScript(String binPath, Map<String, String> env) {
