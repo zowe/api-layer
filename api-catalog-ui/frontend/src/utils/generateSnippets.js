@@ -32,8 +32,8 @@ export function getSnippetContent(req, target, codeSnippet) {
     // get extended info about request
     const { spec, oasPathMethod } = req.toJS();
     const { path, method } = oasPathMethod;
-    // run OpenAPISnippet for target node
-    const targets = [target];
+    // Include query parameters in the path for comparison
+    const fullPath = `${path}${req.get('query') ? `?${new URLSearchParams(req.get('query')).toString()}` : ''}`;
     let snippet;
     try {
         // set request snippet content
@@ -43,13 +43,13 @@ export function getSnippetContent(req, target, codeSnippet) {
             codeSnippet.codeBlock !== undefined &&
             codeSnippet.codeBlock !== null
         ) {
-            if (codeSnippet.endpoint === path) {
+            if (codeSnippet.endpoint === fullPath) {
                 snippet = codeSnippet.codeBlock;
             } else {
                 snippet = null;
             }
         } else {
-            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, targets).snippets[0].content;
+            snippet = OpenAPISnippet.getEndpointSnippets(spec, path, method, [target]).snippets[0].content;
         }
     } catch (err) {
         snippet = JSON.stringify(snippet);
