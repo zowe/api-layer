@@ -91,10 +91,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     @Override
     public GatewayFilter apply(Config config) {
-        return (exchange, chain) -> {
-            return chain.filter(exchange)
-                .then(processNewLocationUrl(exchange, chain, config));
-        };
+        return (exchange, chain) -> chain.filter(exchange)
+            .then(processNewLocationUrl(exchange, chain, config));
     }
 
     private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, GatewayFilterChain chain, Config config) {
