@@ -16,7 +16,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
@@ -45,7 +44,6 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
  * Following properties left blank:
  * {@link ServiceInfo.Service#homePageUrl} and {@link ServiceInfo.ApiInfoExtended#swaggerUrl}
  */
-@Slf4j
 @RequiredArgsConstructor
 public class BasicInfoService {
 
