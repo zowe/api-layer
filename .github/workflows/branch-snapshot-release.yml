@@ -36,5 +36,17 @@ jobs:
                   BRANCH_NAME: ${{ github.ref_name }}
                   BUILD_NUMBER: ${{ github.run_number }}
 
+            - name: Store test results
+              uses: actions/upload-artifact@v4
+              if: failure()
+              with:
+                name: BranchSnapshotRelease-${{ github.run_number }}
+                path: |
+                    gateway-service/build/reports/**
+                    discovery-service/build/reports/**
+                    caching-service/build/reports/**
+                    api-catalog-services/build/reports/**
+                    zaas-service/build/reports/**
+
             - uses: ./.github/actions/teardown
 
