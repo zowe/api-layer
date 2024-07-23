@@ -8,13 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.min.css';
+import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 
 function getUrl(graphqlUrl) {
     const location = `${window.location.protocol}//${window.location.host}`;
-    const pathName = (new URL(graphqlUrl)).pathname;
+    const urlForPathName = new URL(graphqlUrl);
+    const pathName = urlForPathName.pathname;
     return `${location}${pathName}`;
 }
 
