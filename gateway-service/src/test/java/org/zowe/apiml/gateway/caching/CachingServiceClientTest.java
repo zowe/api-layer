@@ -34,7 +34,9 @@ import reactor.test.StepVerifier;
 import java.util.function.Predicate;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
 
@@ -52,7 +54,6 @@ class CachingServiceClientTest {
 
     private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
@@ -83,8 +84,8 @@ class CachingServiceClientTest {
 
             @Test
             void andServerSuccess_thenSuccess() throws JsonProcessingException {
-                var record = new LoadBalancerCacheRecord("instanceId");
-                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(record));
+                var cacheRecord = new LoadBalancerCacheRecord("instanceId");
+                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
 
                 mockResponse(200);
 
@@ -95,8 +96,8 @@ class CachingServiceClientTest {
 
             @Test
             void andServerError_thenError() throws JsonProcessingException {
-                var record = new LoadBalancerCacheRecord("instanceId");
-                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(record));
+                var cacheRecord = new LoadBalancerCacheRecord("instanceId");
+                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
 
                 mockResponse(500);
 
@@ -106,8 +107,8 @@ class CachingServiceClientTest {
 
             @Test
             void andClientError_thenError() throws JsonProcessingException {
-                var record = new LoadBalancerCacheRecord("instanceId");
-                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(record));
+                var cacheRecord = new LoadBalancerCacheRecord("instanceId");
+                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
 
                 mockResponse(404);
 

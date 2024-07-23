@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -92,10 +91,10 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> chain.filter(exchange)
-            .then(processNewLocationUrl(exchange, chain, config));
+            .then(processNewLocationUrl(exchange, config));
     }
 
-    private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, GatewayFilterChain chain, Config config) {
+    private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, Config config) {
         return Mono.fromCallable(() -> {
             var response = exchange.getResponse();
             if (response.getStatusCode().is3xxRedirection()) {

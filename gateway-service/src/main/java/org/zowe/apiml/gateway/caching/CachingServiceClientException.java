@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter
 public class CachingServiceClientException extends RuntimeException {
 
-    private int statusCode;
+    private final int statusCode;
 
     public CachingServiceClientException(int statusCode, String message) {
         super(message);

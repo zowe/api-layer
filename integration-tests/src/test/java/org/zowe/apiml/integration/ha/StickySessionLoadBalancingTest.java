@@ -34,9 +34,9 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 @StickySessionLbHaTest
 public class StickySessionLoadBalancingTest {
 
-    private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
-    private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
-    private final String HOST_HEADER = "host";
+    private static final String HOST_HEADER = "host";
+    private static final HAGatewayRequests HA_GW_REQUESTS = new HAGatewayRequests();
+    private static final HADiscoveryRequests HA_DS_REQUESTS = new HADiscoveryRequests();
 
     @BeforeEach
     void setUp() {
@@ -52,14 +52,14 @@ public class StickySessionLoadBalancingTest {
             String lbType = lbTypeEnv != null ? lbTypeEnv : "";
             assumeTrue(lbType.equals("authentication"), "Skipping test: condition not met");
 
-            assumeTrue(haGatewayRequests.existing() > 1);
-            assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
+            assumeTrue(HA_GW_REQUESTS.existing() > 1);
+            assertThat(HA_DS_REQUESTS.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
 
             String jwt = gatewayToken();
 
             String routedInstanceHost = given()
                 .cookie(COOKIE_NAME, jwt)
-                .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
+                .get(HA_GW_REQUESTS.getGatewayUrl(0, DISCOVERABLE_GREET))
                 .header(HOST_HEADER);
 
             assertThat(routedInstanceHost, is(notNullValue()));
@@ -68,7 +68,7 @@ public class StickySessionLoadBalancingTest {
             for (int i = 0; i < 10; i++) {
                 String sequentialRoutedInstanceHost = given()
                     .cookie(COOKIE_NAME, jwt)
-                    .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
+                    .get(HA_GW_REQUESTS.getGatewayUrl(0, DISCOVERABLE_GREET))
                     .header(HOST_HEADER);
                 results1[i] = routedInstanceHost.equals(sequentialRoutedInstanceHost) ? "match" : "nomatch";
             }
@@ -82,7 +82,7 @@ public class StickySessionLoadBalancingTest {
             for (int i = 0; i < 10; i++) {
                 String sequentialRoutedInstanceHost = given()
                     .cookie(COOKIE_NAME, jwt)
-                    .get(haGatewayRequests.getGatewayUrl(1, DISCOVERABLE_GREET))
+                    .get(HA_GW_REQUESTS.getGatewayUrl(1, DISCOVERABLE_GREET))
                     .header(HOST_HEADER);
                 results2[i] = routedInstanceHost.equals(sequentialRoutedInstanceHost) ? "match" : "nomatch";
             }

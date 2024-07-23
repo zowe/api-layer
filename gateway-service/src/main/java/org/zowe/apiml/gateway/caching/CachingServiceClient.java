@@ -31,10 +31,12 @@ import static reactor.core.publisher.Mono.error;
 @Slf4j
 public class CachingServiceClient {
 
-    @Value("${apiml.cachingServiceClient.apiPath}")
-    private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache";
+    private static final String CACHING_SERVICE_RETURNED = ". Caching service returned: ";
 
-    private final String CACHING_BALANCER_URL;
+    @Value("${apiml.cachingServiceClient.apiPath}")
+    private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
+
+    private final String cachingBalancerUrl;
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
 
@@ -48,44 +50,42 @@ public class CachingServiceClient {
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
         GatewayClient gatewayClient
     ) {
-        this.CACHING_BALANCER_URL = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
+        this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
         this.webClient = webClientClientCert;
     }
 
 
     public Mono<Void> create(KeyValue keyValue) {
         return webClient.post()
-            .uri(CACHING_BALANCER_URL)
-            .bodyValue(keyValue)
-            .headers(c -> {
-                c.addAll(defaultHeaders);
-            })
-            .exchangeToMono(handler -> {
-                if (handler.statusCode().is2xxSuccessful()) {
-                    return empty();
-                } else {
-                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to create caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
-                }
-            });
-    }
-
-    public Mono<Void> update(KeyValue keyValue) {
-        return webClient.put()
-            .uri(CACHING_BALANCER_URL)
+            .uri(cachingBalancerUrl)
             .bodyValue(keyValue)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to update caching key " + keyValue.getKey() + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to create caching key " + keyValue.getKey() + CACHING_SERVICE_RETURNED + handler.statusCode()));
+                }
+            });
+    }
+
+    public Mono<Void> update(KeyValue keyValue) {
+        return webClient.put()
+            .uri(cachingBalancerUrl)
+            .bodyValue(keyValue)
+            .headers(c -> c.addAll(defaultHeaders))
+            .exchangeToMono(handler -> {
+                if (handler.statusCode().is2xxSuccessful()) {
+                    return empty();
+                } else {
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to update caching key " + keyValue.getKey() + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
     }
 
     public Mono<KeyValue> read(String key) {
         return webClient.get()
-            .uri(CACHING_BALANCER_URL + "/" + key)
+            .uri(cachingBalancerUrl + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
@@ -96,7 +96,7 @@ public class CachingServiceClient {
                     }
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to read caching key " + key + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to read caching key " + key + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
     }
@@ -109,13 +109,13 @@ public class CachingServiceClient {
      */
     public Mono<Void> delete(String key) {
         return webClient.delete()
-            .uri(CACHING_BALANCER_URL + "/" + key)
+            .uri(cachingBalancerUrl + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
-                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to delete caching key " + key + ". Caching service returned: " + handler.statusCode()));
+                    return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to delete caching key " + key + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
     }

@@ -32,9 +32,12 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -48,8 +51,7 @@ import static reactor.core.publisher.Mono.empty;
 @Slf4j
 public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInstanceListSupplier {
 
-    private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("""
-        {"typ":"JWT","alg":"none"}""".getBytes(StandardCharsets.UTF_8));
+    private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("{\"typ\":\"JWT\",\"alg\":\"none\"}".getBytes(StandardCharsets.UTF_8));
 
     private final LoadBalancerCache cache;
     private final Clock clock;
@@ -94,7 +96,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                     }
                 })
                 .switchIfEmpty(Mono.just(LoadBalancerCacheRecord.NONE))
-                .flatMapMany(record -> filterInstances(principal.get(), serviceId, record, serviceInstances, request.getContext()))
+                .flatMapMany(cacheRecord -> filterInstances(principal.get(), serviceId, cacheRecord, serviceInstances, request.getContext()))
             )
             .doOnError(e -> log.debug("Error in determining service instances", e));
     }
@@ -124,14 +126,14 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
      *
      * @param user             The user
      * @param serviceId        The serviceId
-     * @param record           the cache record
+     * @param cacheRecord           the cache record
      * @param serviceInstances the list of service instances to filter
      * @return the filtered list of service instances
      */
     private Flux<List<ServiceInstance>> filterInstances(
         String user,
         String serviceId,
-        LoadBalancerCacheRecord record,
+        LoadBalancerCacheRecord cacheRecord,
         List<ServiceInstance> serviceInstances,
         Object requestContext) {
 
@@ -144,11 +146,11 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                 return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
             }
         }
-        if (isNotBlank(record.getInstanceId()) && isTooOld(record.getCreationTime())) {
+        if (isNotBlank(cacheRecord.getInstanceId()) && isTooOld(cacheRecord.getCreationTime())) {
             result = cache.delete(user, serviceId)
                 .thenMany(chooseOne(user, serviceInstances));
-        } else if (isNotBlank(record.getInstanceId())) {
-            result = chooseOne(record.getInstanceId(), user, serviceInstances);
+        } else if (isNotBlank(cacheRecord.getInstanceId())) {
+            result = chooseOne(cacheRecord.getInstanceId(), user, serviceInstances);
         } else {
             result = chooseOne(user, serviceInstances);
         }
@@ -162,8 +164,8 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
      * @return the instance ID, or null if not found
      */
     private String getInstanceId(Object requestContext) {
-        if (requestContext instanceof RequestDataContext) {
-            return getInstanceFromHeader((RequestDataContext) requestContext);
+        if (requestContext instanceof RequestDataContext ctx) {
+            return getInstanceFromHeader(ctx);
         }
         return null;
     }
@@ -189,7 +191,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         if (instanceId != null) {
             List<ServiceInstance> filteredInstances = serviceInstances.stream()
                 .filter(instance -> instanceId.equals(instance.getInstanceId()))
-                .collect(Collectors.toList());
+                .toList();
             if (!filteredInstances.isEmpty()) {
                 return filteredInstances;
             }
@@ -266,7 +268,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                 .getPayload();
         } catch (RuntimeException exception) {
             log.debug("Exception when trying to parse the JWT token {}", jwt);
-            return null;
+            return null; // NOSONAR
         }
     }
 

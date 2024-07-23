@@ -87,36 +87,36 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() throws JsonProcessingException {
-                    var record = new LoadBalancerCacheRecord("instance1");
-                    when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(record))))
+                    var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                    when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
                         .thenReturn(empty());
 
-                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", record))
+                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord))
                         .expectComplete()
                         .verifyThenAssertThat();
                 }
 
                 @Test
                 void andGenericError_thenError() throws JsonProcessingException {
-                    var record = new LoadBalancerCacheRecord("instance1");
-                    when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(record))))
+                    var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                    when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
                         .thenReturn(error(new CachingServiceClientException(500, "error")));
 
-                        StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", record))
+                        StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord))
                             .expectErrorMatches(exception -> exception.getMessage().equals("error"))
                             .verify();
                 }
 
                 @Test
                 void andErrorCacheConflict_thenError() throws JsonProcessingException {
-                    var record = new LoadBalancerCacheRecord("instance1");
-                    var keyValue = new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(record));
+                    var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                    var keyValue = new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord));
                     when(cachingServiceClient.create(keyValue))
                         .thenReturn(error(new CachingServiceClientException(409, "error")));
 
                     when(cachingServiceClient.update(keyValue)).thenReturn(empty());
 
-                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", record))
+                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord))
                         .expectComplete()
                         .verify();
                 }
@@ -127,7 +127,7 @@ class LoadBalancerCacheTest {
             class WhenDelete {
 
                 @Test
-                void andSuccess_thenSuccessResult() throws JsonProcessingException {
+                void andSuccess_thenSuccessResult() {
                     when(cachingServiceClient.delete("lb.anuser:aserviceid"))
                         .thenReturn(empty());
 
@@ -153,17 +153,17 @@ class LoadBalancerCacheTest {
                 @Test
                 void andSuccess_thenReturnValue() throws JsonProcessingException {
                     var key = "lb.anuser:aserviceid";
-                    var record = new LoadBalancerCacheRecord("instanceId");
-                    var keyValue = new KeyValue(key, mapper.writeValueAsString(record));
+                    var cacheRecord = new LoadBalancerCacheRecord("instanceId");
+                    var keyValue = new KeyValue(key, mapper.writeValueAsString(cacheRecord));
                     when(cachingServiceClient.read(key)).thenReturn(just(keyValue));
 
                     StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
-                        .expectNext(record)
+                        .expectNext(cacheRecord)
                         .verifyComplete();
                 }
 
                 @Test
-                void andNotFound_thenReturnEmpty() throws JsonProcessingException {
+                void andNotFound_thenReturnEmpty() {
                     var key = "lb.anuser:aserviceid";
                     when(cachingServiceClient.read(key)).thenReturn(empty());
 
@@ -201,10 +201,10 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() {
-                    var record = new LoadBalancerCacheRecord("instance1");
-                    when(map.put("lb.anuser:aserviceid", record)).thenReturn(record);
+                    var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                    when(map.put("lb.anuser:aserviceid", cacheRecord)).thenReturn(cacheRecord);
 
-                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", record))
+                    StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord))
                         .expectComplete()
                         .verify();
 
@@ -235,10 +235,10 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() {
-                    var record = new LoadBalancerCacheRecord("instance1");
+                    var cacheRecord = new LoadBalancerCacheRecord("instance1");
                     var key = "lb.anuser:aserviceid";
-                    when(map.get(key)).thenReturn(record);
-                    assertEquals(record, loadBalancerCache.retrieve("anuser", "aserviceid").block());
+                    when(map.get(key)).thenReturn(cacheRecord);
+                    assertEquals(cacheRecord, loadBalancerCache.retrieve("anuser", "aserviceid").block());
                     verifyNoInteractions(cachingServiceClient);
                 }
 
@@ -248,9 +248,9 @@ class LoadBalancerCacheTest {
                     when(map.get(key)).thenReturn(new LoadBalancerCacheRecord("instance"));
 
                     StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
-                        .assertNext(record -> {
-                            assertNotNull(record);
-                            assertEquals("instance", record.getInstanceId());
+                        .assertNext(cacheRecord -> {
+                            assertNotNull(cacheRecord);
+                            assertEquals("instance", cacheRecord.getInstanceId());
                         })
                         .expectComplete()
                         .verify();

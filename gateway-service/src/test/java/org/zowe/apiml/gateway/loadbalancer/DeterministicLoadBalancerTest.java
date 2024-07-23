@@ -84,13 +84,13 @@ class DeterministicLoadBalancerTest {
 
     private DeterministicLoadBalancer loadBalancer;
 
-    private final List<ServiceInstance> DEFAULT_LIST = new ArrayList<>();
+    private final List<ServiceInstance> defaultServiceInstancesList = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
-        DEFAULT_LIST.clear();
-        DEFAULT_LIST.add(instance1);
-        DEFAULT_LIST.add(instance2);
+        defaultServiceInstancesList.clear();
+        defaultServiceInstancesList.add(instance1);
+        defaultServiceInstancesList.add(instance2);
 
         lenient().when(instance1.getInstanceId()).thenReturn("instance1");
         lenient().when(instance1.getServiceId()).thenReturn("service");
@@ -100,7 +100,7 @@ class DeterministicLoadBalancerTest {
         var properties = new LoadBalancerProperties();
         when(factory.getProperties(any())).thenReturn(properties);
         when(delegate.getServiceId()).thenReturn("service");
-        when(delegate.get(request)).thenReturn(Flux.just(DEFAULT_LIST));
+        when(delegate.get(request)).thenReturn(Flux.just(defaultServiceInstancesList));
         this.loadBalancer = new DeterministicLoadBalancer(delegate, factory, lbCache, clock, DEFAULT_EXPIRATION_HS);
     }
 
@@ -207,7 +207,7 @@ class DeterministicLoadBalancerTest {
                         @Test
                         void whenInstanceExists_thenUpdateList() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -223,7 +223,7 @@ class DeterministicLoadBalancerTest {
                         @Test
                         void whenInstanceDoesNotExist_thenUpdatePreference() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance3")));
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -240,7 +240,7 @@ class DeterministicLoadBalancerTest {
                         void whenCacheEntryExpired_thenUpdatePreference() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance2", LocalDateTime.of(2023, 2, 20, 2, 2))));
                             when(lbCache.delete("USER", "service")).thenReturn(Mono.empty());
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -259,7 +259,7 @@ class DeterministicLoadBalancerTest {
                     void whenNoPreferece_thenCreateOne() {
                         when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
 
-                        when(lbCache.store(eq("USER"), eq("service"), argThat(record -> record.getInstanceId().equals("instance1"))))
+                        when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))

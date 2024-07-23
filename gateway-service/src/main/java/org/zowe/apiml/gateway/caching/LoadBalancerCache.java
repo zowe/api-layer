@@ -73,7 +73,7 @@ public class LoadBalancerCache {
     public Mono<Void> store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         return cachingServiceAvailavility()
             .flatMap(available -> {
-                if (available) {
+                if (Boolean.TRUE.equals(available)) {
                     return storeToRemoteCache(user, service, loadBalancerCacheRecord);
                 } else {
                     localCache.put(getKey(user, service), loadBalancerCacheRecord);
@@ -127,7 +127,7 @@ public class LoadBalancerCache {
     public Mono<LoadBalancerCacheRecord> retrieve(String user, String service) {
         return cachingServiceAvailavility()
             .flatMap(available -> {
-                if (available) {
+                if (Boolean.TRUE.equals(available)) {
                     return remoteCache.read(getKey(user, service))
                     .map(kv -> {
                         LoadBalancerCacheRecord loadBalancerCacheRecord;
@@ -156,7 +156,7 @@ public class LoadBalancerCache {
     public Mono<Void> delete(String user, String service) {
         return cachingServiceAvailavility()
             .flatMap(available -> {
-                if (available) {
+                if (Boolean.TRUE.equals(available)) {
                     return remoteCache.delete(getKey(user, service))
                         .doOnSuccess(v -> log.debug("Deleted record from remote cache for user: {}, service: {}", user, service));
                 } else {
@@ -178,7 +178,7 @@ public class LoadBalancerCache {
     public static class LoadBalancerCacheRecord {
         private final String instanceId;
         private final LocalDateTime creationTime;
-        public static LoadBalancerCacheRecord NONE = new LoadBalancerCacheRecord(null, null);
+        public static final LoadBalancerCacheRecord NONE = new LoadBalancerCacheRecord(null, null);
 
         public LoadBalancerCacheRecord(String instanceId) {
             this(instanceId, LocalDateTime.now());
