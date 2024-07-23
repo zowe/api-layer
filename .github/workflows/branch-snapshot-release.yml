@@ -40,7 +40,7 @@ jobs:
               uses: actions/upload-artifact@v4
               if: failure()
               with:
-                name: ReleaseAutomated-${{ github.run_number }}
+                name: BranchSnapshotRelease-${{ github.run_number }}
                 path: |
                     results/**
 
