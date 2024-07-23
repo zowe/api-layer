@@ -140,8 +140,7 @@ public class FullApiMediationLayer {
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
-            Map<String, String> discoverableClientEnv = new HashMap<>(env);
-            discoverableClientService.startWithScript("discoverable-client-package/src/main/resources/bin", discoverableClientEnv);
+            discoverableClientService.start();
             mockZosmfService.start();
             log.info("Services started");
         } catch (IOException ex) {
