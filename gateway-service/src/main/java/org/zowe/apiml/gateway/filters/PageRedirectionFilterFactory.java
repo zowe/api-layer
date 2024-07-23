@@ -93,7 +93,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             return chain.filter(exchange)
-                .and(processNewLocationUrl(exchange, chain, config));
+                .then(processNewLocationUrl(exchange, chain, config));
         };
     }
 
