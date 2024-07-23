@@ -73,7 +73,7 @@ safIdtConfiguration:
 oidcConfiguration:
     clientId:
 instanceEnv:
-# Try to avoid adding quotes to the values of these env variables
+    # Try to avoid adding quotes to the values of these env variables
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZWE_haInstance_hostname: localhost
     ZOWE_PREFIX: ZWE
@@ -105,5 +105,5 @@ instanceEnv:
     ZWE_configs_apiml_security_auth_jwt_customAuthHeader: customJwtHeader
     ZWE_configs_apiml_security_auth_passticket_customUserHeader: customUserHeader
     ZWE_configs_apiml_security_auth_passticket_customAuthHeader: customPassticketHeader
-    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: headerRequest # set the value to "authentication" if you want to test the sticky session load balancing
-
+    # set the value to "authentication" if you want to test the sticky session load balancing
+    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: headerRequest
