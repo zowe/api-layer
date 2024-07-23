@@ -148,6 +148,19 @@ public class FullApiMediationLayer {
         }
     }
 
+    @SuppressWarnings("unused")
+    // This method would need to handle situations where there are too many environment variables
+    private String formatEnv() {
+        StringBuilder out = new StringBuilder();
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            out.append(entry.getKey())
+                .append("=")
+                .append("\"").append(entry.getValue()).append("\"")
+                .append(" ");
+        }
+        return out.toString();
+    }
+
     public void stop() {
         try {
             discoveryService.stop();

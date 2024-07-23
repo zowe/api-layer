@@ -15,7 +15,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
@@ -38,7 +37,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPT
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 import static org.zowe.apiml.services.ServiceInfoUtils.*;
 
-@Slf4j
 @RequiredArgsConstructor
 public class ServicesInfoService {
 

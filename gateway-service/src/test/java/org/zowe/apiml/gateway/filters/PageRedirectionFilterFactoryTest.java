@@ -16,6 +16,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -28,10 +29,12 @@ import org.zowe.apiml.product.instance.ServiceAddress;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,7 +82,7 @@ class PageRedirectionFilterFactoryTest {
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         when(instanceInfo.getMetadata()).thenReturn(metadata);
-        when(eurekaClient.getInstancesById("instanceId")).thenReturn(Collections.singletonList(instanceInfo));
+        when(eurekaClient.getInstancesById("instanceId")).thenReturn(new ArrayList<>(asList(instanceInfo)));
     }
 
     @Nested
@@ -89,10 +92,12 @@ class PageRedirectionFilterFactoryTest {
         void whenNoAttls_thenAddRedirectionUrl() {
             var expectedUrl = GW_BASE_URL + "/gateway/api/v1/api/v1/redirected_url";
             var factory = new PageRedirectionFilterFactory(eurekaClient, eurekaMetadataParser, gatewayClient);
+
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);
             var res = mock(ServerHttpResponse.class);
             var header = new HttpHeaders();
+
             header.put(HttpHeaders.LOCATION, Collections.singletonList("https://localhost:10010/api/v1/redirected_url"));
             when(res.getHeaders()).thenReturn(header);
 
@@ -100,7 +105,11 @@ class PageRedirectionFilterFactoryTest {
             setupInstanceInfo();
             var config = createConfig();
 
-            StepVerifier.create(factory.apply(config).filter(exchange, chain)).expectComplete().verify();
+            GatewayFilter gatewayFilter = factory.apply(config);
+            StepVerifier.create(gatewayFilter.filter(exchange, chain))
+                .thenAwait()
+                .expectComplete()
+                .verify();
             assertEquals(expectedUrl, res.getHeaders().getFirst(HttpHeaders.LOCATION));
         }
 
@@ -126,6 +135,7 @@ class PageRedirectionFilterFactoryTest {
 
     @Nested
     class GivenMissingGwConfig {
+
         @Test
         void thenDoNotTransform() {
             var expectedUrl = GW_BASE_URL + "http://localhost:10010/api/v1/redirected_url";

@@ -27,5 +27,6 @@ public final class ApimlConstants {
     public static final String HTTP_CLIENT_USE_CLIENT_CERTIFICATE = "apiml.useClientCert";
     public static final String SAF_TOKEN_HEADER = "X-SAF-Token";
     public static final String HEADER_OIDC_TOKEN = "OIDC-token";
+    public static final String X_INSTANCEID = "X-InstanceId";
 
 }
