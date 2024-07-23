@@ -8,14 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.min.css';
-import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 
 function getUrl(graphqlUrl) {
     const location = `${window.location.protocol}//${window.location.host}`;
-    const urlForPathName = new URL(graphqlUrl);
-    const pathName = urlForPathName.pathname;
+    const pathName = (new URL(graphqlUrl)).pathname;
     return `${location}${pathName}`;
 }
 
@@ -29,7 +28,7 @@ export default function GraphQLUIApiml(props) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(graphQLParams),
-            credentials: 'same-origin',
+            credentials: 'omit',
         });
         return data.json().catch(() => data.text());
     };
