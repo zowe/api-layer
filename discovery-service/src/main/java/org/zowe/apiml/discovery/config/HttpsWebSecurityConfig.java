@@ -142,7 +142,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.antMatcher("/discovery/**"))
+        baseConfigure(http.securityMatcher("/discovery/**"))
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider)
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));

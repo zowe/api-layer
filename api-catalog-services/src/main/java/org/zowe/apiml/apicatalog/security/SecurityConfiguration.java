@@ -151,7 +151,7 @@ public class SecurityConfiguration {
                 "/favicon.ico",
                 "/api-doc"
             };
-            return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+            return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
         }
 
         @Bean
