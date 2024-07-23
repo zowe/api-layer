@@ -25,11 +25,6 @@ import java.net.URISyntaxException;
 public class RegistryConfig {
 
     @Bean
-    public EurekaMetadataParser eurekaMetadataParser() {
-        return new EurekaMetadataParser();
-    }
-
-    @Bean
     public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }

@@ -75,6 +75,8 @@ apiml:
         timeout: 60000
         idleConnectionTimeoutSeconds: 5
         timeToLive: 10000
+    routing:
+        instanceIdHeader: false
     service:
         apimlId: apiml1
         corsEnabled: true

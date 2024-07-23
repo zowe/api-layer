@@ -31,7 +31,12 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.http.HttpHeaders.LOCATION;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.APPLICATIONS;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
+import static org.zowe.apiml.util.requests.Endpoints.STATIC_GREET;
+import static org.zowe.apiml.util.requests.Endpoints.STATIC_REDIRECT;
+import static org.zowe.apiml.util.requests.Endpoints.STATIC_UI;
+import static org.zowe.apiml.util.requests.Endpoints.STATIC_WEBSOCKET;
 
 /**
  * This is an integration test class for PageRedirectionFilter.java
@@ -77,9 +82,9 @@ class PageRedirectionTest implements TestWithStartedInstances {
         given()
             .contentType(JSON)
             .body(redirectLocation)
-            .when()
+        .when()
             .post(requestUrl)
-            .then()
+        .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
             .header(LOCATION, transformedLocation);
     }
@@ -99,9 +104,9 @@ class PageRedirectionTest implements TestWithStartedInstances {
         given()
             .contentType(JSON)
             .body(redirectLocation)
-            .when()
+        .when()
             .post(requestUrl)
-            .then()
+        .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
             .header(LOCATION, transformedLocation);
     }
@@ -120,9 +125,9 @@ class PageRedirectionTest implements TestWithStartedInstances {
         given()
             .contentType(JSON)
             .body(redirectLocation)
-            .when()
+        .when()
             .post(requestUrl)
-            .then()
+        .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
             .header(LOCATION, transformedLocation);
     }
@@ -159,9 +164,9 @@ class PageRedirectionTest implements TestWithStartedInstances {
         String xml =
             given()
                 .auth().basic(username, password)
-                .when()
+            .when()
                 .get(uri)
-                .then()
+            .then()
                 .statusCode(is(200))
                 .extract().body().asString();
 

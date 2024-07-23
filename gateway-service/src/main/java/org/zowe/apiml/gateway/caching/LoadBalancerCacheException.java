@@ -8,17 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.util.categories;
+package org.zowe.apiml.gateway.caching;
 
-import org.junit.jupiter.api.Tag;
+public class LoadBalancerCacheException extends RuntimeException {
 
-import java.lang.annotation.*;
+    LoadBalancerCacheException(Throwable cause) {
+        super(cause);
+    }
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-
-@Tag("LbHaTest")
-@Target({ TYPE, METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface LbHaTest {
 }

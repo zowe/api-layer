@@ -73,7 +73,10 @@ dependencies {
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.doc.webflux
     implementation libs.netty.reactor.http
-
+    implementation libs.jjwt
+    implementation libs.jjwt.impl
+    implementation libs.jjwt.jackson
+    implementation libs.nimbus.jose.jwt
     implementation libs.bcpkix
 
     implementation libs.swagger2.parser

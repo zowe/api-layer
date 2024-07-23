@@ -35,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthEndpointConfigTest extends AcceptanceTestWithMockServices {
 
-
     @BeforeAll
     void setup() throws IOException {
         mockService("zaas").scope(MockService.Scope.CLASS)
