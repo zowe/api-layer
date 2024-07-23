@@ -100,7 +100,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.requestMatchers(matchers -> matchers.requestMatchers(
+        baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                 "/application/**",
                 "/*"
         )))
@@ -122,7 +122,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(2)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.antMatcher("/eureka/**"));
+        baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));

@@ -100,7 +100,7 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                    baseConfiguration(http.requestMatchers(matchers -> matchers.antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
+                    baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
                     .authorizeHttpRequests(requests -> requests
                             .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
@@ -167,7 +167,6 @@ public class SecurityConfiguration {
 
 
             if (isHealthEndpointProtected) {
-             //   http.authorizeHttpRequests()
                 http.authorizeHttpRequests(requests -> requests
                     .requestMatchers("/application/health").authenticated());
             } else {

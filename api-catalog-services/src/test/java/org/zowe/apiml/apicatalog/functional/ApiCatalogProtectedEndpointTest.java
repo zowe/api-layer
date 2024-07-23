@@ -29,8 +29,6 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
     @Nested
     class GivenHealthEndPointProtectionEnabled {
 
-        @Nested
-        class WhenContextLoads {
 
             @Test
             void requestFailsWith401() {
@@ -39,7 +37,7 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
                     .get(getCatalogUriWithPath("apicatalog/application/health"))
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED);
-            }
+
 
         }
     }

@@ -120,7 +120,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/fonts/**",
             "/eureka/images/**"
         };
-        return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+        return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
     }
 
     @Bean
