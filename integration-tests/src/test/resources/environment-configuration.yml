@@ -73,6 +73,7 @@ safIdtConfiguration:
 oidcConfiguration:
     clientId:
 instanceEnv:
+# Try to avoid adding quotes to the values of these env variables
     CMMN_LB: build/libs/api-layer-lite-lib-all.jar
     ZWE_haInstance_hostname: localhost
     ZOWE_PREFIX: ZWE

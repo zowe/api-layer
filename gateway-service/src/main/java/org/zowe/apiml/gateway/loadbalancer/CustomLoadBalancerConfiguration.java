@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.loadbalancer;
 
 import io.jsonwebtoken.impl.DefaultClock;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -31,7 +30,6 @@ public class CustomLoadBalancerConfiguration {
      * @return the configured ServiceInstanceListSupplier
      */
     @Bean
-    @Qualifier("stickySessionLb")
     public ServiceInstanceListSupplier stickySessionServiceInstanceListSupplier(
         ConfigurableApplicationContext context, LoadBalancerCache cache,
         @Value("${instance.metadata.apiml.lb.cacheRecordExpirationTimeInHours:8}") int expirationTime) {

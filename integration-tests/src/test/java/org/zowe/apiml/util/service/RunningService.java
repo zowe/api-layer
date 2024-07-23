@@ -15,10 +15,13 @@ import org.junit.platform.commons.util.StringUtils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static java.util.stream.Collectors.joining;
 
 @Slf4j
 public class RunningService {
@@ -38,7 +41,7 @@ public class RunningService {
         this.parametersAfter = parametersAfter;
     }
 
-    public void start() throws IOException {
+    public void start(String... envs) throws IOException {
         log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
         stop();
 
@@ -48,6 +51,10 @@ public class RunningService {
         String path = Optional.ofNullable(System.getenv("JAVA_HOME"))
                                 .map(javaHome -> javaHome + "/bin/")
                                 .orElse("");
+
+        if (envs != null) {
+            path = Arrays.stream(envs).collect(joining(" ")) + "&&" + path;
+        }
 
         shellCommand.add(path + "java");
         parametersBefore
