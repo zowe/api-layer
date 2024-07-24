@@ -195,6 +195,7 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
+key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
 key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
@@ -256,12 +257,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} java \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
-    -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
+    -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-${ZWE_components_zaas_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
