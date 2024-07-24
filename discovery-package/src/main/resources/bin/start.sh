@@ -161,14 +161,14 @@ keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certifica
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 #echo "keystore='$keystore_location' truststore='$truststore_location'"
 if [ "${keystore_type}" = "JCERACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
 elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
 elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
