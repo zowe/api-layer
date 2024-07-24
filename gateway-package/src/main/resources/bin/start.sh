@@ -161,7 +161,7 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=

@@ -212,6 +212,15 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
 keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
+
+if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
+  keystore_type=
+  keystore_pass=
+  key_pass=
+  key_alias=
+  keystore_location=
+fi
+
 # NOTE: these are moved from below
 #    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
