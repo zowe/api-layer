@@ -13,7 +13,7 @@ dependencies {
     zaasServiceJar(project(path: ":zaas-service", configuration: "liteJarConfiguration"))
 }
 
-task packageApiGateway(type: Zip) {
+task packageZaas(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
 
@@ -30,7 +30,7 @@ task packageApiGateway(type: Zip) {
 }
 
 // save build information to manifest
-packageApiGateway.doFirst {
+packageZaas.doFirst {
     String manifest = file('src/main/resources/manifest.yaml').text
 
     def getCommitHash = 'git rev-parse --verify HEAD'.execute()
@@ -59,11 +59,11 @@ packageApiGateway.doFirst {
     convertedManifest.write(manifest)
 }
 
-jar.dependsOn(packageApiGateway)
-build.dependsOn(packageApiGateway)
+jar.dependsOn(packageZaas)
+build.dependsOn(packageZaas)
 
 artifacts {
-    zip packageApiGateway
+    zip packageZaas
 }
 
 publishing {
