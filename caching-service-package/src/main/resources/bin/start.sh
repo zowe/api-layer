@@ -197,7 +197,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
   -Dspring.profiles.include=$LOG_LEVEL \
   -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
-  -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
   -Dapiml.service.port=${ZWE_configs_port:-7555} \
   -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
