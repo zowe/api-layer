@@ -11,6 +11,7 @@ on:
                 options:
                     - all
                     - zaas-service
+                    - gateway-service
                     - discovery-service
                     - api-catalog-services
                     - caching-service

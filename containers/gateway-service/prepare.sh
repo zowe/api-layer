@@ -46,7 +46,6 @@ buildPackage $gateway_package "packageApiGateway"
 buildApimlCommonPackage
 
 preparePackage $gateway_package
-preparePackage $apiml_common_package "apiml-common-lib"
 prepareBasicFiles
 
 copyToBuildContext $linux_distro $cpu_arch
