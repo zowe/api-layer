@@ -33,7 +33,7 @@ export function getSnippetContent(req, target, codeSnippet) {
     const { spec, oasPathMethod } = req.toJS();
     const { path, method } = oasPathMethod;
     // Include query parameters in the path for comparison
-    const fullPath = `${path}${req.get('query') ? `?${new URLSearchParams(req.get('query')).toString()}` : ''}`;
+    const fullPath = `${path}${req?.get('query') ? `?${new URLSearchParams(req?.get('query')).toString()}` : ''}`;
     let snippet;
     try {
         // set request snippet content
