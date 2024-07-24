@@ -17,12 +17,12 @@ FROM zowe-docker-release.jfrog.io/ompzowe/base-jdk:${ZOWE_BASE_IMAGE} AS builder
 ##################################
 # labels
 LABEL name="API Gateway" \
-      maintainer="carson.cook@ibm.com" \
+      maintainer="pablo.carle@broadcom.com" \
       vendor="Zowe" \
       version="0.0.0" \
       release="0" \
       summary="API Mediation Layer Gateway" \
-      description="API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security."
+      description="API Gateway service to route requests to services registered in the API Mediation Layer."
 
 ##################################
 # switch context

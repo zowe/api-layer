@@ -16,13 +16,13 @@ FROM zowe-docker-release.jfrog.io/ompzowe/base-jdk:${ZOWE_BASE_IMAGE} AS builder
 
 ##################################
 # labels
-LABEL name="Gateway" \
-      maintainer="carson.cook@ibm.com" \
+LABEL name="ZAAS" \
+      maintainer="pablo.carle@broadcom.com" \
       vendor="Zowe" \
       version="0.0.0" \
       release="0" \
-      summary="API Mediation Layer Gateway" \
-      description="Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security."
+      summary="API Mediation Layer ZAAS" \
+      description="Zowe Authentication and Authorization Service provides an API for mainframe security."
 
 ##################################
 # switch context
