@@ -229,6 +229,7 @@ public class ConnectionsConfig {
 
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             if (setKeystore) {
+                log.info("Loading keystore: {}: {}", keyStoreType, keyStorePath);
                 KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
                 keyManagerFactory.init(keyStore, keyStorePassword);
                 builder.keyManager(keyManagerFactory);

@@ -171,17 +171,17 @@ keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certifica
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
 if [ "${keystore_type}" = "JCERACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
 elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
 elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
