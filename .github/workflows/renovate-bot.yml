@@ -1,0 +1,32 @@
+name: Renovate
+
+on:
+    schedule:
+      - cron: '0 6 * * *'
+    workflow_dispatch:
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renovatebot/renovate
+      options: --user root # workaround for checkout
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4 # using checkout to access workspace
+      - name: Run Renovate
+        env:
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          RENOVATE_CONFIG_FILE: ${{ github.workspace }}/config.js
+          LOG_LEVEL: debug
+        run: |
+          renovate
+
+      #      - name: Self-hosted Renovate
+      #        uses: renovatebot/github-action@v40.2.2
+      #        with:
+      #            configurationFile: ${{ github.workspace }}/config.js
+      #            token: ${{ secrets.RENOVATE_TOKEN }}
+      #      - name: Update size of nodes
+
+
