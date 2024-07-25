@@ -153,8 +153,6 @@ fi
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 if [ "${ATTLS_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
-    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
-    ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
@@ -197,6 +195,7 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
+key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
 key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
@@ -205,15 +204,24 @@ keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certifica
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
 if [ "${keystore_type}" = "JCERACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
 elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
 elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
+
+if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
+  keystore_type=
+  keystore_pass=
+  key_pass=
+  key_alias=
+  keystore_location=
+fi
+
 # NOTE: these are moved from below
 #    -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
@@ -232,7 +240,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} java \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-60000} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-60000} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-5} \
@@ -250,12 +257,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} java \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
-    -Dserver.ssl.keyAlias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}" \
+    -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}" \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-${ZWE_components_zaas_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
