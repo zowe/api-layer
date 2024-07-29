@@ -34,6 +34,8 @@ apiml:
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)
         allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+    health:
+        protected: false
 
 spring:
     application:

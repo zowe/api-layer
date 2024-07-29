@@ -11,6 +11,8 @@ eureka:
         securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
+                health:
+                    protected: false
                 catalog:
                     tile:
                         id: apimediationlayer
