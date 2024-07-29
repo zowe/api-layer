@@ -1,5 +1,6 @@
 type Query {
     getAllBooks: [Book]
+    getBookById(bookId:String!): Book
 }
 
 type Mutation {

@@ -3,22 +3,31 @@ package org.zowe.apiml.integration.graphql;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.zowe.apiml.util.config.BookConfiguration;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 @org.zowe.apiml.util.categories.BookControllerTest
 public class BookControllerTest {
 
+    private Book setUpBook(){
+
+        return new Book("New Book " + ThreadLocalRandom.current().nextInt(1, 10),
+            ThreadLocalRandom.current().nextInt(100, 601),
+            "dfvdb12");
+    }
+
     @Test
     public void whenGetAllBooks_thenReturnAllBooks() throws SSLException {
-
         SslContext sslContext = SslContextBuilder
             .forClient()
             .trustManager(InsecureTrustManagerFactory.INSTANCE)
@@ -35,7 +44,7 @@ public class BookControllerTest {
         String document = """
         query {
             getAllBooks {
-                id
+                bookId
                 name
             }
         }
@@ -43,14 +52,12 @@ public class BookControllerTest {
         tester.document(document)
             .execute()
             .path("getAllBooks")
-            .entityList(BookConfiguration.class)
+            .entityList(Book.class)
             .get();
-
     }
 
     @Test
-    public void whenGetAllBooksWithWrongSchema_thenReturnError() throws SSLException {
-
+    public void whenGetAllBooksWithWrongSchema_thenReturnException() throws SSLException {
         SslContext sslContext = SslContextBuilder
             .forClient()
             .trustManager(InsecureTrustManagerFactory.INSTANCE)
@@ -72,13 +79,396 @@ public class BookControllerTest {
         }
         """;
 
-        try {
+        AssertionError thrown = assertThrows(AssertionError.class, () -> {
             tester.document(document)
                 .execute()
                 .path("getAllBooks")
-                .entityList(BookConfiguration.class)
-                .hasSizeLessThan(1);
-        } catch (AssertionError ignored) {}
+                .entityList(Book.class)
+                .get();
+        });
+        assertNotNull(thrown);
+    }
 
+    @Test
+    public void whenAddBook_thenReturnAddedBook() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        Book expectedBook = setUpBook();
+        String addBookDocument = String.format("""
+         mutation {
+            addBook(name: "%s", pageCount: %d, authorId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, expectedBook.name, expectedBook.pageCount, expectedBook.authorId );
+
+        tester.document(addBookDocument)
+            .execute()
+            .path("addBook")
+            .entity(Book.class)
+            .satisfies(book -> {
+                assertNotNull(book.bookId);
+                assertEquals(expectedBook.name, book.name);
+                assertEquals(expectedBook.pageCount, book.pageCount);
+            });
+
+        String getAllBooksDocument = """
+        query {
+            getAllBooks {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """;
+        HttpGraphQlTester.Response getAllBooksResponse = tester.document(getAllBooksDocument)
+            .execute();
+        List<Book> books = getAllBooksResponse.path("getAllBooks").entityList(Book.class).get();
+
+        assertTrue(books.stream().anyMatch(book ->
+                book.name.equals(expectedBook.name) &&
+                book.pageCount.equals(expectedBook.pageCount)
+        ));
+    }
+
+    @Test
+    public void whenGetBookById_thenReturnMatchingBook() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        Book expectedBook = setUpBook();
+        String addBookDocument = String.format("""
+         mutation {
+            addBook(name: "%s", pageCount: %d, authorId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, expectedBook.name, expectedBook.pageCount, expectedBook.authorId);
+        HttpGraphQlTester.Response addBookResponse = tester.document(addBookDocument)
+            .execute();
+        String addedBookId = addBookResponse.path("addBook.bookId").entity(String.class).get();
+        String getBookByIdDocument = String.format("""
+        query {
+            getBookById(bookId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, addedBookId);
+
+        tester.document(getBookByIdDocument)
+            .execute()
+            .path("getBookById")
+            .entity(Book.class)
+            .satisfies(book -> {
+                assertEquals(addedBookId, book.bookId);
+            });
+    }
+
+    @Test
+    public void whenGetBookByIdWithWrongId_thenBookNotFound() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        String id = "UnexistingId";
+        String getBookByIdDocument = String.format("""
+        query {
+            getBookById(bookId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, id);
+
+        tester.document(getBookByIdDocument)
+            .execute()
+            .path("getBookById")
+            .valueIsNull();
+    }
+
+    @Test
+    public void whenAddBookWithNullParameter_thenReturnException() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        Book expectedBook = setUpBook();
+        String addBookDocument = String.format("""
+         mutation {
+            addBook(name: null, pageCount: %d, authorId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, expectedBook.pageCount, expectedBook.authorId );
+
+        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+            tester.document(addBookDocument)
+                .execute()
+                .path("addBook")
+                .entity(Book.class)
+                .get();
+        });
+        assertNotNull(thrown);
+    }
+
+    @Test
+    public void whenUpdateBook_thenReturnUpdatedBook() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        Book expectedBook = setUpBook();
+        String addBookDocument = String.format("""
+         mutation {
+            addBook(name: "%s", pageCount: %d, authorId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, expectedBook.name, expectedBook.pageCount, expectedBook.authorId);
+
+        HttpGraphQlTester.Response addBookResponse = tester.document(addBookDocument)
+            .execute();
+        String addedBookId = addBookResponse.path("addBook.bookId").entity(String.class).get();
+        Book updatedBook = new Book(addedBookId, "New name", 500);
+        String updateBookDocument = String.format("""
+        mutation {
+            updateBook(bookId: "%s", name: "%s", pageCount: %d) {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, updatedBook.bookId, updatedBook.name, updatedBook.pageCount);
+
+        tester.document(updateBookDocument)
+            .execute()
+            .path("updateBook")
+            .entity(Book.class)
+            .satisfies(book -> {
+                assertEquals(updatedBook.bookId, book.bookId);
+                assertEquals(updatedBook.name, book.name);
+                assertEquals(updatedBook.pageCount, book.pageCount);
+            });
+    }
+
+    @Test
+    public void whenUpdateUnknownBook_thenReturnException() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        Book bookToUpdateBook = setUpBook();
+        bookToUpdateBook.bookId = "unknown-id";
+        String updateBookDocument = String.format("""
+         mutation {
+            updateBook(bookId: "%s", name: "%s", pageCount: %d, authorId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, bookToUpdateBook.bookId, bookToUpdateBook.name, bookToUpdateBook.pageCount, bookToUpdateBook.authorId);
+
+        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+            tester.document(updateBookDocument)
+                .execute()
+                .path("updateBook")
+                .entity(Book.class)
+                .get();
+        });
+        assertNotNull(thrown);
+    }
+
+    @Test
+    public void whenDeleteBook_thenReturnDeletedBook() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        // add book which will be later deleted
+        Book bookToDelete = setUpBook();
+        String addBookDocument = String.format("""
+         mutation {
+            addBook(name: "%s", pageCount: %d, authorId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, bookToDelete.name, bookToDelete.pageCount, bookToDelete.authorId );
+
+        HttpGraphQlTester.Response addBookResponse = tester.document(addBookDocument)
+            .execute();
+        String addedBookId = addBookResponse.path("addBook.bookId").entity(String.class).get();
+
+        //delete book
+        String deleteBookDocument = String.format("""
+         mutation {
+            deleteBook(bookId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, addedBookId);
+        tester.document(deleteBookDocument)
+            .execute()
+            .path("deleteBook")
+            .entity(Book.class)
+            .satisfies(book -> {
+                assertEquals(addedBookId, book.bookId);
+                assertEquals(bookToDelete.name, book.name);
+                assertEquals(bookToDelete.pageCount, book.pageCount);
+            });
+
+        //verify that book was deleted
+        String getBookByIdDocument = String.format("""
+        query {
+            getBookById(bookId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, addedBookId);
+
+        tester.document(getBookByIdDocument)
+            .execute()
+            .path("getBookById")
+            .valueIsNull();
+    }
+
+    @Test
+    public void whenDeleteUnknownBook_thenReturnException() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+            .forClient()
+            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+            .build();
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebTestClient client =
+            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .build();
+        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
+
+        String unknownId = "unknown-id";
+        String deleteBookDocument = String.format("""
+         mutation {
+            deleteBook(bookId: "%s") {
+                bookId
+                name
+                pageCount
+            }
+        }
+        """, unknownId);
+
+        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+            tester.document(deleteBookDocument)
+                .execute()
+                .path("deleteBook")
+                .entity(Book.class)
+                .get();
+        });
+        assertNotNull(thrown);
+    }
+
+    static private class Book {
+        String bookId;
+        String name;
+        Integer pageCount;
+        String authorId;
+        public Book(){}
+        public Book(String bookId, String name, Integer pageCount) {
+            this.bookId = bookId;
+            this.name = name;
+            this.pageCount = pageCount;
+        }
+        public Book(String name, Integer pageCount, String authorId) {
+            this.name = name;
+            this.pageCount = pageCount;
+            this.authorId = authorId;
+        }
+        public String getBookId() { return bookId; }
+        public void setBookId(String bookId) { this.bookId = bookId; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+
+        public Integer getPageCount() { return pageCount; }
+        public void setPageCount(Integer pageCount) { this.pageCount = pageCount; }
+
+        public String getAuthorId() { return authorId; }
+        public void setAuthorId(String authorId) { this.authorId = authorId; }
     }
 }

@@ -1,4 +1,7 @@
 package org.zowe.apiml.client.model.graphql;
+import org.zowe.apiml.client.exception.BookAlreadyExistsException;
+import org.zowe.apiml.client.exception.BookNotFoundException;
+
 import java.util.*;
 
 public record Book (String bookId, String name, Integer pageCount, String authorId) {
@@ -13,6 +16,10 @@ public record Book (String bookId, String name, Integer pageCount, String author
         return books.stream().toList();
     }
 
+    public static Book getBookById(String bookId) {
+        return books.stream().filter(b -> b.bookId.equals(bookId)).findFirst().orElse(null);
+    }
+
     public static Book getById(String bookId) {
         return books.stream()
             .filter(book -> book.bookId().equals(bookId))
@@ -21,9 +28,21 @@ public record Book (String bookId, String name, Integer pageCount, String author
     }
 
     public static Book addBook(String name, Integer pageCount, String authorId){
-        Book book = new Book(UUID.randomUUID().toString(), name, pageCount, authorId);
-        books.add(book);
-        return book;
+        Book bookToAdd = books.stream()
+            .filter(book -> book.name().equals(name) &&
+                book.pageCount().equals(pageCount) &&
+                book.authorId().equals(authorId))
+            .findFirst()
+            .orElse(null);
+
+        if (bookToAdd == null) {
+            Book book = new Book(UUID.randomUUID().toString(), name, pageCount, authorId);
+            books.add(book);
+            return book;
+        }
+        else {
+            throw new BookAlreadyExistsException();
+        }
     }
 
     public static Book updateBook(String bookId, String name, Integer pageCount, String authorId){
@@ -43,13 +62,16 @@ public record Book (String bookId, String name, Integer pageCount, String author
             return updatedBook;
         }
         else {
-            return addBook(name, pageCount, authorId);
+            throw new BookNotFoundException();
         }
     }
 
     public static Book deleteBook(String bookId){
         Book book = getById(bookId);
-        books.remove(book);
-        return book;
+        if(book != null){
+            books.remove(book);
+            return book;
+        }
+        throw new BookNotFoundException();
     }
 }

@@ -30,6 +30,11 @@ public class BookController {
         return Book.getAllBooks();
     }
 
+    @QueryMapping
+    public Book getBookById(@Argument String bookId) {
+        return Book.getById(bookId);
+    }
+
     @MutationMapping
     public Book addBook(@Argument String name, @Argument Integer pageCount, @Argument String authorId){
         return Book.addBook(name, pageCount, authorId);
