@@ -1,7 +1,6 @@
 module.exports = {
     extends: ["group:allNonMajor", "config:recommended"],
     dependencyDashboard: true,
-    logFile: "renovate.log",
     repositories: ['zowe/api-layer'],
     baseBranches: ["v2.x.x","v3.x.x"],
     assignees: [],
