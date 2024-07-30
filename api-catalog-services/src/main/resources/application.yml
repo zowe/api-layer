@@ -45,6 +45,8 @@ logging:
 # APIML configuration section
 ##############################################################################################
 apiml:
+    health:
+        protected: false
     service:
         id: apicatalog
         hostname: localhost
