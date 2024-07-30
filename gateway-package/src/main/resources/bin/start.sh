@@ -252,7 +252,9 @@ if [ $JAVA_VERSION -ge 61 ]; then
     fi
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+# Disable Java keyring loading for ICSF hardware private key storage.
+# Only z/OSMF JWT authentication provider is supported with this type of keyrings.
+if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
@@ -283,7 +285,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.gateway.timeoutMillis=${ZWE_configs_apiml_gateway_timeoutMillis:-600000} \
-    -Dapiml.gateway.health.protected=${ZWE_configs_apiml_gateway_health_protected:-false} \
+    -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.auth.zosmf.serviceId=${ZWE_configs_apiml_security_auth_zosmf_serviceId:-zosmf} \
@@ -318,6 +320,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dserver.internal.port=${ZWE_configs_server_internal_port:-10017} \
     -Dserver.internal.ssl.keyAlias=${ZWE_configs_server_internal_ssl_certificate_keystore_alias:-localhost-multi} \
     -Dserver.internal.ssl.keyStore=${ZWE_configs_server_internal_ssl_certificate_keystore_file:-keystore/localhost/localhost-multi.keystore.p12} \
+    -Dapiml.httpclient.conn-pool.requestConnectionTimeout=${ZWE_configs_apiml_gateway_httpclient_requestConnectionTimeout:-10000} \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-auto} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
     -Dapiml.security.useInternalMapper=${ZWE_configs_apiml_security_useInternalMapper:-false} \

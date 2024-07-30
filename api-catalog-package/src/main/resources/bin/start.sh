@@ -188,7 +188,9 @@ if [ $JAVA_VERSION -ge 61 ]; then
     fi
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+# Disable Java keyring loading for ICSF hardware private key storage.
+# Only z/OSMF JWT authentication provider is supported with this type of keyrings.
+if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
@@ -216,6 +218,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \

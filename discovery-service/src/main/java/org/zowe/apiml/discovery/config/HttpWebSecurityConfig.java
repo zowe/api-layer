@@ -65,6 +65,9 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
@@ -117,20 +120,25 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/fonts/**",
             "/eureka/images/**"
         };
-        return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+        return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
     }
 
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
+
+        if (!isHealthEndpointProtected) {
+            http.authorizeHttpRequests(requests -> requests
+                .requestMatchers("/application/health").permitAll());
+        }
+
         baseConfigure(http)
-            .httpBasic().realmName(DISCOVERY_REALM)
-            .and()
-            .authorizeRequests()
-            .antMatchers("/application/info", "/application/health").permitAll()
-            .antMatchers("/**").authenticated();
+                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/application/info").permitAll()
+                        .requestMatchers("/**").authenticated());
 
         if (isMetricsEnabled) {
-            http.authorizeRequests().antMatchers("/application/hystrixstream").permitAll();
+            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

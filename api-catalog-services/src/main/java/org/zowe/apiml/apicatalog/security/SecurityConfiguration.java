@@ -71,13 +71,18 @@ public class SecurityConfiguration {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private final CertificateValidator certificateValidator;
+
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
+
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
+
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
@@ -95,10 +100,10 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(
-                    baseConfiguration(http.requestMatchers(matchers -> matchers.antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
+                    baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
             )
-                    .authorizeRequests(requests -> requests
-                            .antMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
+                    .authorizeHttpRequests(requests -> requests
+                            .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider)
                     .authenticationProvider(new CertificateAuthenticationProvider());
@@ -146,25 +151,34 @@ public class SecurityConfiguration {
                 "/favicon.ico",
                 "/api-doc"
             };
-            return web -> web.ignoring().antMatchers(noSecurityAntMatchers);
+            return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
         }
 
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
             mainframeCredentialsConfiguration(baseConfiguration(http))
-                    .authorizeRequests(requests -> requests
-                            .antMatchers("/static-api/**").authenticated()
-                            .antMatchers("/containers/**").authenticated()
-                            .antMatchers(APIDOC_ROUTES).authenticated()
-                            .antMatchers("/application/health", "/application/info").permitAll())
+                    .authorizeHttpRequests(requests -> requests
+                            .requestMatchers("/static-api/**").authenticated()
+                            .requestMatchers("/containers/**").authenticated()
+                            .requestMatchers(APIDOC_ROUTES).authenticated()
+                            .requestMatchers("/application/info").permitAll())
                     .authenticationProvider(gatewayLoginProvider)
                     .authenticationProvider(gatewayTokenProvider);
 
-            if (isMetricsEnabled) {
-                http.authorizeRequests(requests -> requests.antMatchers("/application/hystrixstream").permitAll());
+
+            if (isHealthEndpointProtected) {
+                http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/application/health").authenticated());
+            } else {
+                http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/application/health").permitAll());
             }
 
-            http.authorizeRequests(requests -> requests.antMatchers("/application/**").authenticated());
+            if (isMetricsEnabled) {
+                http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
+            }
+
+            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -202,8 +216,8 @@ public class SecurityConfiguration {
     private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
         http
                 // login endpoint
-                .authorizeRequests(requests -> requests
-                        .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
                 .logout(logout -> logout
                         .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
                         .logoutSuccessHandler(logoutSuccessHandler())).apply(new CustomSecurityFilters());

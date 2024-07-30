@@ -116,7 +116,7 @@ public class NewSecurityConfiguration {
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
-    @Value("${apiml.gateway.health.protected:false}")
+    @Value("${apiml.health.protected:false}")
     private boolean isHealthEndpointProtected;
 
     /**

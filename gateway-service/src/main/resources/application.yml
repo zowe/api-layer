@@ -28,6 +28,8 @@ logging:
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
+    health:
+        protected: false
     routing:
         mode: new
         instanceIdHeader: false
@@ -63,8 +65,6 @@ apiml:
                                              # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
                                              # properly.
         timeoutMillis: 30000  # Timeout for connection to the services
-        health:
-            protected: false
     security:
         filterChainConfiguration: new
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName

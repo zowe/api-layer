@@ -66,6 +66,7 @@ describe('>>> Code snippet generator', () => {
         };
 
         const req = {
+            get: jest.fn(),
             toJS: () => ({
                 spec,
                 oasPathMethod,
@@ -76,6 +77,73 @@ describe('>>> Code snippet generator', () => {
         const expectedResult =
             // eslint-disable-next-line no-useless-concat
             'HttpResponse<String> response = Unirest.get("http://undefinedundefined/path/to/api")\n' + '  .asString();';
+
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('generate a snippet for endpoint with query parameter', () => {
+        const system = {
+            Im: {
+                fromJS: (obj) => obj,
+            },
+        };
+        const title = 'Java Unirest';
+        const syntax = 'java';
+        const target = 'java_unirest';
+
+        const spec = {
+            paths: {
+                '/path/to/api': {
+                    get: {
+                        parameters: [
+                            {
+                                name: 'parameter',
+                                in: 'query',
+                                required: true,
+                                type: 'string',
+                            },
+                        ],
+                        responses: {
+                            200: {
+                                description: 'Response description',
+                                schema: {
+                                    $ref: '#/definitions/SomeSchema',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+
+        const oasPathMethod = {
+            path: '/path/to/api',
+            method: 'get',
+        };
+
+        const query = { parameter: 'value' };
+
+        const req = {
+            get: jest.fn((key) => {
+                if (key === 'query') {
+                    return query;
+                }
+                return undefined;
+            }),
+            toJS: () => ({
+                spec,
+                oasPathMethod,
+            }),
+        };
+
+        const codeSnippet = {
+            endpoint: '/path/to/api?parameter=value',
+            language: 'java',
+            codeBlock: 'Some java code;',
+        };
+
+        const result = generateSnippet(system, title, syntax, target, codeSnippet).fn(req);
+        const expectedResult = 'Some java code;';
 
         expect(result).toEqual(expectedResult);
     });
@@ -176,6 +244,7 @@ describe('>>> Code snippet generator', () => {
         };
 
         const req = {
+            get: jest.fn(),
             toJS: () => ({
                 spec,
                 oasPathMethod,
@@ -210,6 +279,7 @@ describe('>>> Code snippet generator', () => {
         };
 
         const req = {
+            get: jest.fn(),
             toJS: () => ({
                 spec,
                 oasPathMethod,
@@ -245,6 +315,7 @@ describe('>>> Code snippet generator', () => {
         };
 
         const req = {
+            get: jest.fn(),
             toJS: () => ({
                 spec,
                 oasPathMethod,
@@ -276,7 +347,9 @@ describe('>>> Code snippet generator', () => {
             path: '/path/to/api',
             method: 'get',
         };
+
         const req = {
+            get: jest.fn(),
             toJS: () => ({
                 spec,
                 oasPathMethod,

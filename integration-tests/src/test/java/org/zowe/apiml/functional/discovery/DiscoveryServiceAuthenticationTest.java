@@ -14,6 +14,9 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.DisplayName;
+
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -33,6 +36,7 @@ class DiscoveryServiceAuthenticationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private static final String ACTUATOR_ENDPOINT = "/application";
+    private static final String DISCOVERY_HEALTH_ENDPOINT =  "/application/health";
 
     @BeforeAll
     static void setup() throws Exception {
@@ -74,6 +78,21 @@ class DiscoveryServiceAuthenticationTest {
                         "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    class GivenHealthEndpointProtectionDisabled {
+
+        @Test
+        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
+        void thenDoNotRequireAuthentication() {
+            given()
+                .when()
+                .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
+                .then()
+                .statusCode(is(SC_OK));
         }
     }
 }
