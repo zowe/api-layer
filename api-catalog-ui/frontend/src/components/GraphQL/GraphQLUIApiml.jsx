@@ -29,7 +29,7 @@ export default function GraphQLUIApiml(props) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(graphQLParams),
-            credentials: 'omit',
+            credentials: 'same-origin',
         });
         return data.json().catch(() => data.text());
     };

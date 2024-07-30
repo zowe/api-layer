@@ -26,21 +26,30 @@ public class BookControllerTest {
             "dfvdb12");
     }
 
-    @Test
-    public void whenGetAllBooks_thenReturnAllBooks() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+    static HttpGraphQlTester setUpTester() {
+        String baseUrl = "https://localhost:10010/discoverableclient/api/v3/graphql";
+        SslContext sslContext = null;
+        try {
+            sslContext = SslContextBuilder
+                .forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .build();
+        } catch (SSLException e) {
+            throw new RuntimeException(e);
+        }
+        SslContext finalSslContext = sslContext;
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(finalSslContext));
 
         WebTestClient client =
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
+                .baseUrl(baseUrl)
                 .build();
+        return HttpGraphQlTester.create(client);
+    }
 
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+    @Test
+    public void whenGetAllBooks_thenReturnAllBooks() throws SSLException {
+        HttpGraphQlTester tester = setUpTester();
         String document = """
         query {
             getAllBooks {
@@ -58,19 +67,7 @@ public class BookControllerTest {
 
     @Test
     public void whenGetAllBooksWithWrongSchema_thenReturnException() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         String document = """
         query {
             getAllBooks {
@@ -91,18 +88,7 @@ public class BookControllerTest {
 
     @Test
     public void whenAddBook_thenReturnAddedBook() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -145,18 +131,7 @@ public class BookControllerTest {
 
     @Test
     public void whenGetBookById_thenReturnMatchingBook() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -191,18 +166,7 @@ public class BookControllerTest {
 
     @Test
     public void whenGetBookByIdWithWrongId_thenBookNotFound() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         String id = "UnexistingId";
         String getBookByIdDocument = String.format("""
         query {
@@ -222,18 +186,7 @@ public class BookControllerTest {
 
     @Test
     public void whenAddBookWithNullParameter_thenReturnException() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -257,18 +210,7 @@ public class BookControllerTest {
 
     @Test
     public void whenUpdateBook_thenReturnUpdatedBook() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -307,18 +249,7 @@ public class BookControllerTest {
 
     @Test
     public void whenUpdateUnknownBook_thenReturnException() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         Book bookToUpdateBook = setUpBook();
         bookToUpdateBook.bookId = "unknown-id";
         String updateBookDocument = String.format("""
@@ -343,18 +274,7 @@ public class BookControllerTest {
 
     @Test
     public void whenDeleteBook_thenReturnDeletedBook() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         // add book which will be later deleted
         Book bookToDelete = setUpBook();
         String addBookDocument = String.format("""
@@ -410,18 +330,7 @@ public class BookControllerTest {
 
     @Test
     public void whenDeleteUnknownBook_thenReturnException() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-            .forClient()
-            .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            .build();
-        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
-
-        WebTestClient client =
-            WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://localhost:10010/discoverableclient/api/v1/graphql")
-                .build();
-        HttpGraphQlTester tester = HttpGraphQlTester.create(client);
-
+        HttpGraphQlTester tester = setUpTester();
         String unknownId = "unknown-id";
         String deleteBookDocument = String.format("""
          mutation {

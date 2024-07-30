@@ -13,6 +13,7 @@ package org.zowe.apiml.client.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -29,6 +30,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfiguration {
 
     @Value("${server.attls.enabled:false}")
@@ -38,6 +40,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         HttpSecurity newConf = http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
             .authorizeHttpRequests(requests -> requests
+                .requestMatchers("/api/v3/graphql/**").authenticated()
                 .requestMatchers("/ws/**").authenticated()
                 .requestMatchers("/**").permitAll())
             .httpBasic(withDefaults());
@@ -54,13 +57,16 @@ public class SecurityConfiguration {
         UserDetails user = User.withDefaultPasswordEncoder()
             .username("user").password("pass").authorities(new SimpleGrantedAuthority("ADMIN"))
             .build();
-        return new InMemoryUserDetailsManager(user);
+        UserDetails secondUser = User.withDefaultPasswordEncoder()
+            .username("USER").password("ZOWE_DUMMY_PASS_TICKET").authorities(new SimpleGrantedAuthority("USER"))
+            .build();
+        return new InMemoryUserDetailsManager(user, secondUser);
     }
 
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web ->
-            web.ignoring().requestMatchers("/api/**");
+            web.ignoring().requestMatchers("/api/v1/**");
     }
 }

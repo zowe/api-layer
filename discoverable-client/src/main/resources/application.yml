@@ -32,7 +32,7 @@ spring:
     graphql:
         graphiql:
             enabled: true
-        path:  "/api/v1/graphql"
+        path:  "/api/v3/graphql"
 
 eureka:
     client:
@@ -102,11 +102,11 @@ apiml:
                 gatewayUrl: api/v2
                 swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/apiv2
                 documentationUrl: https://www.zowe.org
-            -   apiId: zowe.apiml.discoverableclient.graphql
-                version: 1.0.0
-                gatewayUrl: api/v1
-                graphqlUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/api/v1/graphql
-                documentationUrl: https://www.zowe.org
+#            -   apiId: zowe.apiml.discoverableclient.graphql
+#                version: 1.0.0
+#                gatewayUrl: api/v3
+#                graphqlUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/api/v3/graphql
+#                documentationUrl: https://www.zowe.org
         catalog:
             tile:
                 id: cademoapps
