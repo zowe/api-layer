@@ -10,19 +10,41 @@
 
 package org.zowe.apiml.gateway.security.service.token;
 
+import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.http.HttpStatus;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
+import java.io.IOException;
+
+@RequiredArgsConstructor
 @ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'endpoint' && '${apiml.security.oidc.enabled:false}' == 'true'")
 public class OIDCTokenProviderEndpoint implements OIDCProvider {
 
     @Value("${apiml.security.oidc.userInfo.uri}")
     private String endpointUrl;
 
+    private final CloseableHttpClient secureHttpClientWithKeystore;
+
     @Override
     public boolean isValid(String token) {
-        return false;
+        try {
+            HttpGet httpGet = new HttpGet(endpointUrl);
+            httpGet.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token);
+
+            HttpResponse httpResponse = secureHttpClientWithKeystore.execute(httpGet);
+
+            int responseCode = httpResponse.getStatusLine().getStatusCode();
+            return HttpStatus.valueOf(responseCode).is2xxSuccessful();
+        } catch (IOException ioe) {
+            return false;
+        }
     }
 
 }
