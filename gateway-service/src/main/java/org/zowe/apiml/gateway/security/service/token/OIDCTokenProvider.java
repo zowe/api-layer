@@ -53,6 +53,8 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCTokenProvider implements OIDCProvider {
 
+    private static final ValidationResult INVALID_JWT = ValidationResult.builder().valid(false).build();
+
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
@@ -123,17 +125,22 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     @Override
-    public boolean isValid(String token) {
+    public ValidationResult isValid(String token) {
         if (StringUtils.isBlank(token)) {
             log.debug("No token has been provided.");
-            return false;
+            return INVALID_JWT;
         }
         String kid = getKeyId(token);
         logger.log(MessageType.DEBUG, "Token signed by key {}", kid);
         return Optional.ofNullable(publicKeys.get(kid))
             .map(key -> validate(token, key))
-            .map(claims -> claims != null && !claims.isEmpty())
-            .orElse(false);
+            .filter(claims -> claims != null && !claims.isEmpty())
+            .map(claims -> ValidationResult.builder()
+                .valid(true)
+                .userId(claims.getSubject())
+                .build()
+            )
+            .orElse(INVALID_JWT);
     }
 
     private String getKeyId(String token) {
