@@ -5,7 +5,7 @@ module.exports = {
     baseBranches: ["v2.x.x","v3.x.x"],
     printConfig: true,
     labels: ["dependencies"],
-    prTitle: "chore: Update dependency {{depName}} to v{{newVersion}}",
+    commitMessagePrefix:"chore: ",
     prHourlyLimit: 0, // removes rate limit for PR creation per hour
     npmrc: "legacy-peer-deps=true", //for updating lock-files
     npmrcMerge: true //be combined with a "global" npmrc
