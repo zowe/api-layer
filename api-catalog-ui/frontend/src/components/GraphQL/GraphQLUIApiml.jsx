@@ -1,3 +1,4 @@
+/*eslint-disable*/
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -10,6 +11,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.min.css';
+import './GraphQLUIApiml.css'
 import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 
 function getUrl(graphqlUrl) {
@@ -31,11 +33,14 @@ export default function GraphQLUIApiml(props) {
             body: JSON.stringify(graphQLParams),
             credentials: 'same-origin',
         });
-        return data.json().catch(() => data.text());
+        return data
+            .clone()
+            .json()
+            .catch(() => data.text());
     };
     const [schema, setSchema] = useState(null);
     const [query, setQuery] = useState('# Write your query here!');
-    const graphiqlRef = useRef('');
+    const graphiqlRef = useRef(null);
 
     useEffect(() => {
         const fetchSchema = async () => {
@@ -49,9 +54,43 @@ export default function GraphQLUIApiml(props) {
         fetchSchema();
     }, [basePath]);
 
+    //rename default untitled tabs
+    useEffect(() => {
+        const updateTabText = () => {
+            const tabs = document.querySelectorAll('.graphiql-tab-button');
+            tabs.forEach((tab, index) => {
+                if (tab.textContent === '<untitled>') {
+                    tab.textContent = `My Query ${index + 1}`;
+                }
+            });
+        };
+        updateTabText();
+
+        const observer = new MutationObserver((mutationsList) => {
+            let updated = false;
+            for (let mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    // Reapply the text update for all tabs
+                    updateTabText();
+                    updated = true;
+                }
+            }
+        });
+        if (graphiqlRef.current) {
+            observer.observe(graphiqlRef.current, {
+                childList: true,
+                subtree: true,
+            });
+        }
+        return () => {
+            observer.disconnect();
+        };
+    }, [graphiqlRef]);
+
+
     return (
-        <div id="graphiql-container">
-            <GraphiQL ref={graphiqlRef} fetcher={fetcher} schema={schema} query={query} onEditQuery={setQuery}>
+        <div id="graphiql-container" ref={graphiqlRef}  >
+            <GraphiQL fetcher={fetcher} schema={schema} query={query} onEditQuery={setQuery}>
                 <GraphiQL.Toolbar />
             </GraphiQL>
         </div>

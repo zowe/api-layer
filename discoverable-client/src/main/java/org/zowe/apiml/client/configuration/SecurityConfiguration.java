@@ -40,7 +40,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         HttpSecurity newConf = http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers("/api/v3/graphql/**").authenticated()
+//                .requestMatchers("/api/v3/graphql/**").authenticated()
                 .requestMatchers("/ws/**").authenticated()
                 .requestMatchers("/**").permitAll())
             .httpBasic(withDefaults());
@@ -57,10 +57,7 @@ public class SecurityConfiguration {
         UserDetails user = User.withDefaultPasswordEncoder()
             .username("user").password("pass").authorities(new SimpleGrantedAuthority("ADMIN"))
             .build();
-        UserDetails secondUser = User.withDefaultPasswordEncoder()
-            .username("USER").password("ZOWE_DUMMY_PASS_TICKET").authorities(new SimpleGrantedAuthority("USER"))
-            .build();
-        return new InMemoryUserDetailsManager(user, secondUser);
+        return new InMemoryUserDetailsManager(user);
     }
 
 

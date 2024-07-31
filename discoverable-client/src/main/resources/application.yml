@@ -97,6 +97,11 @@ apiml:
                           String name = "John";
                           Greeting greeting = new Greeting(new Date(), String.format(template, name));
                           System.out.println(greeting.getContent());
+            -   apiId: zowe.apiml.discoverableclient.ws
+                version: 1.0.0
+                gatewayUrl: graphql/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/graphv1
+                documentationUrl: https://www.zowe.org
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2

@@ -165,6 +165,7 @@ export default class ServiceTab extends Component {
         const { containsVersion } = this;
         const graphqlUrl = this.getGraphqlUrl(this.props.selectedService.apis);
         const title = graphqlUrl ? 'GraphQL' : 'Swagger';
+        const showVersionDiv = !graphqlUrl;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         return (
@@ -250,18 +251,20 @@ export default class ServiceTab extends Component {
                             <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
                                 {title}
                             </Typography>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                {containsVersion && currentService && (
-                                    <Typography id="version-label" variant="subtitle2">
-                                        Service ID and Version:
-                                    </Typography>
-                                )}
-                                {currentService && apiVersions?.length === 1 && apiVersions[0]?.key && (
-                                    <Typography id="single-api-version-label" variant="subtitle2">
-                                        {apiVersions[0].key}
-                                    </Typography>
-                                )}
-                            </div>
+                            {showVersionDiv && (
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    {containsVersion && currentService && (
+                                        <Typography id="version-label" variant="subtitle2">
+                                            Service ID and Version:
+                                        </Typography>
+                                    )}
+                                    {currentService && apiVersions?.length === 1 && apiVersions[0]?.key && (
+                                        <Typography id="single-api-version-label" variant="subtitle2">
+                                            {apiVersions[0].key}
+                                        </Typography>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         {currentService && apiVersions?.length > 1 && (
                             <div id="version-div">

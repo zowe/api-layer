@@ -115,7 +115,7 @@ services:
             -   apiId: zowe.apiml.discoverableclient
                 gatewayUrl: api/v3
                 version: 1.0.0
-                graphqlUrl: https://localhost:10012/graphqlclient/api/v3/graphql
+                graphqlUrl: https://localhost:10012/discoverableclient/api/v3/graphql
 
 
     - serviceId: dcpassticket  # unique lowercase ID of the service

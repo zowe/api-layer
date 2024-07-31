@@ -30,7 +30,6 @@ public class BookController {
 
     @QueryMapping
     public List<Book> getAllBooks() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return Book.getAllBooks();
     }
 
