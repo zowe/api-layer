@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.core.MessageType;
@@ -50,10 +50,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
-public class OIDCTokenProvider implements OIDCProvider {
-
-    private static final ValidationResult INVALID_JWT = ValidationResult.builder().valid(false).build();
+@ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'JWK' && '${apiml.security.oidc.enabled:false}' == 'true'")
+public class OIDCTokenProviderJWK implements OIDCProvider {
 
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -125,22 +123,17 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     @Override
-    public ValidationResult isValid(String token) {
+    public boolean isValid(String token) {
         if (StringUtils.isBlank(token)) {
             log.debug("No token has been provided.");
-            return INVALID_JWT;
+            return false;
         }
         String kid = getKeyId(token);
         logger.log(MessageType.DEBUG, "Token signed by key {}", kid);
         return Optional.ofNullable(publicKeys.get(kid))
             .map(key -> validate(token, key))
-            .filter(claims -> claims != null && !claims.isEmpty())
-            .map(claims -> ValidationResult.builder()
-                .valid(true)
-                .userId(claims.getSubject())
-                .build()
-            )
-            .orElse(INVALID_JWT);
+            .map(claims -> claims != null && !claims.isEmpty())
+            .orElse(false);
     }
 
     private String getKeyId(String token) {

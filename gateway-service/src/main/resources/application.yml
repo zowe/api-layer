@@ -82,6 +82,9 @@ apiml:
             identityMapperUser:
             jwks:
                 uri:
+            userInfo:
+                uri:
+            validationType: JWK
         auth:
             jwt:
                 customAuthHeader:

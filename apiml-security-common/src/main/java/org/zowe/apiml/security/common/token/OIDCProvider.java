@@ -10,20 +10,7 @@
 
 package org.zowe.apiml.security.common.token;
 
-import lombok.Builder;
-import lombok.Data;
-
 public interface OIDCProvider {
 
-    ValidationResult isValid(String token);
-
-    @Data
-    @Builder
-    class ValidationResult {
-
-        boolean valid;
-        String userId;
-
-    }
-
+    boolean isValid(String token);
 }
