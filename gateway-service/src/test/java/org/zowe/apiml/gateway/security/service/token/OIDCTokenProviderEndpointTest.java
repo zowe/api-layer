@@ -70,7 +70,9 @@ class OIDCTokenProviderEndpointTest {
     private final static String MF_USER = "USER";
 
     private final static String VALID_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
-    private final static String INVALID_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJ0eXBlIjogImludmFsaWQiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
+    private final static String INVALID_TOKEN = "XewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
+
+    // private final static String INVALID_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJ0eXBlIjogImludmFsaWQiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
 
     @Autowired
     OIDCTokenProviderEndpoint oidcTokenProviderEndpoint;
@@ -112,12 +114,14 @@ class OIDCTokenProviderEndpointTest {
             HttpUriRequest request = invocation.getArgument(0);
             switch (request.getURI().getPath()) {
             case "/user/info":
+                System.out.println(" hit /user/info");
                 String authHeader = request.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue();
                 if (StringUtils.equals(BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN, authHeader)) {
                     return createResponse(SC_OK, "{\"detail\":\"information\")");
                 }
                 return createResponse(SC_UNAUTHORIZED, "{\"error\":\"message\")");
             case "/request":
+                System.out.println(" hit request");
                 return createResponse(SC_OK, "{\"status\":\"ok\"}", copyHeaders(request, HttpHeaders.AUTHORIZATION, HEADER_OIDC_TOKEN));
             default:
                 fail("Unknown endpoint");
@@ -168,7 +172,7 @@ class OIDCTokenProviderEndpointTest {
             .get(basePath + "/app/api/v1/request")
         .then()
             .statusCode(is(SC_OK))
-            .header(HttpHeaders.AUTHORIZATION, INVALID_TOKEN)
+            .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
             .header(HEADER_OIDC_TOKEN, nullValue());
     }
 
