@@ -1,5 +1,5 @@
 module.exports = {
-    extends: ["group:allNonMajor", "config:recommended"],
+    extends: ["config:recommended", "group:allNonMajor"],
     dependencyDashboard: true,
     repositories: ['zowe/api-layer'],
     baseBranches: ["v2.x.x","v3.x.x"],
@@ -10,3 +10,4 @@ module.exports = {
     npmrc: "legacy-peer-deps=true", //for updating lock-files
     npmrcMerge: true //be combined with a "global" npmrc
 };
+
