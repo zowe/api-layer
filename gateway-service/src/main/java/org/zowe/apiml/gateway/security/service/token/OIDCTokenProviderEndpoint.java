@@ -18,12 +18,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
+@Service
 @ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'endpoint' && '${apiml.security.oidc.enabled:false}' == 'true'")
 public class OIDCTokenProviderEndpoint implements OIDCProvider {
 
