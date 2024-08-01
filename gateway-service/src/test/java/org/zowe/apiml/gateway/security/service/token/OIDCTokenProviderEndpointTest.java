@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
@@ -144,6 +145,7 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Test
+    @DirtiesContext
     void givenValidTokenWithMapping_thenSetOidcToken() {
         Config.mfUserExists = true;
         given()
@@ -158,6 +160,7 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Test
+    @DirtiesContext
     void givenInvalidToken_thenRejectAccessToEndpoint() {
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + INVALID_TOKEN)
