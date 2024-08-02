@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
@@ -64,9 +63,14 @@ import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
         "apiml.security.oidc.validationType=endpoint",
         "apiml.security.oidc.enabled=true",
         "apiml.security.oidc.userInfo.uri=https://localhost/user/info",
-        "apiml.security.filterChainConfiguration=new"
-    })
-@Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class, OIDCTokenProviderEndpoint.class, OIDCTokenProviderEndpointTest.Config.class})
+        "apiml.security.filterChainConfiguration=new",
+        "server.internal.enabled=false"
+    }
+)
+@Import({
+    GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class,
+    OIDCTokenProviderEndpoint.class, OIDCTokenProviderEndpointTest.Config.class
+})
 class OIDCTokenProviderEndpointTest {
 
     private final static String MF_USER = "USER";
@@ -134,7 +138,6 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Test
-    @DirtiesContext
     void givenValidTokenWithoutMapping_thenSetOidcToken() {
         Config.mfUserExists = false;
         given()
@@ -148,7 +151,6 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Test
-    @DirtiesContext
     void givenValidTokenWithMapping_thenSetZoweToken() {
         Config.mfUserExists = true;
         given()
