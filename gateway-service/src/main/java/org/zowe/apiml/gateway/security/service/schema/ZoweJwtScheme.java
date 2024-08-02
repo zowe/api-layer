@@ -70,7 +70,7 @@ public class ZoweJwtScheme implements IAuthenticationScheme {
         try {
             parsedAuthSource = authSourceService.parse(authSource);
             if (parsedAuthSource == null) {
-                throw new IllegalStateException("Error occurred while parsing authenticationSource");
+                throw new AuthSchemeException("org.zowe.apiml.gateway.security.invalidToken");
             }
             jwt = authSourceService.getJWT(authSource);
         } catch (TokenNotValidException e) {

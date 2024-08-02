@@ -57,7 +57,9 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
 import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
 
-@SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+@SpringBootTest(
+    classes = GatewayTestApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
         "apiml.security.oidc.validationType=endpoint",
         "apiml.security.oidc.enabled=true",
@@ -70,7 +72,7 @@ class OIDCTokenProviderEndpointTest {
     private final static String MF_USER = "USER";
 
     private final static String VALID_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
-    private final static String INVALID_TOKEN = "XewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
+    private final static String INVALID_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJ0eXBlIjogImludmFsaWQiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
 
     @Autowired
     OIDCTokenProviderEndpoint oidcTokenProviderEndpoint;
@@ -132,6 +134,7 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Test
+    @DirtiesContext
     void givenValidTokenWithoutMapping_thenSetOidcToken() {
         Config.mfUserExists = false;
         given()
@@ -146,7 +149,7 @@ class OIDCTokenProviderEndpointTest {
 
     @Test
     @DirtiesContext
-    void givenValidTokenWithMapping_thenSetOidcToken() {
+    void givenValidTokenWithMapping_thenSetZoweToken() {
         Config.mfUserExists = true;
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN)
@@ -160,8 +163,19 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Test
-    @DirtiesContext
-    void givenInvalidToken_thenRejectAccessToEndpoint() {
+    void givenUnparseableToken_thenDoNotChangeAuthorization() {
+        given()
+            .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " X" + INVALID_TOKEN)
+        .when()
+            .get(basePath + "/app/api/v1/request")
+        .then()
+            .statusCode(is(SC_OK))
+            .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
+            .header(HEADER_OIDC_TOKEN, nullValue());
+    }
+
+    @Test
+    void givenInvalidToken_thenDoNotChangeAuthorization() {
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + INVALID_TOKEN)
         .when()
