@@ -24,20 +24,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.acceptance.common.Service;
+import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
 import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
 import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
-import org.zowe.apiml.acceptance.config.GatewayTestApplication;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
@@ -57,23 +53,19 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
 import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
 
-@SpringBootTest(
-    classes = GatewayTestApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "apiml.security.oidc.validationType=endpoint",
-        "apiml.security.oidc.enabled=true",
-        "apiml.security.oidc.userInfo.uri=https://localhost/user/info",
-        "apiml.security.filterChainConfiguration=new",
-        "server.internal.enabled=false"
-    }
-)
+@TestPropertySource(properties = {
+    "apiml.security.oidc.validationType=endpoint",
+    "apiml.security.oidc.enabled=true",
+    "apiml.security.oidc.userInfo.uri=https://localhost/user/info",
+    "apiml.security.filterChainConfiguration=new",
+    "server.internal.enabled=false"
+})
 @Import({
     GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class,
     OIDCTokenProviderEndpoint.class, OIDCTokenProviderEndpointTest.Config.class
 })
-@DirtiesContext
-class OIDCTokenProviderEndpointTest {
+@ActiveProfiles("OIDCTokenProviderEndpointTest")
+class OIDCTokenProviderEndpointTest extends AcceptanceTestWithTwoServices {
 
     private final static String MF_USER = "USER";
 
@@ -112,7 +104,6 @@ class OIDCTokenProviderEndpointTest {
 
     @BeforeEach
     public void init() throws IOException {
-        applicationRegistry.clearApplications();
         reset(mockClient);
 
         basePath = String.format("https://localhost:%d", port);
@@ -122,24 +113,28 @@ class OIDCTokenProviderEndpointTest {
         doAnswer(invocation -> {
             HttpUriRequest request = invocation.getArgument(0);
             switch (request.getURI().getPath()) {
-            case "/user/info":
-                String authHeader = request.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue();
-                if (StringUtils.equals(BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN, authHeader)) {
-                    return createResponse(SC_OK, "{\"detail\":\"information\")");
-                }
-                return createResponse(SC_UNAUTHORIZED, "{\"error\":\"message\")");
-            case "/request":
-                return createResponse(SC_OK, "{\"status\":\"ok\"}", copyHeaders(request, HttpHeaders.AUTHORIZATION, HEADER_OIDC_TOKEN));
-            default:
-                fail("Unknown endpoint");
+                case "/user/info":
+                    String authHeader = request.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue();
+                    if (StringUtils.equals(BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN, authHeader)) {
+                        return createResponse(SC_OK, "{\"detail\":\"information\")");
+                    }
+                    return createResponse(SC_UNAUTHORIZED, "{\"error\":\"message\")");
+                case "/api/v1/request":
+                    return createResponse(SC_OK, "{\"status\":\"ok\"}", copyHeaders(request, HttpHeaders.AUTHORIZATION, HEADER_OIDC_TOKEN));
+                default:
+                    fail("Unknown endpoint: " + request.getURI().getPath());
             }
             return null;
         }).when(mockClient).execute(any());
+    }
 
-        MetadataBuilder serviceMetadataBuilder = MetadataBuilder.defaultInstance().withZoweJwt();
-        Service service = new Service("app", "/app/api/v1/**", "api/v1");
-        applicationRegistry.addApplication(service, serviceMetadataBuilder, false);
-        applicationRegistry.setCurrentApplication("app");
+    @Override
+    @BeforeEach
+    public void prepareApplications() {
+        applicationRegistry.clearApplications();
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance().withZoweJwt(), false);
+
     }
 
     @Test
@@ -148,7 +143,7 @@ class OIDCTokenProviderEndpointTest {
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN)
         .when()
-            .get(basePath + "/app/api/v1/request")
+            .get(basePath + "/serviceid1/api/v1/request")
         .then()
             .statusCode(is(SC_OK))
             .header(HEADER_OIDC_TOKEN, VALID_TOKEN)
@@ -161,7 +156,7 @@ class OIDCTokenProviderEndpointTest {
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN)
         .when()
-            .get(basePath + "/app/api/v1/request")
+            .get(basePath + "/serviceid1/api/v1/request")
         .then()
             .statusCode(is(SC_OK))
             .header(HttpHeaders.AUTHORIZATION, CoreMatchers.startsWith(BEARER_AUTHENTICATION_PREFIX))
@@ -174,7 +169,7 @@ class OIDCTokenProviderEndpointTest {
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " X" + INVALID_TOKEN)
         .when()
-            .get(basePath + "/app/api/v1/request")
+            .get(basePath + "/serviceid1/api/v1/request")
         .then()
             .statusCode(is(SC_OK))
             .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
@@ -186,13 +181,14 @@ class OIDCTokenProviderEndpointTest {
         given()
             .header(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + INVALID_TOKEN)
         .when()
-            .get(basePath + "/app/api/v1/request")
+            .get(basePath + "/serviceid1/api/v1/request")
         .then()
             .statusCode(is(SC_OK))
             .header("x-zowe-auth-failure", is("ZWEAG102E Token is not valid"))
             .header(HEADER_OIDC_TOKEN, nullValue());
     }
 
+    @Profile("OIDCTokenProviderEndpointTest")
     @Configuration
     static class Config {
 
