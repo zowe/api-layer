@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.security.service.token;
+package org.zowe.apiml.acceptance;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -17,14 +17,11 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,9 +31,9 @@ import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
 import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
 import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
-import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.mapping.AuthenticationMapper;
+import org.zowe.apiml.gateway.security.service.token.OIDCTokenProviderEndpoint;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -57,8 +54,7 @@ import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
     "apiml.security.oidc.validationType=endpoint",
     "apiml.security.oidc.enabled=true",
     "apiml.security.oidc.userInfo.uri=https://localhost/user/info",
-    "apiml.security.filterChainConfiguration=new",
-    "server.internal.enabled=false"
+    "apiml.security.filterChainConfiguration=new"
 })
 @Import({
     GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class,
@@ -74,18 +70,6 @@ class OIDCTokenProviderEndpointTest extends AcceptanceTestWithTwoServices {
 
     @Autowired
     OIDCTokenProviderEndpoint oidcTokenProviderEndpoint;
-
-    @Autowired
-    protected ApplicationRegistry applicationRegistry;
-
-    @Autowired
-    @Qualifier("mockProxy")
-    protected CloseableHttpClient mockClient;
-
-    @LocalServerPort
-    protected int port;
-
-    protected String basePath;
 
     private CloseableHttpResponse createResponse(int responseCode, String body, Header...headers) {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
@@ -106,7 +90,13 @@ class OIDCTokenProviderEndpointTest extends AcceptanceTestWithTwoServices {
     public void init() throws IOException {
         reset(mockClient);
 
-        basePath = String.format("https://localhost:%d", port);
+        applicationRegistry.clearApplications();
+
+        MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
+        defaultBuilder.withZoweJwt();
+        applicationRegistry.addApplication(serviceWithCustomConfiguration, defaultBuilder, false);
+        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+
         ReflectionTestUtils.setField(oidcTokenProviderEndpoint, "endpointUrl", "https://oidc.provider.com/user/info");
         ReflectionTestUtils.setField(oidcTokenProviderEndpoint, "secureHttpClientWithKeystore", mockClient);
 
@@ -126,15 +116,6 @@ class OIDCTokenProviderEndpointTest extends AcceptanceTestWithTwoServices {
             }
             return null;
         }).when(mockClient).execute(any());
-    }
-
-    @Override
-    @BeforeEach
-    public void prepareApplications() {
-        applicationRegistry.clearApplications();
-        applicationRegistry.addApplication(serviceWithDefaultConfiguration, MetadataBuilder.defaultInstance(), false);
-        applicationRegistry.addApplication(serviceWithCustomConfiguration, MetadataBuilder.customInstance().withZoweJwt(), false);
-
     }
 
     @Test
