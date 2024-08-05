@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
@@ -71,6 +72,7 @@ import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
     GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class,
     OIDCTokenProviderEndpoint.class, OIDCTokenProviderEndpointTest.Config.class
 })
+@DirtiesContext
 class OIDCTokenProviderEndpointTest {
 
     private final static String MF_USER = "USER";
@@ -109,7 +111,10 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @BeforeEach
-    public void setBasePath() throws IOException {
+    public void init() throws IOException {
+        applicationRegistry.clearApplications();
+        reset(mockClient);
+
         basePath = String.format("https://localhost:%d", port);
         ReflectionTestUtils.setField(oidcTokenProviderEndpoint, "endpointUrl", "https://oidc.provider.com/user/info");
         ReflectionTestUtils.setField(oidcTokenProviderEndpoint, "secureHttpClientWithKeystore", mockClient);
