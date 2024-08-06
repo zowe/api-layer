@@ -1,0 +1,27 @@
+name: Renovate
+
+on:
+    schedule:
+        - cron: '0 0 * * 1-5' #UTC
+    workflow_dispatch:
+
+jobs:
+    renovate:
+        runs-on: ubuntu-latest
+
+        container:
+            image: ghcr.io/renovatebot/renovate
+            options: --user root # workaround for checkout
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4 # using checkout to access workspace
+
+            - name: Run Renovate
+              env:
+                  # RENOVATE_TOKEN should have access :read_user, api, write_repository (repo checkbox)
+                  RENOVATE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RENOVATE_CONFIG_FILE: ${{ github.workspace }}/renovate-config.js
+                  LOG_LEVEL: error
+              run: |
+                  renovate
