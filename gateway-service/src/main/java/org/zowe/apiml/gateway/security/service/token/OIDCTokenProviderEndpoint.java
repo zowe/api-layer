@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.security.service.token;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -26,6 +27,7 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 @ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'endpoint' && '${apiml.security.oidc.enabled:false}' == 'true'")
 public class OIDCTokenProviderEndpoint implements OIDCProvider {
 
@@ -44,7 +46,8 @@ public class OIDCTokenProviderEndpoint implements OIDCProvider {
 
             int responseCode = httpResponse.getStatusLine().getStatusCode();
             return HttpStatus.valueOf(responseCode).is2xxSuccessful();
-        } catch (IOException ioe) {
+        } catch (IOException e) {
+            log.error("error validating userInfo URI {} message: {}", endpointUrl, e.getMessage());
             return false;
         }
     }
