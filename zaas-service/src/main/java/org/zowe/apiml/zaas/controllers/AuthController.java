@@ -37,7 +37,7 @@ import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
@@ -68,7 +68,7 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     @Nullable
-    private final OIDCTokenProvider oidcProvider;
+    private final OIDCTokenProviderJWK oidcProvider;
     private final WebFingerProvider webFingerProvider;
 
     private static final String TOKEN_KEY = "token";
