@@ -47,7 +47,7 @@ public class OIDCTokenProviderEndpoint implements OIDCProvider {
             int responseCode = httpResponse.getStatusLine().getStatusCode();
             return HttpStatus.valueOf(responseCode).is2xxSuccessful();
         } catch (IOException e) {
-            log.error("error validating userInfo URI {} message: {}", endpointUrl, e.getMessage());
+            log.error("error validating token using userInfo URI {} message: {}", endpointUrl, e.getMessage());
             return false;
         }
     }

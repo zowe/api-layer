@@ -75,7 +75,7 @@ class ZoweJwtSchemeTest {
         void givenNullParsingResult_thenThrows() {
             AuthSource authSource = new JwtAuthSource("jwt");
             doReturn(null).when(authSourceService).parse(any(AuthSource.class));
-            assertThrows(AuthSchemeException.class, () -> scheme.createCommand(null, authSource));
+            assertThrows(IllegalStateException.class, () -> scheme.createCommand(null, authSource));
         }
 
         @Test
