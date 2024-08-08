@@ -48,8 +48,6 @@ import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderEndpoint;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
 
 import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
@@ -100,19 +98,12 @@ class OIDCTokenProviderEndpointTest {
         return response;
     }
 
-    private Header[] copyHeaders(HttpUriRequest request, String...headerNames) {
-        return Arrays.stream(headerNames)
-            .map(request::getFirstHeader)
-            .filter(Objects::nonNull)
-            .toArray(Header[]::new);
-    }
-
     @BeforeAll
     public void init() throws IOException {
         zaasEndpoint = "https://localhost:" + port + CONTROLLER_PATH + "/zoweJwt";
 
         SSLContext sslContext = httpConfig.secureSslContext();
-        withClientCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
+        withClientCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER))); // NOSONAR
 
         Mockito.doAnswer(invocation -> {
             HttpUriRequest request = invocation.getArgument(0);
