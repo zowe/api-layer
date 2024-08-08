@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.error.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -36,6 +37,7 @@ import java.util.List;
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
+@Slf4j
 public class InternalServerErrorController implements ApimlErrorController {
     public static final String ERROR_ENDPOINT = "/internal_error";
 
@@ -83,6 +85,7 @@ public class InternalServerErrorController implements ApimlErrorController {
 
     private ResponseEntity<ApiMessageView> createResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
+        log.debug("error creating the response for path {} and the status is ", request.getPathInfo(), status);
         Message message = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
             ErrorUtils.getGatewayUri(request),
             ExceptionUtils.getMessage(exc),
