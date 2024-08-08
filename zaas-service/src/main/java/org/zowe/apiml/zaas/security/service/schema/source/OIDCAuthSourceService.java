@@ -94,7 +94,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
             if (isValid(authSource)) {
                 return parseOIDCToken((OIDCAuthSource) authSource, mapper);
             }
-
             throw new TokenNotValidException("OIDC token is not valid.");
         }
         return null;
