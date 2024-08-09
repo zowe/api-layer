@@ -177,10 +177,9 @@ class OIDCAuthSourceServiceTest {
         void whenParse_thenReturnNull() {
             OIDCAuthSource authSource = new OIDCAuthSource(TOKEN);
             when(provider.isValid(TOKEN)).thenReturn(false);
-            AuthSource.Parsed parsedSource = service.parse(authSource);
+            assertThrows(TokenNotValidException.class, () -> service.parse(authSource));
 
             verify(mapper, times(0)).mapToMainframeUserId(authSource);
-            assertNull(parsedSource);
         }
 
         @Test

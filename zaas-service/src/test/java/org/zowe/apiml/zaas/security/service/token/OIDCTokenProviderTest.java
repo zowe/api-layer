@@ -50,13 +50,13 @@ class OIDCTokenProviderTest {
 
     private static final String TOKEN = "token";
 
-    private OIDCTokenProvider oidcTokenProvider;
+    private OIDCTokenProviderJWK oidcTokenProvider;
 
     private JWKSet jwkSet;
 
     @BeforeEach
     void setup() throws CachingServiceClientException {
-        oidcTokenProvider = new OIDCTokenProvider(new DefaultClock());
+        oidcTokenProvider = new OIDCTokenProviderJWK(new DefaultClock());
         ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1);
         ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
         oidcTokenProvider.clientId = "client_id";
@@ -190,7 +190,7 @@ class OIDCTokenProviderTest {
 
         @BeforeEach
         public void setUp() {
-            oidcTokenProvider = new OIDCTokenProvider(new DefaultClock());
+            oidcTokenProvider = new OIDCTokenProviderJWK(new DefaultClock());
             ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
         }
 

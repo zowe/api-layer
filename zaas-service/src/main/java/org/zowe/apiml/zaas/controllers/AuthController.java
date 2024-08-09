@@ -37,7 +37,7 @@ import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
@@ -68,7 +68,7 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     @Nullable
-    private final OIDCTokenProvider oidcProvider;
+    private final OIDCTokenProviderJWK oidcTokenProviderJWK;
     private final WebFingerProvider webFingerProvider;
 
     private static final String TOKEN_KEY = "token";
@@ -208,9 +208,11 @@ public class AuthController {
         }
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
-        JWKSet oidcSet = oidcProvider.getJwkSet();
-        if (oidcSet != null) {
-            keys.addAll(oidcSet.getKeys());
+        if (oidcTokenProviderJWK != null) {
+            JWKSet oidcSet = oidcTokenProviderJWK.getJwkSet();
+            if (oidcSet != null) {
+                keys.addAll(oidcSet.getKeys());
+            }
         }
         return new JWKSet(keys).toJSONObject(true);
     }
@@ -280,7 +282,7 @@ public class AuthController {
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
     public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
-        if (oidcProvider != null && oidcProvider.isValid(token)) {
+        if (oidcTokenProviderJWK != null && oidcTokenProviderJWK.isValid(token)) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
