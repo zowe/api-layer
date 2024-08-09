@@ -10,6 +10,11 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +37,18 @@ public class VersionController {
     private VersionService versionService;
 
     @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Return version information of API Mediation Layer and Zowe.",
+        operationId = "VersionInfoUsingGET",
+        tags = {"Diagnostic"},
+        description = "Use the `/version` API to get the version information of API Mediation Layer and Zowe.\n" +
+            "The version information includes version, build number and commit hash.\n" +
+            "In the response can be only API ML version information or API ML and Zowe version information, this depends on API ML installed as part of Zowe build or as standalone application.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = VersionInfo.class)
+        ))
+    })
     public Mono<ResponseEntity<VersionInfo>> getVersion() {
         return Mono.just(ResponseEntity
             .ok()
