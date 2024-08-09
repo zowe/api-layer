@@ -65,6 +65,9 @@ apiml:
             identityMapperUser:
             jwks:
                 uri:
+            userInfo:
+                uri:
+            validationType: JWK
             provider: zosmf
         x509:
             enabled: false

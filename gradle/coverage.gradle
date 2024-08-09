@@ -20,7 +20,8 @@ ext.javaProjectsWithUnitTests = [
     'zaas-client',
     'certificate-analyser',
     'apiml-tomcat-common',
-    'apiml-extension-loader'
+    'apiml-extension-loader',
+    'zaas-service'
 ]
 
 ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }

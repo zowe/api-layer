@@ -54,6 +54,8 @@
 # - ZWE_configs_apiml_security_oidc_identityMapperUser
 # - ZWE_configs_apiml_security_oidc_jwks_uri
 # - ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours
+# - ZWE_configs_apiml_security_oidc_userInfo_uri
+# - ZWE_configs_apiml_security_oidc_validationType
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
@@ -287,8 +289,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} java \
     -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"} \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
-    -Dapiml.security.oidc.jwks.uri=${ZWE_configs_apiml_security_oidc_jwks_uri} \
+    -Dapiml.security.oidc.jwks.uri=${ZWE_configs_apiml_security_oidc_jwks_uri:-} \
     -Dapiml.security.oidc.jwks.refreshInternalHours=${ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours:-1} \
+    -Dapiml.security.oidc.userInfo.uri=${ZWE_configs_apiml_security_oidc_userInfo_uri:-} \
+    -Dapiml.security.oidc.validationType=${ZWE_configs_apiml_security_oidc_validationType:-"JWK"} \
     -Dapiml.security.allowTokenRefresh=${ZWE_configs_apiml_security_allowtokenrefresh:-false} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${ZAAS_LOADER_PATH} \
