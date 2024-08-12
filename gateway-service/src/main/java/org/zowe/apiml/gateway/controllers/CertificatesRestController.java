@@ -30,9 +30,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Tag(name = "Certificates")
 @RestController
-@RequestMapping(CertificatesRestController.CONTROLLER_PATH)
+@RequestMapping({ CertificatesRestController.CONTROLLER_PATH, CertificatesRestController.CONTROLLER_FULL_PATH })
 public class CertificatesRestController {
     public static final String CONTROLLER_PATH = "/gateway/certificates";
+    public static final String CONTROLLER_FULL_PATH = "/gateway/api/v1/certificates";
 
     private final CertificateChainService certificateChainService;
 

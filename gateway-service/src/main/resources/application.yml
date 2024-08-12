@@ -65,6 +65,7 @@ springdoc:
     api-docs:
         path: /gateway/api-docs
     writer-with-order-by-keys: true
+    pathsToMatch: /gateway/api/v1/**
 apiml:
     catalog:
         serviceId: apicatalog

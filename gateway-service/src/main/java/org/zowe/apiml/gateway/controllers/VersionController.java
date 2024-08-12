@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ import reactor.core.publisher.Mono;
  */
 
 @AllArgsConstructor
+@Tag(name = "Diagnostic")
 @RestController
 @RequestMapping({"/gateway", "/application", "/gateway/api/v1"})
 public class VersionController {
