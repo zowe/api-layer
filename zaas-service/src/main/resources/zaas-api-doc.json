@@ -234,17 +234,17 @@
             "post": {
                 "tags": ["Security"],
                 "summary": "Authenticate mainframe user credentials and return personal access token.",
-                "description": "Use the `/login` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  * HTTP header containing the client certificate\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "description": "Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\n\n**Request:**\n\nThe generate request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * HTTP header containing the client certificate\n\n**Response:**\n\nThe response contains a personal access token in the plain text.\n",
                 "operationId": "access-token-generate-POST",
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/LoginRequest"
+                                "$ref": "#/components/schemas/AccessTokenRequest"
                             }
                         }
                     },
-                    "description": "Specifies the user credentials to be authenticated."
+                    "description": "Specifies the parameters of personal access token."
                 },
                 "security": [
                     {
@@ -252,14 +252,11 @@
                     }
                 ],
                 "responses": {
-                    "204": {
+                    "200": {
                         "description": "Authenticated",
-                        "headers": {
-                            "Set-Cookie": {
-                                "description": "Cookie named apimlAuthenticationToken contains authentication\ntoken.",
-                                "schema": {
-                                    "type": "string"
-                                }
+                        "content": {
+                            "text/plain": {
+                                "example": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVU0VSIiwiaWF0IjoxNzIzNDYyMTY1LCJleHAiOjE3Mjg2NDYxNjUsImlzcyI6IkFQSU1MX1BBVCIsImp0aSI6IjE5Y2E3NGQ4LWNlZDktNGEwZi1hOTRkLWI5ZDE3NmQzM2YxNCIsImF1dGgucHJvdiI6IkFQSU1MIiwic2NvcGVzIjpbImEiLCJiIl19.gcldqnlRDn8cZzdI1ZQJyQKYFrCgIp_BoN01kUDdqiBFSnIDX__Ym8PTQjX5gPgdkoRrLYZaQRHoKKCVur3us-zlQKALV9dP0c1e7DF_mXNq7Cu8vlTF2_ILgs4QTU9OLh0WBODSNOuTXoTz71trA7LrFIWsPr9p7G8gkafb1iGpyPSHw07usMGorHtJ3zU3V2t5F3Kdc-gEKjpekvO2zv_c6Lxx0aUDzDqXH1POhR-bXC1abtzGMM7xf65cutkP2l793w1ajPVrDlSjY-SR-882t-7-Nhjq6OFM1Zm18Yu2-VYil4Wo-pMiFnSnS4n26w_e9dfy9sGMHtgfo98wkg"
                             }
                         }
                     },
@@ -320,6 +317,23 @@
                 "example": {
                     "username": "John",
                     "password": "qwerty"
+                }
+            },
+            "AccessTokenRequest": {
+                "type": "object",
+                "title": "Login request for personal access token",
+                "properties": {
+                    "validity": {
+                        "type": "integer",
+                        "description": "Days to expiration"
+                    },
+                    "scopes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Scope of the personal access token"
+                        }
+                    }
                 }
             },
             "Authentication": {
