@@ -16,7 +16,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
@@ -54,6 +59,7 @@ import static org.apache.http.HttpStatus.*;
  * by gateway to distribute state of authentication between nodes.
  */
 @RequiredArgsConstructor
+@Tag(name = "Authentication")
 @RestController
 @RequestMapping(AuthController.CONTROLLER_PATH)
 @Slf4j
@@ -88,6 +94,14 @@ public class AuthController {
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
 
     @DeleteMapping(path = INVALIDATE_PATH)
+    @Operation(summary = "Logout JWT token", operationId = "invalidateJwtToken", security = {
+        @SecurityRequirement(name = "ClientCert")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
+        @ApiResponse(responseCode = "400", description = "Invalid token"),
+        @ApiResponse(responseCode = "503", description = "Authentication service is not available")
+    })
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/invalidate/";
         final String uri = request.getRequestURI();
@@ -104,6 +118,15 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @ResponseBody
+    @Operation(summary = "Revoke PAT token", operationId = "revokeAccessToken", security = {
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth"),
+        @SecurityRequirement(name = "LoginBasicAuth")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked"),
+        @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
     public ResponseEntity<Void> revokeAccessToken(@RequestBody() Map<String, String> body) throws IOException {
         if (tokenProvider.isInvalidated(body.get(TOKEN_KEY))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -114,6 +137,15 @@ public class AuthController {
 
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
+    @Operation(summary = "Revoke all PAT tokens of the authenticated user", operationId = "revokeAllUserAccessTokens", security = {
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth"),
+        @SecurityRequirement(name = "LoginBasicAuth")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked"),
+        @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
     public ResponseEntity<Void> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -131,6 +163,14 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
     @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
+    @Operation(summary = "Revoke all PAT tokens of a user", operationId = "revokeAccessTokensForUser", security = {
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth"),
+        @SecurityRequirement(name = "LoginBasicAuth")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked")
+    })
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
@@ -146,6 +186,14 @@ public class AuthController {
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
     @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
+    @Operation(summary = "Revoke all PAT tokens for a specific scope", operationId = "revokeAccessTokensForScope", security = {
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth"),
+        @SecurityRequirement(name = "LoginBasicAuth")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked")
+    })
     public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
@@ -159,7 +207,16 @@ public class AuthController {
 
     @DeleteMapping(value = ACCESS_TOKEN_EVICT)
     @Operation(summary = "Remove invalidated tokens and rules which are not relevant anymore",
-        description = "Will evict all the invalidated tokens which are not relevant anymore")
+        description = "Will evict all the invalidated tokens which are not relevant anymore",
+        security = {
+            @SecurityRequirement(name = "Bearer"),
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "LoginBasicAuth")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully evicted")
+    })
     @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE',#root)")
     public ResponseEntity<Void> evictNonRelevantTokensAndRules() {
@@ -169,6 +226,14 @@ public class AuthController {
 
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
     @ResponseBody
+    @Operation(summary = "Validate PAT token", operationId = "validateAccessToken", security = {
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Valid token"),
+        @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
     public ResponseEntity<Void> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
@@ -180,6 +245,7 @@ public class AuthController {
     }
 
     @GetMapping(path = DISTRIBUTE_PATH)
+    @Hidden
     public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/distribute/";
         final String uri = request.getRequestURI();
@@ -199,6 +265,7 @@ public class AuthController {
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @Operation(summary = "Get all public keys (JWK) trusted by the Gateway", operationId = "getAllPublicKeys")
     public Map<String, Object> getAllPublicKeys() {
         List<JWK> keys;
         if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
@@ -225,6 +292,7 @@ public class AuthController {
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @Operation(summary = "Get the public key used by the Gateway", operationId = "getCurrentPublicKeys")
     public Map<String, Object> getCurrentPublicKeys() {
         final List<JWK> keys = getCurrentKey();
         return new JWKSet(keys).toJSONObject(true);
@@ -240,6 +308,7 @@ public class AuthController {
      */
     @GetMapping(path = PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @Operation(summary = "Get the public key of certificate that is used by the Gateway to sign tokens", operationId = "getCurrentPublicKeys")
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
         List<JWK> publicKeys = getCurrentKey();
         if (publicKeys.isEmpty()) {
@@ -280,6 +349,13 @@ public class AuthController {
     }
 
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
+    @Operation(summary = "Validate OIDC token", operationId = "validateOIDCToken", security = {
+        @SecurityRequirement(name = "Bearer")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Valid token"),
+        @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
     public ResponseEntity<String> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         if (oidcTokenProviderJWK != null && oidcTokenProviderJWK.isValid(token)) {
@@ -295,6 +371,10 @@ public class AuthController {
      */
     @GetMapping(path = OIDC_WEBFINGER_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
+    @Operation(summary = "List of link's relation type and the target URI for provided clientID", operationId = "getWebFinger", security = {
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth")
+    })
     public ResponseEntity<Object> getWebFinger(@RequestParam(name = "resource") String clientId) throws JsonProcessingException {
         if (webFingerProvider.isEnabled()) {
             try {
@@ -336,4 +416,5 @@ public class AuthController {
         private String userId;
         private long timestamp;
     }
+
 }
