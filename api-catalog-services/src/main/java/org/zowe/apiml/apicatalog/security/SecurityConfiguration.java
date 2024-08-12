@@ -163,7 +163,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/static-api/**").authenticated()
                     .requestMatchers("/containers/**").authenticated()
                     .requestMatchers(APIDOC_ROUTES).authenticated()
-                    .requestMatchers("/application/info").permitAll())
+                    .requestMatchers("/application/**").permitAll())
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider);
 
