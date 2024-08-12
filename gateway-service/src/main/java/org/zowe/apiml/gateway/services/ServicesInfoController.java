@@ -38,7 +38,7 @@ import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Services info")
+@Tag(name = "Services")
 @RequestMapping({ServicesInfoController.SERVICES_SHORT_URL, ServicesInfoController.SERVICES_FULL_URL})
 @PreAuthorize("hasAuthority('TRUSTED_CERTIFICATE') or @safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class ServicesInfoController {

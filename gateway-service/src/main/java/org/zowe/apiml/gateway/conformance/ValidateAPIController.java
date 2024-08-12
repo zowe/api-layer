@@ -10,6 +10,17 @@
 
 package org.zowe.apiml.gateway.conformance;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -30,7 +41,9 @@ import java.util.regex.Pattern;
  * Controller offers method to check the validation of the given serviceID under conformance criteria
  */
 @RestController
+@Tag(name = "Services")
 @RequiredArgsConstructor
+@RequestMapping({"/gateway", "/gateway/api/v1"})
 public class ValidateAPIController {
 
     private static final int MAXIMUM_SERVICE_ID_LENGTH = 64;
@@ -56,10 +69,39 @@ public class ValidateAPIController {
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
     @GetMapping(
-        value = {"/gateway/conformance/{serviceId}","/gateway/api/v1/conformance/{serviceId}"},
+        value = "/conformance/{serviceId}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<String> checkConformance(@PathVariable String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+    @Operation(summary = "Checks service conformance.",
+        operationId = "checkConformanceUsingGET",
+        description = "Accepts serviceID and checks conformance criteria.",
+        security = {
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "Bearer")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Service conforms to the criteria",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(type = "object", maxProperties = 1),
+                schemaProperties = {
+                    @SchemaProperty(name = "message",
+                        schema = @Schema(type = "string", example = "Service {serviceId} fulfills all checked conformance criteria"))
+                }
+        )),
+        @ApiResponse(responseCode = "400", description = "Service does not conform to the criteria",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(type = "object", maxProperties = 2),
+                schemaProperties = {
+                    @SchemaProperty(name = "error", schema = @Schema(type = "string")),
+                    @SchemaProperty(name = "details", array = @ArraySchema(schema = @Schema(name = "items", type = "string")))
+                }
+        ))
+    })
+    public ResponseEntity<String> checkConformance(@Parameter(in = ParameterIn.PATH, required = true, description = "Service ID of the service to check") @PathVariable String serviceId,
+                                                   @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
@@ -128,7 +170,38 @@ public class ValidateAPIController {
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+    @Operation(summary = "Legacy endpoint for checking service conformance.",
+        operationId = "checkValidateLegacyUsingPOST",
+        description = "Mapping so the old endpoint keeps working.",
+        security = {
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "Bearer")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Service conforms to the criteria",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(type = "object", maxProperties = 1),
+                schemaProperties = {
+                    @SchemaProperty(name = "message",
+                        schema = @Schema(type = "string", example = "Service {serviceId} fulfills all checked conformance criteria"))
+                }
+            )),
+        @ApiResponse(responseCode = "400", description = "Service does not conform to the criteria",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(type = "object", maxProperties = 2),
+                schemaProperties = {
+                    @SchemaProperty(name = "error", schema = @Schema(type = "string")),
+                    @SchemaProperty(name = "details", array = @ArraySchema(schema = @Schema(name = "items", type = "string")))
+                }
+            ))
+    })
+    public ResponseEntity<String> checkValidateLegacy(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(example = "serviceID=serviceId")))
+        @RequestBody String serviceId,
+        @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }
