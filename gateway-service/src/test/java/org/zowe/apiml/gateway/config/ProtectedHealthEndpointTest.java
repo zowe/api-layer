@@ -14,20 +14,22 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
-import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
-import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
-import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
-import org.zowe.apiml.acceptance.config.GatewayTestApplication;
+import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"apiml.health.protected=true"})
-@Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
+
+@AcceptanceTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(
+    properties = {
+        "apiml.health.protected=true"
+    }
+)
 public class ProtectedHealthEndpointTest {
 
     protected String basePath;

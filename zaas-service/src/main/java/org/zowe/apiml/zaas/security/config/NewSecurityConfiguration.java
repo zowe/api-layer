@@ -114,6 +114,9 @@ public class NewSecurityConfiguration {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
+
     /**
      * Login and Logout endpoints
      * <p>
@@ -599,9 +602,13 @@ public class NewSecurityConfiguration {
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
                     web.ignoring()
                         .requestMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                            "/application/health", "/application/info", "/application/version",
+                            "/application/info", "/application/version",
                             AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                             AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
+
+                    if (!isHealthEndpointProtected) {
+                        web.ignoring().requestMatchers("/application/health");
+                    }
                 };
             }
         }

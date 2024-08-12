@@ -105,6 +105,9 @@ public class WebSecurity {
     @Value("${apiml.security.x509.registry.allowedUsers:#{null}}")
     private String allowedUsers;
 
+    @Value("${apiml.health.protected:false}")
+    private boolean isHealthEndpointProtected;
+
     private final ClientConfiguration clientConfiguration;
 
     private final TokenProvider tokenProvider;
@@ -347,7 +350,7 @@ public class WebSecurity {
             ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers("/application/health", "/application/info", "/application/version")
+                    .pathMatchers( "/application/info", "/application/version")
                     .permitAll()
             )
             .authorizeExchange(authorizeExchangeSpec ->
