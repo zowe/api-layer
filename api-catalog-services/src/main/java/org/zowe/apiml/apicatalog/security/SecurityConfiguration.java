@@ -158,14 +158,6 @@ public class SecurityConfiguration {
 
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
-            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES))))
-                .authorizeHttpRequests(requests -> requests
-                    .requestMatchers("/static-api/**").authenticated()
-                    .requestMatchers("/containers/**").authenticated()
-                    .requestMatchers(APIDOC_ROUTES).authenticated()
-                    .requestMatchers("/application/**").permitAll())
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider);
 
             if (isHealthEndpointProtected) {
                 http.authorizeHttpRequests(requests -> requests
@@ -174,6 +166,13 @@ public class SecurityConfiguration {
                 http.authorizeHttpRequests(requests -> requests
                     .requestMatchers("/application/health").permitAll());
             }
+
+            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES))))
+                .authorizeHttpRequests(requests -> requests
+                    .anyRequest().authenticated()
+                )
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider);
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
             }

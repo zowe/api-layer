@@ -349,7 +349,7 @@ public class WebSecurity {
 
         if (!isHealthEndpointProtected) {
             http.authorizeExchange(requests -> requests
-                .pathMatchers("/application/**").permitAll());
+                .pathMatchers("/application/health").permitAll());
         }
 
         return defaultSecurityConfig(http)
