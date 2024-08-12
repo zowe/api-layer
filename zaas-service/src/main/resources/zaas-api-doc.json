@@ -299,6 +299,9 @@
                 "type": "apiKey",
                 "name": "apimlAuthenticationToken",
                 "in": "cookie"
+            },
+            "ClientCert": {
+                "type": "clientTLS"
             }
         },
         "schemas": {

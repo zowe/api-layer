@@ -10,6 +10,12 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.service.CentralApimlInfoMapper;
 import org.zowe.apiml.gateway.service.GatewayIndexService;
 import org.zowe.apiml.gateway.service.model.ApimlInfo;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Flux;
 
@@ -41,6 +48,19 @@ public class RegistryController {
     private final GatewayIndexService gatewayIndexService;
 
     @GetMapping(value = {"/registry", "/registry/{apimlId}"})
+    @Operation(summary = "Returns a list of services onboarded to the each instance of the APIML Discovery service ", operationId = "getServices", security = {
+        @SecurityRequirement(name = "ClientCert")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successful obtaining of services", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ApimlInfo.class)
+        )),
+        @ApiResponse(responseCode = "403", description = "Client certificate is required", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ApiMessageView.class)
+        ))
+    })
     public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId, @RequestParam(name = "serviceId", required = false) String serviceId) {
         Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
         return Flux.fromIterable(apimlList.entrySet())
