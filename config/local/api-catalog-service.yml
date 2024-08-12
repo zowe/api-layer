@@ -21,6 +21,7 @@ server:
         trustStoreType: PKCS12
 
 apiml:
+    health.protected: false
     service:
         hostname: localhost
         ipAddress: 127.0.0.1

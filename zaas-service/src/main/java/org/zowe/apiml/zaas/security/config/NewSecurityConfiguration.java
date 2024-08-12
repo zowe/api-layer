@@ -488,10 +488,11 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             private final String[] protectedEndpoints = {
+                SafResourceAccessController.FULL_CONTEXT_PATH,
                 "/application",
                 "/gateway/conformance",
-                "/validate",
-                SafResourceAccessController.FULL_CONTEXT_PATH
+                "/gateway/api/v1/conformance",
+                "/validate"
             };
 
             @Bean
@@ -499,9 +500,11 @@ public class NewSecurityConfiguration {
                 baseConfigure(
                     http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
+                            .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
                         .requestMatchers("/gateway/conformance/**")
+                        .requestMatchers("/gateway/api/v1/conformance/**")
                         .requestMatchers("/validate")
-                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH))
+                        )
                 ).authorizeHttpRequests(requests -> requests
                     .anyRequest()
                     .authenticated()

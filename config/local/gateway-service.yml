@@ -1,4 +1,5 @@
 apiml:
+    health.protected: false
     gateway.registry.enabled: true
     security.x509.registry.allowedUsers: Zowe Service
     service:

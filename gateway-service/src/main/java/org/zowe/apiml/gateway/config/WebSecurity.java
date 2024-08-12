@@ -84,7 +84,8 @@ public class WebSecurity {
 
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
-    public static final String CONFORMANCE = CONTEXT_PATH + "/conformance/**";
+    public static final String CONFORMANCE_SHORT_URL = CONTEXT_PATH + "/conformance/**";
+    public static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "api/v1" + "/conformance/**";
     public static final String VALIDATE = "/validate";
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
@@ -329,7 +330,8 @@ public class WebSecurity {
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
                 SERVICES_FULL_URL + "/**",
-                CONFORMANCE,
+                CONFORMANCE_SHORT_URL,
+                CONFORMANCE_LONG_URL,
                 VALIDATE
             ))
             .authorizeExchange(authorizeExchangeSpec ->
@@ -344,6 +346,12 @@ public class WebSecurity {
     @Bean
     @Order(2)
     public SecurityWebFilterChain securityWebFilterChainForActuator(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+
+        if (!isHealthEndpointProtected) {
+            http.authorizeExchange(requests -> requests
+                .pathMatchers("/application/**").permitAll());
+        }
+
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 "/application/**"
