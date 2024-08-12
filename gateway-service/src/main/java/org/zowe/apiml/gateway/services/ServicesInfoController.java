@@ -11,11 +11,20 @@
 package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.gateway.service.model.ApimlInfo;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 
@@ -29,6 +38,7 @@ import static org.zowe.apiml.gateway.services.ServicesInfoService.VERSION_HEADER
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Services info")
 @RequestMapping({ServicesInfoController.SERVICES_SHORT_URL, ServicesInfoController.SERVICES_FULL_URL})
 @PreAuthorize("hasAuthority('TRUSTED_CERTIFICATE') or @safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class ServicesInfoController {
@@ -40,6 +50,19 @@ public class ServicesInfoController {
 
     @GetMapping
     @ResponseBody
+    @Operation(summary = "Returns a list of services onboarded to this APIML instance", operationId = "getServices", security = {
+        @SecurityRequirement(name = "ClientCert")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successful obtaining of services", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ApimlInfo.class)
+        )),
+        @ApiResponse(responseCode = "404", description = "No service was found", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ApiMessageView.class)
+        ))
+    })
     public Mono<ResponseEntity<List<ServiceInfo>>> getServices(@RequestParam(required = false) String apiId) {
         List<ServiceInfo> services = servicesInfoService.getServicesInfo(apiId);
 
@@ -59,6 +82,19 @@ public class ServicesInfoController {
 
     @GetMapping("/{serviceId}")
     @ResponseBody
+    @Operation(summary = "Return information about a specified service", operationId = "getServices", security = {
+        @SecurityRequirement(name = "ClientCert")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successful obtaining of services", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ApimlInfo.class)
+        )),
+        @ApiResponse(responseCode = "404", description = "No service was found", content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ApiMessageView.class)
+        ))
+    })
     public Mono<ResponseEntity<ServiceInfo>> getService(@PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
         var status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ? NOT_FOUND : OK;
