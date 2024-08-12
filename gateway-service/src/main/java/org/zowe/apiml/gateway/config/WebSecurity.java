@@ -85,7 +85,7 @@ public class WebSecurity {
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     public static final String CONFORMANCE_SHORT_URL = CONTEXT_PATH + "/conformance/**";
-    public static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "api/v1" + "/conformance/**";
+    public static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
     public static final String VALIDATE = "/validate";
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
