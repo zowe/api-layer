@@ -335,7 +335,7 @@ class ApiCatalogAuthenticationTest {
     class GivenHealthEndpointProtectionWithNoAuthentication {
         @Test
         @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
-        void thenDoNotRequireAuthentication() {
+        void thenDoNotAuthenticate() {
             given()
                 .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
@@ -354,7 +354,7 @@ class ApiCatalogAuthenticationTest {
     class GivenHealthEndpointProtectionEnabled {
         @Test
         @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
-        void thenDoNotRequireAuthentication() {
+        void thenAuthenticateTheRequest() {
             given()
                 .auth().basic(USERNAME, PASSWORD)
                 .when()

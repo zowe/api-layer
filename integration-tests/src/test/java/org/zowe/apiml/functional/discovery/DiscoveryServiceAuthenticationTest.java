@@ -113,7 +113,7 @@ class DiscoveryServiceAuthenticationTest {
 
         @Test
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
-        void thenDoNotRequireAuthentication() {
+        void thenDoNotAuthenticateTheRequest() {
             given()
                 .when()
                 .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
