@@ -7,6 +7,8 @@ module.exports = {
     baseBranches: ["v2.x.x","v3.x.x"],
     printConfig: true,
     labels: ["dependencies"],
+     dependencyDashboardLabels:
+        ['dependencies'],
     commitMessagePrefix:
         'chore: ',
     prHourlyLimit: 0, // removes rate limit for PR creation per hour
