@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,9 +49,14 @@ public class RegistryController {
     private final GatewayIndexService gatewayIndexService;
 
     @GetMapping(value = {"/registry", "/registry/{apimlId}"})
-    @Operation(summary = "Returns a list of services onboarded to the each instance of the APIML Discovery service ", operationId = "getServices", security = {
-        @SecurityRequirement(name = "ClientCert")
-    })
+    @Operation(summary = "Returns a list of services onboarded to the each instance of the APIML Discovery service.",
+        operationId = "getServices",
+        description = "Use the `/registry` API to list all APIML instances (central and domain) within their onboarded services. " +
+            "Parameters `apiId` and `serviceId` are used to filter results.",
+        security = {
+            @SecurityRequirement(name = "ClientCert")
+        }
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successful obtaining of services", content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -61,7 +67,7 @@ public class RegistryController {
             schema = @Schema(implementation = ApiMessageView.class)
         ))
     })
-    public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @RequestParam(name = "apiId", required = false) String apiId, @RequestParam(name = "serviceId", required = false) String serviceId) {
+    public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @Parameter(description = "Identifier of the API in the APIML") @RequestParam(name = "apiId", required = false) String apiId, @Parameter(description = "Service identifier") @RequestParam(name = "serviceId", required = false) String serviceId) {
         Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
         return Flux.fromIterable(apimlList.entrySet())
             .map(this::buildEntry)

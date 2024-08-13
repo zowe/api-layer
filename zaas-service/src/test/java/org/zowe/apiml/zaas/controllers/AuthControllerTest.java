@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
@@ -87,7 +87,7 @@ class AuthControllerTest {
     private AccessTokenProvider tokenProvider;
 
     @Mock
-    private OIDCTokenProviderJWK oidcProvider;
+    private OIDCTokenProvider oidcProvider;
 
     @Mock
     private WebFingerProvider webFingerProvider;

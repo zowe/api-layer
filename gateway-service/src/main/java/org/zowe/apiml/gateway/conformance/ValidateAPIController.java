@@ -176,7 +176,12 @@ public class ValidateAPIController {
         security = {
             @SecurityRequirement(name = "CookieAuth"),
             @SecurityRequirement(name = "Bearer")
-        }
+        },
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(example = "serviceID=serviceId")
+            )
+        )
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Service conforms to the criteria",
@@ -198,10 +203,7 @@ public class ValidateAPIController {
                 }
             ))
     })
-    public ResponseEntity<String> checkValidateLegacy(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(example = "serviceID=serviceId")))
-        @RequestBody String serviceId,
-        @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }

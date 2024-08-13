@@ -41,8 +41,8 @@ public class VersionController {
     @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Return version information of API Mediation Layer and Zowe.",
         operationId = "VersionInfoUsingGET",
-        description = "Use the `/version` API to get the version information of API Mediation Layer and Zowe.\n" +
-            "The version information includes version, build number and commit hash.\n" +
+        description = "Use the `/version` API to get the version information of API Mediation Layer and Zowe. " +
+            "The version information includes version, build number and commit hash. " +
             "In the response can be only API ML version information or API ML and Zowe version information, this depends on API ML installed as part of Zowe build or as standalone application.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK", content = @Content(

@@ -38,7 +38,10 @@ public class CertificatesRestController {
     private final CertificateChainService certificateChainService;
 
     @GetMapping
-    @Operation(summary = "Returns the certificate chain that is used by Gateway", operationId = "getCertificates")
+    @Operation(summary = "Returns the certificate chain that is used by Gateway",
+        operationId = "getCertificates",
+        description = "Use the `/certificates` API to obtain public certificate chain used by Gateway for signed communication. " +
+            "With this endpoint you can verify who send the certificate. It is used for forwarding the client certificates between Gateways.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successful responding of certificates", content = @Content(
             mediaType = MediaType.TEXT_PLAIN_VALUE,
