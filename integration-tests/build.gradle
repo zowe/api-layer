@@ -154,8 +154,7 @@ task runAllIntegrationTestsNormal(type: Test) {
             'ChaoticHATest',
             'NotAttlsTest',
             'OktaOauth2Test',
-            'MultipleRegistrationsTest',
-            'HealthEndpointProtectionDisabledTest'
+            'MultipleRegistrationsTest'
         )
 
     }

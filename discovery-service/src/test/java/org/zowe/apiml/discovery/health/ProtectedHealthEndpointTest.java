@@ -25,7 +25,7 @@ import static org.hamcrest.core.Is.is;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
-        "apiml.health.protected=true"
+        "apiml.health.protected=false"
     },
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
@@ -39,7 +39,7 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
             .when()
             .get(getDiscoveryUriWithPath("/application/health"))
             .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+            .statusCode(is(HttpStatus.SC_OK));
       }
     }
 
@@ -52,7 +52,7 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
                 .when()
                 .get(getDiscoveryUriWithPath("/application/health"))
                 .then()
-                .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                .statusCode(is(HttpStatus.SC_OK));
         }
     }
 }

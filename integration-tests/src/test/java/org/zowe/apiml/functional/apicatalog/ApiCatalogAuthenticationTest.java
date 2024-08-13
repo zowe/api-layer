@@ -305,23 +305,19 @@ class ApiCatalogAuthenticationTest {
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
     }
-
-    class GivenHealthEndpointProtectionWithNoAuthentication {
         @Test
-        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
+        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
         void thenDoNotAuthenticate() {
             given()
                 .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
                 .then()
                 .statusCode(is(SC_UNAUTHORIZED));
-        }
+
     }
 
-
-    class GivenHealthEndpointProtectionWithBasicAuthentication {
         @Test
-        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
+        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
         void thenAuthenticateTheRequest() {
             given()
                 .auth().basic(USERNAME, PASSWORD)
@@ -329,6 +325,5 @@ class ApiCatalogAuthenticationTest {
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
                 .then()
                 .statusCode(is(SC_OK));
-        }
     }
 }

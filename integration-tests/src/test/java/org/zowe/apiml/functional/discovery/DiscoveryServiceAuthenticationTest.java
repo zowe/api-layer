@@ -82,43 +82,26 @@ class DiscoveryServiceAuthenticationTest {
         }
     }
 
-    @Nested
-    @Tag("HealthEndpointProtectionDisabledTest")
-    @TestPropertySource(
-        properties = {
-            "apiml.health.protected=false"
-        }
-    )
-    class GivenHealthEndpointProtectionDisabled {
-
         @Test
-        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
+        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
         void thenDoNotRequireAuthentication() {
             given()
                 .when()
                 .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
                 .then()
-                .statusCode(is(SC_OK));
-        }
+                .statusCode(is(SC_UNAUTHORIZED));
+
     }
 
-    @Nested
-    @Tag("HealthEndpointProtectionDisabledTest")
-    @TestPropertySource(
-        properties = {
-            "apiml.health.protected=true"
-        }
-    )
-    class GivenHealthEndpointProtection {
-
         @Test
-        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
+        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled with authntication.")
         void thenDoNotAuthenticateTheRequest() {
+            String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
             given()
-                .when()
+                .header("Authorization", "Bearer " + token)
                 .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
                 .then()
                 .statusCode(is(SC_OK));
-        }
+
     }
 }

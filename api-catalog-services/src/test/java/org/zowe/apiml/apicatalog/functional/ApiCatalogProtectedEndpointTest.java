@@ -12,10 +12,12 @@ package org.zowe.apiml.apicatalog.functional;
 
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.RestAssured.given;
 
 
+@TestPropertySource( properties = {"apiml.health.protected=false"})
 public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
 
     @Test
@@ -24,6 +26,6 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
             .when()
             .get(getCatalogUriWithPath("apicatalog/application/health"))
             .then()
-            .statusCode(HttpStatus.SC_UNAUTHORIZED);
+            .statusCode(HttpStatus.SC_OK);
     }
 }
