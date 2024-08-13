@@ -62,7 +62,6 @@ import static org.apache.http.HttpStatus.*;
  * by gateway to distribute state of authentication between nodes.
  */
 @RequiredArgsConstructor
-@Tag(name = "Security")
 @RestController
 @RequestMapping(AuthController.CONTROLLER_PATH)
 @Slf4j
@@ -99,6 +98,7 @@ public class AuthController {
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
     @Operation(summary = "Logout JWT token.",
+        tags = {"Security"},
         operationId = "invalidateJwtToken",
         description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
         security = {
@@ -330,6 +330,7 @@ public class AuthController {
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @Operation(summary = "Returns all public keys to verify JWT tokens validity",
+        tags = {"Security"},
         operationId = "GetAllPublicKeysUsingGET",
         description = "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF."
     )
@@ -368,6 +369,7 @@ public class AuthController {
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @Operation(summary = "Returns public keys to verify JWT tokens, which can be generated now",
+        tags = {"Security"},
         operationId = "GetCurrentPublicKeysUsingGET",
         description = "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
     )
@@ -395,6 +397,7 @@ public class AuthController {
     @GetMapping(path = PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @Operation(summary = "Get the public key of certificate that is used by the Gateway to sign tokens",
+        tags = {"Security"},
         operationId = "getCurrentPublicKeys",
         description = "This endpoint returns JWK of currently used key, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
     )
