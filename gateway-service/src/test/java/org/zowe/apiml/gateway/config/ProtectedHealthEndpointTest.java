@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.config;
 
-import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Value;
