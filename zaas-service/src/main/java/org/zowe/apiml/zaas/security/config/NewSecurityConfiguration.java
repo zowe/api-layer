@@ -114,7 +114,7 @@ public class NewSecurityConfiguration {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
-    @Value("${apiml.health.protected:false}")
+    @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
     /**

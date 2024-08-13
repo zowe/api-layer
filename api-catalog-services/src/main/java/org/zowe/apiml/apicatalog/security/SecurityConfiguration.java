@@ -81,7 +81,7 @@ public class SecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
-    @Value("${apiml.health.protected:false}")
+    @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.

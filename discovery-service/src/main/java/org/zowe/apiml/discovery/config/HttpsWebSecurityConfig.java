@@ -59,7 +59,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
-    @Value("${apiml.health.protected:false}")
+    @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")

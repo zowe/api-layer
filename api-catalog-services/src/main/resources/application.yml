@@ -47,7 +47,7 @@ logging:
 ##############################################################################################
 apiml:
     health:
-        protected: false
+        protected: true
     service:
         id: apicatalog
         hostname: localhost

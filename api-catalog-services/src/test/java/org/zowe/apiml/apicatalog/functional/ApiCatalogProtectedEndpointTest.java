@@ -23,13 +23,10 @@ import static io.restassured.RestAssured.given;
         "apiml.health.protected=true"
     }
 )
-
 public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
 
     @Nested
     class GivenHealthEndPointProtectionEnabled {
-
-
             @Test
             void requestFailsWith401() {
                 given()
@@ -37,8 +34,6 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
                     .get(getCatalogUriWithPath("apicatalog/application/health"))
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED);
-
-
         }
     }
 }

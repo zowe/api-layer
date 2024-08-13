@@ -62,7 +62,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.discovery.password:password}")
     private char[] eurekaPassword;
 
-    @Value("${apiml.health.protected:false}")
+    @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
     @Autowired
