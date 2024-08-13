@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OIDCTokenProviderTest {
+class OIDCTokenProviderJwkTest {
 
     private static final String OKTA_JWKS_RESOURCE = "/test_samples/okta_jwks.json";
 
@@ -50,17 +50,17 @@ class OIDCTokenProviderTest {
 
     private static final String TOKEN = "token";
 
-    private OIDCTokenProvider oidcTokenProvider;
+    private OIDCTokenProviderJwk oidcTokenProviderJwk;
 
     private JWKSet jwkSet;
 
     @BeforeEach
     void setup() throws CachingServiceClientException {
-        oidcTokenProvider = new OIDCTokenProvider(new DefaultClock());
-        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1);
-        ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
-        oidcTokenProvider.clientId = "client_id";
-        oidcTokenProvider.clientSecret = "client_secret";
+        oidcTokenProviderJwk = new OIDCTokenProviderJwk(new DefaultClock());
+        ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwkRefreshInterval", 1);
+        ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
+        oidcTokenProviderJwk.clientId = "client_id";
+        oidcTokenProviderJwk.clientSecret = "client_secret";
     }
 
     @Nested
@@ -72,9 +72,9 @@ class OIDCTokenProviderTest {
             jwkSet = JWKSet.load(getClass().getResourceAsStream(OKTA_JWKS_RESOURCE));
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet);
-                oidcTokenProvider.afterPropertiesSet();
+                oidcTokenProviderJwk.afterPropertiesSet();
             }
-            Map<String, PublicKey> publicKeys = oidcTokenProvider.getPublicKeys();
+            Map<String, PublicKey> publicKeys = oidcTokenProviderJwk.getPublicKeys();
 
             assertFalse(publicKeys.isEmpty());
             assertTrue(publicKeys.containsKey("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
@@ -87,27 +87,27 @@ class OIDCTokenProviderTest {
         void whenRequestFails_thenNotInitialized() {
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenThrow(IOException.class);
-                oidcTokenProvider.afterPropertiesSet();
+                oidcTokenProviderJwk.afterPropertiesSet();
             }
-            oidcTokenProvider.afterPropertiesSet();
-            assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
+            oidcTokenProviderJwk.afterPropertiesSet();
+            assertTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
         }
 
         @Test
         void whenUriNotProvided_thenNotInitialized() {
-            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "");
-            oidcTokenProvider.afterPropertiesSet();
-            assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
+            ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "");
+            oidcTokenProviderJwk.afterPropertiesSet();
+            assertTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
         }
 
         @Test
         void whenInvalidKeyResponse_thenNotInitialized() {
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenThrow(ParseException.class);
-                oidcTokenProvider.afterPropertiesSet();
+                oidcTokenProviderJwk.afterPropertiesSet();
             }
-            oidcTokenProvider.afterPropertiesSet();
-            assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
+            oidcTokenProviderJwk.afterPropertiesSet();
+            assertTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
         }
     }
 
@@ -119,34 +119,34 @@ class OIDCTokenProviderTest {
             jwkSet = JWKSet.load(getClass().getResourceAsStream(OKTA_JWKS_RESOURCE));
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet);
-                oidcTokenProvider.afterPropertiesSet();
+                oidcTokenProviderJwk.afterPropertiesSet();
             }
-            assertFalse(oidcTokenProvider.getPublicKeys().isEmpty());
+            assertFalse(oidcTokenProviderJwk.getPublicKeys().isEmpty());
         }
 
         @Test
         void whenValidTokenExpired_thenReturnInvalid() throws IOException, ParseException {
             initPublicKeys();
-            assertFalse(oidcTokenProvider.isValid(EXPIRED_TOKEN));
+            assertFalse(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
         }
 
         @Test
         void whenValidToken_thenReturnValid() throws IOException, ParseException {
             initPublicKeys();
-            ReflectionTestUtils.setField(oidcTokenProvider, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
-            assertTrue(oidcTokenProvider.isValid(EXPIRED_TOKEN));
+            ReflectionTestUtils.setField(oidcTokenProviderJwk, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
+            assertTrue(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
         }
 
         @Test
         void whenInvalidToken_thenReturnInvalid() throws IOException, ParseException {
             initPublicKeys();
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
+            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
         }
 
         @Test
         void whenNoJwk_thenReturnInvalid() {
-            assumeTrue(oidcTokenProvider.getPublicKeys().isEmpty());
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
+            assumeTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
+            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
         }
 
     }
@@ -155,12 +155,12 @@ class OIDCTokenProviderTest {
     class GivenEmptyTokenProvided {
         @Test
         void whenTokenIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(null));
+            assertFalse(oidcTokenProviderJwk.isValid(null));
         }
 
         @Test
         void whenTokenIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProvider.isValid(""));
+            assertFalse(oidcTokenProviderJwk.isValid(""));
         }
     }
 
@@ -171,16 +171,16 @@ class OIDCTokenProviderTest {
         @NullSource
         @EmptySource
         void whenInvalidClientId_thenReturnInvalid(String id) {
-            oidcTokenProvider.clientId = id;
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
+            oidcTokenProviderJwk.clientId = id;
+            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
         }
 
         @ParameterizedTest
         @NullSource
         @EmptySource
         void whenInvalidClientSecret_thenReturnInvalid(String secret) {
-            oidcTokenProvider.clientSecret = secret;
-            assertFalse(oidcTokenProvider.isValid(TOKEN));
+            oidcTokenProviderJwk.clientSecret = secret;
+            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
         }
     }
 
@@ -190,8 +190,8 @@ class OIDCTokenProviderTest {
 
         @BeforeEach
         public void setUp() {
-            oidcTokenProvider = new OIDCTokenProvider(new DefaultClock());
-            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", "https://jwksurl");
+            oidcTokenProviderJwk = new OIDCTokenProviderJwk(new DefaultClock());
+            ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
         }
 
         @Test
@@ -200,7 +200,7 @@ class OIDCTokenProviderTest {
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(new JWKSet());
 
-                oidcTokenProvider.fetchJWKSet();
+                oidcTokenProviderJwk.fetchJWKSet();
                 mockedStatic.verify(() -> JWKSet.load(new URL("https://jwksurl")), times(1));
             }
         }
@@ -219,7 +219,7 @@ class OIDCTokenProviderTest {
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(mockedJwtSet);
 
-                oidcTokenProvider.fetchJWKSet();
+                oidcTokenProviderJwk.fetchJWKSet();
 
                 verify(rsaKey, never()).toRSAPublicKey();
             } catch (JOSEException e) {
@@ -241,7 +241,7 @@ class OIDCTokenProviderTest {
             try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(mockedJwtSet);
 
-                oidcTokenProvider.fetchJWKSet();
+                oidcTokenProviderJwk.fetchJWKSet();
 
                 verify(rsaKey, never()).toRSAPublicKey();
             } catch (JOSEException e) {
@@ -265,7 +265,7 @@ class OIDCTokenProviderTest {
                 when(jwkSet1.getKeys()).thenReturn(keys);
                 mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet1);
 
-                assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
+                assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
             }
         }
     }

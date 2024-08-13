@@ -42,10 +42,11 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
+import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJwk;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
@@ -77,7 +78,7 @@ public class AuthController {
     private final AccessTokenProvider tokenProvider;
 
     @Nullable
-    private final OIDCTokenProvider oidcTokenProvider;
+    private final OIDCProvider oidcProvider;
     private final WebFingerProvider webFingerProvider;
 
     private static final String TOKEN_KEY = "token";
@@ -350,8 +351,8 @@ public class AuthController {
         }
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
-        if (oidcTokenProvider != null) {
-            JWKSet oidcSet = oidcTokenProvider.getJwkSet();
+        if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJwk oidcTokenProviderJwk)) {
+            JWKSet oidcSet = oidcTokenProviderJwk.getJwkSet();
             if (oidcSet != null) {
                 keys.addAll(oidcSet.getKeys());
             }
@@ -464,7 +465,7 @@ public class AuthController {
     })
     public ResponseEntity<Void> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
-        if (oidcTokenProvider != null && oidcTokenProvider.isValid(token)) {
+        if (oidcProvider != null && oidcProvider.isValid(token)) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
