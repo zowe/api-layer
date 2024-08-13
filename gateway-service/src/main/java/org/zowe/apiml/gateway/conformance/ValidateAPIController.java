@@ -128,7 +128,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
-    @PostMapping(value = LEGACY_CONFORMANCE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = LEGACY_CONFORMANCE_URL, consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
