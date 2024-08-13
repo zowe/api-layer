@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -307,11 +308,55 @@ class ApiCatalogAuthenticationTest {
 
     @Nested
     @Tag("HealthEndpointProtectionDisabledTest")
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=false"
+        }
+    )
     class GivenHealthEndpointProtectionDisabled {
         @Test
         @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
         void thenDoNotRequireAuthentication() {
             given()
+                .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+                .then()
+                .statusCode(is(SC_OK));
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=true"
+        }
+    )
+    class GivenHealthEndpointProtectionWithNoAuthentication {
+        @Test
+        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
+        void thenDoNotRequireAuthentication() {
+            given()
+                .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+                .then()
+                .statusCode(is(SC_UNAUTHORIZED));
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=true"
+        }
+    )
+    class GivenHealthEndpointProtectionEnabled{
+        @Test
+        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
+        void thenDoNotRequireAuthentication() {
+            given()
+                .auth().basic(USERNAME, PASSWORD)
                 .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
                 .then()

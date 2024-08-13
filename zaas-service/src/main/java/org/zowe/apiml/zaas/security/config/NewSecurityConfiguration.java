@@ -492,7 +492,8 @@ public class NewSecurityConfiguration {
                 "/application",
                 "/gateway/conformance",
                 "/gateway/api/v1/conformance",
-                "/validate"
+                "/gateway/validate",
+                "/gateway/api/v1/validate"
             };
 
             @Bean

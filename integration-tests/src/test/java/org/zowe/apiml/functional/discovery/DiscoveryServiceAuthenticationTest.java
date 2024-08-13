@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.DisplayName;
 
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -83,10 +84,35 @@ class DiscoveryServiceAuthenticationTest {
 
     @Nested
     @Tag("HealthEndpointProtectionDisabledTest")
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=false"
+        }
+    )
     class GivenHealthEndpointProtectionDisabled {
 
         @Test
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
+        void thenDoNotRequireAuthentication() {
+            given()
+                .when()
+                .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
+                .then()
+                .statusCode(is(SC_OK));
+        }
+    }
+
+    @Nested
+    @Tag("HealthEndpointProtectionDisabledTest")
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=true"
+        }
+    )
+    class GivenHealthEndpointProtection{
+
+        @Test
+        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
         void thenDoNotRequireAuthentication() {
             given()
                 .when()

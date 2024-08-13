@@ -48,7 +48,8 @@ public class ValidateAPIController {
     private final VerificationOnboardService verificationOnboardService;
     private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
-    public static final String LEGACY_CONFORMANCE_URL = "/validate";
+    public static final String LEGACY_CONFORMANCE_SHORT_URL = "gateway/validate";
+    public static final String LEGACY_CONFORMANCE_LONG_URL = "gateway/api/v1/validate";
 
     /**
      * Accepts serviceID and checks conformance criteria
@@ -128,7 +129,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
-    @PostMapping(value = LEGACY_CONFORMANCE_URL, consumes = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = {LEGACY_CONFORMANCE_SHORT_URL, LEGACY_CONFORMANCE_LONG_URL}, consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
