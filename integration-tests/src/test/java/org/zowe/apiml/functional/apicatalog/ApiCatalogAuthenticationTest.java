@@ -351,7 +351,7 @@ class ApiCatalogAuthenticationTest {
             "apiml.health.protected=true"
         }
     )
-    class GivenHealthEndpointProtectionEnabled{
+    class GivenHealthEndpointProtectionEnabled {
         @Test
         @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
         void thenDoNotRequireAuthentication() {

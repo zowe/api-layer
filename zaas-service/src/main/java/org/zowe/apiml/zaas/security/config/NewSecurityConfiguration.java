@@ -500,11 +500,12 @@ public class NewSecurityConfiguration {
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(
                     http.securityMatchers(matchers -> matchers
-                        .requestMatchers("/application/**")
+                            .requestMatchers("/application/**")
                             .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                        .requestMatchers("/gateway/conformance/**")
-                        .requestMatchers("/gateway/api/v1/conformance/**")
-                        .requestMatchers("/validate")
+                            .requestMatchers("/gateway/conformance/**")
+                            .requestMatchers("/gateway/api/v1/conformance/**")
+                            .requestMatchers("/gateway/validate")
+                            .requestMatchers("/gateway/api/v1/validate")
                         )
                 ).authorizeHttpRequests(requests -> requests
                     .anyRequest()

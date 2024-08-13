@@ -109,7 +109,7 @@ class DiscoveryServiceAuthenticationTest {
             "apiml.health.protected=true"
         }
     )
-    class GivenHealthEndpointProtection{
+    class GivenHealthEndpointProtection {
 
         @Test
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
