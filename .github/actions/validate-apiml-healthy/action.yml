@@ -29,8 +29,8 @@ runs:
             valid="false"
             until [ $attemptCounter -gt $maxAttempts ]; do
               sleep 10
-              gwHealth=$(curl -k -s https://localhost:10010/application/health)
-              zaasHealth=$(curl -k -s https://localhost:10023/application/health)
+              gwHealth=$(curl -k -s https://localhost:10010/application/health?apiml.health.protected=false)
+              zaasHealth=$(curl -k -s https://localhost:10023/application/health?apiml.health.protected=false)
               echo "Polling for GW health: $attemptCounter"
               echo $gwHealth
 
