@@ -63,13 +63,13 @@ import static org.zowe.apiml.zaas.zaas.SchemeController.CONTROLLER_PATH;
     classes = {
         ZaasApplication.class,
         OIDCTokenProviderEndpoint.class,
-        OIDCTokenProviderJwkEndpointTest.Config.class
+        OIDCTokenProviderJWKEndpointTest.Config.class
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("OIDCTokenProviderEndpointTest")
-class OIDCTokenProviderJwkEndpointTest {
+class OIDCTokenProviderJWKEndpointTest {
 
     private static final String MF_USER = "USER";
     private static final String VALID_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";

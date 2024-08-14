@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'JWK' && '${apiml.security.oidc.enabled:false}' == 'true'")
-public class OIDCTokenProviderJwk implements OIDCProvider {
+public class OIDCTokenProviderJWK implements OIDCProvider {
 
     private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
 

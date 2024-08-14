@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OIDCTokenProviderJwkTest {
+class OIDCTokenProviderJWKTest {
 
     private static final String OKTA_JWKS_RESOURCE = "/test_samples/okta_jwks.json";
 
@@ -50,13 +50,13 @@ class OIDCTokenProviderJwkTest {
 
     private static final String TOKEN = "token";
 
-    private OIDCTokenProviderJwk oidcTokenProviderJwk;
+    private OIDCTokenProviderJWK oidcTokenProviderJwk;
 
     private JWKSet jwkSet;
 
     @BeforeEach
     void setup() throws CachingServiceClientException {
-        oidcTokenProviderJwk = new OIDCTokenProviderJwk(new DefaultClock());
+        oidcTokenProviderJwk = new OIDCTokenProviderJWK(new DefaultClock());
         ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwkRefreshInterval", 1);
         ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
         oidcTokenProviderJwk.clientId = "client_id";
@@ -190,7 +190,7 @@ class OIDCTokenProviderJwkTest {
 
         @BeforeEach
         public void setUp() {
-            oidcTokenProviderJwk = new OIDCTokenProviderJwk(new DefaultClock());
+            oidcTokenProviderJwk = new OIDCTokenProviderJWK(new DefaultClock());
             ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
         }
 

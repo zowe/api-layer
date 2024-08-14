@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
@@ -46,7 +45,7 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJwk;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
@@ -352,7 +351,7 @@ public class AuthController {
         }
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
-        if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJwk oidcTokenProviderJwk)) {
+        if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJWK oidcTokenProviderJwk)) {
             JWKSet oidcSet = oidcTokenProviderJwk.getJwkSet();
             if (oidcSet != null) {
                 keys.addAll(oidcSet.getKeys());
