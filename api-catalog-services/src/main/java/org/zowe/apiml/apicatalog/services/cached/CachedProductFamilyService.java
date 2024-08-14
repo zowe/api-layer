@@ -275,7 +275,8 @@ public class CachedProductFamilyService {
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = instanceInfo.getHomePageUrl();
 
-        if (hasHomePage(instanceInfo)) {
+        //Gateway homePage is used to hold DVIPA address and must not be modified
+        if (hasHomePage(instanceInfo) && !isGateway(instanceInfo)) {
             instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
             try {
@@ -301,11 +302,15 @@ public class CachedProductFamilyService {
      * @return the base URL
      */
     private String getApiBasePath(InstanceInfo instanceInfo) {
-        String apiBasePath = "";
         if (hasHomePage(instanceInfo)) {
             try {
+                String apiBasePath = instanceInfo.getMetadata().get("apiml.apiBasePath");
+                if (apiBasePath != null) {
+                    return apiBasePath;
+                }
+
                 RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-                apiBasePath = transformService.retrieveApiBasePath(
+                return  transformService.retrieveApiBasePath(
                     instanceInfo.getVIPAddress(),
                     instanceInfo.getHomePageUrl(),
                     routes);
@@ -313,15 +318,17 @@ public class CachedProductFamilyService {
                 apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
             }
         }
-        return apiBasePath;
+        return "";
     }
 
     private boolean hasHomePage(InstanceInfo instanceInfo) {
         String instanceHomePage = instanceInfo.getHomePageUrl();
         return instanceHomePage != null
-            && !instanceHomePage.isEmpty()
-            //Gateway homePage is used to hold DVIPA address and must not be modified
-            && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
+            && !instanceHomePage.isEmpty();
+    }
+
+    private boolean isGateway(InstanceInfo instanceInfo) {
+        return instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
     }
 
     /**
