@@ -124,9 +124,9 @@ public class SwaggerConfig {
             openApi.setPaths(new Paths());
         }
         Paths paths = new Paths();
-        openApi.getPaths().forEach((url, schema) -> {
-            paths.addPathItem(url.replace(basePath, basePath.endsWith("/") ? "/" : ""), schema);
-        });
+        openApi.getPaths().forEach((url, schema) ->
+            paths.addPathItem(url.replace(basePath, basePath.endsWith("/") ? "/" : ""), schema)
+        );
         openApi.setPaths(paths);
     }
 
