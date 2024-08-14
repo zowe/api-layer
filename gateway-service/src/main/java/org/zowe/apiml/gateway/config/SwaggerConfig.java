@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.parser.OpenAPIV3Parser;
@@ -34,6 +35,8 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Optional;
 
 import static org.zowe.apiml.product.constants.CoreService.ZAAS;
@@ -102,9 +105,12 @@ public class SwaggerConfig {
         return zaasUrl.replaceFirst("/zaas/", "/gateway/");
     }
 
-    private void updatePaths(OpenAPI openApi, String pathToMatch) {
+    void updatePaths(OpenAPI openApi, String pathToMatch) {
         String basePath = pathToMatch.replaceAll("[*]", "");
 
+        if (openApi.getServers() == null) {
+            openApi.setServers(new LinkedList<>());
+        }
         openApi.getServers().forEach(server -> {
             String url = server.getUrl();
             if (!url.endsWith("/")) {
@@ -114,6 +120,9 @@ public class SwaggerConfig {
             server.setUrl(url);
         });
 
+        if (openApi.getPaths() == null) {
+            openApi.setPaths(new Paths());
+        }
         Paths paths = new Paths();
         openApi.getPaths().forEach((url, schema) -> {
             paths.addPathItem(url.replace(basePath, basePath.endsWith("/") ? "/" : ""), schema);
@@ -131,9 +140,18 @@ public class SwaggerConfig {
             OpenAPI servletEndpoints = new OpenAPIV3Parser().read(zaasUri.toString());
 
             for (var entry : servletEndpoints.getPaths().entrySet()) {
+                if (openApi.getPaths() == null) {
+                    openApi.setPaths(new Paths());
+                }
                 openApi.getPaths().addPathItem(updateUrlFromZaas(entry.getKey()), entry.getValue());
             }
 
+            if (openApi.getComponents() == null) {
+                openApi.setComponents(new Components());
+            }
+            if (openApi.getComponents().getSchemas() == null) {
+                openApi.getComponents().setSchemas(new HashMap<>());
+            }
             openApi.getComponents().getSchemas().putAll(
                 servletEndpoints.getComponents().getSchemas()
             );
@@ -141,7 +159,6 @@ public class SwaggerConfig {
             if (openApi.getTags() == null) {
                 openApi.setTags(new ArrayList<>());
             }
-
             openApi.getTags().addAll(servletEndpoints.getTags());
 
             updatePaths(openApi, pathToMatch);
