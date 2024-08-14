@@ -140,7 +140,8 @@
         "resolve-url-loader": "5.0.0",
         "lodash": "4.17.21",
         "semver": "7.6.0",
-        "@babel/traverse": "7.24.7"
+        "@babel/traverse": "7.24.7",
+        "dompurify": "3.1.6"
     },
     "engines": {
         "npm": "=9.3.1",
