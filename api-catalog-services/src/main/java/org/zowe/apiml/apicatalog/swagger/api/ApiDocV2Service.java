@@ -49,8 +49,10 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo.getApiInfo(), hidden);
-        updatePaths(swagger, serviceId, apiDocInfo, hidden);
+        if (!apiDocInfo.getRoutes().isDefinedOnlyBypassRoutes()) {
+            updateSchemeHostAndLink(swagger, serviceId, apiDocInfo.getApiInfo(), hidden);
+            updatePaths(swagger, serviceId, apiDocInfo, hidden);
+        }
         updateExternalDoc(swagger, apiDocInfo);
 
         try {

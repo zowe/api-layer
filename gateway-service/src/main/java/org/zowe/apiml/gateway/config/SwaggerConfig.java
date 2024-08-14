@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -101,8 +102,27 @@ public class SwaggerConfig {
         return zaasUrl.replaceFirst("/zaas/", "/gateway/");
     }
 
+    private void updatePaths(OpenAPI openApi, String pathToMatch) {
+        String basePath = pathToMatch.replaceAll("[*]", "");
+
+        openApi.getServers().forEach(server -> {
+            String url = server.getUrl();
+            if (!url.endsWith("/")) {
+                url += '/';
+            }
+            url += basePath.substring(1);
+            server.setUrl(url);
+        });
+
+        Paths paths = new Paths();
+        openApi.getPaths().forEach((url, schema) -> {
+            paths.addPathItem(url.replace(basePath, basePath.endsWith("/") ? "/" : ""), schema);
+        });
+        openApi.setPaths(paths);
+    }
+
     @Bean
-    public OpenApiCustomizer servletEndpoints() {
+    public OpenApiCustomizer servletEndpoints(@Value("${springdoc.pathsToMatch:/}") String pathToMatch) {
         return (openApi) -> {
             if (zaasUri == null) {
                 throw new ServiceNotAccessibleException("ZAAS is not available yet");
@@ -123,6 +143,8 @@ public class SwaggerConfig {
             }
 
             openApi.getTags().addAll(servletEndpoints.getTags());
+
+            updatePaths(openApi, pathToMatch);
         };
     }
 

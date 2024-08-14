@@ -12,22 +12,16 @@ package org.zowe.apiml.apicatalog.swagger.api;
 
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 @Getter
 public class ApiDocPath<T> {
-    private Map<String, T> shortPaths;
-    private Map<String, T> longPaths;
-    private Set<String> prefixes;
-
-    public ApiDocPath() {
-        shortPaths = new HashMap<>();
-        longPaths = new HashMap<>();
-        prefixes = new HashSet<>();
-    }
+    private final Map<String, T> shortPaths = new TreeMap<>();
+    private final Map<String, T> longPaths = new TreeMap<>();
+    private final Set<String> prefixes = new TreeSet<>();
 
     public void addPrefix(String prefix) {
         getPrefixes().add(prefix);
