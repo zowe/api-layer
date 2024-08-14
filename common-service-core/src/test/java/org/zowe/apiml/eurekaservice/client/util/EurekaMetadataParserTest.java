@@ -163,7 +163,7 @@ class EurekaMetadataParserTest {
         String documentationUrl = "https://www.zowe.org";
         String metadataPrefix = API_INFO + ".api-v1.";
 
-        ApiInfo apiInfo = new ApiInfo(apiId, gatewayUrl, version, swaggerUrl, documentationUrl);
+        ApiInfo apiInfo = new ApiInfo(apiId, gatewayUrl, version, swaggerUrl, null, documentationUrl);
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
         String metaApiId = metadata.get(metadataPrefix + API_INFO_API_ID);
@@ -192,7 +192,7 @@ class EurekaMetadataParserTest {
         String language2 = "java2";
         String metadataPrefix = API_INFO + ".api-v1.";
 
-        ApiInfo apiInfo = new ApiInfo("zowe.apiml.test", "api/v1", "1.0.0", "https://service/api-doc", "https://www.zowe.org");
+        ApiInfo apiInfo = new ApiInfo("zowe.apiml.test", "api/v1", "1.0.0", "https://service/api-doc", null, "https://www.zowe.org");
         apiInfo.addCodeSnippet(new CodeSnippet(endpoint1, codeBlock1, language1));
         apiInfo.addCodeSnippet(new CodeSnippet(endpoint2, codeBlock2, language2));
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata("test service", apiInfo);
@@ -219,7 +219,7 @@ class EurekaMetadataParserTest {
         String serviceId = "test service";
         String version = "1.0.0";
 
-        ApiInfo apiInfo = new ApiInfo(null, null, version, null, null); // isDefaultApi defaults to false
+        ApiInfo apiInfo = new ApiInfo(null, null, version, null, null, null); // isDefaultApi defaults to false
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
         assertEquals(2, metadata.size());
@@ -241,7 +241,7 @@ class EurekaMetadataParserTest {
         String gatewayUrl = "api/v1";
         String swaggerUrl = "www.badAddress";
 
-        ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
+        ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null, null);
         Exception exception = assertThrows(MetadataValidationException.class, () -> {
             EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
         });
@@ -254,7 +254,7 @@ class EurekaMetadataParserTest {
         String gatewayUrl = "api/v1";
         String documentationUrl = "www.badAddress";
 
-        ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
+        ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, null, documentationUrl);
         Exception exception = assertThrows(MetadataValidationException.class, () -> {
             EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
         });

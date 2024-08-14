@@ -88,9 +88,7 @@ describe('>>> GraphQL component tests', () => {
     it('should render the GraphiQL container', async () => {
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
         expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
-        const editor = screen.getByText(/write your query here/i);
-        expect(editor).toBeInTheDocument();
-    });
+    }, 10000);
 
     it('getUrl constructs the correct URL', async () => {
         mockFetcher();

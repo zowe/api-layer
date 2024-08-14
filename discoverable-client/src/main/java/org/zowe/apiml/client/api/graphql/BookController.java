@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package org.zowe.apiml.client.api.graphql;
 
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -5,8 +15,6 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.zowe.apiml.client.model.graphql.Author;
@@ -41,13 +49,13 @@ public class BookController {
 
     @Secured("ROLE_ADMIN")
     @MutationMapping
-    public Book addBook(@Argument String name, @Argument Integer pageCount, @Argument String authorId){
+    public Book addBook(@Argument String name, @Argument Integer pageCount, @Argument String authorId) {
         return Book.addBook(name, pageCount, authorId);
     }
 
     @Secured("ROLE_ADMIN")
     @MutationMapping
-    public static Book updateBook(@Argument String bookId, @Argument String name, @Argument Integer pageCount, @Argument String authorId){
+    public static Book updateBook(@Argument String bookId, @Argument String name, @Argument Integer pageCount, @Argument String authorId) {
         return Book.updateBook(bookId, name, pageCount, authorId);
     }
 

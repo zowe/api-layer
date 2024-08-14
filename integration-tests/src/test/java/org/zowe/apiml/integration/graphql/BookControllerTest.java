@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package org.zowe.apiml.integration.graphql;
 
 import io.netty.handler.ssl.SslContext;
@@ -7,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
@@ -19,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @org.zowe.apiml.util.categories.BookControllerTest
 public class BookControllerTest {
 
-    private Book setUpBook(){
+    private Book setUpBook() {
 
         return new Book("New Book " + ThreadLocalRandom.current().nextInt(1, 10),
             ThreadLocalRandom.current().nextInt(100, 601),
@@ -27,7 +38,7 @@ public class BookControllerTest {
     }
 
     static HttpGraphQlTester setUpTester() {
-        String baseUrl = "https://localhost:10010/discoverableclient/api/v3/graphql";
+        String baseUrl = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v3/graphql").toString();
         SslContext sslContext = null;
         try {
             sslContext = SslContextBuilder
@@ -357,7 +368,7 @@ public class BookControllerTest {
         String name;
         Integer pageCount;
         String authorId;
-        public Book(){}
+        public Book() {}
         public Book(String bookId, String name, Integer pageCount) {
             this.bookId = bookId;
             this.name = name;

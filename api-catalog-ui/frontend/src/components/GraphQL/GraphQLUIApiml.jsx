@@ -67,7 +67,6 @@ export default function GraphQLUIApiml(props) {
         const observer = new MutationObserver((mutationsList) => {
             mutationsList.forEach((mutation) => {
                 if (mutation.type === 'childList') {
-                    // Reapply the text update for all tabs
                     updateTabText();
                 }
             });

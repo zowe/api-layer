@@ -152,7 +152,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService2);
                 routedServices.addRoutedService(routedService3);
 
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -247,7 +247,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService2);
                 routedServices.addRoutedService(routedService3);
 
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -297,7 +297,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
 
-                ApiInfo apiInfo = new ApiInfo(API_VERSION, "api/v1", API_ID, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_VERSION, "api/v1", API_ID, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -324,7 +324,7 @@ class ApiDocV2ServiceTest {
             routedServices.addRoutedService(routedService);
             routedServices.addRoutedService(routedService2);
 
-            ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null);
+            ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, null);
             ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
             String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
