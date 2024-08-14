@@ -2,6 +2,14 @@ name: "Validate APIML Healthy"
 description: "Validates APIML health using Gateway, Caching Service and Authentication Service health status"
 
 inputs:
+    username:
+        description: "username"
+        default: "${{ secrets.ARTIFACTORY_USERNAME }}"
+        required: true
+    password:
+        description: "password"
+        default: "${{ secrets.ARTIFACTORY_PASSWORD }}"
+        required: true
     caching-service:
         description: "Check Caching Service health"
         required: false
@@ -29,8 +37,8 @@ runs:
             valid="false"
             until [ $attemptCounter -gt $maxAttempts ]; do
               sleep 10
-              gwHealth=$(curl -k -s https://localhost:10010/application/health?apiml.health.protected=false)
-              zaasHealth=$(curl -k -s https://localhost:10023/application/health?apiml.health.protected=false)
+              gwHealth=$(curl -k -s -H "Authorization: Basic $(echo -n ${inputs.username}:${inputs.password} | base64)" https://localhost:10010/application/health?apiml.health.protected=false)
+              zaasHealth=$(curl -k -s -H "Authorization: Basic $(echo -n ${inputs.username}:${inputs.password} | base64)" https://localhost:10023/application/health?apiml.health.protected=false)
               echo "Polling for GW health: $attemptCounter"
               echo $gwHealth
 
