@@ -29,11 +29,6 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  * Verify that both API Catalog instances are UP
  */
 @HATest
-@TestPropertySource(
-    properties = {
-        "apiml.health.protected=false"
-    }
-)
 public class ApiCatalogMultipleInstancesTest {
     private final HAApiCatalogRequests haApiCatalogRequests = new HAApiCatalogRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
