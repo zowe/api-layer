@@ -94,10 +94,10 @@ allprojects {
         exclude group: 'commons-httpclient', module: 'commons-httpclient'
 
         resolutionStrategy.dependencySubstitution {
-            substitute(module('aopalliance:aopalliance:1.0')).using(module('org.glassfish.hk2.external:aopalliance-repackaged:3.0.3'))
+            substitute(module('aopalliance:aopalliance:1.0')).using(module('org.glassfish.hk2.external:aopalliance-repackaged:3.1.1'))
             // versions are clashing - Micronaut enabler requires both versions, Gradle as default selected newer one
             //substitute(module('javax.inject:javax.inject:1')).using(module('jakarta.inject:jakarta.inject-api:1.0.5'))
-            substitute(module('javax.activation:javax.activation-api:1.0')).using(module('jakarta.activation:jakarta.activation-api:1.2.2'))
+            substitute(module('javax.activation:javax.activation-api:1.2.0')).using(module('jakarta.activation:jakarta.activation-api:1.2.2'))
 
             // upgrade Bouncy Castle from 1.5 to 1.8
             substitute(module('org.bouncycastle:bcprov-jdk15on')).using(module("org.bouncycastle:bcprov-jdk18on:${libs.versions.bouncyCastle.get()}"))
