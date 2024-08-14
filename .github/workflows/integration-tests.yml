@@ -737,8 +737,6 @@ jobs:
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/validate-apiml-healthy
-                env:
-                    APIML_HEALTH_PROTECTED: false
                 with:
                     caching-service: "true"
 
@@ -799,16 +797,12 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run APIML and Redis Containers
-                env:
-                    APIML_HEALTH_PROTECTED: false
                 run: |
                     cd docker/redis
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/validate-apiml-healthy
-                env:
-                    APIML_HEALTH_PROTECTED: false
                 with:
                     caching-service: "true"
 
@@ -873,15 +867,12 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-                env:
-                    APIML_HEALTH_PROTECTED: false
             api-catalog-services-2:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_HEALTH_PROTECTED: false
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -898,14 +889,12 @@ jobs:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-                    APIML_HEALTH_PROTECTED: false
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_HEALTH_PROTECTED: false
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
@@ -915,12 +904,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_HEALTH_PROTECTED: false
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_HEALTH_PROTECTED: false
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4

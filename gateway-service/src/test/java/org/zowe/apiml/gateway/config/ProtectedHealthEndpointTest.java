@@ -11,25 +11,16 @@
 package org.zowe.apiml.gateway.config;
 
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-
 @AcceptanceTest
-@Disabled           //it has an issue when the property is false;No SecurityContext found in WebSession
-@TestPropertySource(
-    properties = {
-        "apiml.health.protected=false"
-    }
-)
 public class ProtectedHealthEndpointTest {
 
     @Value("${apiml.service.hostname:localhost}")
@@ -54,7 +45,7 @@ public class ProtectedHealthEndpointTest {
                 .when()
                 .get(getGatewayUriWithPath("application/health"))
                 .then()
-                .statusCode(is(HttpStatus.SC_OK));
+                .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
         }
     }
 }
