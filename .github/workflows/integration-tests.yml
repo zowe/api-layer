@@ -62,7 +62,6 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_HEALTH_PROTECTED: true
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
@@ -732,15 +731,14 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run APIML and Redis Containers
-                env:
-                    APIML_HEALTH_PROTECTED: false
                 run: |
-                    export  APIML_HEALTH_PROTECTED=false
                     cd docker/redis
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/validate-apiml-healthy
+                env:
+                    APIML_HEALTH_PROTECTED: false
                 with:
                     caching-service: "true"
 
@@ -804,12 +802,13 @@ jobs:
                 env:
                     APIML_HEALTH_PROTECTED: false
                 run: |
-                    export  APIML_HEALTH_PROTECTED=false
                     cd docker/redis
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/validate-apiml-healthy
+                env:
+                    APIML_HEALTH_PROTECTED: false
                 with:
                     caching-service: "true"
 
