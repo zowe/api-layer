@@ -732,7 +732,10 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run APIML and Redis Containers
+                env:
+                    APIML_HEALTH_PROTECTED: false
                 run: |
+                    export  APIML_HEALTH_PROTECTED=false
                     cd docker/redis
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
@@ -740,15 +743,12 @@ jobs:
             -   uses: ./.github/actions/validate-apiml-healthy
                 with:
                     caching-service: "true"
-                env:
-                    APIML_HEALTH_PROTECTED: false
 
             -   name: Run Caching Service tests
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.offPlatform=true
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
-                    -Dapiml.health.protected=true
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -801,7 +801,10 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run APIML and Redis Containers
+                env:
+                    APIML_HEALTH_PROTECTED: false
                 run: |
+                    export  APIML_HEALTH_PROTECTED=false
                     cd docker/redis
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
@@ -809,15 +812,12 @@ jobs:
             -   uses: ./.github/actions/validate-apiml-healthy
                 with:
                     caching-service: "true"
-                env:
-                    APIML_HEALTH_PROTECTED: false
 
             -   name: Run Caching Service tests
                 run: >
                     ./gradlew :integration-tests:runCachingServiceTests --info -Denvironment.offPlatform=true
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
-                    -Dapiml.health.protected=true
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
