@@ -1,4 +1,3 @@
-/*eslint-disable*/
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -11,7 +10,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.min.css';
-import './GraphQLUIApiml.css'
+import './GraphQLUIApiml.css';
 import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 
 function getUrl(graphqlUrl) {
@@ -39,7 +38,6 @@ export default function GraphQLUIApiml(props) {
             .catch(() => data.text());
     };
     const [schema, setSchema] = useState(null);
-    const [query, setQuery] = useState('# Write your query here!');
     const graphiqlRef = useRef(null);
 
     useEffect(() => {
@@ -54,7 +52,7 @@ export default function GraphQLUIApiml(props) {
         fetchSchema();
     }, [basePath]);
 
-    //rename default untitled tabs
+    // rename default untitled tabs
     useEffect(() => {
         const updateTabText = () => {
             const tabs = document.querySelectorAll('.graphiql-tab-button');
@@ -67,14 +65,12 @@ export default function GraphQLUIApiml(props) {
         updateTabText();
 
         const observer = new MutationObserver((mutationsList) => {
-            let updated = false;
-            for (let mutation of mutationsList) {
+            mutationsList.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     // Reapply the text update for all tabs
                     updateTabText();
-                    updated = true;
                 }
-            }
+            });
         });
         if (graphiqlRef.current) {
             observer.observe(graphiqlRef.current, {
@@ -87,10 +83,9 @@ export default function GraphQLUIApiml(props) {
         };
     }, [graphiqlRef]);
 
-
     return (
-        <div id="graphiql-container" ref={graphiqlRef}  >
-            <GraphiQL fetcher={fetcher} schema={schema} query={query} onEditQuery={setQuery}>
+        <div id="graphiql-container" ref={graphiqlRef}>
+            <GraphiQL fetcher={fetcher} schema={schema} defaultQuery="# Write your query here!">
                 <GraphiQL.Toolbar />
             </GraphiQL>
         </div>

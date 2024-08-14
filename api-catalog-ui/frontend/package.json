@@ -22,6 +22,8 @@
         "buffer": "6.0.3",
         "emotion-theming": "11.0.0",
         "exception-formatter": "2.1.2",
+        "graphiql": "3.3.2",
+        "graphql": "16.9.0",
         "history": "4.10.1",
         "htmr": "1.0.2",
         "install": "0.13.0",
@@ -48,9 +50,7 @@
         "swagger-ui-react": "5.17.14",
         "url": "0.11.3",
         "util": "0.12.5",
-        "uuid": "9.0.1",
-        "graphiql": "3.3.2",
-        "graphql": "16.9.0"
+        "uuid": "9.0.1"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
@@ -84,7 +84,7 @@
         "@babel/preset-react": "7.24.1",
         "@testing-library/dom": "8.20.1",
         "@testing-library/jest-dom": "6.4.5",
-        "@testing-library/react": "12.1.5",
+        "@testing-library/react": "16.0.0",
         "@testing-library/user-event": "13.5.0",
         "ansi-regex": "5.0.1",
         "body-parser": "1.20.2",

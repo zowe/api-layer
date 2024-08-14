@@ -7,13 +7,14 @@ import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.client.exception.BookAlreadyExistsException;
+import org.zowe.apiml.client.exception.BookNotFoundException;
 
 @Component
 public class GraphQLExceptionResolver extends DataFetcherExceptionResolverAdapter {
 
     @Override
     protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
-        if (ex instanceof BookAlreadyExistsException) {
+        if (ex instanceof BookAlreadyExistsException || ex instanceof BookNotFoundException) {
             return GraphqlErrorBuilder.newError()
                 .errorType(ErrorType.BAD_REQUEST)
                 .message(ex.getMessage())

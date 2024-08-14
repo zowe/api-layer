@@ -266,7 +266,7 @@ export default class ServiceTab extends Component {
                                 </div>
                             )}
                         </div>
-                        {currentService && apiVersions?.length > 1 && (
+                        {showVersionDiv && currentService && apiVersions?.length > 1 && (
                             <div id="version-div">
                                 <Select
                                     displayEmpty
@@ -292,13 +292,11 @@ export default class ServiceTab extends Component {
                                 </Button>
                             </div>
                         )}
-                        {graphqlUrl !== null && selectedVersion !== 'diff' && (
-                            <GraphQLContainer graphqlUrl={graphqlUrl} selectedVersion={selectedVersion} />
-                        )}
+                        {graphqlUrl !== null && <GraphQLContainer graphqlUrl={graphqlUrl} />}
                         {graphqlUrl === null && selectedVersion !== 'diff' && (
                             <SwaggerContainer selectedVersion={selectedVersion} />
                         )}
-                        {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
+                        {graphqlUrl === null && selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
                                 selectedVersion={this.state.previousVersion}
                                 handleDialog={this.handleDialogClose}
