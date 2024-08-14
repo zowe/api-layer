@@ -867,12 +867,15 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    APIML_HEALTH_PROTECTED: true
             api-catalog-services-2:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
+                    APIML_HEALTH_PROTECTED: true
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
