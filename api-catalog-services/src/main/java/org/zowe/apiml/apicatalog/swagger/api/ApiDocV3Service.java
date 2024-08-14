@@ -25,6 +25,7 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import jakarta.validation.UnexpectedTypeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
@@ -35,7 +36,6 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 
-import jakarta.validation.UnexpectedTypeException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -70,8 +70,11 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         boolean hidden = isHidden(openAPI.getTags());
 
-        updatePaths(openAPI, serviceId, apiDocInfo, hidden);
-        updateServerAndLink(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden);
+        if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
+            updatePaths(openAPI, serviceId, apiDocInfo, hidden);
+            updateServer(openAPI, serviceId);
+        }
+        updateSwaggerUrl(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
@@ -82,15 +85,17 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
     }
 
-    private void updateServerAndLink(OpenAPI openAPI, String serviceId, ApiInfo apiInfo, boolean hidden) {
-        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
-
+    private void updateServer(OpenAPI openAPI, String serviceId) {
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
                     String.format("%s://%s/%s", scheme, getHostname(serviceId), server.getUrl())));
         }
+    }
+
+    private void updateSwaggerUrl(OpenAPI openAPI, String serviceId, ApiInfo apiInfo, boolean hidden, String scheme) {
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
         if (!hidden) {
             openAPI.getInfo().setDescription(openAPI.getInfo().getDescription() + swaggerLink);
         }

@@ -11,6 +11,7 @@ eureka:
         securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
+                apiBasePath: /gateway/api/v1
                 catalog:
                     tile:
                         id: apimediationlayer
@@ -65,6 +66,7 @@ springdoc:
     api-docs:
         path: /gateway/api-docs
     writer-with-order-by-keys: true
+    pathsToMatch: /gateway/api/v1/**
 apiml:
     catalog:
         serviceId: apicatalog
