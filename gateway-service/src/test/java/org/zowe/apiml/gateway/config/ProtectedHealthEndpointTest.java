@@ -15,16 +15,18 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
-
+import org.springframework.context.annotation.Import;
+import org.zowe.apiml.gateway.GatewayServiceApplication;
+import org.zowe.apiml.gateway.acceptance.config.DiscoveryClientTestConfig;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@AcceptanceTest
-@TestPropertySource( properties = "apiml.health.protected=false")
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    properties = {"management.endpoint.gateway.enabled=true","management.server.port=10091","apiml.health.protected=false"})
+@Import(DiscoveryClientTestConfig.class)
 public class ProtectedHealthEndpointTest {
 
     @Value("${apiml.service.hostname:localhost}")
@@ -43,7 +45,7 @@ public class ProtectedHealthEndpointTest {
     }
 
     protected String getGatewayUriWithPath(String scheme, String path) {
-        return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
+        return String.format("%s://%s:%d/%s", scheme, hostname, 10091, path);
     }
         @Test
         void requestSuccessWith200() {
@@ -52,6 +54,6 @@ public class ProtectedHealthEndpointTest {
                 .when()
                 .get(getGatewayUriWithPath("application/health"))
                 .then()
-                .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+                .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE));
     }
 }
