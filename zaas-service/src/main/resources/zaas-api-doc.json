@@ -44,21 +44,6 @@
                                 }
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "405": {
-                        "description": "Method Not Allowed"
-                    },
-                    "500": {
-                        "description": "Internal error"
                     }
                 }
             }
@@ -87,18 +72,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "405": {
-                        "description": "Method Not Allowed"
-                    },
-                    "500": {
-                        "description": "Internal error"
                     }
                 }
             }
@@ -147,12 +120,6 @@
                     "403": {
                         "description": "A client certificate is not provided or is expired."
                     },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "405": {
-                        "description": "Method Not Allowed"
-                    },
                     "500": {
                         "description": "The external security manager failed to generate a PassTicket for the user and application specified."
                     }
@@ -193,10 +160,7 @@
                         "description": "A client certificate is not provided or is expired."
                     },
                     "404": {
-                        "description": "Not Found. The endpoint is not enabled or not propperly configured"
-                    },
-                    "405": {
-                        "description": "Method Not Allowed"
+                        "description": "Not Found. The endpoint is not enabled or not properly configured"
                     },
                     "500": {
                         "description": "Process of refreshing token has failed unexpectedly."
@@ -222,9 +186,6 @@
                 "responses": {
                     "204": {
                         "description": "Invalidated user session"
-                    },
-                    "500": {
-                        "description": "Internal error"
                     }
                 }
             }
@@ -259,21 +220,6 @@
                                 "example": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVU0VSIiwiaWF0IjoxNzIzNDYyMTY1LCJleHAiOjE3Mjg2NDYxNjUsImlzcyI6IkFQSU1MX1BBVCIsImp0aSI6IjE5Y2E3NGQ4LWNlZDktNGEwZi1hOTRkLWI5ZDE3NmQzM2YxNCIsImF1dGgucHJvdiI6IkFQSU1MIiwic2NvcGVzIjpbImEiLCJiIl19.gcldqnlRDn8cZzdI1ZQJyQKYFrCgIp_BoN01kUDdqiBFSnIDX__Ym8PTQjX5gPgdkoRrLYZaQRHoKKCVur3us-zlQKALV9dP0c1e7DF_mXNq7Cu8vlTF2_ILgs4QTU9OLh0WBODSNOuTXoTz71trA7LrFIWsPr9p7G8gkafb1iGpyPSHw07usMGorHtJ3zU3V2t5F3Kdc-gEKjpekvO2zv_c6Lxx0aUDzDqXH1POhR-bXC1abtzGMM7xf65cutkP2l793w1ajPVrDlSjY-SR-882t-7-Nhjq6OFM1Zm18Yu2-VYil4Wo-pMiFnSnS4n26w_e9dfy9sGMHtgfo98wkg"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "405": {
-                        "description": "Method Not Allowed"
-                    },
-                    "500": {
-                        "description": "Internal error"
                     }
                 }
             }

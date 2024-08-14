@@ -67,7 +67,7 @@ public class RegistryController {
             schema = @Schema(implementation = ApiMessageView.class)
         ))
     })
-    public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @Parameter(description = "Identifier of the API in the APIML") @RequestParam(name = "apiId", required = false) String apiId, @Parameter(description = "Service identifier") @RequestParam(name = "serviceId", required = false) String serviceId) {
+    public Flux<ApimlInfo> getServices(@PathVariable(required = false) String apimlId, @Parameter(description = "The API ID of requested services") @RequestParam(name = "apiId", required = false) String apiId, @Parameter(description = "Service ID of the requested service") @RequestParam(name = "serviceId", required = false) String serviceId) {
         Map<String, List<ServiceInfo>> apimlList = gatewayIndexService.listRegistry(emptyToNull(apimlId), emptyToNull(apiId), emptyToNull(serviceId));
         return Flux.fromIterable(apimlList.entrySet())
             .map(this::buildEntry)

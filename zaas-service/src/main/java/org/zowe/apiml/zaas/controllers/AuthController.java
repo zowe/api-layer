@@ -128,7 +128,7 @@ public class AuthController {
     @Operation(summary = "Invalidate personal access token.",
         tags = {"Access token"},
         operationId = "accessTokenInvalidateDELETE",
-        description = "Use the `/access-token/revoke` API to invalidate a specific personal access token. \n\n**Response:**\n\nThe response is no content`.",
+        description = "Use the `/access-token/revoke` API to invalidate a specific personal access token. \n\n**Response:**\n\nThe response is no content.",
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 schemaProperties = {
@@ -155,7 +155,7 @@ public class AuthController {
     @Operation(summary = "Invalidate multiple personal access tokens.",
         tags = {"Access token"},
         operationId = "accessTokensInvalidateDELETE",
-        description = "Use the `/access-token/revoke/token` API to invalidate multiple personal access tokens issued for your user ID. \n\n**Request:**\n\nThe revoke request requires the user credentials in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n * Bearer authentication \n*Header example:* Authorization: Bearer *token* \n* Client certificate \n\n**Response:**\n\nThe response is no content`.",
+        description = "Use the `/access-token/revoke/token` API to invalidate multiple personal access tokens issued for your user ID. \n\n**Request:**\n\nThe revoke request requires the user credentials in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n * Bearer authentication \n*Header example:* Authorization: Bearer *token* \n* Client certificate \n\n**Response:**\n\nThe response is no content.",
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
@@ -193,7 +193,7 @@ public class AuthController {
     @Operation(summary = "Invalidate personal access tokens by user ID.",
         tags = {"Access token"},
         operationId = "accessTokensInvalidateAdminDELETE",
-        description = "Use the `/access-token/revoke/token/user` API to invalidate multiple personal access tokens issued for a user ID.\n\n**Request:**\n\nThe revoke user ID request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate \n\n**Response:**\n\nThe response is no content`.",
+        description = "Use the `/access-token/revoke/token/user` API to invalidate multiple personal access tokens issued for a user ID.\n\n**Request:**\n\nThe revoke user ID request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate \n\n**Response:**\n\nThe response is no content.",
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
@@ -231,7 +231,7 @@ public class AuthController {
     @Operation(summary = "Invalidate multiple personal access tokens by service ID.",
         tags = {"Access token"},
         operationId = "accessTokensInvalidateAdminScopeDELETE",
-        description = "Use the `/access-token/revoke/token/scope` API to invalidate multiple personal access tokens issued for service ID.\n\n**Request:**\n\nThe revoke scope request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content`.",
+        description = "Use the `/access-token/revoke/token/scope` API to invalidate multiple personal access tokens issued for service ID.\n\n**Request:**\n\nThe revoke scope request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content.",
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
@@ -265,7 +265,7 @@ public class AuthController {
     @DeleteMapping(value = ACCESS_TOKEN_EVICT)
     @Operation(summary = "Remove invalidated tokens and rules which are not relevant anymore.",
         tags = {"Access token"},
-        description = "Will evict all the invalidated tokens which are not relevant anymore\n\n**Request:**\n\nThe evict requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content`.",
+        description = "Will evict all the invalidated tokens which are not relevant anymore\n\n**Request:**\n\nThe evict requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content.",
         operationId = "accessTokensInvalidateAdminScopeDELETE",
         security = {
             @SecurityRequirement(name = "Bearer"),
@@ -289,7 +289,7 @@ public class AuthController {
     @Operation(summary = "Validate personal access token.",
         tags = {"Access token"},
         operationId = "accessTokenValidatePOST",
-        description = "Use the `/access-token/validate` API to verify that personal access token is valid. \n\n**Response:**\n\nThe response is a plain text body`.",
+        description = "Use the `/access-token/validate` API to verify that personal access token is valid. \n\n**Response:**\n\nThe response is a plain text body.",
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 schema = @Schema(implementation = ValidateRequestModel.class)
