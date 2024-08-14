@@ -332,7 +332,7 @@ public class AuthController {
     @Operation(summary = "Returns all public keys to verify JWT tokens validity",
         tags = {"Security"},
         operationId = "GetAllPublicKeysUsingGET",
-        description = "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF."
+        description = "This endpoint returns all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK",
@@ -371,7 +371,7 @@ public class AuthController {
     @Operation(summary = "Returns public keys to verify JWT tokens, which can be generated now",
         tags = {"Security"},
         operationId = "GetCurrentPublicKeysUsingGET",
-        description = "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
+        description = "This endpoint returns all possible JWKs, which can verify signature outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK",
