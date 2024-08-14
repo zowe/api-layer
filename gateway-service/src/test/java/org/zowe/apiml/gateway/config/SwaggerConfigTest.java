@@ -1,0 +1,76 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+package org.zowe.apiml.gateway.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.servers.Server;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.io.IOException;
+import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+class SwaggerConfigTest {
+
+    @Nested
+    class UpdatePaths {
+
+        @Test
+        void givenWildCardWithStars_whenUpdating_thenProcess() {
+            PathItem pathItem1 = new PathItem();
+            PathItem pathItem2 = new PathItem();
+            OpenAPI openAPI = new OpenAPI()
+                .servers(Collections.singletonList(new Server().url("https://localhost:10010/contextPath")))
+                .path("/api/v1/test", pathItem1)
+                .path("/api/v1/test2", pathItem2);
+            new SwaggerConfig(null).updatePaths(openAPI, "/api/v1/**");
+            assertEquals(2, openAPI.getPaths().size());
+            assertEquals("https://localhost:10010/contextPath/api/v1/", openAPI.getServers().get(0).getUrl());
+            assertSame(pathItem1, openAPI.getPaths().get("/test"));
+            assertSame(pathItem2, openAPI.getPaths().get("/test2"));
+        }
+
+        @Test
+        void givenNotMatchingEndpoint_whenUpdating_thenLeaveIt() {
+            OpenAPI openAPI = new OpenAPI()
+                .servers(Collections.singletonList(new Server().url("https://localhost:10010/")))
+                .path("/api/v1/test", new PathItem())
+                .path("/different/test", new PathItem());
+            new SwaggerConfig(null).updatePaths(openAPI, "/api/v1");
+            assertEquals("https://localhost:10010/api/v1", openAPI.getServers().get(0).getUrl());
+            assertNotNull(openAPI.getPaths().get("/test"));
+            assertNotNull(openAPI.getPaths().get("/different/test"));
+        }
+
+    }
+
+    @Nested
+    class Customizer {
+
+        @Test
+        void givenOpenApiCustomizer_whenCustomizing_thenUpdatePaths() throws IOException {
+            OpenAPI openAPI = new OpenAPI();
+            SwaggerConfig swaggerConfig = spy(new SwaggerConfig(null));
+            ReflectionTestUtils.setField(swaggerConfig, "zaasUri", new ClassPathResource("api-doc.json").getURI());
+            swaggerConfig.servletEndpoints("/some/path").customise(openAPI);
+            verify(swaggerConfig).updatePaths(openAPI, "/some/path");
+        }
+
+    }
+
+}
