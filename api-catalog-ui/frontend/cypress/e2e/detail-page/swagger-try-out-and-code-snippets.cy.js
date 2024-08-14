@@ -27,7 +27,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         {
             tile: 'API Gateway',
             id: 'gateway',
-            selectOp: '#operations-version-controller-getVersion',
+            selectOp: '#operations-Diagnostic-VersionInfoUsingGET',
             auth: true,
         }
     ].forEach((test) => {

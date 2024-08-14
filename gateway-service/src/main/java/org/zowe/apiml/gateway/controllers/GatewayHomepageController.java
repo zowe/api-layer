@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -28,6 +30,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 /**
  * Main page for Gateway, displaying status of Apiml services and build version information
  */
+@Tag(name = "Home page")
 @Controller
 public class GatewayHomepageController {
 
@@ -59,6 +62,7 @@ public class GatewayHomepageController {
         initializeBuildInfos();
     }
 
+    @Hidden
     @GetMapping("/")
     public String home(Model model) {
         initializeCatalogAttributes(model);

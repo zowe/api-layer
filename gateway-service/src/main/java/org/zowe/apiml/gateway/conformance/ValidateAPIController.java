@@ -92,7 +92,7 @@ public class ValidateAPIController {
                     @SchemaProperty(name = "message",
                         schema = @Schema(type = "string", example = "Service {serviceId} fulfills all checked conformance criteria"))
                 }
-            )),
+        )),
         @ApiResponse(responseCode = "400", description = "Service does not conform to the criteria",
             content = @Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -101,7 +101,7 @@ public class ValidateAPIController {
                     @SchemaProperty(name = "error", schema = @Schema(type = "string")),
                     @SchemaProperty(name = "details", array = @ArraySchema(schema = @Schema(name = "items", type = "string")))
                 }
-            ))
+        ))
     })
     public ResponseEntity<String> checkConformance(@Parameter(in = ParameterIn.PATH, required = true, description = "Service ID of the service to check") @PathVariable String serviceId,
                                                    @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
@@ -172,6 +172,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
+  
     @PostMapping(value = {LEGACY_CONFORMANCE_SHORT_URL, LEGACY_CONFORMANCE_LONG_URL}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Legacy endpoint for checking service conformance.",
         operationId = "checkValidateLegacyUsingPOST",
