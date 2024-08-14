@@ -12,10 +12,10 @@ package org.zowe.apiml.product.routing;
 
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RoutedServicesTest {
 
@@ -127,4 +127,37 @@ class RoutedServicesTest {
         RoutedService routedService = routedServ.getBestMatchingApiUrl("/");
         assertEquals("/", routedService.getServiceUrl());
     }
+
+    @Nested
+    class Content {
+
+        @Test
+        void givenEmptyRules_whenCallIsDefinedOnlyBypassRoutes_thenReturnTrue() {
+            assertTrue(new RoutedServices().isDefinedOnlyBypassRoutes());
+        }
+
+        @Test
+        void givenGatewayUrl_whenCallIsDefinedOnlyBypassRoutes_thenReturnFalse() {
+            var rs = new RoutedServices();
+            rs.addRoutedService(new RoutedService("api_v3", "api/v3", "/"));
+            assertFalse(rs.isDefinedOnlyBypassRoutes());
+        }
+
+        @Test
+        void givenServiceUrl_whenCallIsDefinedOnlyBypassRoutes_thenReturnFalse() {
+            var rs = new RoutedServices();
+            rs.addRoutedService(new RoutedService("api", "/", "/path"));
+            assertFalse(rs.isDefinedOnlyBypassRoutes());
+        }
+
+        @Test
+        void givenMultipleRules_whenCallIsDefinedOnlyBypassRoutes_thenReturnFalse() {
+            var rs = new RoutedServices();
+            rs.addRoutedService(new RoutedService("bypass", "/", "/"));
+            rs.addRoutedService(new RoutedService("api_v3", "api/v3", "/"));
+            assertFalse(rs.isDefinedOnlyBypassRoutes());
+        }
+
+    }
+
 }

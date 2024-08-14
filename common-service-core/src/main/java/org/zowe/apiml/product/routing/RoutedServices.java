@@ -65,6 +65,17 @@ public class RoutedServices {
     }
 
     /**
+     * Verify all routing rules if there is any rules with a prefixes on at least on sides gateway or service
+     * @return true is no rule or just empty is defined
+     */
+    public boolean isDefinedOnlyBypassRoutes() {
+        return routedService.values().stream().allMatch(rs ->
+            StringUtils.isBlank(UrlUtils.removeLastSlash(rs.getGatewayUrl())) &&
+            StringUtils.isBlank(UrlUtils.removeLastSlash(rs.getServiceUrl()))
+        );
+    }
+
+    /**
      * Get best matching api url
      *
      * @param serviceUrl service url
