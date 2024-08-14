@@ -147,7 +147,7 @@ dependencyResolutionManagement {
             }
             version('gradleNode', '7.0.2')
             // the next version (4.1.0.3113) requires Java 11
-            version('sonarGradlePlugin', '4.4.1.3373')
+            version('sonarGradlePlugin', '4.0.0.2929')
             // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
