@@ -61,6 +61,11 @@ import static org.zowe.apiml.product.constants.CoreService.ZAAS;
     in = SecuritySchemeIn.COOKIE,
     paramName = "apimlAuthenticationToken"
 )
+@SecurityScheme(
+    type = SecuritySchemeType.HTTP,
+    name = "ClientCert",
+    description = "Client certificate X509"
+)
 public class SwaggerConfig {
 
     @Value("${server.attls.enabled:false}")
