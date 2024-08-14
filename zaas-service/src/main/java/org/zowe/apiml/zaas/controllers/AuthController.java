@@ -159,7 +159,7 @@ public class AuthController {
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
-            @SecurityRequirement(name = "LoginBasicAuth")
+            @SecurityRequirement(name = "ClientCert")
         },
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
@@ -197,7 +197,8 @@ public class AuthController {
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
-            @SecurityRequirement(name = "LoginBasicAuth")
+            @SecurityRequirement(name = "LoginBasicAuth"),
+            @SecurityRequirement(name = "ClientCert")
         },
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
@@ -234,7 +235,8 @@ public class AuthController {
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
-            @SecurityRequirement(name = "LoginBasicAuth")
+            @SecurityRequirement(name = "LoginBasicAuth"),
+            @SecurityRequirement(name = "ClientCert")
         },
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
@@ -268,7 +270,8 @@ public class AuthController {
         security = {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
-            @SecurityRequirement(name = "LoginBasicAuth")
+            @SecurityRequirement(name = "LoginBasicAuth"),
+            @SecurityRequirement(name = "ClientCert")
         }
     )
     @ApiResponses(value = {
