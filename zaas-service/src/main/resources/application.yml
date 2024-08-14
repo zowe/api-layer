@@ -107,6 +107,9 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
 
+springdoc:
+    writer-with-order-by-keys: true
+
 server:
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
