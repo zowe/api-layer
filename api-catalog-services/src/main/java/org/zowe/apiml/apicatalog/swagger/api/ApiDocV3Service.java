@@ -70,7 +70,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         boolean hidden = isHidden(openAPI.getTags());
 
-        if (!apiDocInfo.getRoutes().isDefinedOnlyBypassRoutes()) {
+        if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
             updatePaths(openAPI, serviceId, apiDocInfo, hidden);
             updateServerAndLink(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden);
         }

@@ -18,7 +18,10 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -122,6 +125,13 @@ public abstract class AbstractApiDocService<T, N> {
             shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
         }
         return shortEndPoint;
+    }
+
+    protected boolean isDefinedOnlyBypassRoutes(ApiDocInfo apiDocInfo) {
+        return Optional.ofNullable(apiDocInfo)
+            .map(ApiDocInfo::getRoutes)
+            .map(RoutedServices::isDefinedOnlyBypassRoutes)
+            .orElse(true);
     }
 
     /**
