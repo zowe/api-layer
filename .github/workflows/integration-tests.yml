@@ -741,8 +741,7 @@ jobs:
                 with:
                     caching-service: "true"
                 env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    APIML_HEALTH_PROTECTED: false
 
             -   name: Run Caching Service tests
                 run: >
@@ -810,8 +809,7 @@ jobs:
                 with:
                     caching-service: "true"
                 env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+                    APIML_HEALTH_PROTECTED: false
 
             -   name: Run Caching Service tests
                 run: >
