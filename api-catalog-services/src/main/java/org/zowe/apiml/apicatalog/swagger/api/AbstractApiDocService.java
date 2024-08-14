@@ -127,6 +127,11 @@ public abstract class AbstractApiDocService<T, N> {
         return shortEndPoint;
     }
 
+    /**
+     * Check whether there is a rule with empty gatewayUrl and serviceUrl or not.
+     * @param apiDocInfo information about service API
+     * @return false if there is a rule with non-empty (slash or missing) gatewayUrl or serviceUrl, otherwise true
+     */
     protected boolean isDefinedOnlyBypassRoutes(ApiDocInfo apiDocInfo) {
         return Optional.ofNullable(apiDocInfo)
             .map(ApiDocInfo::getRoutes)

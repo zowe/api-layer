@@ -72,8 +72,9 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
             updatePaths(openAPI, serviceId, apiDocInfo, hidden);
-            updateServerAndLink(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden);
+            updateServer(openAPI, serviceId);
         }
+        updateSwaggerUrl(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
@@ -84,15 +85,17 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
     }
 
-    private void updateServerAndLink(OpenAPI openAPI, String serviceId, ApiInfo apiInfo, boolean hidden) {
-        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
-
+    private void updateServer(OpenAPI openAPI, String serviceId) {
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
                     String.format("%s://%s/%s", scheme, getHostname(serviceId), server.getUrl())));
         }
+    }
+
+    private void updateSwaggerUrl(OpenAPI openAPI, String serviceId, ApiInfo apiInfo, boolean hidden, String scheme) {
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
         if (!hidden) {
             openAPI.getInfo().setDescription(openAPI.getInfo().getDescription() + swaggerLink);
         }
