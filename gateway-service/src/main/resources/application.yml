@@ -11,8 +11,6 @@ eureka:
         securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
-                health:
-                    protected: true
                 apiBasePath: /gateway/api/v1
                 catalog:
                     tile:
@@ -99,7 +97,8 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
-
+    health:
+        protected: true
 server:
     http2:
         enabled: false
