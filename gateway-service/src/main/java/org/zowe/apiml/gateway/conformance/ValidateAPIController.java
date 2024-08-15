@@ -1,4 +1,3 @@
-
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -172,7 +171,7 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
-  
+
     @PostMapping(value = {LEGACY_CONFORMANCE_SHORT_URL, LEGACY_CONFORMANCE_LONG_URL}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Legacy endpoint for checking service conformance.",
         operationId = "checkValidateLegacyUsingPOST",

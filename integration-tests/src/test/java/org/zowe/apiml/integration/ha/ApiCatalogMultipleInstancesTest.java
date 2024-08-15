@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HAApiCatalogRequests;
