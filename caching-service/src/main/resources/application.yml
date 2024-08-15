@@ -143,10 +143,17 @@ server:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
                 include: health,info
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
 ---
 logging:
     level:
