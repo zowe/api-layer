@@ -33,6 +33,7 @@ class GatewayAuthenticationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private static final String ACTUATOR_ENDPOINT = "/application";
+    private static final String HEALTH_ENDPOINT = ACTUATOR_ENDPOINT + "/health";
 
     @BeforeEach
     void setUp() {
@@ -45,7 +46,7 @@ class GatewayAuthenticationTest {
         @Nested
         class WhenAccessingProtectedEndpoint {
             @ParameterizedTest
-            @ValueSource(strings = {"/application", "/application/health"})
+            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenAuthenticate(String endpoint) {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
                 // Gateway request to url
@@ -65,7 +66,7 @@ class GatewayAuthenticationTest {
         @Nested
         class WhenAccessingProtectedEndpoint {
             @ParameterizedTest
-            @ValueSource(strings = {"/application", "/application/health"})
+            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
                 String expectedMessage = "Token is not valid for URL '" + ACTUATOR_ENDPOINT + "'";
                 // Gateway request to url
@@ -75,9 +76,9 @@ class GatewayAuthenticationTest {
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
-                 .body(
-                    "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-                );
+                    .body(
+                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                    );
             }
         }
     }
