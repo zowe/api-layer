@@ -17,6 +17,7 @@ import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
+import jakarta.validation.UnexpectedTypeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
@@ -25,7 +26,6 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 
-import jakarta.validation.UnexpectedTypeException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -49,8 +49,11 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo.getApiInfo(), hidden);
-        updatePaths(swagger, serviceId, apiDocInfo, hidden);
+        if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
+            updateSchemeHost(swagger, serviceId);
+            updatePaths(swagger, serviceId, apiDocInfo, hidden);
+        }
+        updateSwaggerUrl(swagger, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(swagger, apiDocInfo);
 
         try {
@@ -66,14 +69,16 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
      *
      * @param swagger   the API doc
      * @param serviceId the unique service id
-     * @param hidden    do not add link for automatically generated API doc
      */
-    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, ApiInfo apiInfo, boolean hidden) {
-        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
+    private void updateSchemeHost(Swagger swagger, String serviceId) {
         log.debug("Updating host for service with id: " + serviceId + " to: " + getHostname(serviceId));
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
         swagger.setHost(getHostname(serviceId));
+    }
+
+    private void updateSwaggerUrl(Swagger swagger, String serviceId, ApiInfo apiInfo, boolean hidden, String scheme) {
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, apiInfo, gatewayConfigProperties, scheme);
         if (!hidden) {
             swagger.getInfo().setDescription(swagger.getInfo().getDescription() + swaggerLink);
         }

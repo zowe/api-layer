@@ -13,6 +13,7 @@ eureka:
             apiml:
                 health:
                     protected: true
+                apiBasePath: /gateway/api/v1
                 catalog:
                     tile:
                         id: apimediationlayer
