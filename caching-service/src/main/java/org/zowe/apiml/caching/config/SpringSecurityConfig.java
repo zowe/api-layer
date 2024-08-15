@@ -47,13 +47,13 @@ public class SpringSecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
-            "/cachingservice/application/info",
-            "/cachingservice/v3/api-docs"
+            "/application/info",
+            "/v3/api-docs"
         };
 
         return web -> {
             if (!isHealthEndpointProtected) {
-                web.ignoring().requestMatchers("/cachingservice/application/health");
+                web.ignoring().requestMatchers("/application/health");
             }
             web.ignoring().requestMatchers(noSecurityAntMatchers);
         };
