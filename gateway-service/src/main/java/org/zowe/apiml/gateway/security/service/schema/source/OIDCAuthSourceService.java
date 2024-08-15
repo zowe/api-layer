@@ -25,6 +25,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -92,7 +93,11 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     @Cacheable(value = "parseOIDCToken", key = "#parsedOIDCToken", condition = "#parsedOIDCToken != null")
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource) {
-            return isValid(authSource) ? parseOIDCToken((OIDCAuthSource) authSource, mapper) : null;
+            if (isValid(authSource)) {
+                return parseOIDCToken((OIDCAuthSource) authSource, mapper);
+            }
+
+            throw new TokenNotValidException("OIDC token is not valid.");
         }
         return null;
     }

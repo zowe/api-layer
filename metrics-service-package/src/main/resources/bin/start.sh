@@ -151,6 +151,10 @@ client_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZW
 
 server_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLS"}}}
 
+LOGBACK=""
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
 
 METRICS_CODE=MS
 _BPXK_AUTOCVT=OFF
@@ -159,6 +163,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -XX:+ExitOnOutOfMemoryError \
    ${QUICK_START} \
    ${ADD_OPENS} \
+   ${LOGBACK} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \

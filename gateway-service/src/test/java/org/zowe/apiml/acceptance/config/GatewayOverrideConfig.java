@@ -36,7 +36,8 @@ import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @TestConfiguration
 public class GatewayOverrideConfig {
@@ -78,12 +79,12 @@ public class GatewayOverrideConfig {
 
     @Bean
     public ApplicationRegistry registry() {
-
-        MetadataBuilder defaultBuilder = MetadataBuilder.defaultInstance();
-        defaultBuilder.withZosmf();
         ApplicationRegistry applicationRegistry = new ApplicationRegistry();
+
+        MetadataBuilder zosmfMetadataBuilder = MetadataBuilder.defaultInstance().withZosmf();
         Service zosmfService = new Service("zosmf", "/zosmf/**", "zosmf");
-        applicationRegistry.addApplication(zosmfService, defaultBuilder, false);
+        applicationRegistry.addApplication(zosmfService, zosmfMetadataBuilder, false);
+
         applicationRegistry.setCurrentApplication("zosmf");
         return applicationRegistry;
     }
