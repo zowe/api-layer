@@ -62,6 +62,9 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.discovery.password:password}")
     private char[] eurekaPassword;
 
+    @Value("${apiml.health.protected:true}")
+    private boolean isHealthEndpointProtected;
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
@@ -120,11 +123,17 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Bean
     public SecurityFilterChain httpFilterChain(HttpSecurity http) throws Exception {
+
+        if (!isHealthEndpointProtected) {
+            http.authorizeHttpRequests(requests -> requests
+                .requestMatchers("/application/health").permitAll());
+        }
+
         baseConfigure(http)
             .httpBasic(s -> s.realmName(DISCOVERY_REALM))
 
             .authorizeHttpRequests(
-                s -> s.requestMatchers("/application/info", "/application/health").permitAll()
+                s -> s.requestMatchers("/application/info").permitAll()
                       .requestMatchers("/**").authenticated()
             );
 

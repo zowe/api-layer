@@ -101,7 +101,8 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /gateway/api/v1/auth
                 corsEnabled: false
-
+    health:
+        protected: true
 spring:
     cloud:
         compatibilityVerifier:
@@ -142,10 +143,17 @@ server:
 
 management:
     endpoints:
+        migrate-legacy-ids: true
         web:
             base-path: /application
             exposure:
                 include: health,info
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
 ---
 logging:
     level:

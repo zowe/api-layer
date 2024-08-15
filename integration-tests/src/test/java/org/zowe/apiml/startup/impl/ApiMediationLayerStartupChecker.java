@@ -56,14 +56,14 @@ public class ApiMediationLayerStartupChecker {
             .atMost(10, MINUTES)
             .pollDelay(0, SECONDS)
             .pollInterval(poolInterval, SECONDS)
-        .until(this::areAllServicesUp);
+            .until(this::areAllServicesUp);
     }
 
     private DocumentContext getDocumentAsContext(HttpGet request) {
         try {
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                log.warn("Unexpected HTTP status code: {}", response.getStatusLine().getStatusCode());
+                log.warn("Unexpected HTTP status code: {} for URI: {}", response.getStatusLine().getStatusCode(), request.getURI().toString());
                 return null;
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
@@ -94,7 +94,7 @@ public class ApiMediationLayerStartupChecker {
                 }
             }
             if (!isAuthUp()) {
-                areAllServicesUp  = false;
+                areAllServicesUp = false;
             }
 
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();

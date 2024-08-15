@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,11 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 
 @ActiveProfiles("http")
+@TestPropertySource(
+    properties = {
+        "apiml.health.protected=false"
+    }
+)
 class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
 
     @Value("${apiml.discovery.userid:eureka}")
