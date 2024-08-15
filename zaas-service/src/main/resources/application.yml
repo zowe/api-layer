@@ -79,7 +79,8 @@ apiml:
             urls:
                 authenticate: https://localhost:10013/zss/saf/authenticate
                 verify: https://localhost:10013/zss/saf/verify
-
+    health:
+        protected: true
 spring:
     profiles:
         group:

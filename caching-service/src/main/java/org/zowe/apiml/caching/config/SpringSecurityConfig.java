@@ -41,15 +41,20 @@ public class SpringSecurityConfig {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.health.protected:true}")
+    private boolean isHealthEndpointProtected;
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
-            "/application/health",
             "/application/info",
             "/v3/api-docs"
         };
 
         return web -> {
+            if (!isHealthEndpointProtected) {
+                web.ignoring().requestMatchers("/application/health");
+            }
             web.ignoring().requestMatchers(noSecurityAntMatchers);
         };
     }
@@ -57,13 +62,13 @@ public class SpringSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)   // NOSONAR
-                .headers(httpSecurityHeadersConfigurer ->
-                    httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable))
+            .headers(httpSecurityHeadersConfigurer ->
+                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable))
             .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         if (verifyCertificates || !nonStrictVerifyCerts) {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);

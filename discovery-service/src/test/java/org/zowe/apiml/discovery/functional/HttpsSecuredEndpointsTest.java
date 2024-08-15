@@ -21,6 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -37,6 +38,11 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 
 @ActiveProfiles("https")
+@TestPropertySource(
+    properties = {
+        "apiml.health.protected=false"
+    }
+)
 class HttpsSecuredEndpointsTest extends DiscoveryFunctionalTest {
 
     @Override

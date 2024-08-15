@@ -81,7 +81,8 @@ public class SecurityConfiguration {
     private final Set<String> publicKeyCertificatesBase64;
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
-
+    @Value("${apiml.health.protected:true}")
+    private boolean isHealthEndpointProtected;
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
      */
@@ -150,7 +151,6 @@ public class SecurityConfiguration {
                 "/favicon.ico",
                 "/v3/api-docs",
                 "/index.html",
-                "/application/health",
                 "/application/info"
             };
             return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
@@ -158,13 +158,21 @@ public class SecurityConfiguration {
 
         @Bean
         public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
+
+            if (isHealthEndpointProtected) {
+                http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/application/health").authenticated());
+            } else {
+                http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers("/application/health").permitAll());
+            }
+
             mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES))))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()
                 )
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider);
-
             if (isAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
             }

@@ -114,6 +114,9 @@ public class NewSecurityConfiguration {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.health.protected:true}")
+    private boolean isHealthEndpointProtected;
+
     /**
      * Login and Logout endpoints
      * <p>
@@ -485,17 +488,25 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             private final String[] protectedEndpoints = {
+                SafResourceAccessController.FULL_CONTEXT_PATH,
                 "/application",
-                SafResourceAccessController.FULL_CONTEXT_PATH
+                "/gateway/conformance",
+                "/gateway/api/v1/conformance",
+                "/gateway/validate",
+                "/gateway/api/v1/validate"
             };
 
             @Bean
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(
                     http.securityMatchers(matchers -> matchers
-                        .requestMatchers("/application/**")
-                        .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                    )
+                            .requestMatchers("/application/**")
+                            .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
+                            .requestMatchers("/gateway/conformance/**")
+                            .requestMatchers("/gateway/api/v1/conformance/**")
+                            .requestMatchers("/gateway/validate")
+                            .requestMatchers("/gateway/api/v1/validate")
+                        )
                 ).authorizeHttpRequests(requests -> requests
                     .anyRequest()
                     .authenticated()
@@ -594,12 +605,14 @@ public class NewSecurityConfiguration {
 
                 return web -> {
                     web.httpFirewall(firewall);
-
+                    if (!isHealthEndpointProtected) {
+                        web.ignoring().requestMatchers("/application/health");
+                    }
                     // Endpoints that skip Spring Security completely
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
                     web.ignoring()
                         .requestMatchers(InternalServerErrorController.ERROR_ENDPOINT, "/error",
-                            "/application/health", "/application/info", "/application/version",
+                            "/application/info", "/application/version",
                             AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
                             AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH);
                 };

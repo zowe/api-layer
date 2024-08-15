@@ -59,6 +59,9 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
+    @Value("${apiml.health.protected:true}")
+    private boolean isHealthEndpointProtected;
+
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
@@ -72,12 +75,15 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             "/eureka/js/**",
             "/eureka/fonts/**",
             "/eureka/images/**",
-            "/application/health",
             "/application/info",
             "/favicon.ico"
         };
         return web -> {
             web.ignoring().requestMatchers(noSecurityAntMatchers);
+
+            if (!isHealthEndpointProtected) {
+                web.ignoring().requestMatchers("/application/health");
+            }
         };
     }
 
