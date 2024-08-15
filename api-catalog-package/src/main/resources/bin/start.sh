@@ -202,26 +202,10 @@ fi
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.service.preferIpAddress=false \
 
-client_max_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_maxTls:-${ZWE_zowe_network_client_tls_maxTls:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-\
-"TLSv1.3"}}}}}
-client_min_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_minTls:-${ZWE_zowe_network_client_tls_minTls:-${ZWE_configs_zowe_network_server_tls_minTls:-${ZWE_zowe_network_server_tls_minTls:-\
-"TLSv1.2"}}}}}
+client_tls=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${ZWE_configs_zowe_network_client_tls_maxTls:-${ZWE_zowe_network_client_tls_maxTls:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-\
+"TLS"}}}}}
 
-server_max_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
-server_min_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLSv1.2,TLSv1.3"}}}
-
-# TLSv1.2 + TLSv1.3 will become TLSv1.2,TLSv1.3
-# TODO: If TLSv1.4 comes out, this will need to enumerate.
-if [ "${client_max_tls}" = "${client_min_tls}" ]; then
-  client_tls=$client_min_tls
-else
-  client_tls="${client_min_tls},${client_max_tls}"
-fi
-if [ "${server_max_tls}" = "${server_min_tls}" ]; then
-  server_tls=$server_min_tls
-else
-  server_tls="${server_min_tls},${server_max_tls}"
-fi
+server_tls=${ZWE_configs_server_ssl_protocol:-${ZWE_configs_zowe_network_server_tls_maxTls:-${ZWE_zowe_network_server_tls_maxTls:-"TLS"}}}
 
 CATALOG_CODE=AC
 _BPXK_AUTOCVT=OFF
