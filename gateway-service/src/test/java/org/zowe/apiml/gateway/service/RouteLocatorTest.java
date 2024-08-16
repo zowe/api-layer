@@ -137,6 +137,19 @@ class RouteLocatorTest {
         }
 
         @Test
+        void givenIgnoredServices_whenGetServiceInstances_thenFilteredOut() {
+            ReflectionTestUtils.setField(routeLocator, "ignoredServices", new String[]{"discovery"} );
+            when(discoveryClient.getServices()).thenReturn(Flux.fromArray(new String[] {"service", "discovery"}));
+            ServiceInstance serviceInstance = mock(ServiceInstance.class);
+            ServiceInstance discoveryInstance = mock(ServiceInstance.class);
+            doReturn(Flux.just(serviceInstance)).when(discoveryClient).getInstances("service");
+            doReturn(Flux.just(discoveryInstance)).when(discoveryClient).getInstances("discovery");
+
+            doCallRealMethod().when(routeLocator).getServiceInstances();
+            assertArrayEquals(new Object[] {Collections.singletonList(serviceInstance)}, routeLocator.getServiceInstances().toStream().toArray());
+        }
+
+        @Test
         void givenNoAuthentication_whenSetAuth_thenDoNothing() {
             assertDoesNotThrow(() -> routeLocator.setAuth(MOCK_SERVICE,null, null));
         }
