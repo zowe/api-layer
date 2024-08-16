@@ -20,6 +20,7 @@ import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.util.PatternMatchUtils;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -43,6 +44,9 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTI
 public class RouteLocator implements RouteDefinitionLocator {
 
     private static final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+
+    @Value("${apiml.routing.ignoredServices:}")
+    private String[] ignoredServices;
 
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
@@ -80,6 +84,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     Flux<List<ServiceInstance>> getServiceInstances() {
         return discoveryClient.getServices()
+            .filter(this::filterIgnored)
             .flatMap(service -> discoveryClient.getInstances(service)
             .collectList());
     }
@@ -186,4 +191,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         .flatMapIterable(list -> list);
     }
 
+    private boolean filterIgnored(String serviceId) {
+        return !PatternMatchUtils.simpleMatch(ignoredServices, serviceId);
+    }
 }
