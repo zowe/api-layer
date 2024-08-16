@@ -57,6 +57,8 @@ public class ValidateAPIController {
     static final String NO_METADATA_KEY = "org.zowe.apiml.gateway.verifier.noMetadata";
     static final String NON_CONFORMANT_KEY = "org.zowe.apiml.gateway.verifier.nonConformant";
 
+    public static final String LEGACY_CONFORMANCE_SHORT_URL = "gateway/validate";
+    public static final String LEGACY_CONFORMANCE_LONG_URL = "gateway/api/v1/validate";
     private final MessageService messageService;
     private final VerificationOnboardService verificationOnboardService;
     private final DiscoveryClient discoveryClient;
@@ -169,7 +171,8 @@ public class ValidateAPIController {
      * @param serviceId serviceId to check for conformance
      * @return 200 if service is conformant, 400 + JSON explanation if not
      */
-    @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.TEXT_PLAIN_VALUE)
+
+    @PostMapping(value = {LEGACY_CONFORMANCE_SHORT_URL, LEGACY_CONFORMANCE_LONG_URL}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Legacy endpoint for checking service conformance.",
         operationId = "checkValidateLegacyUsingPOST",
         description = "Mapping so the old endpoint keeps working.",

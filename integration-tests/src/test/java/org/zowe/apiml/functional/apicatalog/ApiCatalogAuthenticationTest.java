@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -55,7 +56,7 @@ class ApiCatalogAuthenticationTest {
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
     private static final String CATALOG_STATIC_REFRESH_ENDPOINT = "/static-api/refresh";
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
-
+    private static final String CATALOG_HEALTH_ENDPOINT = "/application/health";
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
     private final static String INVALID_USERNAME = "incorrectUser";
@@ -301,5 +302,26 @@ class ApiCatalogAuthenticationTest {
                 .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
+    }
+        @Test
+        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
+        void thenDoNotAuthenticate() {
+            given()
+                .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+                .then()
+                .statusCode(is(SC_UNAUTHORIZED));
+
+    }
+
+        @Test
+        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
+        void thenAuthenticateTheRequest() {
+            given()
+                .auth().basic(USERNAME, PASSWORD)
+                .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+                .then()
+                .statusCode(is(SC_OK));
     }
 }
