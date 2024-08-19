@@ -615,7 +615,8 @@
                                                     "properties": {
                                                         "active": {
                                                             "type": "string",
-                                                            "description": "List of the active configuration profiles."
+                                                            "description": "List of the active configuration profiles.",
+                                                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
                                                         }
                                                     }
                                                 },
@@ -661,26 +662,37 @@
                                                                         },
                                                                         "provider": {
                                                                             "type": "object",
+                                                                            "description": "Provider specific values.",
                                                                             "patternProperties": {
-                                                                                "authorizationUri": {
-                                                                                    "type": "string",
-                                                                                    "description": "The Authorization Endpoint URI for the Authorization Server."
-                                                                                },
-                                                                                "tokenUri": {
-                                                                                    "type": "string",
-                                                                                    "description": "The Token Endpoint URI for the Authorization Server."
-                                                                                },
-                                                                                "userInfoUri": {
-                                                                                    "type": "string",
-                                                                                    "description": "The URL of endpoint to obtain details about user by provided token."
-                                                                                },
-                                                                                "userNameAttribute": {
-                                                                                    "type": "string",
-                                                                                    "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user."
-                                                                                },
-                                                                                "jwkSetUri": {
-                                                                                    "type": "string",
-                                                                                    "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                                                "^.+$": {
+                                                                                    "authorizationUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The Authorization Endpoint URI for the Authorization Server."
+                                                                                    },
+                                                                                    "tokenUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The Token Endpoint URI for the Authorization Server."
+                                                                                    },
+                                                                                    "userInfoUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The URL of endpoint to obtain details about user by provided token."
+                                                                                    },
+                                                                                    "userNameAttribute": {
+                                                                                        "type": "string",
+                                                                                        "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user."
+                                                                                    },
+                                                                                    "jwkSetUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                                                    }
                                                                                 }
                                                                             }
                                                                         }
