@@ -87,7 +87,7 @@
                                                                 "enabled": {
                                                                     "type": "boolean",
                                                                     "description": "Specifies whether the /registry endpoint is enabled.",
-                                                                    "default": "false"
+                                                                    "default": false
                                                                 },
                                                                 "metadata-key-allow-list": {
                                                                     "type": "array",
@@ -106,7 +106,7 @@
                                                         "protected": {
                                                             "type": "boolean",
                                                             "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
-                                                            "default": "true"
+                                                            "default": true
                                                         }
                                                     }
                                                 },
@@ -177,8 +177,7 @@
                                                                             "type": "string",
                                                                             "format": "uri",
                                                                             "pattern": "^(https?)://",
-                                                                            "description": "URL of endpoint to verify SAF resource. Ie. https://<zss hostname>:<zss port>/saf-auth",
-                                                                            "default": "https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"
+                                                                            "description": "URL of endpoint to verify SAF resource. Ie. https://&lt;zss hostname&gt;:&lt;zss port&gt;/saf-auth"
                                                                         }
                                                                     }
                                                                 },
@@ -190,8 +189,9 @@
                                                             }
                                                         },
                                                         "headersToBeCleared": {
-                                                            "type": "boolean",
-                                                            "description": "Specifies comma separated header name used to clear values in request headers."
+                                                            "type": "string",
+                                                            "description": "Specifies comma separated header name used to clear values in request headers.",
+                                                            "pattern": "^[^,]+(,[^,]+)*$"
                                                         },
                                                         "oidc": {
                                                             "type": "object",
@@ -246,7 +246,7 @@
                                                                     "properties": {
                                                                         "allowedUsers": {
                                                                             "type": "string",
-                                                                            "pattern": "^[*]?|([a-zA-Z0-9](,[a-zA-Z0-9])*)$",
+                                                                            "pattern": "^[*]?|([a-zA-Z0-9]+(,[a-zA-Z0-9]+)*)$",
                                                                             "description": "Specifies the comma-separated list of users that are permitted to use /registry endpoints. The user is obtained from the common name in the provided client certificate."
                                                                         }
                                                                     }
@@ -268,11 +268,6 @@
                                                                     }
                                                                 }
                                                             ]
-                                                        },
-                                                        "allowEncodedSlashes": {
-                                                            "type": "boolean",
-                                                            "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
-                                                            "default": true
                                                         }
                                                     }
                                                 },
@@ -300,12 +295,12 @@
                                                         },
                                                         "allowEncodedSlashes": {
                                                             "type": "boolean",
-                                                            "description": "Allow URLs on gateway to contain encoded slashes.",
+                                                            "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
                                                             "default": true
                                                         },
                                                         "apimlId": {
                                                             "type": "string",
-                                                            "pattern": "[a-z0-9]{1,64}",
+                                                            "pattern": "^[a-z0-9]{1,64}$",
                                                             "description": "Specifies identifier of the domain gateway for routing purpose in the central Gateway."
                                                         },
                                                         "corsEnabled": {
@@ -316,7 +311,7 @@
                                                         "discoveryServiceUrls": {
                                                             "type": "string",
                                                             "description": "Specifies the public URL of the Discovery Service. The system administrator at the customer site defines this parameter. It is possible to provide multiple values in order to utilize fail over and/or load balancing mechanisms.",
-                                                            "pattern": "^((https?)://[^,]+,)+$"
+                                                            "pattern": "^(https?)://[^,]+(,(https?)://[^,]+)*$"
                                                         },
                                                         "externalUrl": {
                                                             "type": "string",
@@ -335,11 +330,13 @@
                                                         },
                                                         "id": {
                                                             "type": "string",
+                                                            "pattern": "^[a-z0-9]{1,64}$",
                                                             "description": "Specifies serviceId of the Gateway.",
                                                             "default": "gateway"
                                                         },
                                                         "ignoredHeadersWhenCorsEnabled": {
                                                             "type": "string",
+                                                            "pattern": "^[^,]+(,[^,]+)*$",
                                                             "description": "Specifies list of header to be removed when CORS is enabled."
                                                         },
                                                         "nonSecurePortEnabled": {
@@ -349,9 +346,8 @@
                                                         },
                                                         "port": {
                                                             "type": "integer",
-                                                            "description": "Specifies listening port of the Gateway.",
-                                                            "minimum": 1,
-                                                            "maximum": 65535
+                                                            "$ref": "#/$defs/port",
+                                                            "description": "Specifies listening port of the Gateway."
                                                         },
                                                         "securePortEnabled": {
                                                             "type": "boolean",
@@ -409,7 +405,7 @@
                                                 "event": {
                                                     "type": "integer",
                                                     "description": "Event code. For more information, see description of event codes in the documentation.",
-                                                    "default": "2"
+                                                    "default": 2
                                                 },
                                                 "fmid": {
                                                     "type": "string",
@@ -418,6 +414,7 @@
                                                 },
                                                 "qualifier": {
                                                     "type": "object",
+                                                    "description": "Qualifier values issued during the authentication event.",
                                                     "properties": {
                                                         "failed": {
                                                             "type": "integer",
