@@ -58,7 +58,7 @@
                                                     "type": "string",
                                                     "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
                                                     "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
-                                                    "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)$"
+                                                    "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)*$"
                                                 },
                                                 "enabled": {
                                                     "type": "boolean",
@@ -288,14 +288,46 @@
                                                                             "pattern": "^(https?)://",
                                                                             "description": "URL of endpoint to verify SAF resource. Ie. https://&lt;zss hostname&gt;:&lt;zss port&gt;/saf-auth"
                                                                         }
-                                                                    }
+                                                                    },
+                                                                    "allOf": [
+                                                                        {
+                                                                            "if": {
+                                                                                "properties": {
+                                                                                    "enabled": {
+                                                                                        "const": true
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                            "then": {
+                                                                                "required": [
+                                                                                    "url"
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    ]
                                                                 },
                                                                 "provider": {
                                                                     "type": "string",
                                                                     "enum": ["endpoint", "native", "dummy"],
                                                                     "description": "Specifies security provider to be used by the Gateway."
                                                                 }
-                                                            }
+                                                            },
+                                                            "allOf": [
+                                                                {
+                                                                    "if": {
+                                                                        "properties": {
+                                                                            "provider": {
+                                                                                "const": "endpoint"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "then": {
+                                                                        "required": [
+                                                                            "endpoint"
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ]
                                                         },
                                                         "x509": {
                                                             "type": "object",
@@ -311,6 +343,11 @@
                                                                     "format": "uri",
                                                                     "pattern": "^(https?)://",
                                                                     "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                                                },
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "default": false,
+                                                                    "description": "To enable accepting client certificate in the Gateway."
                                                                 },
                                                                 "registry": {
                                                                     "type": "object",

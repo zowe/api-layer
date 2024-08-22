@@ -13,10 +13,10 @@
 # Variables required on shell:
 # - JAVA_HOME
 # - ZWE_STATIC_DEFINITIONS_DIR
-# - ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
-# - ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
-# - ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
-# - ZWE_zowe_certificate_truststore_file
+# - ZWE_configs_certificate_keystore_alias / ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
+# - ZWE_configs_certificate_keystore_file / ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
+# - ZWE_configs_certificate_keystore_password / ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
+# - ZWE_configs_certificate_truststore_file / ZWE_zowe_certificate_truststore_file
 # - ZWE_zowe_externalDomains_0
 # - ZWE_zowe_externalPort
 # - ZWE_zowe_job_prefix
@@ -226,8 +226,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
+    -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-false} \
-    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_certificatesUrl:-} \
+    -Dapiml.security.x509.certificatesUrl=${ZWE_configs_apiml_security_x509_certificatesUrl:-} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
