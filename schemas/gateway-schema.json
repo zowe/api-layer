@@ -50,6 +50,115 @@
                                             "pattern": "^[a-z0-9]{1,64}$",
                                             "description": "Specifies identifier of the domain gateway for routing purpose in the central Gateway."
                                         },
+                                        "certificate": {
+                                            "type": "object",
+                                            "description": "Network encryption for gateway service connections.",
+                                            "properties": {
+                                                "ciphers": {
+                                                    "type": "string",
+                                                    "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
+                                                    "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
+                                                    "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)$"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "Should gateway use encrypted communication?",
+                                                    "default": true
+                                                },
+                                                "keystore": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "alias": {
+                                                            "type": "string",
+                                                            "description": "This parameter specifies the alias used to address the private key in the keystore."
+                                                        },
+                                                        "key": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "password": {
+                                                                    "type": "string",
+                                                                    "description": "This parameter specifies the password associated with the private key."
+                                                                }
+                                                            }
+                                                        },
+                                                        "file": {
+                                                            "type": "string",
+                                                            "description": "This parameter specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
+                                                        },
+                                                        "password": {
+                                                            "type": "string",
+                                                            "description": "This parameter specifies the password used to unlock the keystore."
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
+                                                            "description": "This parameter specifies the type of the keystore.",
+                                                            "default": "PKCS12"
+                                                        }
+                                                    },
+                                                    "allOf": [
+                                                        {
+                                                            "if": {
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "pattern": "^JCE.*RACFKS$"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "then": {
+                                                                "properties": {
+                                                                    "file": {
+                                                                        "pattern": "^safkeyring[^:]*://"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "truststore": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "file": {
+                                                            "type": "string",
+                                                            "description": "This parameter specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
+                                                        },
+                                                        "password": {
+                                                            "type": "string",
+                                                            "description": "This parameter specifies the password used to unlock the truststore."
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
+                                                            "description": "This parameter specifies the truststore type. The default for this parameter is PKCS12.",
+                                                            "default": "PKCS12"
+                                                        }
+                                                    },
+                                                    "allOf": [
+                                                        {
+                                                            "if": {
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "pattern": "^JCE.*RACFKS$"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "then": {
+                                                                "properties": {
+                                                                    "file": {
+                                                                        "pattern": "^safkeyring[^:]*://"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "protocol": {
+                                                    "type": "string",
+                                                    "description": "This parameter specifies the TLS protocol version currently used by Zowe API ML Discovery Service.",
+                                                    "default": "TLSv1.2"
+                                                }
+                                            }
+                                        },
                                         "apiml": {
                                             "type": "object",
                                             "description": "Zowe API ML specific properties.",
@@ -313,115 +422,6 @@
                                                             "type": "integer",
                                                             "description": "Specifies the buffer size in bytes to load request headers.",
                                                             "default": 8192
-                                                        }
-                                                    }
-                                                },
-                                                "ssl": {
-                                                    "type": "object",
-                                                    "description": "Network encryption for gateway service connections.",
-                                                    "properties": {
-                                                        "ciphers": {
-                                                            "type": "string",
-                                                            "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
-                                                            "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
-                                                            "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)$"
-                                                        },
-                                                        "enabled": {
-                                                            "type": "boolean",
-                                                            "description": "Should gateway use encrypted communication?",
-                                                            "default": true
-                                                        },
-                                                        "keystore": {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "alias": {
-                                                                    "type": "string",
-                                                                    "description": "This parameter specifies the alias used to address the private key in the keystore."
-                                                                },
-                                                                "key": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "password": {
-                                                                            "type": "string",
-                                                                            "description": "This parameter specifies the password associated with the private key."
-                                                                        }
-                                                                    }
-                                                                },
-                                                                "file": {
-                                                                    "type": "string",
-                                                                    "description": "This parameter specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
-                                                                },
-                                                                "password": {
-                                                                    "type": "string",
-                                                                    "description": "This parameter specifies the password used to unlock the keystore."
-                                                                },
-                                                                "type": {
-                                                                    "type": "string",
-                                                                    "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                                                                    "description": "This parameter specifies the type of the keystore.",
-                                                                    "default": "PKCS12"
-                                                                }
-                                                            },
-                                                            "allOf": [
-                                                                {
-                                                                    "if": {
-                                                                        "properties": {
-                                                                            "type": {
-                                                                                "pattern": "^JCE.*RACFKS$"
-                                                                            }
-                                                                        }
-                                                                    },
-                                                                    "then": {
-                                                                        "properties": {
-                                                                            "file": {
-                                                                                "pattern": "^safkeyring[^:]*://"
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ]
-                                                        },
-                                                        "truststore": {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "file": {
-                                                                    "type": "string",
-                                                                    "description": "This parameter specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
-                                                                },
-                                                                "password": {
-                                                                    "type": "string",
-                                                                    "description": "This parameter specifies the password used to unlock the truststore."
-                                                                },
-                                                                "type": {
-                                                                    "type": "string",
-                                                                    "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                                                                    "description": "This parameter specifies the truststore type. The default for this parameter is PKCS12.",
-                                                                    "default": "PKCS12"
-                                                                }
-                                                            },
-                                                            "allOf": [
-                                                                {
-                                                                    "if": {
-                                                                        "properties": {
-                                                                            "type": {
-                                                                                "pattern": "^JCE.*RACFKS$"
-                                                                            }
-                                                                        }
-                                                                    },
-                                                                    "then": {
-                                                                        "properties": {
-                                                                            "file": {
-                                                                                "pattern": "^safkeyring[^:]*://"
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ]
-                                                        },
-                                                        "protocol": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the TLS protocol version currently used by Zowe API ML Discovery Service.",
-                                                            "default": "TLSv1.2"
                                                         }
                                                     }
                                                 }

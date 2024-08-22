@@ -17,32 +17,67 @@
 # - ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
 # - ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
 # - ZWE_zowe_certificate_truststore_file
+# - ZWE_zowe_externalDomains_0
+# - ZWE_zowe_externalPort
 # - ZWE_zowe_job_prefix
 # - ZWE_zowe_logDirectory
 # - ZWE_zowe_runtimeDirectory
 # - ZWE_zowe_workspaceDirectory
 
 # Optional variables:
+# - LAUNCH_COMPONENT
 # - CMMN_LB
 # - LIBPATH
 # - LIBRARY_PATH
+# - QUICK_START
+# - TMPDIR
+# - ZWE_GATEWAY_SHARED_LIBS
+# - ZWE_haInstance_hostname
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
+# - ZWE_configs_sslDebug
 # - ZWE_configs_apimlId
+# - ZWE_configs_apiml_connection_timeout
+# - ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds
+# - ZWE_configs_apiml_connection_timeToLive
+# - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_service_forwardClientCertEnabled
+# - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
+# - ZWE_configs_apiml_security_auth_passticket_customUserHeader
+# - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
+# - ZWE_configs_apiml_security_authorization_endpoint_enabled
+# - ZWE_configs_apiml_security_authorization_endpoint_url
+# - ZWE_configs_apiml_security_authorization_provider
+# - ZWE_configs_apiml_security_x509_enabled
+# - ZWE_configs_apiml_security_x509_acceptForwardedCert
+# - ZWE_configs_apiml_security_x509_certificatesUrl
+# - ZWE_configs_apiml_security_x509_registry_allowedUsers
+# - ZWE_configs_apiml_service_allowEncodedSlashes
+# - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_gateway_registry_enabled
-# - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
-# - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
-# - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
-# - ZWE_configs_certificate_keystore_type - The keystore type to use for SSL certificates
-# - ZWE_configs_certificate_truststore_file
-# - ZWE_configs_certificate_truststore_type
+# - ZWE_configs_gateway_registry_cachePeriodSec
+# - ZWE_configs_gateway_registry_maxSimultaneousRequests
+# - ZWE_configs_gateway_registry_metadataKeyAllowList
+# - ZWE_configs_gateway_registry_refreshIntervalMs
+# - ZWE_configs_certificate_keystore_alias / ZWE_zowe_certificate_keystore_alias - The alias of the key within the keystore
+# - ZWE_configs_certificate_keystore_file / ZWE_zowe_certificate_keystore_file - The keystore to use for SSL certificates
+# - ZWE_configs_certificate_keystore_password / ZWE_zowe_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
+# - ZWE_configs_certificate_keystore_type / ZWE_zowe_certificate_keystore_type - The keystore type to use for SSL certificates
+# - ZWE_configs_certificate_key_password / ZWE_zowe_certificate_key_password
+# - ZWE_configs_certificate_truststore_file / ZWE_zowe_certificate_truststore_file
+# - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
+# - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
+# - ZWE_configs_certificate_ciphers / ZWE_configs_ciphers
 # - ZWE_configs_debug
 # - ZWE_configs_port - the port the api gateway service will use
 # - ZWE_configs_server_maxConnectionsPerRoute
 # - ZWE_configs_server_maxTotalConnections
 # - ZWE_configs_server_ssl_enabled
+# - ZWE_configs_server_webSocket_maxIdleTimeout
+# - ZWE_configs_server_webSocket_connectTimeout
+# - ZWE_configs_server_webSocket_asyncWriteTimeout
+# - ZWE_configs_server_webSocket_requestBufferSize
 # - ZWE_configs_spring_profiles_active
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
@@ -119,7 +154,7 @@ then
     GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS}
 fi
 
-echo "Setting loader path: "${ZAAS_LOADER_PATH}
+echo "Setting loader path: "${GATEWAY_LOADER_PATH}
 
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
@@ -161,6 +196,8 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
+ciphers=${ZWE_configs_certificate_ciphers:-${ZWE_configs_ciphers:-}}
+
 if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
@@ -184,13 +221,13 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dspring.profiles.include=$LOG_LEVEL \
+    -Dspring.profiles.include=${LOG_LEVEL} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
-    -Dapiml.security.x509.acceptForwardedCert=${ZWE_config_apiml_security_x509_acceptForwardedCert:-false} \
-    -Dapiml.security.x509.acceptForwardedCert=${ZWE_config_apiml_security_x509_certificatesUrl:-} \
+    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-false} \
+    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_certificatesUrl:-} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
@@ -219,6 +256,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
+    -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
+    -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-45000} \
+    -Dserver.webSocket.asyncWriteTimeout=${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000} \
+    -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${keystore_type}" \
@@ -228,11 +269,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStore="${truststore_location}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
-    -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-45000} \
-    -Dserver.webSocket.asyncWriteTimeout=${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000} \
-    -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
-    -Dserver.ssl.ciphers=${ZWE_configs_ciphers:-} \
+    -Dserver.ssl.ciphers=${ciphers:-} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djava.library.path=${LIBPATH} \
