@@ -22,7 +22,12 @@
                                         },
                                         "debug": {
                                             "type": "boolean",
-                                            "description": "Enable debug logs in gateway service"
+                                            "description": "Enable debug logs in gateway service",
+                                            "default": false
+                                        },
+                                        "sslDebug": {
+                                            "type": "string",
+                                            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
                                         },
                                         "heap": {
                                             "type": "object",
@@ -30,13 +35,20 @@
                                             "properties": {
                                                 "init": {
                                                     "type": "integer",
-                                                    "description": "Initial heap size in MB."
+                                                    "description": "Initial heap size in MB.",
+                                                    "default": 32
                                                 },
                                                 "max": {
                                                     "type": "integer",
-                                                    "description": "Maximum heap size in MB."
+                                                    "description": "Maximum heap size in MB.",
+                                                    "max": 512
                                                 }
                                             }
+                                        },
+                                        "apimlId": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9]{1,64}$",
+                                            "description": "Specifies identifier of the domain gateway for routing purpose in the central Gateway."
                                         },
                                         "apiml": {
                                             "type": "object",
@@ -65,36 +77,36 @@
                                                 "gateway": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "cachePeriodSec": {
-                                                            "type": "integer",
-                                                            "description": "Specifies time in seconds to expired of cached data about /registry endpoint.",
-                                                            "default": 120
-                                                        },
-                                                        "maxSimultaneousRequests": {
-                                                            "type": "integer",
-                                                            "description": "Specifies amount of parallel connection to obtain information from other APIML instances about services to construct response of /registry endpoint.",
-                                                            "default": 20
-                                                        },
-                                                        "refresh-interval-ms": {
-                                                            "type": "integer",
-                                                            "description": "Specifies time period in milliseconds for how often to update data in /registry endpoint.",
-                                                            "default": 30000
-                                                        },
                                                         "registry": {
                                                             "type": "object",
                                                             "description": "Gateway configuration of a service registry endpoint.",
                                                             "properties": {
+                                                                "cachePeriodSec": {
+                                                                    "type": "integer",
+                                                                    "description": "Specifies time in seconds to expired of cached data about /registry endpoint.",
+                                                                    "default": 120
+                                                                },
                                                                 "enabled": {
                                                                     "type": "boolean",
                                                                     "description": "Specifies whether the /registry endpoint is enabled.",
                                                                     "default": false
                                                                 },
-                                                                "metadata-key-allow-list": {
+                                                                "maxSimultaneousRequests": {
+                                                                    "type": "integer",
+                                                                    "description": "Specifies amount of parallel connection to obtain information from other APIML instances about services to construct response of /registry endpoint.",
+                                                                    "default": 20
+                                                                },
+                                                                "metadataKeyAllowList": {
                                                                     "type": "array",
                                                                     "description": "Specifies what custom metadata are displayed in the /registry endpoint.",
                                                                     "items": {
                                                                         "type": "string"
                                                                     }
+                                                                },
+                                                                "refreshIntervalMs": {
+                                                                    "type": "integer",
+                                                                    "description": "Specifies time period in milliseconds for how often to update data in /registry endpoint.",
+                                                                    "default": 30000
                                                                 }
                                                             }
                                                         }
@@ -107,22 +119,6 @@
                                                             "type": "boolean",
                                                             "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
                                                             "default": true
-                                                        }
-                                                    }
-                                                },
-                                                "httpclient": {
-                                                    "type": "object",
-                                                    "description": "Configuration of outgoing calls from the Gateway.",
-                                                    "properties": {
-                                                        "ssl": {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "enabled-protocols": {
-                                                                    "type": "string",
-                                                                    "description": "Specifies which secured protocols cloud be used during the handshake.",
-                                                                    "default": "TLSv1.2,TLSv1.3"
-                                                                }
-                                                            }
                                                         }
                                                     }
                                                 },
@@ -157,6 +153,10 @@
                                                                             "description": "Additional header to set userId in case of httpBasicPassTicket scheme."
                                                                         }
                                                                     }
+                                                                },
+                                                                "uniqueCookie": {
+                                                                    "type": "boolean",
+                                                                    "default": false
                                                                 }
                                                             }
                                                         },
@@ -188,57 +188,20 @@
                                                                 }
                                                             }
                                                         },
-                                                        "headersToBeCleared": {
-                                                            "type": "string",
-                                                            "description": "Specifies comma separated header name used to clear values in request headers.",
-                                                            "pattern": "^[^,]+(,[^,]+)*$"
-                                                        },
-                                                        "oidc": {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "cookie": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "sameSite": {
-                                                                            "type": "string",
-                                                                            "enum": ["None", "Strict", "Lax"],
-                                                                            "description": "Same site used in the starting of OIDC workflow. It has to allow sharing cookies during the startup.",
-                                                                            "default": "Lax"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        "ssl": {
-                                                            "type": "object",
-                                                            "description": "Configuration of SSL/tls, handshake requirements, etc.",
-                                                            "properties": {
-                                                                "nonStrictVerifySslCertificatesOfServices": {
-                                                                    "type": "boolean",
-                                                                    "description": "Defines whether APIML should verify certificates of services in non-strict mode. Setting to true will enable the non-strict mode where APIML will validate if the certificate is trusted in turststore, but ignore the certificate Common Name or Subject Alternate Name (SAN) check. Zowe will ignore this configuration if strict mode is enabled with apiml.security.ssl.verifySslCertificatesOfServices.",
-                                                                    "default": false
-                                                                },
-                                                                "verifySslCertificatesOfServices": {
-                                                                    "type": "boolean",
-                                                                    "description": "Defines whether APIML should verify certificates of services in strict mode. Setting to true will enable the strict mode where APIML will validate both if the certificate is trusted in turststore, and also if the certificate Common Name or Subject Alternate Name (SAN) matches the service hostname.",
-                                                                    "default": true
-                                                                }
-                                                            }
-                                                        },
                                                         "x509": {
                                                             "type": "object",
                                                             "description": "Client certificate configuration.",
                                                             "properties": {
                                                                 "acceptForwardedCert": {
                                                                     "type": "boolean",
-                                                                    "description": "To enable accepting client certificate from request header. It is used in domain APIML to accept forwarded client certificate from the central APIML.",
+                                                                    "description": "To enable accepting client certificate from request header. It is used in domain APIML to accept forwarded client certificate by the caller.",
                                                                     "default": false
                                                                 },
                                                                 "certificatesUrl": {
                                                                     "type": "string",
                                                                     "format": "uri",
                                                                     "pattern": "^(https?)://",
-                                                                    "description": "URL of the central gateway to obtain certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                                                    "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
                                                                 },
                                                                 "registry": {
                                                                     "type": "object",
@@ -276,21 +239,22 @@
                                                     "description": "General configuration of the Gateway.",
                                                     "properties": {
                                                         "additionalRegistration": {
-                                                            "type": "array",
+                                                            "type": "object",
                                                             "description": "List of additional Discovery Services URLs to register with and the routing patterns.",
-                                                            "minItems": 1,
-                                                            "items": {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "discoveryServiceUrls": {
-                                                                        "type": "string",
-                                                                        "description": "List of Discovery Services URLs in one security domain. You can separate multiple urls by comma or semicolon."
+                                                            "patternProperties": {
+                                                                "^[0-9]+$": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "discoveryServiceUrls": {
+                                                                            "type": "string",
+                                                                            "description": "List of Discovery Services URLs in one security domain. You can separate multiple urls by comma or semicolon."
+                                                                        },
+                                                                        "routes": {
+                                                                            "$ref": "#/$defs/routes"
+                                                                        }
                                                                     },
-                                                                    "routes": {
-                                                                        "$ref": "#/$defs/routes"
-                                                                    }
-                                                                },
-                                                                "required": ["discoveryServiceUrls","routes"]
+                                                                    "required": ["discoveryServiceUrls","routes"]
+                                                                }
                                                             }
                                                         },
                                                         "allowEncodedSlashes": {
@@ -298,140 +262,17 @@
                                                             "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
                                                             "default": true
                                                         },
-                                                        "apimlId": {
-                                                            "type": "string",
-                                                            "pattern": "^[a-z0-9]{1,64}$",
-                                                            "description": "Specifies identifier of the domain gateway for routing purpose in the central Gateway."
-                                                        },
                                                         "corsEnabled": {
                                                             "type": "boolean",
                                                             "description": "Allow CORS on gateway.",
                                                             "default": false
                                                         },
-                                                        "discoveryServiceUrls": {
-                                                            "type": "string",
-                                                            "description": "Specifies the public URL of the Discovery Service. The system administrator at the customer site defines this parameter. It is possible to provide multiple values in order to utilize fail over and/or load balancing mechanisms.",
-                                                            "pattern": "^(https?)://[^,]+(,(https?)://[^,]+)*$"
-                                                        },
-                                                        "externalUrl": {
-                                                            "type": "string",
-                                                            "format": "uri",
-                                                            "pattern": "^(https?)://",
-                                                            "description": "Specifies the URL how to access the Gateway from outside. It is usually the DVIPA address."
-                                                        },
                                                         "forwardClientCertEnabled": {
                                                             "type": "boolean",
                                                             "description": "Enable forwarding client certificate to the next service or APIML.",
                                                             "default": false
-                                                        },
-                                                        "hostname": {
-                                                            "type": "string",
-                                                            "description": "Specifies hostname of this Gateway."
-                                                        },
-                                                        "id": {
-                                                            "type": "string",
-                                                            "pattern": "^[a-z0-9]{1,64}$",
-                                                            "description": "Specifies serviceId of the Gateway.",
-                                                            "default": "gateway"
-                                                        },
-                                                        "ignoredHeadersWhenCorsEnabled": {
-                                                            "type": "string",
-                                                            "pattern": "^[^,]+(,[^,]+)*$",
-                                                            "description": "Specifies list of header to be removed when CORS is enabled."
-                                                        },
-                                                        "nonSecurePortEnabled": {
-                                                            "type": "boolean",
-                                                            "description": "Specifies if the communication with Discovery service is unsecured (via HTTP).",
-                                                            "default": false
-                                                        },
-                                                        "port": {
-                                                            "type": "integer",
-                                                            "$ref": "#/$defs/port",
-                                                            "description": "Specifies listening port of the Gateway."
-                                                        },
-                                                        "securePortEnabled": {
-                                                            "type": "boolean",
-                                                            "description": "Specifies if the communication with Discovery service is secured (via HTTPs).",
-                                                            "default": true
-                                                        },
-                                                        "scheme": {
-                                                            "type": "string",
-                                                            "description": "Specifies scheme in the Gateway URLs. Is should correlate with securePortEnabled and nonSecurePortEnabled.",
-                                                            "enum": ["https", "http"]
-                                                        }
-                                                    },
-                                                    "dependencies": {
-                                                        "nonSecurePortEnabled": ["securePortEnabled", "scheme"],
-                                                        "securePortEnabled": ["nonSecurePortEnabled", "scheme"],
-                                                        "scheme": ["nonSecurePortEnabled", "securePortEnabled"]
-                                                    }
-                                                },
-                                                "zoweManifest": {
-                                                    "type": "string",
-                                                    "description": "Specifies the location of Zowe manifest file."
-                                                },
-                                                "zoweManifestEncoding": {
-                                                    "type": "string",
-                                                    "description": "Specifies the encoding of Zowe manifest file.",
-                                                    "default": "IBM1047"
-                                                }
-                                            }
-                                        },
-                                        "eureka": {
-                                            "type": "object",
-                                            "description": "Eureka configuration.",
-                                            "properties": {
-                                                "instance": {
-                                                    "type": "object",
-                                                    "description": "Eureka configuration related to the specific Gateway instance.",
-                                                    "properties": {
-                                                        "metadata": {
-                                                            "type": ["object", "any"],
-                                                            "description": "Specifies the Gateway metadata. For more information please check documentation."
                                                         }
                                                     }
-                                                }
-                                            }
-                                        },
-                                        "rauditx": {
-                                            "type": "object",
-                                            "description": "Configuration of SMF records values.",
-                                            "properties": {
-                                                "component": {
-                                                    "type": "string",
-                                                    "description": "Name of the product or component issuing the SMF record.",
-                                                    "default": "ZOWE"
-                                                },
-                                                "event": {
-                                                    "type": "integer",
-                                                    "description": "Event code. For more information, see description of event codes in the documentation.",
-                                                    "default": 2
-                                                },
-                                                "fmid": {
-                                                    "type": "string",
-                                                    "description": "FMID of the product or component issuing the SMF record.",
-                                                    "default": "AZWE001"
-                                                },
-                                                "qualifier": {
-                                                    "type": "object",
-                                                    "description": "Qualifier values issued during the authentication event.",
-                                                    "properties": {
-                                                        "failed": {
-                                                            "type": "integer",
-                                                            "description": "Event Code Qualifier for failure. The value can be between 0 and 255.",
-                                                            "default": 1
-                                                        },
-                                                        "success": {
-                                                            "type": "integer",
-                                                            "description": "Event Code Qualifier for success. The value can be between 0 and 255.",
-                                                            "default": 0
-                                                        }
-                                                    }
-                                                },
-                                                "subtype": {
-                                                    "type": "integer",
-                                                    "description": "SMF type 83 record subtype assigned to the component. For more information, see description of subtypes in the documentation.",
-                                                    "default": 2
                                                 }
                                             }
                                         },
@@ -439,17 +280,6 @@
                                             "type": "object",
                                             "description": "Configure gateway server properties.",
                                             "properties": {
-                                                "attls": {
-                                                    "type": "object",
-                                                    "description": "AT-TLS configuration.",
-                                                    "properties": {
-                                                        "enabled": {
-                                                            "type": "boolean",
-                                                            "description": "To enable AT-TLS aware mode.",
-                                                            "default": false
-                                                        }
-                                                    }
-                                                },
                                                 "maxConnectionsPerRoute": {
                                                     "type": "integer",
                                                     "description": "How many connection should exists for single HTTP client?",
@@ -472,17 +302,17 @@
                                                         "connectTimeout": {
                                                             "type": "integer",
                                                             "description": "The gateway acts as a server and client. This parameters customizes the default connect timeout for its client role.",
-                                                            "default": 15000
-                                                        },
-                                                        "stopTimeout": {
-                                                            "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default stop timeout for its client role.",
-                                                            "default": 30000
+                                                            "default": 45000
                                                         },
                                                         "asyncWriteTimeout": {
                                                             "type": "integer",
                                                             "description": "The gateway acts as a server and client. This parameters customizes the default async write timeout for its client role.",
                                                             "default": 60000
+                                                        },
+                                                        "requestBufferSize": {
+                                                            "type": "integer",
+                                                            "description": "Specifies the buffer size in bytes to load request headers.",
+                                                            "default": 8192
                                                         }
                                                     }
                                                 },
@@ -493,102 +323,105 @@
                                                         "ciphers": {
                                                             "type": "string",
                                                             "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
-                                                            "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384"
+                                                            "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
+                                                            "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)$"
                                                         },
                                                         "enabled": {
                                                             "type": "boolean",
                                                             "description": "Should gateway use encrypted communication?",
                                                             "default": true
                                                         },
-                                                        "keyAlias": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the alias used to address the private key in the keystore."
+                                                        "keystore": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "alias": {
+                                                                    "type": "string",
+                                                                    "description": "This parameter specifies the alias used to address the private key in the keystore."
+                                                                },
+                                                                "key": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "password": {
+                                                                            "type": "string",
+                                                                            "description": "This parameter specifies the password associated with the private key."
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "file": {
+                                                                    "type": "string",
+                                                                    "description": "This parameter specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
+                                                                },
+                                                                "password": {
+                                                                    "type": "string",
+                                                                    "description": "This parameter specifies the password used to unlock the keystore."
+                                                                },
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
+                                                                    "description": "This parameter specifies the type of the keystore.",
+                                                                    "default": "PKCS12"
+                                                                }
+                                                            },
+                                                            "allOf": [
+                                                                {
+                                                                    "if": {
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "pattern": "^JCE.*RACFKS$"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "then": {
+                                                                        "properties": {
+                                                                            "file": {
+                                                                                "pattern": "^safkeyring[^:]*://"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
                                                         },
-                                                        "keyPassword": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the password associated with the private key."
-                                                        },
-                                                        "keyStore": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
-                                                        },
-                                                        "keyStorePassword": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the password used to unlock the keystore."
-                                                        },
-                                                        "keyStoreType": {
-                                                            "type": "string",
-                                                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                                                            "description": "This parameter specifies the type of the keystore.",
-                                                            "default": "PKCS12"
+                                                        "truststore": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "file": {
+                                                                    "type": "string",
+                                                                    "description": "This parameter specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
+                                                                },
+                                                                "password": {
+                                                                    "type": "string",
+                                                                    "description": "This parameter specifies the password used to unlock the truststore."
+                                                                },
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
+                                                                    "description": "This parameter specifies the truststore type. The default for this parameter is PKCS12.",
+                                                                    "default": "PKCS12"
+                                                                }
+                                                            },
+                                                            "allOf": [
+                                                                {
+                                                                    "if": {
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "pattern": "^JCE.*RACFKS$"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "then": {
+                                                                        "properties": {
+                                                                            "file": {
+                                                                                "pattern": "^safkeyring[^:]*://"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
                                                         },
                                                         "protocol": {
                                                             "type": "string",
                                                             "description": "This parameter specifies the TLS protocol version currently used by Zowe API ML Discovery Service.",
                                                             "default": "TLSv1.2"
-                                                        },
-                                                        "trustStore": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
-                                                        },
-                                                        "trustStorePassword": {
-                                                            "type": "string",
-                                                            "description": "This parameter specifies the password used to unlock the truststore."
-                                                        },
-                                                        "trustStoreRequired": {
-                                                            "type": "string",
-                                                            "description": "If you do not require a truststore, change the trustStoreRequired boolean parameter to `false`.",
-                                                            "default": false
-                                                        },
-                                                        "trustStoreType": {
-                                                            "type": "string",
-                                                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                                                            "description": "This parameter specifies the truststore type. The default for this parameter is PKCS12.",
-                                                            "default": "PKCS12"
-                                                        }
-                                                    },
-                                                    "allOf": [
-                                                        {
-                                                            "if": {
-                                                                "properties": {
-                                                                    "keyStoreType": {
-                                                                        "pattern": "^JCE.*RACFKS$"
-                                                                    }
-                                                                }
-                                                            },
-                                                            "then": {
-                                                                "properties": {
-                                                                    "keyStore": {
-                                                                        "pattern": "^safkeyring[^:]*://"
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        {
-                                                            "if": {
-                                                                "properties": {
-                                                                    "trustStoreType": {
-                                                                        "pattern": "^JCE.*RACFKS$"
-                                                                    }
-                                                                }
-                                                            },
-                                                            "then": {
-                                                                "properties": {
-                                                                    "trustStore": {
-                                                                        "pattern": "^safkeyring[^:]*://"
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    ]
-                                                },
-                                                "tomcat": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "retryRebindTimeoutSecs": {
-                                                            "type": "integer",
-                                                            "description": "Specifies delay between attempts to restart listening port in case of TCP stack was restarted.",
-                                                            "default": 10
                                                         }
                                                     }
                                                 }
@@ -598,17 +431,6 @@
                                             "type": "object",
                                             "description": "Application framework parameters",
                                             "properties": {
-                                                "application": {
-                                                    "type": "object",
-                                                    "description": "Basic configuration of the Gateway.",
-                                                    "properties": {
-                                                        "name": {
-                                                            "type": "string",
-                                                            "description": "Name of the Gateway application.",
-                                                            "default": "gateway"
-                                                        }
-                                                    }
-                                                },
                                                 "profiles": {
                                                     "type": "object",
                                                     "description": "Profiles that can hold multiple configuration parameters.",
