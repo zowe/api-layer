@@ -82,7 +82,7 @@ class WebSocketRoutedSessionTest {
         void whenFailingToCreateSession_thenThrowException() {
             WebSocketClientFactory webSocketClientFactory = mock(WebSocketClientFactory.class);
             JettyWebSocketClient jettyWebSocketClient = mock(JettyWebSocketClient.class);
-            when(webSocketClientFactory.getClientInstance()).thenReturn(jettyWebSocketClient);
+            when(webSocketClientFactory.getClientInstance("key")).thenReturn(jettyWebSocketClient);
             HttpHeaders headers = new WebSocketHttpHeaders();
             headers.add("header", "someHeader");
             when(serverSession.getHandshakeHeaders()).thenReturn(headers);
@@ -93,7 +93,7 @@ class WebSocketRoutedSessionTest {
         @Test
         void whenFailingOnHandshake_thenThrowException() {
             WebSocketClientFactory webSocketClientFactory = mock(WebSocketClientFactory.class);
-            when(webSocketClientFactory.getClientInstance()).thenThrow(new IllegalStateException());
+            when(webSocketClientFactory.getClientInstance("key")).thenThrow(new IllegalStateException());
             assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory));
         }
     }

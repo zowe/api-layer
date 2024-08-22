@@ -34,25 +34,25 @@ class WebSocketClientFactoryTest {
         @BeforeEach
         void setUp() {
             this.client = mock(JettyWebSocketClient.class);
-            this.webSocketClientFactory = new WebSocketClientFactory(this.client);
+            this.webSocketClientFactory = new WebSocketClientFactory(null, 0, 0, 0, 0, 0);
         }
 
         @Test
         void givenRunningClient_whenClose_thenStopClient() {
             doReturn(true).when(client).isRunning();
-            webSocketClientFactory.closeClient();
+            webSocketClientFactory.closeClients();
             verify(client).stop();
         }
 
         @Test
         void givenStoppedClient_whenClose_thenDoNothing() {
-            webSocketClientFactory.closeClient();
+            webSocketClientFactory.closeClients();
             verify(client, never()).stop();
         }
 
         @Test
         void whenGetClient_thenReturnInstance() {
-            assertSame(client, webSocketClientFactory.getClientInstance());
+            assertSame(client, webSocketClientFactory.getClientInstance("key"));
         }
 
     }
@@ -70,7 +70,7 @@ class WebSocketClientFactoryTest {
 
         @Test
         void givenInitilizedClient_thenHasNonDefaultIdleConfig() {
-            WebSocketClient wsClient = (WebSocketClient) ReflectionTestUtils.getField(webSocketClientFactory.getClientInstance(), "client");
+            WebSocketClient wsClient = (WebSocketClient) ReflectionTestUtils.getField(webSocketClientFactory.getClientInstance("key"), "client");
             assertEquals(1234, wsClient.getMaxIdleTimeout());
         }
 

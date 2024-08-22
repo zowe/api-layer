@@ -243,7 +243,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     @Recover
-    void recover(ServerNotYetAvailableException e, WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
+    void closeServerSession(ServerNotYetAvailableException e, WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
         log.debug("Trying to close Server WebSocket session {} because of too many ServerNotYetAvailableException failures", webSocketSession.getId());
         try {
             webSocketSession.close(CloseStatus.SESSION_NOT_RELIABLE);
@@ -253,7 +253,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     @Override
-    @Retryable(include = ServerNotYetAvailableException.class, backoff = @Backoff(value = 1000))
+    @Retryable(
+        include = ServerNotYetAvailableException.class,
+        backoff = @Backoff(value = 6000),
+        recover = "closeServerSession",
+        maxAttempts = 5
+    )
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
         log.debug("handleMessage(session={}, message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
@@ -267,7 +272,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
                 log.debug("Client Session for Server session {} is available but not ready", webSocketSession.getId());
                 throw new ServerNotYetAvailableException();
             } else if (isClientConnectionClosed(session)) {
-                recover(null, webSocketSession, webSocketMessage);
+                closeServerSession(null, webSocketSession, webSocketMessage);
             }
             session.sendMessageToServer(webSocketMessage);
         } catch (Exception ex) {

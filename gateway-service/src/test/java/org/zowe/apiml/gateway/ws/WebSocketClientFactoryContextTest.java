@@ -70,18 +70,18 @@ public class WebSocketClientFactoryContextTest {
     class GivenFactory {
 
         private JettyWebSocketClient client = mock(JettyWebSocketClient.class);
-        private WebSocketClientFactory factory = new WebSocketClientFactory(client);
+        private WebSocketClientFactory factory = new WebSocketClientFactory(null, 0, 0, 0, 0, 0);
 
         @Test
         void whenIsRunning_thenStop() {
             doReturn(true).when(client).isRunning();
-            factory.closeClient();
+            factory.closeClients();
             verify(client).stop();
         }
 
         @Test
         void whenIsNotRunning_thenDontStop() {
-            factory.closeClient();
+            factory.closeClients();
             verify(client, never()).stop();
         }
 

@@ -79,7 +79,7 @@ public class WebSocketRoutedSession {
 
     private ListenableFuture<WebSocketSession> createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         try {
-            JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
+            JettyWebSocketClient client = webSocketClientFactory.getClientInstance(targetUrl);
             URI targetURI = new URI(targetUrl);
             WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
             return client.doHandshake(clientHandler, headers, targetURI);
