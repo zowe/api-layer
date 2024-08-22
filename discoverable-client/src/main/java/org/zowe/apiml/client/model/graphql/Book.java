@@ -84,4 +84,8 @@ public record Book (String bookId, String name, Integer pageCount, String author
         }
         throw new BookNotFoundException();
     }
+
+    public static void setBooks(List<Book> newBooks) {
+        books = new ArrayList<>(newBooks);
+    }
 }
