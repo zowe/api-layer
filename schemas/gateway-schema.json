@@ -206,11 +206,9 @@
                                                                     "default": 20
                                                                 },
                                                                 "metadataKeyAllowList": {
-                                                                    "type": "array",
+                                                                    "type": "string",
                                                                     "description": "Specifies what custom metadata are displayed in the /registry endpoint.",
-                                                                    "items": {
-                                                                        "type": "string"
-                                                                    }
+                                                                    "pattern": "^[^,]+(,[^,]+)*$"
                                                                 },
                                                                 "refreshIntervalMs": {
                                                                     "type": "integer",

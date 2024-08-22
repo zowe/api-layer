@@ -55,11 +55,11 @@
 # - ZWE_configs_apiml_security_x509_registry_allowedUsers
 # - ZWE_configs_apiml_service_allowEncodedSlashes
 # - ZWE_configs_apiml_service_corsEnabled
-# - ZWE_configs_gateway_registry_enabled
-# - ZWE_configs_gateway_registry_cachePeriodSec
-# - ZWE_configs_gateway_registry_maxSimultaneousRequests
-# - ZWE_configs_gateway_registry_metadataKeyAllowList
-# - ZWE_configs_gateway_registry_refreshIntervalMs
+# - ZWE_configs_apiml_gateway_registry_enabled
+# - ZWE_configs_apiml_gateway_registry_cachePeriodSec
+# - ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests
+# - ZWE_configs_apiml_gateway_registry_metadataKeyAllowList
+# - ZWE_configs_apiml_gateway_registry_refreshIntervalMs
 # - ZWE_configs_certificate_keystore_alias / ZWE_zowe_certificate_keystore_alias - The alias of the key within the keystore
 # - ZWE_configs_certificate_keystore_file / ZWE_zowe_certificate_keystore_file - The keystore to use for SSL certificates
 # - ZWE_configs_certificate_keystore_password / ZWE_zowe_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
@@ -248,11 +248,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
-    -Dapiml.gateway.registry.cachePeriodSec=${ZWE_configs_gateway_registry_cachePeriodSec:-120} \
+    -Dapiml.gateway.cachePeriodSec=${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120} \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
-    -Dapiml.gateway.registry.maxSimultaneousRequests=${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20} \
+    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20} \
     -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_gateway_registry_metadataKeyAllowList:-} \
-    -Dapiml.gateway.registry.refresh-interval-ms=${ZWE_configs_gateway_registry_refreshIntervalMs:-30000} \
+    -Dapiml.gateway.refresh-interval-ms=${ZWE_configs_gateway_registry_refreshIntervalMs:-30000} \
     -Dserver.address=0.0.0.0 \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
