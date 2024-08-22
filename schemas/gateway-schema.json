@@ -459,6 +459,16 @@
                                                             "default": 8192
                                                         }
                                                     }
+                                                },
+                                                "ssl": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "enabled": {
+                                                            "type": "boolean",
+                                                            "description": "To enable SSL/tls layer.",
+                                                            "default": true
+                                                        }
+                                                    }
                                                 }
                                             }
                                         },
