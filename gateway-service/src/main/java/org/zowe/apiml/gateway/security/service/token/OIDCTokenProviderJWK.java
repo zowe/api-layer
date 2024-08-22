@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.core.MessageType;
@@ -50,8 +50,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-@ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
-public class OIDCTokenProvider implements OIDCProvider {
+@ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'JWK' && '${apiml.security.oidc.enabled:false}' == 'true'")
+public class OIDCTokenProviderJWK implements OIDCProvider {
 
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
