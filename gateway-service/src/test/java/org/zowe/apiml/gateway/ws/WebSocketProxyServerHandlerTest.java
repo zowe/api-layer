@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
@@ -33,10 +34,16 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class WebSocketProxyServerHandlerTest {
     private WebSocketProxyServerHandler underTest;
@@ -223,7 +230,7 @@ class WebSocketProxyServerHandlerTest {
         void whenTheConnectionIsClosed_thenClientSessionIsAlsoClosed() throws IOException {
             CloseStatus normalClose = CloseStatus.NORMAL;
             WebSocketSession clientSession = mock(WebSocketSession.class);
-            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(clientSession);
+            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(clientSession));
 
             underTest.afterConnectionClosed(establishedSession, normalClose);
             verify(clientSession, times(1)).close(normalClose);

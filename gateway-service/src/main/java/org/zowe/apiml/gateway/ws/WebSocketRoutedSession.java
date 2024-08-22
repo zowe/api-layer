@@ -15,14 +15,16 @@ import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a connection in the proxying chain, establishes 'client' to
@@ -32,19 +34,24 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class WebSocketRoutedSession {
-    private static final int DEFAULT_TIMEOUT = 30000;
 
-    private final WebSocketSession webSocketClientSession;
+    private final ListenableFuture<WebSocketSession> webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
+    private final WebSocketProxyClientHandler clientHandler;
+    private final String targetUrl;
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         this.webSocketServerSession = webSocketServerSession;
+        this.targetUrl = targetUrl;
+        this.clientHandler = new WebSocketProxyClientHandler(webSocketServerSession);
         this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, webSocketClientFactory);
     }
 
-    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, WebSocketSession webSocketClientSession) {
+    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, ListenableFuture<WebSocketSession> webSocketClientSession, WebSocketProxyClientHandler clientHandler, String targetUrl) {
         this.webSocketClientSession = webSocketClientSession;
         this.webSocketServerSession = webSocketServerSession;
+        this.clientHandler = clientHandler;
+        this.targetUrl = targetUrl;
     }
 
     private WebSocketHttpHeaders getWebSocketHttpHeaders(WebSocketSession webSocketServerSession) {
@@ -58,7 +65,7 @@ public class WebSocketRoutedSession {
         return headers;
     }
 
-    public WebSocketSession getWebSocketClientSession() {
+    public ListenableFuture<WebSocketSession> getWebSocketClientSession() {
         return webSocketClientSession;
     }
 
@@ -66,21 +73,18 @@ public class WebSocketRoutedSession {
         return webSocketServerSession;
     }
 
-    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
+    WebSocketProxyClientHandler getClientHandler() {
+        return clientHandler;
+    }
+
+    private ListenableFuture<WebSocketSession> createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         try {
             JettyWebSocketClient client = webSocketClientFactory.getClientInstance();
             URI targetURI = new URI(targetUrl);
             WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
-            ListenableFuture<WebSocketSession> futureSession = client
-                .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
-            return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+            return client.doHandshake(clientHandler, headers, targetURI);
         } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
-        } catch (ExecutionException e) {
-            throw handleExecutionException(targetUrl, e, webSocketServerSession, false);
         } catch (Exception e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
         }
@@ -112,13 +116,25 @@ public class WebSocketRoutedSession {
     }
 
     public void sendMessageToServer(WebSocketMessage<?> webSocketMessage) throws IOException {
-        log.debug("sendMessageToServer(session={},message={})", webSocketClientSession, webSocketMessage);
-        webSocketClientSession.sendMessage(webSocketMessage);
+        log.debug("sendMessageToServer(session={}, message={})", webSocketClientSession, webSocketMessage);
+        if (webSocketClientSession.isDone()) {
+            try {
+                webSocketClientSession.get().sendMessage(webSocketMessage);
+            } catch (IOException | InterruptedException | ExecutionException e) {
+                // TODO Log
+            }
+        } else {
+            // TODO Log
+        }
     }
 
     public void close(CloseStatus status) throws IOException {
-        if (webSocketClientSession.isOpen()) {
-            webSocketClientSession.close(status);
+        try {
+            if (webSocketClientSession.isDone() && webSocketClientSession.get().isOpen()) {
+                webSocketClientSession.get().close(status);
+            }
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            // TODO Log
         }
     }
 
@@ -141,15 +157,24 @@ public class WebSocketRoutedSession {
     }
 
     public String getClientUri() {
-        URI uri = getWebSocketClientSession().getUri();
-        if (uri != null) {
-            return uri.toString();
-        }
-
-        return null;
+        return targetUrl;
     }
 
+    /**
+     * Get the sessionId for this session's client session
+     *
+     * @return WebSocket client session id or null if not established (could be temporary)
+     *
+     * @throws ServerNotYetAvailableException If a client session is not established
+     */
     public String getClientId() {
-        return getWebSocketClientSession().getId();
+        if (!webSocketClientSession.isDone()) {
+            throw new ServerNotYetAvailableException();
+        }
+        try {
+            return getWebSocketClientSession().get().getId();
+        } catch (InterruptedException | ExecutionException e) {
+            return null;
+        }
     }
 }

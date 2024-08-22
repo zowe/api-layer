@@ -42,7 +42,8 @@ class WebSocketRoutedSessionTest {
         clientSession = mock(WebSocketSession.class);
         serverSession = mock(WebSocketSession.class);
 
-        underTest = new WebSocketRoutedSession(serverSession, clientSession);
+        // underTest = new WebSocketRoutedSession(serverSession, clientSession, null, null);
+        underTest = null;
     }
 
     @Test
