@@ -175,6 +175,50 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
         --add-opens=java.base/java.io=ALL-UNNAMED"
 
+get_enabled_protocol_limit()
+{
+    target=$1
+    type=$2
+    key_component=ZWE_configs_zowe_network_${target}_tls_${type}Tls
+    key_zowe=ZWE_zowe_network_${target}_tls_${type}Tls
+    echo ${!key_component:-${!key_zowe:-}}
+}
+
+get_enabled_protocol()
+{
+    target=$1
+    enabled_protocols_min=$(get_enabled_protocol_limit "${target}" "min")
+    enabled_protocols_max=$(get_enabled_protocol_limit "${target}" "max")
+
+    if [ "${enabled_protocols_min:-}" == "${enabled_protocols_max:-}" ]; then
+        echo "${enabled_protocols_max:-}"
+    elif [ -z "${enabled_protocols_min:-}" ]; then
+        echo "${enabled_protocols_max:-}"
+    else
+        enabled_protocols_max=${enabled_protocols_max:-TLSv1.3}
+
+        enabled_protocols=,SSLv3,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
+        enabled_protocols=${enabled_protocols%%,${enabled_protocols_max}*}
+        enabled_protocols=${enabled_protocols#*${enabled_protocols_min},}
+        if [ ! -z ${enabled_protocols} ]; then
+          enabled_protocols=",${enabled_protocols}"
+        fi
+        echo "${enabled_protocols_min}${enabled_protocols},${enabled_protocols_max}"
+    fi
+}
+
+server_protocol=$(get_enabled_protocol_limit "server" "max")
+server_protocol=${server_protocol:-TLS}
+server_enabled_protocols=$(get_enabled_protocol "server")
+server_enabled_protocols=${server_enabled_protocols:-TLSv1.3}
+server_ciphers=${ZWE_configs_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}
+
+client_protocol=$(get_enabled_protocol_limit "client" "max")
+client_protocol=${client_protocol:-${server_protocol}}
+client_enabled_protocols=$(get_enabled_protocol "client")
+client_enabled_protocols=${client_enabled_protocols:-${server_enabled_protocols}}
+client_ciphers=${ZWE_configs_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-${server_ciphers}}}
+
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
 key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
@@ -195,8 +239,6 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
-
-ciphers=${ZWE_configs_certificate_ciphers:-${ZWE_configs_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}
 
 if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
@@ -270,7 +312,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStore="${truststore_location}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Dserver.ssl.ciphers=${ciphers:-} \
+    -Dserver.ssl.ciphers=${server_ciphers} \
+    -Dserver.ssl.protocol=${server_protocol} \
+    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djava.library.path=${LIBPATH} \

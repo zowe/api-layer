@@ -54,12 +54,6 @@
                                             "type": "object",
                                             "description": "Network encryption for gateway service connections.",
                                             "properties": {
-                                                "ciphers": {
-                                                    "type": "string",
-                                                    "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
-                                                    "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
-                                                    "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)*$"
-                                                },
                                                 "enabled": {
                                                     "type": "boolean",
                                                     "description": "Should gateway use encrypted communication?",
@@ -151,11 +145,6 @@
                                                             }
                                                         }
                                                     ]
-                                                },
-                                                "protocol": {
-                                                    "type": "string",
-                                                    "description": "This parameter specifies the TLS protocol version currently used by Zowe API ML Discovery Service.",
-                                                    "default": "TLSv1.2"
                                                 }
                                             }
                                         },
@@ -570,6 +559,38 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "zowe": {
+                                            "type": "object",
+                                            "properties": {
+                                                "network": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "client": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "tls": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "minTls": {
+                                                                            "$ref": "#/$defs/tlsType"
+                                                                        },
+                                                                        "maxTls": {
+                                                                            "$ref": "#/$defs/tlsType"
+                                                                        },
+                                                                        "ciphers": {
+                                                                            "type": "string",
+                                                                            "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
+                                                                            "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
+                                                                            "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)*$"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -604,6 +625,10 @@
                 },
                 "required": ["gatewayUrl","serviceUrl"]
             }
+        },
+        "tlsType": {
+            "type": "string",
+            "enum": ["SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3", "TLSv1.4"]
         }
     }
 }
