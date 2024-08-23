@@ -14,6 +14,7 @@ describe("Swagger rendering", () => {
 
     beforeEach("Login to API Catalog", () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
+        cy.contains('Version: ');
     });
 
     [
@@ -55,7 +56,7 @@ describe("Swagger rendering", () => {
                 .get('label')
                 .should('contain', "API Base Path:");
 
-            const regex = new RegExp('^$|\/' + service.serviceId + '\/api(\/v1)?$');
+            const regex = new RegExp(`^\/${service.serviceId}\/api(\/v1)?$`);
             cy.get('@basePath')
                 .get('#apiBasePath').invoke("text").should(text => {
                 expect(text).to.match(regex);

@@ -14,6 +14,7 @@ describe('>>> Wizard Dialog test', () => {
     it('should test enabler 1', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.get('.header').should('exist');
 
         cy.get('#onboard-wizard-button').should('exist').click();
@@ -39,6 +40,7 @@ describe('>>> Wizard Dialog test', () => {
     it('should test enabler 2', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.get('.header').should('exist');
 
         cy.get('#onboard-wizard-button').should('exist').click();
@@ -57,6 +59,7 @@ describe('>>> Wizard Dialog test', () => {
     it('should test enabler 3', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.get('.header').should('exist');
 
         cy.get('#onboard-wizard-button').should('exist').click();
@@ -75,6 +78,7 @@ describe('>>> Wizard Dialog test', () => {
     it('should test enabler 4', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.get('.header').should('exist');
 
         cy.get('#onboard-wizard-button').should('exist').click();
@@ -93,6 +97,7 @@ describe('>>> Wizard Dialog test', () => {
     it('should test enabler 5', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.get('.header').should('exist');
 
         cy.get('#onboard-wizard-button').should('exist').click();

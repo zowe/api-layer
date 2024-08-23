@@ -33,6 +33,7 @@ describe('>>> Detail page test', () => {
     it('Should display the API Catalog service title, URL and description in Swagger', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.get('#grid-container').contains('API Catalog').click();
 
         cy.visit(`${Cypress.env('catalogHomePage')}/#/service/apicatalog`);
@@ -66,6 +67,7 @@ describe('>>> Detail page test', () => {
     it('Should display the Gateway information in the detail page', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.contains('API Gateway').click();
 
         cy.visit(`${Cypress.env('catalogHomePage')}/#/service/gateway`);
@@ -102,6 +104,7 @@ describe('>>> Detail page test', () => {
     it('Should go to the detail page, go back to the dashboard page and check if the search bar works', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
         cy.contains('API Gateway').click();
 
         cy.url().should('contain', '/service/gateway');

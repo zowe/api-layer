@@ -30,11 +30,11 @@ Cypress.Commands.add("login", (username, password) => {
     cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
     cy.url().should('contain', '/login');
 
-    cy.get('button[type="submit"').as('submitButton');
+    cy.get('button[type="submit"').as('submitButton').should('exist');
 
     cy.get('#username').type(username);
     cy.get('input[name="password"]').type(password);
 
+    cy.get('@submitButton').should('not.be.disabled');
     cy.get('@submitButton').click();
-    cy.contains('Version: ');
 });

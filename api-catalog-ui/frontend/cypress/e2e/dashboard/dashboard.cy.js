@@ -14,6 +14,8 @@ describe('>>> Dashboard test', () => {
     it('dashboard test', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
+
         cy.get('.header').should('exist');
 
         cy.url().should('contain', '/dashboard');

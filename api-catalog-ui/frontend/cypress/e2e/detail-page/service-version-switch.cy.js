@@ -11,6 +11,8 @@ describe('>>> Service version change Test', () => {
     beforeEach(() => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
+        cy.contains('Version: ');
+
         cy.contains('Service Spring Onboarding Enabler sample application API').click();
 
         cy.visit(`${Cypress.env('catalogHomePage')}/#/service/discoverableclient`);
