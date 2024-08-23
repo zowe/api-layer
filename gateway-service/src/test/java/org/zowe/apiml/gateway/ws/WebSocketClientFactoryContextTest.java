@@ -14,6 +14,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +24,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest(
     properties = {
@@ -44,6 +51,11 @@ public class WebSocketClientFactoryContextTest {
     @Autowired
     private WebSocketClientFactory webSocketClientFactory;
 
+    @BeforeEach
+    void setUp() {
+        webSocketClientFactory.getClientInstance("key");
+    }
+
     @Nested
     class GivenWebSocketClientParametrization {
 
@@ -51,7 +63,7 @@ public class WebSocketClientFactoryContextTest {
         void thenBeanIsInitialized() {
             assertNotNull(webSocketClientFactory);
 
-            JettyWebSocketClient jettyWebSocketClient = (JettyWebSocketClient) ReflectionTestUtils.getField(webSocketClientFactory, "client");
+            JettyWebSocketClient jettyWebSocketClient = webSocketClientFactory.getClientInstance("key");
             WebSocketClient webSocketClient = (WebSocketClient) ReflectionTestUtils.getField(jettyWebSocketClient, "client");
 
             WebSocketPolicy policy = webSocketClient.getPolicy();
@@ -71,6 +83,13 @@ public class WebSocketClientFactoryContextTest {
 
         private JettyWebSocketClient client = mock(JettyWebSocketClient.class);
         private WebSocketClientFactory factory = new WebSocketClientFactory(null, 0, 0, 0, 0, 0);
+
+        @BeforeEach
+        void setUp() {
+            ConcurrentMap<String, JettyWebSocketClient> clients = new ConcurrentHashMap<>();
+            clients.put("key", client);
+            ReflectionTestUtils.setField(factory, "clientsMap", clients);
+        }
 
         @Test
         void whenIsRunning_thenStop() {
