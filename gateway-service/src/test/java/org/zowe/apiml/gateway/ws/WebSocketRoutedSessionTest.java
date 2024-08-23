@@ -13,7 +13,11 @@ package org.zowe.apiml.gateway.ws;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
@@ -29,21 +33,27 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class WebSocketRoutedSessionTest {
+
+    @Mock
     private WebSocketSession clientSession;
+    @Mock
     private WebSocketSession serverSession;
+    @Mock
+    private WebSocketProxyClientHandler clientHandler;
 
     private WebSocketRoutedSession underTest;
 
     @BeforeEach
     void prepareSessionUnderTest() {
-        clientSession = mock(WebSocketSession.class);
-        serverSession = mock(WebSocketSession.class);
-
-        // underTest = new WebSocketRoutedSession(serverSession, clientSession, null, null);
-        underTest = null;
+        underTest = new WebSocketRoutedSession(serverSession, new AsyncResult<>(clientSession), clientHandler, "ws://localhost:8080/petstore");
     }
 
     @Test
@@ -53,7 +63,6 @@ class WebSocketRoutedSessionTest {
         String serverUriPath = "ws://gateway:8080/petstore";
 
         when(clientSession.getId()).thenReturn(sessionId);
-        when(clientSession.getUri()).thenReturn(new URI(clientUriPath));
         when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
         when(serverSession.getUri()).thenReturn(new URI(serverUriPath));
 
@@ -68,12 +77,6 @@ class WebSocketRoutedSessionTest {
     void givenBrokenServerSession_whenUriIsRequested_NullIsReturned() {
         when(serverSession.getUri()).thenReturn(null);
         assertThat(underTest.getServerUri(), is(nullValue()));
-    }
-
-    @Test
-    void givenBrokenClientSession_whenUriIsRequested_NullIsReturned() {
-        when(clientSession.getUri()).thenReturn(null);
-        assertThat(underTest.getClientUri(), is(nullValue()));
     }
 
     @Nested

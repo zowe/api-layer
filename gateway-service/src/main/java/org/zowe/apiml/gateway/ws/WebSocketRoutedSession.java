@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.ws;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -45,7 +46,8 @@ public class WebSocketRoutedSession {
         this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, webSocketClientFactory);
     }
 
-    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, ListenableFuture<WebSocketSession> webSocketClientSession, WebSocketProxyClientHandler clientHandler, String targetUrl) {
+    @VisibleForTesting
+    WebSocketRoutedSession(WebSocketSession webSocketServerSession, ListenableFuture<WebSocketSession> webSocketClientSession, WebSocketProxyClientHandler clientHandler, String targetUrl) {
         this.webSocketClientSession = webSocketClientSession;
         this.webSocketServerSession = webSocketServerSession;
         this.clientHandler = clientHandler;
