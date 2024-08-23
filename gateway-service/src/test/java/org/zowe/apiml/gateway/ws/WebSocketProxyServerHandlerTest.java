@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,6 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -75,12 +75,8 @@ class WebSocketProxyServerHandlerTest {
     @Nested
     class WhenTheConnectionIsEstablished {
 
+        @Mock
         WebSocketSession establishedSession;
-
-        @BeforeEach
-        void prepareSessionMock() {
-            establishedSession = mock(WebSocketSession.class);
-        }
 
         @Nested
         class ThenTheValidSessionIsStoredInternally {
@@ -117,8 +113,7 @@ class WebSocketProxyServerHandlerTest {
                 when(establishedSession.getId()).thenReturn(establishedSessionId);
                 when(establishedSession.getUri()).thenReturn(new URI(path));
 
-                CountDownLatch latch = new CountDownLatch(1);
-                when(routedSession.getWebSocketClientSession()).thenReturn(null);
+                when(routedSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
 
                 underTest.afterConnectionEstablished(establishedSession);
 
@@ -264,32 +259,32 @@ class WebSocketProxyServerHandlerTest {
         @Test
         void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
             doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
+            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
+            when(establishedSession.isOpen()).thenReturn(true);
+
             underTest.handleMessage(establishedSession, passedMessage);
+
             assertTrue(routedSessions.isEmpty());
         }
 
         @Test
+        /**
+         * This scenario is now handled by Spring Retry
+         */
         void whenSessionIsNull_thenCloseAndReturn() throws IOException {
             routedSessions.replace("123", null);
 
-            underTest.handleMessage(establishedSession, passedMessage);
-            assertTrue(routedSessions.isEmpty());
-            verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(establishedSession, passedMessage));
         }
 
         @Test
         void whenClosingSessionThrowException_thenCatchIt() throws IOException {
             CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
             doThrow(new IOException()).when(establishedSession).close(status);
-            underTest.afterConnectionClosed(establishedSession, status);
-            assertTrue(routedSessions.isEmpty());
-        }
+            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
 
-        @Test
-        void whenClosingRoutedSessionThrowException_thenCatchIt() throws IOException {
-            CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
-            doThrow(new IOException()).when(routedSessions.get("123")).close(status);
             underTest.afterConnectionClosed(establishedSession, status);
+
             assertTrue(routedSessions.isEmpty());
         }
 
