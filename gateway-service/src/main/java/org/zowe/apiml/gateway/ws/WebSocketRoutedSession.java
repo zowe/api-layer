@@ -20,10 +20,11 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Represents a connection in the proxying chain, establishes 'client' to
@@ -38,6 +39,8 @@ public class WebSocketRoutedSession {
     private final WebSocketSession webSocketServerSession;
     private final WebSocketProxyClientHandler clientHandler;
     private final String targetUrl;
+
+    private WebSocketSession clientSession;
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         this.webSocketServerSession = webSocketServerSession;
@@ -77,6 +80,15 @@ public class WebSocketRoutedSession {
         return clientHandler;
     }
 
+    void setClientSession(WebSocketSession clientSession) {
+        this.clientSession = clientSession;
+    }
+
+    @Nullable
+    WebSocketSession getClientSession() {
+        return clientSession;
+    }
+
     private ListenableFuture<WebSocketSession> createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
         try {
             JettyWebSocketClient client = webSocketClientFactory.getClientInstance(targetUrl);
@@ -100,10 +112,10 @@ public class WebSocketRoutedSession {
 
     public void sendMessageToServer(WebSocketMessage<?> webSocketMessage) throws IOException {
         log.debug("sendMessageToServer(session={}, message={})", webSocketClientSession, webSocketMessage);
-        if (webSocketClientSession.isDone()) {
+        if (isClientConnected()) {
             try {
-                webSocketClientSession.get().sendMessage(webSocketMessage);
-            } catch (IOException | InterruptedException | ExecutionException e) {
+                clientSession.sendMessage(webSocketMessage);
+            } catch (IOException e) {
                 log.debug("Failed sending message: {}", webSocketMessage, e);
             }
         } else {
@@ -111,12 +123,16 @@ public class WebSocketRoutedSession {
         }
     }
 
+    public boolean isClientConnected() {
+        return webSocketClientSession.isDone() && clientSession != null && clientSession.isOpen();
+    }
+
     public void close(CloseStatus status) throws IOException {
         try {
-            if (webSocketClientSession.isDone() && webSocketClientSession.get().isOpen()) {
-                webSocketClientSession.get().close(status);
+            if (isClientConnected()) {
+                clientSession.close(status);
             }
-        } catch (InterruptedException | ExecutionException | IOException e) {
+        } catch (IOException e) {
             log.debug("Failed to close WebSocket client session with status {}", status, e);
         }
     }
@@ -154,10 +170,11 @@ public class WebSocketRoutedSession {
         if (!webSocketClientSession.isDone()) {
             throw new ServerNotYetAvailableException();
         }
-        try {
-            return getWebSocketClientSession().get().getId();
-        } catch (InterruptedException | ExecutionException e) {
-            return null;
+        if (isClientConnected()) {
+            return clientSession.getId();
         }
+
+        return null;
     }
+
 }

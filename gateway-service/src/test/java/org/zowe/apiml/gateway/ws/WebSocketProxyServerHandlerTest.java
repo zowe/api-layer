@@ -271,7 +271,7 @@ class WebSocketProxyServerHandlerTest {
         /**
          * This scenario is now handled by Spring Retry
          */
-        void whenSessionIsNull_thenCloseAndReturn() throws IOException {
+        void whenSessionIsNull_thenCloseAndReturn() {
             routedSessions.replace("123", null);
 
             assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(establishedSession, passedMessage));

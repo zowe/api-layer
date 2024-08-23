@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Handle initialization and management of routed WebSocket sessions. Copies
@@ -188,7 +187,10 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
         session.getWebSocketClientSession().addCallback(
-            successSession -> routedSessions.put(webSocketSession.getId(), session),
+            successSession -> {
+                session.setClientSession(successSession);
+                routedSessions.put(webSocketSession.getId(), session);
+            },
             failure -> {
                 log.debug("Failed opening client web socket session against {}. Server WebSocket session is {}", targetUrl, webSocketSession.getId(), failure);
                 try {
@@ -204,16 +206,13 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         // if the browser closes the session, close the GWs client one as well.
         Optional.ofNullable(routedSessions.get(session.getId()))
-            .map(WebSocketRoutedSession::getWebSocketClientSession)
+            .filter(routedSession -> routedSession.isClientConnected())
+            .map(WebSocketRoutedSession::getClientSession)
             .ifPresent(clientSession -> {
                 try {
-                    clientSession.get().close(status);
+                    clientSession.close(status);
                 } catch (IOException e) {
                     log.debug("Error closing WebSocket client connection: {}", e.getMessage());
-                } catch (InterruptedException e) {
-                    // This will not happen, session will not be in the map unless future has already completed successfully
-                } catch (ExecutionException e) {
-                    // This will not happen, session will not be in the map unless future has already completed successfully
                 }
             });
         routedSessions.remove(session.getId());
@@ -282,19 +281,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     private boolean isClientConnectionClosed(WebSocketRoutedSession session) {
-        try {
-            return session != null && session.getWebSocketClientSession().isDone() && !session.getWebSocketClientSession().get().isOpen();
-        } catch (InterruptedException | ExecutionException e) {
-            return false;
-        }
+        return session != null && session.isClientConnected();
     }
 
     private boolean isClientConnectionReady(WebSocketRoutedSession session) {
-        try {
-            return session != null && session.getWebSocketClientSession().isDone() && session.getWebSocketClientSession().get().isOpen();
-        } catch (InterruptedException | ExecutionException e) {
-            return false;
-        }
+        WebSocketSession clientSession = session.getClientSession();
+        return session != null && session.getWebSocketClientSession().isDone() && clientSession != null && !clientSession.isOpen();
     }
 
     private WebSocketRoutedSession getRoutedSession(WebSocketSession webSocketSession) {
