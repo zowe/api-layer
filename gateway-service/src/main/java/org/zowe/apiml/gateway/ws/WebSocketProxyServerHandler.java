@@ -281,12 +281,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     private boolean isClientConnectionClosed(WebSocketRoutedSession session) {
-        return session != null && session.isClientConnected();
+        WebSocketSession clientSession = session.getClientSession();
+        return session != null && session.getWebSocketClientSession().isDone() && clientSession != null && !clientSession.isOpen();
     }
 
     private boolean isClientConnectionReady(WebSocketRoutedSession session) {
-        WebSocketSession clientSession = session.getClientSession();
-        return session != null && session.getWebSocketClientSession().isDone() && clientSession != null && !clientSession.isOpen();
+        return session != null && session.isClientConnected();
     }
 
     private WebSocketRoutedSession getRoutedSession(WebSocketSession webSocketSession) {

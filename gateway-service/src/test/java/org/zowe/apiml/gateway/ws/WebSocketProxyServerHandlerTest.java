@@ -238,9 +238,11 @@ class WebSocketProxyServerHandlerTest {
         void whenTheConnectionIsClosed_thenClientSessionIsAlsoClosed() throws IOException {
             CloseStatus normalClose = CloseStatus.NORMAL;
             WebSocketSession clientSession = mock(WebSocketSession.class);
-            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(clientSession));
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
 
             underTest.afterConnectionClosed(establishedSession, normalClose);
+
             verify(clientSession, times(1)).close(normalClose);
             assertThat(routedSessions.entrySet(), hasSize(0));
         }
@@ -249,7 +251,9 @@ class WebSocketProxyServerHandlerTest {
         void whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
             WebSocketSession clientSession = mock(WebSocketSession.class);
             when(clientSession.isOpen()).thenReturn(true);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
             when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(clientSession));
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
 
             underTest.handleMessage(establishedSession, passedMessage);
 
@@ -281,7 +285,8 @@ class WebSocketProxyServerHandlerTest {
         void whenClosingSessionThrowException_thenCatchIt() throws IOException {
             CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
             doThrow(new IOException()).when(establishedSession).close(status);
-            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
 
             underTest.afterConnectionClosed(establishedSession, status);
 
