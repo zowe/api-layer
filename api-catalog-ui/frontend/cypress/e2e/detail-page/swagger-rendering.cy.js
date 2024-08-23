@@ -30,7 +30,7 @@ describe("Swagger rendering", () => {
         {
             "serviceName": "Mock zOSMF",
             "serviceId": "mockzosmf",
-            "serviceHomepage": "https://localhost:10013/"
+            "serviceHomepage": ":10013/"
         },
     ].forEach((service) => {
         it("Rendering Swagger for " + service.serviceName, () => {
