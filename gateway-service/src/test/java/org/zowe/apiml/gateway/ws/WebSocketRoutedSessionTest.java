@@ -54,6 +54,7 @@ class WebSocketRoutedSessionTest {
     @BeforeEach
     void prepareSessionUnderTest() {
         underTest = new WebSocketRoutedSession(serverSession, new AsyncResult<>(clientSession), clientHandler, "ws://localhost:8080/petstore");
+        underTest.setClientSession(clientSession);
     }
 
     @Test
@@ -62,6 +63,7 @@ class WebSocketRoutedSessionTest {
         String clientUriPath = "ws://localhost:8080/petstore";
         String serverUriPath = "ws://gateway:8080/petstore";
 
+        when(clientSession.isOpen()).thenReturn(true);
         when(clientSession.getId()).thenReturn(sessionId);
         when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
         when(serverSession.getUri()).thenReturn(new URI(serverUriPath));
@@ -105,7 +107,10 @@ class WebSocketRoutedSessionTest {
     class GivenWSMessage {
         @Test
         void whenAddressNotNull_thenSendMessage() throws IOException {
+            when(clientSession.isOpen()).thenReturn(true);
+
             underTest.sendMessageToServer(mock(WebSocketMessage.class));
+
             verify(clientSession, times(1)).sendMessage(any());
         }
     }
