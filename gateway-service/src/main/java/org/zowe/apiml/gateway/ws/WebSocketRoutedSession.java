@@ -11,9 +11,7 @@
 package org.zowe.apiml.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -90,23 +88,6 @@ public class WebSocketRoutedSession {
         }
     }
 
-    private WebSocketProxyError handleExecutionException(String targetUrl, ExecutionException cause, WebSocketSession webSocketServerSession, boolean logError) {
-        if (cause.getCause() != null && cause.getCause().getCause() instanceof UpgradeException) {
-            UpgradeException upgradeException = (UpgradeException) cause.getCause().getCause();
-            if (upgradeException.getResponseStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
-                String message = "Invalid login credentials";
-                if (logError) {
-                    log.debug(message);
-                }
-                return new WebSocketProxyError(message, cause, webSocketServerSession);
-            } else {
-                return webSocketProxyException(targetUrl, cause, webSocketServerSession, logError);
-            }
-        } else {
-            return webSocketProxyException(targetUrl, cause, webSocketServerSession, logError);
-        }
-    }
-
     private WebSocketProxyError webSocketProxyException(String targetUrl, Exception cause, WebSocketSession webSocketServerSession, boolean logError) {
         String message = String.format("Error opening session to WebSocket service at %s: %s", targetUrl, cause.getMessage());
         if (logError) {
@@ -121,10 +102,10 @@ public class WebSocketRoutedSession {
             try {
                 webSocketClientSession.get().sendMessage(webSocketMessage);
             } catch (IOException | InterruptedException | ExecutionException e) {
-                // TODO Log
+                log.debug("Failed sending message: {}", webSocketMessage, e);
             }
         } else {
-            // TODO Log
+            log.debug("Tried to send a WebSocket message in a non-established client session.");
         }
     }
 
@@ -134,7 +115,7 @@ public class WebSocketRoutedSession {
                 webSocketClientSession.get().close(status);
             }
         } catch (InterruptedException | ExecutionException | IOException e) {
-            // TODO Log
+            log.debug("Failed to close WebSocket client session with status {}", status, e);
         }
     }
 
