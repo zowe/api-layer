@@ -25,3 +25,16 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import 'cypress-file-upload';
+
+Cypress.Commands.add("login", (username, password) => {
+    cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
+    cy.url().should('contain', '/login');
+
+    cy.get('button[type="submit"').as('submitButton');
+
+    cy.get('#username').type(username);
+    cy.get('input[name="password"]').type(password);
+
+    cy.get('@submitButton').click();
+    cy.contains('Version: ');
+});

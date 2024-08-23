@@ -10,26 +10,9 @@
 /* eslint-disable spaced-comment */
 /// <reference types="Cypress" />
 
-function login() {
-    cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
-    cy.url().should('contain', '/login');
-
-    const username = Cypress.env('username');
-    const password = Cypress.env('password');
-
-    cy.get('button[type="submit"').as('submitButton');
-
-    cy.get('#username').type(username);
-    cy.get('input[name="password"]').type(password);
-
-    cy.get('@submitButton').click();
-
-    cy.contains('Version: ');
-}
-
 describe('>>> Dashboard test', () => {
     it('dashboard test', () => {
-        login();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.get('.header').should('exist');
 

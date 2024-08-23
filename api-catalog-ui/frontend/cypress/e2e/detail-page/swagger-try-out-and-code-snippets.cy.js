@@ -10,17 +10,7 @@
 
 describe('>>> Swagger Try Out and Code Snippets Test', () => {
     beforeEach(() => {
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
-
-        const username = Cypress.env('username');
-        const password = Cypress.env('password');
-
-        cy.get('button[type="submit"').as('submitButton');
-
-        cy.get('#username').type(username);
-        cy.get('input[name="password"]').type(password);
-
-        cy.get('@submitButton').click();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
     });
 
     [

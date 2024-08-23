@@ -10,24 +10,9 @@
 /* eslint-disable spaced-comment */
 /// <reference types="Cypress" />
 
-function login() {
-    cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
-    cy.url().should('contain', '/login');
-
-    const username = Cypress.env('username');
-    const password = Cypress.env('password');
-
-    cy.get('button[type="submit"').as('submitButton');
-
-    cy.get('#username').type(username);
-    cy.get('input[name="password"]').type(password);
-
-    cy.get('@submitButton').click();
-}
-
 describe('>>> Wizard Dialog test', () => {
     it('should test enabler 1', () => {
-        login();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.get('.header').should('exist');
 
@@ -52,7 +37,7 @@ describe('>>> Wizard Dialog test', () => {
     });
 
     it('should test enabler 2', () => {
-        login();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.get('.header').should('exist');
 
@@ -70,7 +55,7 @@ describe('>>> Wizard Dialog test', () => {
     });
 
     it('should test enabler 3', () => {
-        login();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.get('.header').should('exist');
 
@@ -88,7 +73,7 @@ describe('>>> Wizard Dialog test', () => {
     });
 
     it('should test enabler 4', () => {
-        login();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.get('.header').should('exist');
 
@@ -106,7 +91,7 @@ describe('>>> Wizard Dialog test', () => {
     });
 
     it('should test enabler 5', () => {
-        login();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.get('.header').should('exist');
 

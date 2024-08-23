@@ -9,17 +9,7 @@
  */
 describe('>>> Service version change Test', () => {
     beforeEach(() => {
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
-
-        const username = Cypress.env('username');
-        const password = Cypress.env('password');
-
-        cy.get('button[type="submit"').as('submitButton');
-
-        cy.get('#username').type(username);
-        cy.get('input[name="password"]').type(password);
-
-        cy.get('@submitButton').click();
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.contains('Service Spring Onboarding Enabler sample application API').click();
 
@@ -47,6 +37,6 @@ describe('>>> Service version change Test', () => {
         cy.get('#version-menu').should('exist').click();
 
         cy.get('#menu- > div > ul > li').eq(2).click();
-        cy.get('.servers', { timeout: 10000 }).contains('/discoverableclient/api/v2');
+        cy.get('.servers', {timeout: 10000}).contains('/discoverableclient/api/v2');
     });
 });
