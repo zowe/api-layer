@@ -264,6 +264,8 @@ class WebSocketProxyServerHandlerTest {
         void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
             doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
             when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
+            when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
             when(establishedSession.isOpen()).thenReturn(true);
 
             underTest.handleMessage(establishedSession, passedMessage);
