@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Represents a connection in the proxying chain, establishes 'client' to
@@ -34,7 +35,7 @@ import java.util.List;
 @Slf4j
 public class WebSocketRoutedSession {
 
-    private volatile WebSocketSession clientSession;
+    private AtomicReference<WebSocketSession> clientSession;
     private final WebSocketSession webSocketServerSession;
     private final WebSocketProxyClientHandler clientHandler;
     private final String targetUrl;
@@ -86,7 +87,7 @@ public class WebSocketRoutedSession {
     }
 
     WebSocketSession getClientSession() {
-        return clientSession;
+        return clientSession.get();
     }
 
     String getTargetUrl() {
@@ -94,7 +95,7 @@ public class WebSocketRoutedSession {
     }
 
     private void onSuccess(WebSocketSession serverSession, WebSocketSession clientSession) {
-        this.clientSession = clientSession;
+        this.clientSession.set(clientSession);
         this.successCallbacks.forEach(callback -> callback.onClientSessionSuccess(this, serverSession, clientSession));
     }
 
@@ -128,7 +129,7 @@ public class WebSocketRoutedSession {
         log.debug("sendMessageToServer(session={}, message={})", clientSession, webSocketMessage);
         if (isClientConnected()) {
             try {
-                clientSession.sendMessage(webSocketMessage);
+                clientSession.get().sendMessage(webSocketMessage);
             } catch (IOException e) {
                 log.debug("Failed sending message: {}", webSocketMessage, e);
             }
@@ -138,13 +139,13 @@ public class WebSocketRoutedSession {
     }
 
     public boolean isClientConnected() {
-        return clientSession != null && clientSession.isOpen();
+        return clientSession != null && clientSession.get().isOpen();
     }
 
     public void close(CloseStatus status) throws IOException {
         try {
             if (isClientConnected()) {
-                clientSession.close(status);
+                clientSession.get().close(status);
             }
         } catch (IOException e) {
             log.debug("Failed to close WebSocket client session with status {}", status, e);
@@ -185,7 +186,7 @@ public class WebSocketRoutedSession {
             throw new ServerNotYetAvailableException();
         }
         if (isClientConnected()) {
-            return clientSession.getId();
+            return clientSession.get().getId();
         }
 
         return null;
