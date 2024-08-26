@@ -39,6 +39,13 @@ messages:
       reason: "The status of one or more containers could not be retrieved."
       action: "Check the status of the message for more information and the health of the Discovery Service."
 
+    - key: org.zowe.apiml.apicatalog.apiDocHostCommunication
+      number: ZWEAC105
+      type: WARNING
+      text: "API Documentation not retrieved for service '%s' due to communication error, %s"
+      reason: "Unable to fetch API documentation."
+      action: "Make sure the service documentation url or server transport encoding is configured correctly."
+
     # HTTP, Protocol messages
     # 400-499\
     # TLS, Certificate messages

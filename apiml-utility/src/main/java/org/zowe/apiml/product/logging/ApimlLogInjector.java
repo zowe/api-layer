@@ -37,9 +37,9 @@ public class ApimlLogInjector implements BeanPostProcessor {
     @Override
     public Object postProcessBeforeInitialization(final Object bean, @Nonnull String name) {
         ReflectionUtils.doWithFields(bean.getClass(), field -> {
-            // make the field accessible if defined private
-            ReflectionUtils.makeAccessible(field);
             if (field.getAnnotation(InjectApimlLogger.class) != null) {
+                // make the field accessible if defined private
+                ReflectionUtils.makeAccessible(field);
                 Class<?> clazz = getClass(bean);
                 ApimlLogger log = ApimlLogger.of(clazz, YamlMessageServiceInstance.getInstance());
                 field.set(bean, log);
