@@ -94,6 +94,7 @@ public class WebSocketRoutedSession {
     }
 
     private void onSuccess(WebSocketSession serverSession, WebSocketSession clientSession) {
+        this.clientSession = clientSession;
         this.successCallbacks.forEach(callback -> callback.onClientSessionSuccess(this, serverSession, clientSession));
     }
 
