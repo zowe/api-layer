@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class WebSocketRoutedSession {
 
-    private AtomicReference<WebSocketSession> clientSession;
+    private AtomicReference<WebSocketSession> clientSession = new AtomicReference<>();
     private final WebSocketSession webSocketServerSession;
     private final WebSocketProxyClientHandler clientHandler;
     private final String targetUrl;
@@ -94,7 +94,7 @@ public class WebSocketRoutedSession {
         return targetUrl;
     }
 
-    private void onSuccess(WebSocketSession serverSession, WebSocketSession clientSession) {
+    private synchronized void onSuccess(WebSocketSession serverSession, WebSocketSession clientSession) {
         this.clientSession.set(clientSession);
         this.successCallbacks.forEach(callback -> callback.onClientSessionSuccess(this, serverSession, clientSession));
     }
