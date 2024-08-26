@@ -77,6 +77,14 @@ public class BookTest {
     }
 
     @Test
+    public void testUpdateBookWithSimilarFieldsSuccess() {
+        var updatedBook = Book.updateBook("book-1", "Effective Java", 0, "author-12");
+        assertEquals("Effective Java", updatedBook.name());
+        assertEquals(0, updatedBook.pageCount());
+        assertEquals("author-12", updatedBook.authorId());
+    }
+
+    @Test
     public void testUpdateBookNotFound() {
         assertThrows(BookNotFoundException.class, () -> {
             Book.updateBook("non-existent-id", "Updated Book", 200, "author-1");

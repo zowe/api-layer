@@ -22,7 +22,7 @@ const PATH_TO_SERVICE_DESCRIPTION =
 const PATH_TO_PLAYGROUND_INPUT_TEXTAREA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div:nth-child(1) > textarea';
 const PATH_TO_QUERY_OUTPUT =
-    '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
+    '#graphiql-session > div:nth-child(3) > div > section > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
 const PATH_TO_DEFAULT_QUERY =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code > div > pre > span > span';
 const PATH_TO_RUN_QUERY_BUTTON =
