@@ -61,7 +61,7 @@ public class WebSocketRoutedSession {
 
     @VisibleForTesting
     WebSocketRoutedSession(WebSocketSession webSocketServerSession, WebSocketSession webSocketClientSession, WebSocketProxyClientHandler clientHandler, String targetUrl) {
-        this.clientSession = webSocketClientSession;
+        this.clientSession.set(webSocketClientSession);
         this.webSocketServerSession = webSocketServerSession;
         this.clientHandler = clientHandler;
         this.targetUrl = targetUrl;
