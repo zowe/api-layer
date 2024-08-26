@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
@@ -106,18 +105,17 @@ class WebSocketProxyServerHandlerTest {
             void givenValidRoute() throws Exception {
                 String path = "wss://gatewayHost:1443/valid-service/ws/v1/valid-path";
                 WebSocketRoutedSession routedSession = mock(WebSocketRoutedSession.class);
-                when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(routedSession);
+                when(webSocketRoutedSessionFactory.session(any(), any(), any(), any(), any())).thenReturn(routedSession);
                 ServiceInstance serviceInstance = mock(ServiceInstance.class);
                 when(lbClient.choose(any())).thenReturn(serviceInstance);
                 String establishedSessionId = "validAndUniqueId";
                 when(establishedSession.getId()).thenReturn(establishedSessionId);
                 when(establishedSession.getUri()).thenReturn(new URI(path));
 
-                when(routedSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
-
+                underTest.onClientSessionSuccess(routedSession, establishedSession, establishedSession);
                 underTest.afterConnectionEstablished(establishedSession);
 
-                verify(webSocketRoutedSessionFactory).session(any(), any(), any());
+                verify(webSocketRoutedSessionFactory).session(any(), any(), any(), any(), any());
                 WebSocketRoutedSession preparedSession = routedSessions.get(establishedSessionId);
                 assertThat(preparedSession, is(notNullValue()));
             }
@@ -252,7 +250,7 @@ class WebSocketProxyServerHandlerTest {
             WebSocketSession clientSession = mock(WebSocketSession.class);
             when(clientSession.isOpen()).thenReturn(true);
             when(internallyStoredSession.isClientConnected()).thenReturn(true);
-            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(clientSession));
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
             when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
 
             underTest.handleMessage(establishedSession, passedMessage);
@@ -263,7 +261,7 @@ class WebSocketProxyServerHandlerTest {
         @Test
         void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
             doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
-            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(AsyncResult.forValue(establishedSession));
+            when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
             when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
             when(internallyStoredSession.isClientConnected()).thenReturn(true);
             when(establishedSession.isOpen()).thenReturn(true);

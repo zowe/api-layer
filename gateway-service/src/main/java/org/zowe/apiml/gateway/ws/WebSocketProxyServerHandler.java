@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Singleton
 @Slf4j
-public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable {
+public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable, ClientSessionFailureCallback, ClientSessionSuccessCallback {
 
     @Value("${server.webSocket.supportedProtocols:-}")
     private List<String> subProtocols;
@@ -185,21 +185,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, webSocketClientFactory, this));
 
-        WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
-        session.getWebSocketClientSession().addCallback(
-            successSession -> {
-                session.setClientSession(successSession);
-                routedSessions.put(webSocketSession.getId(), session);
-            },
-            failure -> {
-                log.debug("Failed opening client web socket session against {}. Server WebSocket session is {}", targetUrl, webSocketSession.getId(), failure);
-                try {
-                    session.getClientHandler().handleMessage(webSocketSession, new TextMessage("Failed opening a session against " + targetUrl + ": " + failure.getMessage()));
-                    webSocketSession.close(CloseStatus.SERVER_ERROR);
-                } catch (Exception e) {
-                    log.debug("Failed sending / closing WebSocket session", e);
-                }
-            });
+        webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory, this, this);
     }
 
     @Override
@@ -282,7 +268,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     private boolean isClientConnectionClosed(WebSocketRoutedSession session) {
         WebSocketSession clientSession = session.getClientSession();
-        return session != null && session.getWebSocketClientSession().isDone() && clientSession != null && !clientSession.isOpen();
+        return session != null && clientSession != null && !clientSession.isOpen();
     }
 
     private boolean isClientConnectionReady(WebSocketRoutedSession session) {
@@ -291,5 +277,21 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     private WebSocketRoutedSession getRoutedSession(WebSocketSession webSocketSession) {
         return routedSessions.get(webSocketSession.getId());
+    }
+
+    @Override
+    public void onClientSessionSuccess(WebSocketRoutedSession routedSession, WebSocketSession serverSession, WebSocketSession clientSession) {
+        routedSessions.put(serverSession.getId(), routedSession);
+    }
+
+    @Override
+    public void onClientSessionFailure(WebSocketRoutedSession routedSession, WebSocketSession serverSession, Throwable throwable) {
+        log.debug("Failed opening client web socket session against {}. Server WebSocket session is {}", routedSession.getTargetUrl(), serverSession.getId(), throwable);
+        try {
+            routedSession.getClientHandler().handleMessage(serverSession, new TextMessage("Failed opening a session against " + routedSession.getTargetUrl() + ": " + throwable.getMessage()));
+            serverSession.close(CloseStatus.SERVER_ERROR);
+        } catch (Exception e) {
+            log.debug("Failed sending / closing WebSocket session", e);
+        }
     }
 }

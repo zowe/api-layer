@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
@@ -48,13 +47,16 @@ class WebSocketRoutedSessionTest {
     private WebSocketSession serverSession;
     @Mock
     private WebSocketProxyClientHandler clientHandler;
+    @Mock
+    private ClientSessionSuccessCallback successCallback;
+    @Mock
+    private ClientSessionFailureCallback failureCallback;
 
     private WebSocketRoutedSession underTest;
 
     @BeforeEach
     void prepareSessionUnderTest() {
-        underTest = new WebSocketRoutedSession(serverSession, new AsyncResult<>(clientSession), clientHandler, "ws://localhost:8080/petstore");
-        underTest.setClientSession(clientSession);
+        underTest = new WebSocketRoutedSession(serverSession, clientSession, clientHandler, "ws://localhost:8080/petstore");
     }
 
     @Test
@@ -83,6 +85,7 @@ class WebSocketRoutedSessionTest {
 
     @Nested
     class GivenFirstConstructor {
+
         @Test
         void whenFailingToCreateSession_thenThrowException() {
             WebSocketClientFactory webSocketClientFactory = mock(WebSocketClientFactory.class);
@@ -91,7 +94,7 @@ class WebSocketRoutedSessionTest {
             HttpHeaders headers = new WebSocketHttpHeaders();
             headers.add("header", "someHeader");
             when(serverSession.getHandshakeHeaders()).thenReturn(headers);
-            assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory));
+            assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory, successCallback, failureCallback));
 
         }
 
@@ -99,12 +102,13 @@ class WebSocketRoutedSessionTest {
         void whenFailingOnHandshake_thenThrowException() {
             WebSocketClientFactory webSocketClientFactory = mock(WebSocketClientFactory.class);
             when(webSocketClientFactory.getClientInstance("key")).thenThrow(new IllegalStateException());
-            assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory));
+            assertThrows(WebSocketProxyError.class, () -> new WebSocketRoutedSession(serverSession, "", webSocketClientFactory, successCallback, failureCallback));
         }
     }
 
     @Nested
     class GivenWSMessage {
+
         @Test
         void whenAddressNotNull_thenSendMessage() throws IOException {
             when(clientSession.isOpen()).thenReturn(true);
@@ -113,10 +117,12 @@ class WebSocketRoutedSessionTest {
 
             verify(clientSession, times(1)).sendMessage(any());
         }
+
     }
 
     @Nested
     class GivenServerRemoteAddress {
+
         @Test
         void whenAddressNotNull_thenReturnIt() {
             when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
@@ -129,10 +135,12 @@ class WebSocketRoutedSessionTest {
             when(serverSession.getRemoteAddress()).thenReturn(null);
             assertNull((underTest.getServerRemoteAddress()));
         }
+
     }
 
     @Nested
     class GivenCloseCall {
+
         @Test
         void whenClosingSession_thenClose() throws IOException {
             CloseStatus closeStatus = new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode());
@@ -140,5 +148,7 @@ class WebSocketRoutedSessionTest {
             underTest.close(closeStatus);
             verify(clientSession, times(1)).close(closeStatus);
         }
+
     }
+
 }

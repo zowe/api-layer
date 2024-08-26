@@ -18,8 +18,13 @@ import org.springframework.web.socket.WebSocketSession;
 public class WebSocketRoutedSessionFactoryImpl implements WebSocketRoutedSessionFactory {
 
     @Override
-    public WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, WebSocketClientFactory webSocketClientFactory) {
-        return new WebSocketRoutedSession(webSocketSession, targetUrl, webSocketClientFactory);
+    public WebSocketRoutedSession session(
+            WebSocketSession webSocketSession,
+            String targetUrl,
+            WebSocketClientFactory webSocketClientFactory,
+            ClientSessionSuccessCallback successCallback,
+            ClientSessionFailureCallback failureCallback) {
+        return new WebSocketRoutedSession(webSocketSession, targetUrl, webSocketClientFactory, successCallback, failureCallback);
     }
 
 }
