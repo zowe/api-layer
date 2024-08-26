@@ -17,6 +17,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -53,6 +54,7 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
+import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
@@ -114,6 +116,8 @@ public class WebSecurity {
 
     private final TokenProvider tokenProvider;
     private final BasicAuthProvider basicAuthProvider;
+
+    private final ApplicationContext applicationContext;
 
     private Predicate<String> usernameAuthorizationTester;
 
@@ -304,13 +308,17 @@ public class WebSecurity {
     }
 
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
+        var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
         return http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
             )
-            .csrf(ServerHttpSecurity.CsrfSpec::disable);
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(
+                (exchange, ex) -> gatewayExceptionHandler.handleAuthenticationException(exchange, ex))
+            );
     }
 
     @Bean
