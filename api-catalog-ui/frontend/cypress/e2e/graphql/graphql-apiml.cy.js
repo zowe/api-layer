@@ -39,6 +39,7 @@ const PATH_TO_HEADER_INPUT_TEXTAREA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div:nth-child(1) > textarea';
 const PATH_TO_HEADER_DATA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
+const PATH_TO_PLAYGROUND_INPUT_DATA = '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
 
 function login() {
     cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
@@ -119,7 +120,7 @@ describe('>>> GraphiQL Playground page test', () => {
             .type('{del}')
             .type(query, { parseSpecialCharSequences: false });
 
-        cy.get(PATH_TO_QUERY_OUTPUT)
+        cy.get(PATH_TO_PLAYGROUND_INPUT_DATA)
             .then($container => {
                 const text = $container.text().trim();
                 expect(text).to.include('{ "query": "{ hello }" }');

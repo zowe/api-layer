@@ -85,6 +85,15 @@ describe('>>> GraphQL component tests', () => {
         });
     }
 
+    function mockFetcherError() {
+        global.fetch = jest.fn();
+        jest.mock('graphql/utilities', () => ({
+            ...jest.requireActual('graphql/utilities'),
+            buildClientSchema: jest.fn((data) => data),
+        }));
+        global.fetch.mockRejectedValueOnce(new Error('Network Error'));
+    }
+
     it('should render the GraphiQL container', async () => {
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
         expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
@@ -109,7 +118,7 @@ describe('>>> GraphQL component tests', () => {
         );
     });
 
-    test('Fetches and sets schema on mount', async () => {
+    it('Fetches and sets schema on mount', async () => {
         mockFetcher();
 
         render(<GraphQLUI graphqlUrl={graphqlUrl} />);
@@ -123,5 +132,18 @@ describe('>>> GraphQL component tests', () => {
                 })
             );
         });
+    });
+
+    it('should handle fetcher errors and log the error', async () => {
+        mockFetcherError();
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
+
+        await waitFor(() => {
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching data:', new Error('Network Error'));
+        });
+
+        consoleErrorSpy.mockRestore();
     });
 });
