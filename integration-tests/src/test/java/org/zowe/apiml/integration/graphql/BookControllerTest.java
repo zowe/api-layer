@@ -13,6 +13,10 @@ package org.zowe.apiml.integration.graphql;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -30,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @org.zowe.apiml.util.categories.BookControllerTest
 public class BookControllerTest {
 
+    static HttpGraphQlTester tester;
+
     private Book setUpBook() {
 
         return new Book("New Book " + ThreadLocalRandom.current().nextInt(1, 10),
@@ -37,7 +43,8 @@ public class BookControllerTest {
             "dfvdb12");
     }
 
-    static HttpGraphQlTester setUpTester() {
+    @BeforeAll
+    static void setUpTester() {
         String baseUrl = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v3/graphql").toString();
         SslContext sslContext = null;
         try {
@@ -55,12 +62,11 @@ public class BookControllerTest {
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(baseUrl)
                 .build();
-        return HttpGraphQlTester.create(client);
+        tester = HttpGraphQlTester.create(client);
     }
 
     @Test
     public void whenGetAllBooks_thenReturnAllBooks() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         String document = """
         query {
             getAllBooks {
@@ -78,7 +84,6 @@ public class BookControllerTest {
 
     @Test
     public void whenGetAllBooksWithWrongSchema_thenReturnException() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         String document = """
         query {
             getAllBooks {
@@ -99,7 +104,6 @@ public class BookControllerTest {
 
     @Test
     public void whenAddBook_thenReturnAddedBook() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -142,7 +146,6 @@ public class BookControllerTest {
 
     @Test
     public void whenGetBookById_thenReturnMatchingBook() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -177,7 +180,6 @@ public class BookControllerTest {
 
     @Test
     public void whenGetBookByIdWithWrongId_thenBookNotFound() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         String id = "UnexistingId";
         String getBookByIdDocument = String.format("""
         query {
@@ -197,7 +199,6 @@ public class BookControllerTest {
 
     @Test
     public void whenAddBookWithNullParameter_thenReturnException() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -221,7 +222,6 @@ public class BookControllerTest {
 
     @Test
     public void whenUpdateBook_thenReturnUpdatedBook() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -260,7 +260,6 @@ public class BookControllerTest {
 
     @Test
     public void whenUpdateUnknownBook_thenReturnException() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         Book bookToUpdateBook = setUpBook();
         bookToUpdateBook.bookId = "unknown-id";
         String updateBookDocument = String.format("""
@@ -285,7 +284,6 @@ public class BookControllerTest {
 
     @Test
     public void whenDeleteBook_thenReturnDeletedBook() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         // add book which will be later deleted
         Book bookToDelete = setUpBook();
         String addBookDocument = String.format("""
@@ -341,7 +339,6 @@ public class BookControllerTest {
 
     @Test
     public void whenDeleteUnknownBook_thenReturnException() throws SSLException {
-        HttpGraphQlTester tester = setUpTester();
         String unknownId = "unknown-id";
         String deleteBookDocument = String.format("""
          mutation {
@@ -363,32 +360,24 @@ public class BookControllerTest {
         assertNotNull(thrown);
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     static private class Book {
         String bookId;
         String name;
         Integer pageCount;
         String authorId;
-        public Book() {}
-        public Book(String bookId, String name, Integer pageCount) {
-            this.bookId = bookId;
-            this.name = name;
-            this.pageCount = pageCount;
-        }
+
         public Book(String name, Integer pageCount, String authorId) {
             this.name = name;
             this.pageCount = pageCount;
             this.authorId = authorId;
         }
-        public String getBookId() { return bookId; }
-        public void setBookId(String bookId) { this.bookId = bookId; }
-
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-
-        public Integer getPageCount() { return pageCount; }
-        public void setPageCount(Integer pageCount) { this.pageCount = pageCount; }
-
-        public String getAuthorId() { return authorId; }
-        public void setAuthorId(String authorId) { this.authorId = authorId; }
+        public Book(String bookId, String name, Integer pageCount) {
+            this.bookId = bookId;
+            this.name = name;
+            this.pageCount = pageCount;
+        }
     }
 }

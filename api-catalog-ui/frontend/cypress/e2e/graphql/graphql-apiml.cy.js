@@ -17,6 +17,28 @@ const expectedKeyWords = [
     'Hitchhiker\'s Guide to the Galaxy',
     'Down Under'
 ];
+const PATH_TO_SERVICE_DESCRIPTION =
+    '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div > div.header > h6:nth-child(4)';
+const PATH_TO_PLAYGROUND_INPUT_TEXTAREA =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div:nth-child(1) > textarea';
+const PATH_TO_QUERY_OUTPUT =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
+const PATH_TO_DEFAULT_QUERY =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code > div > pre > span > span';
+const PATH_TO_RUN_QUERY_BUTTON =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-toolbar > button';
+const PATH_TO_ADD_TAB_BUTTON =
+    '#graphiql-container > div > div.graphiql-main > div.graphiql-sessions > div.graphiql-session-header > div > button';
+const PATH_TO_REMOVE_SPECIFIC_TAB_BUTTON =
+    '#graphiql-container > div > div.graphiql-main > div.graphiql-sessions > div.graphiql-session-header > ul > li.graphiql-tab.graphiql-tab-active > button.graphiql-un-styled.graphiql-tab-close';
+const PATH_TO_VARIABLES_INPUT_TEXTAREA =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(1) > div > div:nth-child(1) > textarea';
+const PATH_TO_VARIABLE_DATA =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(1) > div';
+const PATH_TO_HEADER_INPUT_TEXTAREA =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div:nth-child(1) > textarea';
+const PATH_TO_HEADER_DATA =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
 
 function login() {
     cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
@@ -64,9 +86,7 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('#version-div').should('not.exist');
 
-        cy.get(
-            '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div > div.header > h6:nth-child(4)'
-        )
+        cy.get(PATH_TO_SERVICE_DESCRIPTION)
             .should('exist')
             .should(
                 'contain',
@@ -84,24 +104,22 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('#graphiql-container').should('exist');
 
-        const textareaSelector = '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div:nth-child(1) > textarea';
+        cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA).should('be.visible');
 
-        cy.get(textareaSelector).should('be.visible');
-
-        cy.get('#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code > div > pre > span > span')
+        cy.get(PATH_TO_DEFAULT_QUERY)
             .should('exist')
             .should('be.visible')
             .and('have.text', '# Write your query here!');
 
         const query = '{ "query": "{ hello }" }';
-        cy.get(textareaSelector)
+        cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA)
             .first()
             .focus()
             .type('{ctrl}a')
             .type('{del}')
             .type(query, { parseSpecialCharSequences: false });
 
-        cy.get('#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code')
+        cy.get(PATH_TO_QUERY_OUTPUT)
             .then($container => {
                 const text = $container.text().trim();
                 expect(text).to.include('{ "query": "{ hello }" }');
@@ -118,20 +136,19 @@ describe('>>> GraphiQL Playground page test', () => {
             'name' +
             ' }'
             ;
-        const textareaSelector = '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div:nth-child(1) > textarea';
 
-        cy.get(textareaSelector)
+        cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA)
             .first()
             .focus()
             .type('{ctrl}a')
             .type('{del}')
             .type(query, { parseSpecialCharSequences: false });
 
-        cy.get('#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-toolbar > button').click();
+        cy.get(PATH_TO_RUN_QUERY_BUTTON).click();
 
         cy.get('span.cm-def').should('contain.text', 'data');
 
-        cy.get('#graphiql-session > div:nth-child(3) > div > section > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code')
+        cy.get(PATH_TO_QUERY_OUTPUT)
             .then($container => {
                 const text = $container.text().trim();
                 expectedKeyWords.forEach(word => {
@@ -145,14 +162,14 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.contains('Discoverable client with GraphQL').click();
 
-        cy.get('#graphiql-container > div > div.graphiql-main > div.graphiql-sessions > div.graphiql-session-header > div > button')
+        cy.get(PATH_TO_ADD_TAB_BUTTON)
             .click()
 
         cy.get('#graphiql-session-tab-1')
             .should('exist')
             .should('contain.text', 'My Query 2');
 
-        cy.get('#graphiql-container > div > div.graphiql-main > div.graphiql-sessions > div.graphiql-session-header > ul > li.graphiql-tab.graphiql-tab-active > button.graphiql-un-styled.graphiql-tab-close')
+        cy.get(PATH_TO_REMOVE_SPECIFIC_TAB_BUTTON)
             .click()
 
         cy.get('#graphiql-session-tab-1')
@@ -218,15 +235,14 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('.graphiql-editor-tool').should('be.visible');
 
-        const textareaSelector = '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(1) > div > div:nth-child(1) > textarea';
         const variable = '{"id" :"book-1"}';
 
-        cy.get(textareaSelector)
+        cy.get(PATH_TO_VARIABLES_INPUT_TEXTAREA)
                 .first()
                 .focus()
                 .type(variable, { parseSpecialCharSequences: false });
 
-        cy.get('#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(1) > div')
+        cy.get(PATH_TO_VARIABLE_DATA)
             .then($container => {
                 const text = $container.text().trim();
                 expect(text).to.include(variable);
@@ -241,15 +257,14 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('.graphiql-editor-tool').should('be.visible');
 
-        const textareaSelector = '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div:nth-child(1) > textarea';
         const header = '{"X-Custom-Header": "CustomValue"}';
 
-        cy.get(textareaSelector)
+        cy.get(PATH_TO_HEADER_INPUT_TEXTAREA)
             .first()
             .focus()
             .type(header, { parseSpecialCharSequences: false });
 
-        cy.get('#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code')
+        cy.get(PATH_TO_HEADER_DATA)
             .then($container => {
                 const text = $container.text().trim();
                 expect(text).to.include(header);
