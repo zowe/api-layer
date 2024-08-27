@@ -316,11 +316,28 @@ class WebSocketProxyServerHandlerTest {
             when(clientSession.isOpen()).thenReturn(true);
             when(internallyStoredSession.isClientConnected()).thenReturn(true);
             when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
-            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
 
             underTest.handleMessage(establishedSession, passedMessage);
 
             verify(internallyStoredSession).sendMessageToServer(passedMessage);
+        }
+
+        @Test
+        void givenClientNotConnected_whenHandleMessage_thenThrowException() {            when(internallyStoredSession.isClientConnected()).thenReturn(false);
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(establishedSession, passedMessage));
+        }
+
+        @Test
+        void givenClientConnectionClosed_whenHandleMessage_thenCloseServerSession() throws IOException {
+            WebSocketSession clientSession = mock(WebSocketSession.class);
+
+            when(clientSession.isOpen()).thenReturn(false);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
+
+            underTest.handleMessage(establishedSession, passedMessage);
+
+            verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
         }
 
         @Test

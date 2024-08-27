@@ -264,6 +264,8 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
                 closeServerSession(null, webSocketSession, webSocketMessage);
             }
             session.sendMessageToServer(webSocketMessage);
+        } catch (ServerNotYetAvailableException e) {
+            throw e;
         } catch (Exception ex) {
             log.debug("Error sending WebSocket message. Closing session due to exception:", ex);
             close(webSocketSession, CloseStatus.SESSION_NOT_RELIABLE);
