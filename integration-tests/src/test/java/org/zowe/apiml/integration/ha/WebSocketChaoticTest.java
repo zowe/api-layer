@@ -155,8 +155,6 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                         // take off an instance of Gateway
                         haGatewayRequests.shutdown(0);
 
-                        Thread.sleep(10 * 1000);
-
                         // create websocket session using the second alive instance of Gateway
                         session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
 
