@@ -13,9 +13,9 @@ package org.zowe.apiml.gateway.filters;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -42,23 +42,16 @@ class ForbidEncodedSlashesFilterFactoryTest {
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded%2fslash";
     private static final String NORMAL_REQUEST_URI = "/api/v1/normal";
     private final ObjectMapper objectMapperError = spy(new ObjectMapper());
-    private ForbidEncodedSlashesFilterFactory filter;
-
-    @BeforeEach
-    void setUp() {
-        MessageService messageService = mock(MessageService.class);
-        doReturn(mock(Message.class)).when(messageService).createMessage(any(), (Object[]) any());
-        filter = new ForbidEncodedSlashesFilterFactory(
-            messageService, objectMapperError, mock(LocaleContextResolver.class)
-        );
-    }
 
     @Nested
     @TestPropertySource(properties = "apiml.service.allowEncodedSlashes=false")
     class Responses {
 
+        @Autowired
+        ForbidEncodedSlashesFilterFactory filter;
+
         @Test
-        void whenUrlDoesNotContainEncodedCharacters() {
+        void givenNormalRequestUri_whenFilterApply_thenSuccess() {
             MockServerHttpRequest request = MockServerHttpRequest
                 .get(NORMAL_REQUEST_URI)
                 .build();
@@ -73,7 +66,7 @@ class ForbidEncodedSlashesFilterFactoryTest {
         }
 
         @Test
-        void whenUrlContainsEncodedCharacters() throws JsonProcessingException, URISyntaxException {
+        void givenRequestUriWithEncodedSlashes_whenFilterApply_thenReturnBadRequest() throws JsonProcessingException, URISyntaxException {
             MockServerHttpRequest request = MockServerHttpRequest
                 .method(HttpMethod.GET, new URI(ENCODED_REQUEST_URI))
                 .build();
@@ -93,7 +86,13 @@ class ForbidEncodedSlashesFilterFactoryTest {
     class Errors {
 
         @Test
-        void whenJsonProcessorThrowsAnException() throws JsonProcessingException, URISyntaxException {
+        void givenRequestUriWithEncodedCharacters_whenJsonProcessorThrowsAnException_thenThrownRuntimeException() throws JsonProcessingException, URISyntaxException {
+            MessageService messageService = mock(MessageService.class);
+            doReturn(mock(Message.class)).when(messageService).createMessage(any(), (Object[]) any());
+            ForbidEncodedSlashesFilterFactory filter = new ForbidEncodedSlashesFilterFactory(
+                messageService, objectMapperError, mock(LocaleContextResolver.class)
+            );
+
             MockServerHttpRequest request = MockServerHttpRequest
                     .method(HttpMethod.GET, new URI(ENCODED_REQUEST_URI))
                     .build();
