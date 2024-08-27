@@ -303,6 +303,7 @@ task runContainerTests(type: Test) {
 task runBaseTests(type: Test) {
     group "integration tests"
     description "Run base tests"
+    systemProperty "environment.offPlatform", "true"
 
     outputs.cacheIf { false }
 
