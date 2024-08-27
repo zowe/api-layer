@@ -26,11 +26,13 @@ import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
@@ -154,6 +156,8 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                         HAGatewayRequests haGatewayRequests = new HAGatewayRequests("https");
                         // take off an instance of Gateway
                         haGatewayRequests.shutdown(0);
+
+                        await().during(Duration.ofSeconds(5));
 
                         // create websocket session using the second alive instance of Gateway
                         session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
