@@ -146,6 +146,11 @@ if [ $JAVA_VERSION -ge 61 ]; then
     fi
 fi
 
+LOGBACK=""
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
+
 METRICS_CODE=MS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
@@ -153,6 +158,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -XX:+ExitOnOutOfMemoryError \
    ${QUICK_START} \
    ${ADD_OPENS} \
+   ${LOGBACK} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \

@@ -73,6 +73,12 @@ public class MetadataBuilder {
         return this;
     }
 
+    public MetadataBuilder withZoweJwt() {
+        metadata.put("apiml.authentication.scheme", "zoweJwt");
+
+        return this;
+    }
+
     public MetadataBuilder withCompression(boolean compressionEnabled) {
         metadata.put("apiml.response.compress", String.valueOf(compressionEnabled));
 
