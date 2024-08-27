@@ -16,6 +16,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.zowe.apiml.message.core.MessageService;
 
+/**
+ * This filter should run on all requests for services, which do not have enabled encoded characters in URL
+ * <p>
+ * Special characters encoding is enabled on Tomcat so this filter takes over responsibility
+ * for filtering them.
+ * Encoded characters in URL are allowed by default.
+ */
+
 @Component
 public class ForbidEncodedCharactersFilterFactory extends AbstractEncodedCharactersFilterFactory {
 
