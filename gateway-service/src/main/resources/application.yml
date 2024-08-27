@@ -79,6 +79,7 @@ apiml:
         timeToLive: 10000
     routing:
         instanceIdHeader: false
+        ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
     service:
         apimlId: apiml1
         corsEnabled: true
@@ -113,13 +114,6 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
-
-    cloud:
-        gateway:
-            discovery:
-                locator:
-                    enabled: false
-                    lowerCaseServiceId: true
     application:
         name: gateway
     main:
