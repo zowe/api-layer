@@ -135,7 +135,7 @@ class WebSocketRoutedSessionTest {
         }
 
         @Test
-        void whenClientNotConnected_throwNotAvailable() throws IOException {
+        void whenClientNotConnected_throwNotAvailable() {
             when(clientSession.isOpen()).thenReturn(false);
 
             assertThrows(ServerNotYetAvailableException.class, () -> underTest.sendMessageToServer(mock(WebSocketMessage.class)));

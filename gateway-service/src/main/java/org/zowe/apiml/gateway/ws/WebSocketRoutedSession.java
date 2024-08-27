@@ -109,7 +109,7 @@ public class WebSocketRoutedSession {
             URI targetURI = new URI(targetUrl);
             WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
             client.doHandshake(clientHandler, headers, targetURI)
-                .addCallback(clientSession -> this.onSuccess(webSocketServerSession, clientSession), e -> this.onFailure(webSocketServerSession, e));
+                .addCallback(obtainedSession -> this.onSuccess(webSocketServerSession, obtainedSession), e -> this.onFailure(webSocketServerSession, e));
         } catch (IllegalStateException e) {
             throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
         } catch (Exception e) {

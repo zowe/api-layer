@@ -234,7 +234,8 @@ class WebSocketProxyServerHandlerTest {
         @Test
         void whenHandleMessage_thenThrowNotAvailable() {
             assumeTrue(underTest.getRoutedSessions().isEmpty());
-            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(session, new TextMessage("null")));
+            WebSocketMessage<String> message = new TextMessage("null");
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(session, message));
         }
 
         @Test
