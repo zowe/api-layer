@@ -230,10 +230,6 @@ task runZaasTest(dependsOn: ":integration-tests:runZaasTest") {
     group "Integration tests"
 }
 
-task runBaseTestsInternalPort(dependsOn: ":integration-tests:runBaseTestsInternalPort") {
-    description "Run base tests on internal port"
-    group "Integration tests"
-}
 task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTests") {
     description "Run caching service tests"
     group "Integration tests"

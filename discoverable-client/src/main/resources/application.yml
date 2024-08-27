@@ -12,6 +12,7 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.springframework.web.socket.adapter: DEBUG
 
 spring:
     cloud:
@@ -160,7 +161,7 @@ server:
         mime-types: image/png
         enabled: true
         min-response-size: 500
-
+    max-http-request-header-size: 65536
 management:
     endpoints:
         migrate-legacy-ids: true

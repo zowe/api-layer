@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.config;
 
+import org.apache.tomcat.websocket.WsWebSocketContainer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,10 +23,22 @@ import org.zowe.apiml.gateway.websocket.ApimlWebSocketClient;
 @Configuration
 public class WebSocketConfig {
 
+    @Value("${server.webSocket.requestBufferSize:8192}")
+    private int bufferSize;
+    @Value("${server.webSocket.asyncWriteTimeout:60000}")
+    private long sendTimeout;
+    @Value("${server.webSocket.maxIdleTimeout:3600000}")
+    private long idleTimeout;
+
     @Bean
     @Primary
     public WebSocketClient tomcatWebSocketClient() {
-        return new ApimlWebSocketClient();
+        var wsContainer = new WsWebSocketContainer();
+        wsContainer.setDefaultMaxTextMessageBufferSize(bufferSize);
+        wsContainer.setDefaultMaxBinaryMessageBufferSize(bufferSize);
+        wsContainer.setAsyncSendTimeout(sendTimeout);
+        wsContainer.setDefaultMaxSessionIdleTimeout(idleTimeout);
+        return new ApimlWebSocketClient(wsContainer);
     }
 
     @Bean
