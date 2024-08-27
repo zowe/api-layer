@@ -91,11 +91,6 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
         private WebSocketSession session;
 
-        @BeforeEach
-        void setUp() {
-
-        }
-
         @AfterEach
         void tearDown() throws IOException {
             if (session != null) {
@@ -149,6 +144,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                  * TODO: Introduce HA capabailities for the WebSocket connections.
                  */
                 @Nested
+                @Order(3)
                 class WhenAGatewayInstanceIsOff {
 
                     @Test
