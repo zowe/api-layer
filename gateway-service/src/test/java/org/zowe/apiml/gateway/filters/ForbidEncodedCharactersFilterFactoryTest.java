@@ -16,14 +16,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.i18n.LocaleContextResolver;
-import org.zowe.apiml.gateway.config.UrlTomcatCustomizer;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -41,8 +38,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-@SpringBootTest
-@Import(value = UrlTomcatCustomizer.class)
 public class ForbidEncodedCharactersFilterFactoryTest {
 
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded;ch%25rs";
