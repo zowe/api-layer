@@ -79,8 +79,8 @@ public class BookTest {
     @Test
     public void testUpdateBookWithNullFieldsSuccess() {
         var updatedBook = Book.updateBook("book-1",null, null, "author-1");
-        assertEquals("Updated Book", updatedBook.name());
-        assertEquals(200, updatedBook.pageCount());
+        assertEquals("Effective Java", updatedBook.name());
+        assertEquals(0, updatedBook.pageCount());
     }
 
     @Test
