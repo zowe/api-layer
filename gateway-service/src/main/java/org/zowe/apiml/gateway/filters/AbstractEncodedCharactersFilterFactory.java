@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.filters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -30,34 +32,27 @@ import reactor.core.publisher.Flux;
 import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AbstractEncodedCharactersFilterFactory extends AbstractGatewayFilterFactory<Object> {
 
-    private final String messageKey;
     private final MessageService messageService;
     private final ObjectMapper mapper;
     private final LocaleContextResolver localeContextResolver;
+    private final String messageKey;
     private final WebSessionManager sessionManager = new DefaultWebSessionManager();
     private final ServerCodecConfigurer serverCodecConfigurer = ServerCodecConfigurer.create();
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-
-    protected AbstractEncodedCharactersFilterFactory(MessageService messageService, ObjectMapper mapper, LocaleContextResolver localeContextResolver, String messageKey) {
-        this.messageService = messageService;
-        this.mapper = mapper;
-        this.localeContextResolver = localeContextResolver;
-        this.messageKey = messageKey;
-    }
-
     protected abstract boolean shouldFilter(String uri);
 
     /**
-     * Filters requests to check for encoded slashes in the URI.
-     * If encoded slashes are not allowed and found, returns a BAD_REQUEST response.
+     * Filters requests by checking for encoded characters in the URI.
+     * If encoded characters are not allowed and found, returns a BAD_REQUEST response.
      * Otherwise, proceeds with the filter chain.
      *
-     * @return Allowed Encoded slashes filter.
+     * @return GatewayFilter
      */
     @Override
     public GatewayFilter apply(Object routeId) {

@@ -27,7 +27,7 @@ import org.zowe.apiml.message.core.MessageService;
 @Component
 public class ForbidEncodedCharactersFilterFactory extends AbstractEncodedCharactersFilterFactory {
 
-    private static final String[] PROHIBITED_CHARACTERS = {"%", ";", "\\"};
+    private static final char[] PROHIBITED_CHARACTERS = {'%', ';', '\\'};
 
     public ForbidEncodedCharactersFilterFactory(MessageService messageService, ObjectMapper mapper, LocaleContextResolver localeContextResolver) {
         super(messageService, mapper, localeContextResolver, "org.zowe.apiml.gateway.requestContainEncodedCharacter");
