@@ -38,7 +38,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-public class ForbidEncodedCharactersFilterFactoryTest {
+class ForbidEncodedCharactersFilterFactoryTest {
 
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded;ch%25rs";
     private static final String ENCODED_REQUEST_URI_WITH_BACKSLASH = "/api/v1/enc\\oded;ch%25rs";
