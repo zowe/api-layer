@@ -217,7 +217,7 @@ describe('>>> GraphiQL Playground page test', () => {
             .should('contain', 'Short Keys');
     });
 
-    it('Should open the short keys dialog', () => {
+    it('Should open the settings keys dialog', () => {
         login()
         cy.contains('Discoverable client with GraphQL').click();
 
