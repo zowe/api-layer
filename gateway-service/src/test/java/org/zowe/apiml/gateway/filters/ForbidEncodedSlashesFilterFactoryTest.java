@@ -21,6 +21,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.server.i18n.LocaleContextResolver;
+import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -83,9 +84,8 @@ class ForbidEncodedSlashesFilterFactoryTest {
             MessageService messageService = mock(MessageService.class);
             doReturn(mock(Message.class)).when(messageService).createMessage(any(), (Object[]) any());
             ObjectMapper objectMapperError = spy(objectMapper);
-            ForbidEncodedSlashesFilterFactory filter = new ForbidEncodedSlashesFilterFactory(
-                messageService, objectMapperError, mock(LocaleContextResolver.class)
-            );
+            GatewayExceptionHandler gatewayExceptionHandler = new GatewayExceptionHandler(objectMapperError, messageService, mock(LocaleContextResolver.class));
+            ForbidEncodedSlashesFilterFactory filter = new ForbidEncodedSlashesFilterFactory(gatewayExceptionHandler);
 
             MockServerHttpRequest request = MockServerHttpRequest
                     .get(ENCODED_REQUEST_URI)

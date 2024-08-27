@@ -30,7 +30,6 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
-import org.zowe.apiml.gateway.service.ZaasServiceIsNotAvailableException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -91,38 +90,38 @@ public class GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.common.badRequest");
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public Mono<Void> handleAuthenticationException(ServerWebExchange exchange, AuthenticationException ex) {
+    @ExceptionHandler({AuthenticationException.class, WebClientResponseException.Unauthorized.class})
+    public Mono<Void> handleAuthenticationException(ServerWebExchange exchange, Exception ex) {
         log.debug("Unauthorized access on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         setWwwAuthenticateResponse(exchange);
         return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.common.unauthorized");
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public Mono<Void> handleAccessDeniedException(ServerWebExchange exchange, AccessDeniedException ex) {
+    @ExceptionHandler({AccessDeniedException.class, WebClientResponseException.Forbidden.class})
+    public Mono<Void> handleAccessDeniedException(ServerWebExchange exchange, Exception ex) {
         log.debug("Unauthenticated access on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_FORBIDDEN, "org.zowe.apiml.security.forbidden");
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public Mono<Void> handleNoResourceFoundException(ServerWebExchange exchange, NoResourceFoundException ex) {
+    @ExceptionHandler({NoResourceFoundException.class, WebClientResponseException.NotFound.class})
+    public Mono<Void> handleNoResourceFoundException(ServerWebExchange exchange, Exception ex) {
         log.debug("Resource {} not found: {}", exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_NOT_FOUND, "org.zowe.apiml.security.notFound");
+        return setBodyResponse(exchange, SC_NOT_FOUND, "org.zowe.apiml.common.notFound");
     }
 
-    @ExceptionHandler(MethodNotAllowedException.class)
-    public Mono<Void> handleMethodNotAllowedException(ServerWebExchange exchange, MethodNotAllowedException ex) {
+    @ExceptionHandler({MethodNotAllowedException.class, WebClientResponseException.MethodNotAllowed.class})
+    public Mono<Void> handleMethodNotAllowedException(ServerWebExchange exchange, Exception ex) {
         log.debug("Method not allowed on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_METHOD_NOT_ALLOWED, "org.zowe.apiml.common.methodNotAllowed");
     }
 
-    @ExceptionHandler(HttpMediaTypeException.class)
-    public Mono<Void> handleHttpMediaTypeException(ServerWebExchange exchange, HttpMediaTypeException ex) {
+    @ExceptionHandler({HttpMediaTypeException.class, WebClientResponseException.UnsupportedMediaType.class})
+    public Mono<Void> handleHttpMediaTypeException(ServerWebExchange exchange, Exception ex) {
         log.debug("Invalid media type on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_UNSUPPORTED_MEDIA_TYPE, "org.zowe.apiml.common.unsupportedMediaType");
     }
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler({Exception.class})
     public Mono<Void> handleInternalError(ServerWebExchange exchange, Exception ex) {
         if (log.isDebugEnabled()) {
             log.debug("Unhandled internal error on {}", ex, exchange.getRequest().getURI());
@@ -132,10 +131,10 @@ public class GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
     }
 
-    @ExceptionHandler(ServiceNotAccessibleException.class)
-    public Mono<Void> handleServiceNotAccessibleException(ServerWebExchange exchange, ZaasServiceIsNotAvailableException ex) {
+    @ExceptionHandler({ServiceNotAccessibleException.class, WebClientResponseException.ServiceUnavailable.class})
+    public Mono<Void> handleServiceNotAccessibleException(ServerWebExchange exchange, Exception ex) {
         log.debug("A service is not available at the moment to finish request {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_UNSUPPORTED_MEDIA_TYPE, "org.zowe.apiml.common.serviceUnavailable");
+        return setBodyResponse(exchange, SC_SERVICE_UNAVAILABLE, "org.zowe.apiml.common.serviceUnavailable");
     }
 
 }
