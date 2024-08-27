@@ -6,16 +6,6 @@
         <option name="name" value="spring.config.additional-location" />
         <option name="value" value="file:./config/local/gateway-service.yml" />
       </param>
-      <param>
-        <option name="enabled" value="true" />
-        <option name="name" value="spring.profiles.include" />
-        <option name="value" value="debug" />
-      </param>
-      <param>
-        <option name="enabled" value="true" />
-        <option name="name" value="org.apache.tomcat.websocket.READ_IDLE_TIMEOUT_MS" />
-        <option name="value" value="9998" />
-      </param>
     </additionalParameters>
     <module name="api-layer.gateway-service.main" />
     <option name="SHORTEN_COMMAND_LINE" value="ARGS_FILE" />

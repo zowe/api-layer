@@ -118,7 +118,6 @@ server:
         name: gateway
     main:
         allow-circular-references: true
-    max-http-request-header-size: 10000000
 
 logbackServiceName: ZWEAGW1
 

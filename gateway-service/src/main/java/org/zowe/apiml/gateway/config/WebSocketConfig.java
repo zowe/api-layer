@@ -23,7 +23,7 @@ import org.zowe.apiml.gateway.websocket.ApimlWebSocketClient;
 @Configuration
 public class WebSocketConfig {
 
-    @Value("${server.webSocket.requestBufferSize:16000000}")
+    @Value("${server.webSocket.requestBufferSize:8192}")
     private int bufferSize;
     @Value("${server.webSocket.asyncWriteTimeout:60000}")
     private long sendTimeout;
