@@ -272,9 +272,6 @@ public class HttpsFactory {
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
 
-            if (config.isVerifySslCertificatesOfServices()) {
-                setSystemSslProperties();
-            }
             builder.withCustomSSL(getSslContext());
 
             builder.withHostnameVerifier(getHostnameVerifier());

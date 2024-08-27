@@ -172,10 +172,7 @@ public class HttpConfig {
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
 
-            factory.setSystemSslProperties();
-
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-
         } catch (HttpsConfigError e) {
             log.error("Invalid configuration of HTTPs: {}", e.getMessage());
             System.exit(1);
