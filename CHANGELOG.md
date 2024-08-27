@@ -2,6 +2,15 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 2.18.1 / Zowe 2.18.0 (2024-08-26)`
+
+* Feature:  Validation of OIDC token via user info endpoint (#3670) ([9fc5976](https://github.com/zowe/api-layer/commit/9fc5976)), closes [#3670](https://github.com/zowe/api-layer/issues/3670)
+* Feature:  Customizable path to Logback configuration (#3669) ([1febddc](https://[https://github.com/zowe/api-layer/commit/1febddc)), closes [#3669](https://github.com/zowe/api-layer/issues/3669)
+
+* Bugfix:  Added the optional authentication requirement for `application/health` endpoints (#3636) ([b41b071](https://github.com/zowe/api-layer/commit/b41b071)), closes [#3636](https://github.com/zowe/api-layer/issues/3636)
+* Bugfix:  Support customized code snippets for endpoints with query parameters (#3665) ([5e024f4](https://github.com/zowe/api-layer/commit/5e024f4)), closes [#3665](https://github.com/zowe/api-layer/issues/3665)
+
+
 ## `APIML 2.17.2 / Zowe 2.17.0 (2024-07-18)`
 
 * Feature:  Cloud gateway support for AT-TLS (#3564) ([084f9b4](https://github.com/zowe/api-layer/commit/084f9b4)), closes [#3564](https://github.com/zowe/api-layer/issues/3564)
