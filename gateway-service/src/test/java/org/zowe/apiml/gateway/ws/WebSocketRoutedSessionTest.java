@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
@@ -26,13 +27,16 @@ import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -78,6 +82,18 @@ class WebSocketRoutedSessionTest {
     }
 
     @Test
+    void givenNoClientSession_whenGetClientId_thenThrowException() {
+        ReflectionTestUtils.setField(underTest, "clientSession", new AtomicReference<>());
+        assertThrows(ServerNotYetAvailableException.class, () -> underTest.getClientId());
+    }
+
+    @Test
+    void givenClientSessionNotConnected_whenGetClientId_thenNull() {
+        when(clientSession.isOpen()).thenReturn(false);
+        assertNull(underTest.getClientId());
+    }
+
+    @Test
     void givenBrokenServerSession_whenUriIsRequested_NullIsReturned() {
         when(serverSession.getUri()).thenReturn(null);
         assertThat(underTest.getServerUri(), is(nullValue()));
@@ -116,6 +132,22 @@ class WebSocketRoutedSessionTest {
             underTest.sendMessageToServer(mock(WebSocketMessage.class));
 
             verify(clientSession, times(1)).sendMessage(any());
+        }
+
+        @Test
+        void whenClientNotConnected_throwNotAvailable() throws IOException {
+            when(clientSession.isOpen()).thenReturn(false);
+
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.sendMessageToServer(mock(WebSocketMessage.class)));
+        }
+
+        @Test
+        void whenClientConnectedAndException_thenThrowIt() throws IOException {
+            when(clientSession.isOpen()).thenReturn(true);
+            Exception e = new IOException("message");
+            doThrow(e).when(clientSession).sendMessage(any());
+
+            assertThrowsExactly(IOException.class, () -> underTest.sendMessageToServer(mock(WebSocketMessage.class)), "message");
         }
 
     }

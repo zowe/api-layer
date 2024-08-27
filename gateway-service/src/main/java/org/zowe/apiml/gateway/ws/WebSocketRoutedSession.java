@@ -132,9 +132,11 @@ public class WebSocketRoutedSession {
                 clientSession.get().sendMessage(webSocketMessage);
             } catch (IOException e) {
                 log.debug("Failed sending message: {}", webSocketMessage, e);
+                throw e;
             }
         } else {
             log.debug("Tried to send a WebSocket message in a non-established client session.");
+            throw new ServerNotYetAvailableException();
         }
     }
 
