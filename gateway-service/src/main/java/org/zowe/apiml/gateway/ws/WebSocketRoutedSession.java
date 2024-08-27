@@ -139,7 +139,7 @@ public class WebSocketRoutedSession {
     }
 
     public boolean isClientConnected() {
-        return clientSession != null && clientSession.get().isOpen();
+        return clientSession.get() != null && clientSession.get().isOpen();
     }
 
     public void close(CloseStatus status) throws IOException {
@@ -182,7 +182,7 @@ public class WebSocketRoutedSession {
      * @throws ServerNotYetAvailableException If a client session is not established
      */
     public String getClientId() {
-        if (clientSession == null) {
+        if (clientSession.get() == null) {
             throw new ServerNotYetAvailableException();
         }
         if (isClientConnected()) {
