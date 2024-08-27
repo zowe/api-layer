@@ -77,6 +77,13 @@ public class BookTest {
     }
 
     @Test
+    public void testUpdateBookWithNullFieldsSuccess() {
+        var updatedBook = Book.updateBook("book-1",null, null, "author-1");
+        assertEquals("Updated Book", updatedBook.name());
+        assertEquals(200, updatedBook.pageCount());
+    }
+
+    @Test
     public void testUpdateBookNotFound() {
         assertThrows(BookNotFoundException.class, () -> {
             Book.updateBook("non-existent-id", "Updated Book", 200, "author-1");
