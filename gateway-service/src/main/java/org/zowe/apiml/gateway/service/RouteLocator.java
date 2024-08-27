@@ -139,10 +139,10 @@ public class RouteLocator implements RouteDefinitionLocator {
             forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
             serviceRelated.add(forwardClientCertFilter);
         }
-
+        //Allow encoded characters by default
         if (!Optional.ofNullable(serviceInstance.getMetadata().get(ENABLE_URL_ENCODED_CHARACTERS))
             .map(Boolean::parseBoolean)
-            .orElse(false)) {
+            .orElse(true)) {
             FilterDefinition forbidEncodedCharactersFilter = new FilterDefinition();
             forbidEncodedCharactersFilter.setName("ForbidEncodedCharactersFilterFactory");
             serviceRelated.add(forbidEncodedCharactersFilter);
