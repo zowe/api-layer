@@ -85,14 +85,14 @@ describe('>>> GraphQL component tests', () => {
         });
     }
 
-    function mockFetcherError() {
-        global.fetch = jest.fn();
-        jest.mock('graphql/utilities', () => ({
-            ...jest.requireActual('graphql/utilities'),
-            buildClientSchema: jest.fn((data) => data),
-        }));
-        global.fetch.mockRejectedValueOnce(new Error('Network Error'));
-    }
+    // function mockFetcherError() {
+    //     global.fetch = jest.fn();
+    //     jest.mock('graphql/utilities', () => ({
+    //         ...jest.requireActual('graphql/utilities'),
+    //         buildClientSchema: jest.fn((data) => data),
+    //     }));
+    //     global.fetch.mockRejectedValueOnce(new Error('Network Error'));
+    // }
 
     it('should render the GraphiQL container', async () => {
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
@@ -134,16 +134,32 @@ describe('>>> GraphQL component tests', () => {
         });
     });
 
-    it('should handle fetcher errors and log the error', async () => {
-        mockFetcherError();
+    it('should handle fetch failure and log error', async () => {
+        // Mocking fetch to reject with an error
+        global.fetch = jest.fn().mockRejectedValue(new Error('Network Error'));
+
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching data:', expect.any(Error));
+        expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
+        consoleErrorSpy.mockRestore();
+    });
 
-        await waitFor(() => {
-            expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching data:', new Error('Network Error'));
+    it('should handle error while parsing response as JSON', async () => {
+        // Mocking fetch to return a non-JSON response
+        global.fetch = jest.fn().mockResolvedValue({
+            json: async () => {
+                throw new Error('Invalid JSON');
+            },
+            text: async () => 'Non-JSON response',
+            clone() {
+                return this;
+            },
         });
 
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to load GraphQL schema');
         consoleErrorSpy.mockRestore();
     });
 });
