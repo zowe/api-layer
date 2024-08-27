@@ -70,7 +70,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     @Autowired
     public WebSocketProxyServerHandler(WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient, ApplicationContext context) {
         this.webSocketClientFactory = webSocketClientFactory;
-        this.routedSessions = new ConcurrentHashMap<>();  // Default
+        this.routedSessions = new ConcurrentHashMap<>();
         this.webSocketRoutedSessionFactory = new WebSocketRoutedSessionFactoryImpl();
         this.lbCLient = lbCLient;
         this.context = context;
@@ -149,7 +149,11 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         }
     }
 
-    @Retryable(value = WebSocketProxyError.class, backoff = @Backoff(value = 1000))
+    @Retryable(
+        value = WebSocketProxyError.class,
+        backoff = @Backoff(value = 1000, multiplier = 2),
+        maxAttempts = 3
+    )
     void openConn(String serviceId, RoutedService service, WebSocketSession webSocketSession, String path) throws IOException {
         ServiceInstance serviceInstance = this.lbCLient.choose(serviceId);
         if (serviceInstance != null) {
@@ -290,6 +294,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         try {
             routedSession.getClientHandler().handleMessage(serverSession, new TextMessage("Failed opening a session against " + routedSession.getTargetUrl() + ": " + throwable.getMessage()));
             serverSession.close(CloseStatus.SERVER_ERROR);
+            routedSessions.remove(serverSession.getId());
         } catch (Exception e) {
             log.debug("Failed sending / closing WebSocket session", e);
         }
