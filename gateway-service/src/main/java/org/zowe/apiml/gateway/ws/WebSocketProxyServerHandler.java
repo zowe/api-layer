@@ -195,6 +195,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         // if the browser closes the session, close the GWs client one as well.
+        log.debug("Server session closed from client with status {}", status);
         Optional.ofNullable(routedSessions.get(session.getId()))
             .filter(WebSocketRoutedSession::isClientConnected)
             .map(WebSocketRoutedSession::getClientSession)

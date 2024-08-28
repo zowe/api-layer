@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.integration.ha;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -46,6 +47,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
  */
 @ChaoticHATest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Slf4j
 class WebSocketChaoticTest implements TestWithStartedInstances {
     private final HAGatewayRequests gatewaysWsRequests = new HAGatewayRequests("wss");
     private final HADiscoverableClientRequests haDiscoverableClientRequests = new HADiscoverableClientRequests();
@@ -166,12 +168,18 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                             .atMost(20, TimeUnit.SECONDS)
                             .until(() -> {
                                 // create websocket session using the second alive instance of Gateway
-                                session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
+                                URI gatewayUrl = gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE);
+
+                                log.error("trying with gatewayUrl: {}", gatewayUrl);
+
+                                session = appendingWebSocketSession(gatewayUrl, VALID_AUTH_HEADERS, response, 1);
 
                                 session.sendMessage(new TextMessage("hello world 2!"));
                                 synchronized (response) {
                                     response.wait(WAIT_TIMEOUT_MS);
                                 }
+
+                                log.error("Obtained response from {}: {}", gatewayUrl, response.toString());
 
                                 if (response.toString().equals("HELLO WORLD 2!")) {
                                     return true;
