@@ -5,7 +5,7 @@ module.exports = {
     dependencyDashboard: true,
     packageRules: [
         {
-            //for v.2.x.x branch ignore grouping from extends preset, find all packages which are patches,
+            //for v2.x.x branch ignore grouping from extends preset, find all packages which are patches,
             // slug them and make PR with name "all patch dependencies"
             "matchBaseBranches": ["v2.x.x"],
             "groupName": "all patch dependencies",
