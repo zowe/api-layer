@@ -29,7 +29,7 @@ module.exports = {
             "matchUpdateTypes": ["minor", "patch"]
         },
         {
-            //for v.3.x.x make dashboard approval to all major dependencies updates
+            //for v3.x.x make dashboard approval to all major dependencies updates
             "matchBaseBranches": ["v3.x.x-renovate"],
             "matchUpdateTypes": ["major"],
             "dependencyDashboardApproval": true,
