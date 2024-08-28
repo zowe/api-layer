@@ -31,6 +31,10 @@ export const defaultSpring = {
             value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
             hide: true,
         },
+        graphqlUrl: {
+            value: '${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}',
+            hide: true,
+        },
     },
     SSL: { protocol: { value: 'TLSv1.2', hide: true } },
 };

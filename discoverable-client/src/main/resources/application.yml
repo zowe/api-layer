@@ -30,6 +30,11 @@ spring:
     profiles.group:
         dev: diag
 
+    graphql:
+        graphiql:
+            enabled: true
+        path:  "/api/v3/graphql"
+
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -69,8 +74,8 @@ apiml:
                 service-url: ${apiml.service.contextPath}/ws
             -   gateway-url: "/sse/v1"
                 service-url: ${apiml.service.contextPath}/
-            -   gateway-url: "/graphql/v1"
-                service-url: ${apiml.service.contextPath}/
+            -   gateway-url: "/api/v3"
+                service-url: ${apiml.service.contextPath}/api/v3
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 1.0.0
@@ -213,3 +218,4 @@ apiml:
 server:
     ssl:
         enabled: false
+
