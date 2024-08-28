@@ -88,7 +88,7 @@ class ApiDocV3ServiceTest {
                 RoutedServices routedServices = new RoutedServices();
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null,  "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
                 String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -136,7 +136,7 @@ class ApiDocV3ServiceTest {
                 RoutedServices routedServices = new RoutedServices();
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
                 String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -175,7 +175,7 @@ class ApiDocV3ServiceTest {
             @Test
             void givenEmptyJson() {
                 String invalidJson = "";
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null,  "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
@@ -187,7 +187,7 @@ class ApiDocV3ServiceTest {
                 String invalidJson = "nonsense";
                 String error = "[Cannot construct instance of `java.util.LinkedHashMap` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('nonsense')\n" +
                     " at [Source: UNKNOWN; byte offset: #UNKNOWN]]";
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
@@ -200,7 +200,7 @@ class ApiDocV3ServiceTest {
          */
         @Test
         void givenValidApiDoc_thenDontCapitalizeEnums() {
-            ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+            ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
             String content = "{\"openapi\":\"3.0.1\",\"info\":{\"title\":\"ZoweKotlinSampleRESTAPI\",\"description\":\"SampleKotlinSpringBootRESTAPIforZowe.\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"https://localhost:10090\",\"description\":\"Generatedserverurl\"}],\"paths\":{\"/api/v1/greeting\":{\"get\":{\"tags\":[\"Greeting\"],\"summary\":\"Returnsagreetingforthenamepassed\",\"operationId\":\"getGreeting\",\"parameters\":[{\"name\":\"name\",\"in\":\"query\",\"description\":\"Personorobjecttobegreeted\",\"required\":false,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"Successfulgreeting\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Greeting\"}}}},\"404\":{\"description\":\"Notfound\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ApiMessage\"}}}}}}}},\"components\":{\"schemas\":{\"Greeting\":{\"required\":[\"content\",\"id\",\"languageTag\"],\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"description\":\"GeneratedsequenceIDofthemessage\",\"format\":\"int64\"},\"content\":{\"type\":\"string\",\"description\":\"Thegreetingmessage\"},\"languageTag\":{\"type\":\"string\",\"description\":\"Thelocalelanguagetagusedforthismessage\"}}},\"ApiMessage\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/Message\"}}}},\"Message\":{\"type\":\"object\",\"properties\":{\"messageType\":{\"type\":\"string\",\"enum\":[\"ERROR\",\"WARNING\",\"INFO\",\"DEBUG\",\"TRACE\"]},\"messageNumber\":{\"type\":\"string\"},\"messageContent\":{\"type\":\"string\"},\"messageAction\":{\"type\":\"string\"},\"messageReason\":{\"type\":\"string\"},\"messageKey\":{\"type\":\"string\"},\"messageParameters\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"messageInstanceId\":{\"type\":\"string\"},\"messageComponent\":{\"type\":\"string\"},\"messageSource\":{\"type\":\"string\"}}}}}}";
             RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
 

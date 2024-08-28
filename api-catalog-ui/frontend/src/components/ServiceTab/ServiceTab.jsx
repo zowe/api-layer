@@ -12,6 +12,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
+import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 
 export default class ServiceTab extends Component {
@@ -137,6 +138,14 @@ export default class ServiceTab extends Component {
         this.setState({ isDialogOpen: false, selectedVersion: null });
     };
 
+    getGraphqlUrl = (apis) => {
+        if (!apis || typeof apis !== 'object') {
+            return null;
+        }
+        const apiKey = Object.keys(apis).find((key) => apis[key] && apis[key].graphqlUrl);
+        return apiKey ? apis[apiKey].graphqlUrl : null;
+    };
+
     render() {
         const {
             match: {
@@ -154,6 +163,9 @@ export default class ServiceTab extends Component {
         const { hasHomepage } = this;
         const { apiVersions } = this;
         const { containsVersion } = this;
+        const graphqlUrl = this.getGraphqlUrl(this.props.selectedService.apis);
+        const title = graphqlUrl ? 'GraphQL' : 'Swagger';
+        const showVersionDiv = !graphqlUrl;
         const message = 'The API documentation was retrieved but could not be displayed.';
         const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
         return (
@@ -237,22 +249,24 @@ export default class ServiceTab extends Component {
                             </Typography>
                             <br />
                             <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
-                                Swagger
+                                {title}
                             </Typography>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                {containsVersion && currentService && (
-                                    <Typography id="version-label" variant="subtitle2">
-                                        Service ID and Version:
-                                    </Typography>
-                                )}
-                                {currentService && apiVersions?.length === 1 && apiVersions[0]?.key && (
-                                    <Typography id="single-api-version-label" variant="subtitle2">
-                                        {apiVersions[0].key}
-                                    </Typography>
-                                )}
-                            </div>
+                            {showVersionDiv && (
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    {containsVersion && currentService && (
+                                        <Typography id="version-label" variant="subtitle2">
+                                            Service ID and Version:
+                                        </Typography>
+                                    )}
+                                    {currentService && apiVersions?.length === 1 && apiVersions[0]?.key && (
+                                        <Typography id="single-api-version-label" variant="subtitle2">
+                                            {apiVersions[0].key}
+                                        </Typography>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        {currentService && apiVersions?.length > 1 && (
+                        {showVersionDiv && currentService && apiVersions?.length > 1 && (
                             <div id="version-div">
                                 <Select
                                     displayEmpty
@@ -278,8 +292,11 @@ export default class ServiceTab extends Component {
                                 </Button>
                             </div>
                         )}
-                        {selectedVersion !== 'diff' && <SwaggerContainer selectedVersion={selectedVersion} />}
-                        {selectedVersion === 'diff' && isDialogOpen && containsVersion && (
+                        {graphqlUrl !== null && <GraphQLContainer graphqlUrl={graphqlUrl} />}
+                        {graphqlUrl === null && selectedVersion !== 'diff' && (
+                            <SwaggerContainer selectedVersion={selectedVersion} />
+                        )}
+                        {graphqlUrl === null && selectedVersion === 'diff' && isDialogOpen && containsVersion && (
                             <ServiceVersionDiffContainer
                                 selectedVersion={this.state.previousVersion}
                                 handleDialog={this.handleDialogClose}
