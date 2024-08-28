@@ -14,10 +14,14 @@ import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -33,12 +37,27 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class WebSocketProxyServerHandlerTest {
+
     private WebSocketProxyServerHandler underTest;
     private WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
     private Map<String, WebSocketRoutedSession> routedSessions;
@@ -61,15 +80,13 @@ class WebSocketProxyServerHandlerTest {
 
     @Nested
     class WhenTheConnectionIsEstablished {
-        WebSocketSession establishedSession;
 
-        @BeforeEach
-        void prepareSessionMock() {
-            establishedSession = mock(WebSocketSession.class);
-        }
+        @Mock
+        WebSocketSession establishedSession;
 
         @Nested
         class ThenTheValidSessionIsStoredInternally {
+
             @BeforeEach
             void prepareRoutedService() {
                 String serviceId = "valid-service";
@@ -92,18 +109,20 @@ class WebSocketProxyServerHandlerTest {
              * Proper WebSocketSession is stored.
              */
             @Test
-             void givenValidRoute() throws Exception {
+            void givenValidRoute() throws Exception {
                 String path = "wss://gatewayHost:1443/valid-service/ws/v1/valid-path";
-                when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
+                WebSocketRoutedSession routedSession = mock(WebSocketRoutedSession.class);
+                when(webSocketRoutedSessionFactory.session(any(), any(), any(), any(), any())).thenReturn(routedSession);
                 ServiceInstance serviceInstance = mock(ServiceInstance.class);
                 when(lbClient.choose(any())).thenReturn(serviceInstance);
                 String establishedSessionId = "validAndUniqueId";
                 when(establishedSession.getId()).thenReturn(establishedSessionId);
                 when(establishedSession.getUri()).thenReturn(new URI(path));
 
+                underTest.onClientSessionSuccess(routedSession, establishedSession, establishedSession);
                 underTest.afterConnectionEstablished(establishedSession);
 
-                verify(webSocketRoutedSessionFactory).session(any(), any(), any());
+                verify(webSocketRoutedSessionFactory).session(any(), any(), any(), any(), any());
                 WebSocketRoutedSession preparedSession = routedSessions.get(establishedSessionId);
                 assertThat(preparedSession, is(notNullValue()));
             }
@@ -112,6 +131,7 @@ class WebSocketProxyServerHandlerTest {
 
         @Nested
         class ThenTheSocketIsClosed {
+
             @BeforeEach
             void sessionIsOpen() {
                 when(establishedSession.isOpen()).thenReturn(true);
@@ -179,7 +199,6 @@ class WebSocketProxyServerHandlerTest {
             @Test
             void givenNullService_thenCloseWebSocket() throws Exception {
                 when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/service-without-instance/ws/v1/valid-path"));
-                when(lbClient.choose(any())).thenReturn(null);
                 RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
                 when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
                     .thenReturn(null);
@@ -190,21 +209,81 @@ class WebSocketProxyServerHandlerTest {
                 verify(establishedSession).close(new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode(), "Requested ws/v1 url is not known by the gateway"));
             }
         }
+
+        @Test
+        void testOnClientSessionSuccess() {
+            assumeTrue(underTest.getRoutedSessions().isEmpty());
+            when(establishedSession.getId()).thenReturn("mockId");
+
+            underTest.onClientSessionSuccess(mock(WebSocketRoutedSession.class), establishedSession, establishedSession);
+
+            verifyNoMoreInteractions(establishedSession);
+            assertNotNull(underTest.getRoutedSessions().get("mockId"));
+        }
+
+    }
+
+    @Nested
+    class GivenInvalidClientSession {
+
+        @Mock
+        private WebSocketSession session;
+        @Mock
+        private WebSocketRoutedSession routedSession;
+
+        @Test
+        void whenHandleMessage_thenThrowNotAvailable() {
+            assumeTrue(underTest.getRoutedSessions().isEmpty());
+            WebSocketMessage<String> message = new TextMessage("null");
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(session, message));
+        }
+
+        @Test
+        void whenRecover_thenCloseServerSession() throws IOException {
+            doNothing().when(session).close(CloseStatus.SESSION_NOT_RELIABLE);
+            when(session.getId()).thenReturn("mockId");
+            underTest.closeServerSession(null, session, null);
+
+            verifyNoMoreInteractions(session);
+        }
+
+        @Test
+        void whenFailedToObtain_thenCloseServerSession() throws Exception {
+            assumeTrue(underTest.getRoutedSessions().isEmpty());
+
+            underTest.getRoutedSessions().put("mockId", routedSession);
+
+            WebSocketProxyClientHandler clientHandler = mock(WebSocketProxyClientHandler.class);
+            when(routedSession.getClientHandler()).thenReturn(clientHandler);
+            when(routedSession.getTargetUrl()).thenReturn("targetUrl");
+            doNothing().when(clientHandler).handleMessage(eq(session), argThat(tm -> tm.getPayload() instanceof String && String.valueOf(tm.getPayload()).contains("a message")));
+            doNothing().when(session).close(CloseStatus.SERVER_ERROR);
+            when(session.getId()).thenReturn("mockId");
+
+            underTest.onClientSessionFailure(routedSession, session, new RuntimeException("a message"));
+
+            verifyNoMoreInteractions(session);
+            verifyNoMoreInteractions(routedSession);
+
+            assertTrue(underTest.getRoutedSessions().isEmpty());
+        }
+
     }
 
     @Nested
     class GivenValidExistingSession {
+
+        @Mock
         WebSocketSession establishedSession;
+        @Mock
         WebSocketRoutedSession internallyStoredSession;
+        @Mock
         WebSocketMessage<String> passedMessage;
 
         @BeforeEach
         void prepareSessionMock() {
-            establishedSession = mock(WebSocketSession.class);
             String validSessionId = "123";
             when(establishedSession.getId()).thenReturn(validSessionId);
-            passedMessage = mock(WebSocketMessage.class);
-            internallyStoredSession = mock(WebSocketRoutedSession.class);
             routedSessions.put(validSessionId, internallyStoredSession);
         }
 
@@ -223,49 +302,77 @@ class WebSocketProxyServerHandlerTest {
         void whenTheConnectionIsClosed_thenClientSessionIsAlsoClosed() throws IOException {
             CloseStatus normalClose = CloseStatus.NORMAL;
             WebSocketSession clientSession = mock(WebSocketSession.class);
-            when(internallyStoredSession.getWebSocketClientSession()).thenReturn(clientSession);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
 
             underTest.afterConnectionClosed(establishedSession, normalClose);
+
             verify(clientSession, times(1)).close(normalClose);
             assertThat(routedSessions.entrySet(), hasSize(0));
         }
 
         @Test
         void whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
+            WebSocketSession clientSession = mock(WebSocketSession.class);
+            when(clientSession.isOpen()).thenReturn(true);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
+
             underTest.handleMessage(establishedSession, passedMessage);
 
             verify(internallyStoredSession).sendMessageToServer(passedMessage);
         }
 
         @Test
+        void givenClientNotConnected_whenHandleMessage_thenThrowException() {            when(internallyStoredSession.isClientConnected()).thenReturn(false);
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(establishedSession, passedMessage));
+        }
+
+        @Test
+        void givenClientConnectionClosed_whenHandleMessage_thenCloseServerSession() throws IOException {
+            WebSocketSession clientSession = mock(WebSocketSession.class);
+
+            when(clientSession.isOpen()).thenReturn(false);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(clientSession);
+
+            underTest.handleMessage(establishedSession, passedMessage);
+
+            verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
+        }
+
+        @Test
         void whenExceptionIsThrown_thenRemoveRoutedSession() throws Exception {
             doThrow(new WebSocketException("error")).when(routedSessions.get("123")).sendMessageToServer(passedMessage);
+            when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
+            when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(establishedSession.isOpen()).thenReturn(true);
+
             underTest.handleMessage(establishedSession, passedMessage);
+
             assertTrue(routedSessions.isEmpty());
         }
 
         @Test
-        void whenSessionIsNull_thenCloseAndReturn() throws IOException {
+        /**
+         * This scenario is now handled by Spring Retry
+         */
+        void whenSessionIsNull_thenCloseAndReturn() {
             routedSessions.replace("123", null);
 
-            underTest.handleMessage(establishedSession, passedMessage);
-            assertTrue(routedSessions.isEmpty());
-            verify(establishedSession, times(1)).close(CloseStatus.SESSION_NOT_RELIABLE);
+            assertThrows(ServerNotYetAvailableException.class, () -> underTest.handleMessage(establishedSession, passedMessage));
         }
 
         @Test
         void whenClosingSessionThrowException_thenCatchIt() throws IOException {
             CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
             doThrow(new IOException()).when(establishedSession).close(status);
-            underTest.afterConnectionClosed(establishedSession, status);
-            assertTrue(routedSessions.isEmpty());
-        }
+            when(internallyStoredSession.isClientConnected()).thenReturn(true);
+            when(internallyStoredSession.getClientSession()).thenReturn(establishedSession);
 
-        @Test
-        void whenClosingRoutedSessionThrowException_thenCatchIt() throws IOException {
-            CloseStatus status = CloseStatus.SESSION_NOT_RELIABLE;
-            doThrow(new IOException()).when(routedSessions.get("123")).close(status);
             underTest.afterConnectionClosed(establishedSession, status);
+
             assertTrue(routedSessions.isEmpty());
         }
 
@@ -273,15 +380,18 @@ class WebSocketProxyServerHandlerTest {
 
     @Nested
     class WhenGettingRoutedSessions {
+
         @Test
         void thenReturnThem() {
             Map<String, WebSocketRoutedSession> expectedRoutedSessions = underTest.getRoutedSessions();
             assertThat(expectedRoutedSessions, is(routedSessions));
         }
+
     }
 
     @Nested
     class WhenGettingSubProtocols {
+
         @Test
         void thenReturnThem() {
             List<String> protocol = new ArrayList<>();
@@ -290,5 +400,7 @@ class WebSocketProxyServerHandlerTest {
             List<String> subProtocols = underTest.getSubProtocols();
             assertThat(subProtocols, is(protocol));
         }
+
     }
+
 }
