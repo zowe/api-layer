@@ -71,7 +71,7 @@ public class APIDocRetrievalService {
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @InjectApimlLogger
-    ApimlLogger apimlLogger = ApimlLogger.empty();
+    private ApimlLogger apimlLogger = ApimlLogger.empty();
 
     /**
      * Retrieves the available API versions for a registered service.

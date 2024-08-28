@@ -23,12 +23,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.util.ReflectionUtils;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -38,7 +41,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,6 +68,9 @@ class LocalApiDocServiceTest {
 
     private APIDocRetrievalService apiDocRetrievalService;
 
+    @Mock
+    private ApimlLogger apimlLogger;
+
     @BeforeEach
     void setup() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
@@ -72,6 +78,13 @@ class LocalApiDocServiceTest {
             httpClient,
             instanceRetrievalService,
             gatewayClient);
+
+        ReflectionUtils.doWithFields(apiDocRetrievalService.getClass(), field -> {
+            if (field.getAnnotation(InjectApimlLogger.class) != null) {
+                ReflectionUtils.makeAccessible(field);
+                field.set(apiDocRetrievalService, apimlLogger);
+            }
+        });
     }
 
     @Nested
@@ -132,6 +145,7 @@ class LocalApiDocServiceTest {
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
             }
+
         }
 
         @Test
@@ -218,6 +232,26 @@ class LocalApiDocServiceTest {
             assertNotNull(actualResponse.getApiDocContent());
 
             assertEquals(responseBody, actualResponse.getApiDocContent());
+        }
+
+        @Test
+        void givenServerCommunicationErrorWhenRequestingSwaggerUrl_thenLogCustomError() throws IOException {
+            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                .thenReturn(getStandardInstance(getStandardMetadata(), true));
+
+            var exception = new IOException("Unable to reach the host");
+            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenThrow(exception);
+
+            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+
+            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+            assertEquals("", actualResponse.getApiDocContent());
+
+            verify(apimlLogger, times(1)).log("org.zowe.apiml.apicatalog.apiDocHostCommunication", SERVICE_ID, exception.getMessage());
         }
     }
 
