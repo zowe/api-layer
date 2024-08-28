@@ -20,7 +20,7 @@ module.exports = {
             "dependencyDashboardApproval": true,
         },
         {
-            //for v.3.x.x branch find all packages which are minor and patches,
+            //for v3.x.x branch find all packages which are minor and patches,
             // slug them and make PR with name "all non-major dependencies"
             "matchBaseBranches": ["v3.x.x-renovate"],
             "groupName": "all non-major dependencies",
