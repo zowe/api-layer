@@ -156,7 +156,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
                     @Test
                     @Timeout(value = 30, unit = TimeUnit.SECONDS)
-                    void newSessionCanBeCreated() throws Exception {
+                    void newSessionCanBeCreated() {
                         final StringBuilder response = new StringBuilder();
                         HAGatewayRequests haGatewayRequests = new HAGatewayRequests("https");
                         // take off an instance of Gateway
@@ -164,7 +164,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
                         await("Gateway Shutdown")
                             .atMost(20, TimeUnit.SECONDS)
-                            .untilAsserted(() -> {
+                            .until(() -> {
                                 // create websocket session using the second alive instance of Gateway
                                 session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
 
@@ -173,7 +173,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                                     response.wait(WAIT_TIMEOUT_MS);
                                 }
 
-                                assertEquals("HELLO WORLD 2!", response.toString());
+                                return response.toString().equals("HELLO WORLD 2!");
                             });
                     }
 
