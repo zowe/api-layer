@@ -33,6 +33,7 @@ import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -166,6 +167,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
 
                         await("Gateway Shutdown")
                             .atMost(20, TimeUnit.SECONDS)
+                            .pollInterval(Duration.ofSeconds(2))
                             .until(() -> {
                                 // create websocket session using the second alive instance of Gateway
                                 URI gatewayUrl = gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE);
