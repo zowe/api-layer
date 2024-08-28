@@ -11,21 +11,14 @@
 /// <reference types="Cypress" />
 
 describe('>>> Login bad test', () => {
-    beforeEach('succesfully loads login page', () => {
-        cy.visit(`${Cypress.env('catalogHomePage')}/`);
-    });
 
     it('should not display header', () => {
+        cy.visit(`${Cypress.env('catalogHomePage')}/`);
         cy.get('.header').should('not.exist');
     });
 
     it('should fail with wrong credentials', () => {
-        const user = { username: 'bad', password: 'bad' };
-
-        cy.get('#username').type(user.username);
-        cy.get('input[name="password"]').type(user.password);
-        cy.get('button[type="submit"').as('submitButton');
-        cy.get('@submitButton').click();
+        cy.login('bad', 'bad');
 
         cy.url().should('contain', '/login');
 

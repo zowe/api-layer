@@ -19,17 +19,9 @@ const PATH_TO_VERSION_SELECTOR_ITEMS2 =
 
 describe('>>> Service version compare Test', () => {
     beforeEach(() => {
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
+        cy.login(Cypress.env('username'), Cypress.env('password'));
 
-        const username = Cypress.env('username');
-        const password = Cypress.env('password');
-
-        cy.get('button[type="submit"').as('submitButton');
-
-        cy.get('#username').type(username);
-        cy.get('input[name="password"]').type(password);
-
-        cy.get('@submitButton').click();
+        cy.contains('Version: ');
 
         cy.contains('Service Spring Onboarding Enabler sample application API').click(); // discoverable client
 

@@ -32,12 +32,18 @@ import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ENABLE_URL_ENCODED_CHARACTERS;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 @Service
@@ -132,6 +138,14 @@ public class RouteLocator implements RouteDefinitionLocator {
             FilterDefinition forwardClientCertFilter = new FilterDefinition();
             forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
             serviceRelated.add(forwardClientCertFilter);
+        }
+        //Allow encoded characters by default
+        if (!Optional.ofNullable(serviceInstance.getMetadata().get(ENABLE_URL_ENCODED_CHARACTERS))
+            .map(Boolean::parseBoolean)
+            .orElse(true)) {
+            FilterDefinition forbidEncodedCharactersFilter = new FilterDefinition();
+            forbidEncodedCharactersFilter.setName("ForbidEncodedCharactersFilterFactory");
+            serviceRelated.add(forbidEncodedCharactersFilter);
         }
 
         FilterDefinition pageRedirectionFilter = new FilterDefinition();

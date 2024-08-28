@@ -37,7 +37,6 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
@@ -596,15 +595,7 @@ public class NewSecurityConfiguration {
             // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
             @Bean
             public WebSecurityCustomizer webSecurityCustomizer() {
-                StrictHttpFirewall firewall = new StrictHttpFirewall();
-                firewall.setAllowUrlEncodedSlash(true);
-                firewall.setAllowBackSlash(true);
-                firewall.setAllowUrlEncodedPercent(true);
-                firewall.setAllowUrlEncodedPeriod(true);
-                firewall.setAllowSemicolon(true);
-
                 return web -> {
-                    web.httpFirewall(firewall);
                     if (!isHealthEndpointProtected) {
                         web.ignoring().requestMatchers("/application/health");
                     }

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ENABLE_URL_ENCODED_CHARACTERS;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 class RouteLocatorTest {
@@ -267,15 +268,20 @@ class RouteLocatorTest {
             private final List<FilterDefinition> COMMON_FILTERS = Collections.singletonList(mock(FilterDefinition.class));
             private final RouteLocator routeLocator = new RouteLocator(null, null, null, COMMON_FILTERS, Collections.emptyList(), null);
 
-            private ServiceInstance createServiceInstance(Boolean forwardingEnabled) {
+            private ServiceInstance createServiceInstance(Boolean forwardingEnabled, Boolean encodedCharactersEnabled) {
                 Map<String, String> metadata = new HashMap<>();
                 if (forwardingEnabled != null) {
                     metadata.put(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING, String.valueOf(forwardingEnabled));
+                }
+                if (encodedCharactersEnabled != null) {
+                    metadata.put(ENABLE_URL_ENCODED_CHARACTERS, String.valueOf(encodedCharactersEnabled));
                 }
                 ServiceInstance serviceInstance = mock(ServiceInstance.class);
                 doReturn(metadata).when(serviceInstance).getMetadata();
                 return serviceInstance;
             }
+
+
 
             @Nested
             class EnabledForwarding {
@@ -287,16 +293,16 @@ class RouteLocatorTest {
 
                 @Test
                 void givenServiceAllowingCertForwarding_whenGetPostRoutingFilters_thenAddClientCertFilterFactory() {
-                    ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
+                    ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE, null);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
-                    assertEquals(3, filterDefinitions.size()); // common filters + pageredirectionfilter
+                    assertEquals(3, filterDefinitions.size()); // common filters + PageRedirectionFilterFactory
                     assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
 
                 @Test
                 void givenServiceNotAllowingCertForwarding_whenGetPostRoutingFilters_thenReturnJustCommon() {
-                    ServiceInstance serviceInstance = createServiceInstance(Boolean.FALSE);
+                    ServiceInstance serviceInstance = createServiceInstance(Boolean.FALSE, null);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
@@ -307,7 +313,7 @@ class RouteLocatorTest {
 
                 @Test
                 void givenServiceWithoutCertForwardingConfig_whenGetPostRoutingFilters_thenReturnJustCommon() {
-                    ServiceInstance serviceInstance = createServiceInstance(null);
+                    ServiceInstance serviceInstance = createServiceInstance(null, null);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
@@ -327,12 +333,43 @@ class RouteLocatorTest {
 
                 @Test
                 void givenAnyService_whenGetPostRoutingFilters_thenReturnJustCommon() {
-                    ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE);
+                    ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE, null);
 
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
+                }
+
+            }
+
+            @Nested
+            class EncodedCharacters {
+
+                @Test
+                void givenServiceAllowingEncodedCharacters_whenGetPostRoutingFilters_thenReturnJustCommon() {
+                    ServiceInstance serviceInstance = createServiceInstance(null, Boolean.TRUE);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
+                    assertEquals(2, filterDefinitions.size());
+                    assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForbidEncodedCharactersFilterFactory".equals(filter.getName())));
+                }
+
+                @Test
+                void givenServiceNotAllowingEncodedCharacters_whenGetPostRoutingFilters_thenAddEncodedCharacterFilterFactory() {
+                    ServiceInstance serviceInstance = createServiceInstance(null, Boolean.FALSE);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertEquals(3, filterDefinitions.size());
+                    assertEquals("ForbidEncodedCharactersFilterFactory", filterDefinitions.get(1).getName());
+                }
+
+                @Test
+                void givenServiceWithoutAllowingEncodedCharacters_whenGetPostRoutingFilters_thenAddEncodedCharacterFilterFactory() {
+                    ServiceInstance serviceInstance = createServiceInstance(null, null);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance);
+                    assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
+                    assertEquals(2, filterDefinitions.size());
+                    assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForbidEncodedCharactersFilterFactory".equals(filter.getName())));
                 }
 
             }

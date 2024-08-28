@@ -305,6 +305,7 @@ task runContainerTests(type: Test) {
 task runBaseTests(type: Test) {
     group "integration tests"
     description "Run base tests"
+    systemProperty "environment.offPlatform", "true"
 
     outputs.cacheIf { false }
 
@@ -317,8 +318,7 @@ task runBaseTests(type: Test) {
             'WebsocketTest',
             'GeneralAuthenticationTest',
             'DiscoverableClientDependentTest',
-            'CachingServiceTest',
-            'WebsocketTest'
+            'CachingServiceTest'
         )
         excludeTags(
             'MainframeDependentTests',
@@ -481,17 +481,6 @@ task runInfinispanServiceTests(type: Test) {
             'InfinispanStorageTest'
         )
     }
-}
-
-task runBaseTestsInternalPort(type: Test) {
-    group "Integration tests"
-    description "Run only tests without long tests"
-
-    outputs.cacheIf { false }
-
-    dependsOn runBaseTests
-    systemProperties System.properties
-    systemProperty "gateway.port", System.getProperty("internal.gateway.port")
 }
 
 task runHATests(type: Test) {
