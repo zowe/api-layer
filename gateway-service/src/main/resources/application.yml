@@ -1,6 +1,6 @@
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: INFO
         org.springframework: WARN
         com.netflix: WARN
