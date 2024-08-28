@@ -9,7 +9,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.web.socket: WARN
+        org.springframework.web.socket: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
         org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
@@ -307,6 +307,7 @@ logging:
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework.web.socket: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
 
 ---
