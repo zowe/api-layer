@@ -173,7 +173,12 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                                     response.wait(WAIT_TIMEOUT_MS);
                                 }
 
-                                return response.toString().equals("HELLO WORLD 2!");
+                                if (response.toString().equals("HELLO WORLD 2!")) {
+                                    return true;
+                                } else {
+                                    session.close();
+                                    return false;
+                                }
                             });
                     }
 
