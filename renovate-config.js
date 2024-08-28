@@ -1,5 +1,5 @@
 module.exports = {
-    globalExtends: ["config:recommended"], // instead of "extends" this resolve immediately as part of global config
+    globalExtends: ["config:recommended"], // using this instead of "extends" - it solves problem with order of the configuration
     repositories: ['zowe/api-layer'],
     baseBranches: ["v2.x.x","v3.x.x"],
     dependencyDashboard: true,
