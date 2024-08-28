@@ -211,6 +211,14 @@ public class EurekaMetadataParser {
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
         }
 
+        if (apiInfo.getGraphqlUrl() != null) {
+            validateUrl(apiInfo.getGraphqlUrl(),
+                () -> String.format("The GraphQL URL \"%s\" for service %s is not valid", apiInfo.getGraphqlUrl(), serviceId)
+            );
+
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_GRAPHQL_URL), apiInfo.getGraphqlUrl());
+        }
+
         if (apiInfo.getDocumentationUrl() != null) {
             validateUrl(apiInfo.getDocumentationUrl(),
                 () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)

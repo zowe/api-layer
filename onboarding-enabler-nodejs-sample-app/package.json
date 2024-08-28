@@ -1,27 +1,27 @@
 {
-  "name": "helloworld-expressjs",
-  "version": "0.3.0",
-  "description": "Hello World Service in Express",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zowe/api-layer.git"
-  },
-  "author": "",
-  "license": "EPL-2.0",
-  "dependencies": {
-    "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
-    "express": "4.19.2"
-  },
-  "overrides": {
-    "tough-cookie": "4.1.3"
-  },
-  "engines": {
-    "npm": "=8.19.3",
-    "node": "=16.19.0"
-  }
+    "name": "helloworld-expressjs",
+    "version": "0.3.0",
+    "description": "Hello World Service in Express",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zowe/api-layer.git"
+    },
+    "author": "",
+    "license": "EPL-2.0",
+    "dependencies": {
+        "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
+        "express": "4.19.2"
+    },
+    "overrides": {
+        "tough-cookie": "4.1.3"
+    },
+    "engines": {
+        "npm": "=8.19.3",
+        "node": "=16.19.0"
+    }
 }
