@@ -10,7 +10,13 @@
 
 package org.zowe.apiml.integration.ha;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -26,7 +32,6 @@ import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
 /**
  * Verify behaviour of the Websocket under HA and chaotic testing
@@ -157,17 +162,19 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
                         // take off an instance of Gateway
                         haGatewayRequests.shutdown(0);
 
-                        await().during(Duration.ofSeconds(5));
+                        await("Gateway Shutdown")
+                            .atMost(20, TimeUnit.SECONDS)
+                            .untilAsserted(() -> {
+                                // create websocket session using the second alive instance of Gateway
+                                session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
 
-                        // create websocket session using the second alive instance of Gateway
-                        session = appendingWebSocketSession(gatewaysWsRequests.getGatewayUrl( 1, DISCOVERABLE_WS_UPPERCASE), VALID_AUTH_HEADERS, response, 1);
+                                session.sendMessage(new TextMessage("hello world 2!"));
+                                synchronized (response) {
+                                    response.wait(WAIT_TIMEOUT_MS);
+                                }
 
-                        session.sendMessage(new TextMessage("hello world 2!"));
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertEquals("HELLO WORLD 2!", response.toString());
+                                assertEquals("HELLO WORLD 2!", response.toString());
+                            });
                     }
 
                 }
