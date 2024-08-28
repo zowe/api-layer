@@ -342,32 +342,16 @@ public class WebSecurity {
                 CONFORMANCE_SHORT_URL,
                 CONFORMANCE_LONG_URL,
                 VALIDATE_SHORT_URL,
-                VALIDATE_LONG_URL
-            ))
-            .authorizeExchange(authorizeExchangeSpec ->
-                authorizeExchangeSpec
-                    .anyExchange().authenticated()
-            )
-            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
-            .build();
-    }
-
-    @Bean
-    @Order(2)
-    public SecurityWebFilterChain securityWebFilterChainForActuator(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
-
-        return defaultSecurityConfig(http)
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                VALIDATE_LONG_URL,
                 "/application/**"
             ))
             .authorizeExchange(authorizeExchangeSpec -> {
-                if (!isHealthEndpointProtected) {
-                    authorizeExchangeSpec
-                        .pathMatchers( "/application/info", "/application/version", "/application/health")
-                        .permitAll();
-                }
-                else {
+                    if (!isHealthEndpointProtected) {
+                        authorizeExchangeSpec
+                            .pathMatchers( "/application/info", "/application/version", "/application/health")
+                            .permitAll();
+                    }
+                    else {
                         authorizeExchangeSpec
                             .pathMatchers( "/application/info", "/application/version")
                             .permitAll();
