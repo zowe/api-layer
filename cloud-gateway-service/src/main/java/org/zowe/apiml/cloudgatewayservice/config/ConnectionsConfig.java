@@ -233,8 +233,7 @@ public class ConnectionsConfig {
         }
     }
 
-    @Bean
-    @Qualifier("primaryApimlEurekaJerseyClient")
+    @Bean("primaryApimlEurekaJerseyClient")
     EurekaJerseyClient getEurekaJerseyClient() {
         return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
     }
