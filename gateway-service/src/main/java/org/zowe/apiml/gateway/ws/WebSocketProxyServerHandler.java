@@ -296,10 +296,15 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         log.debug("Failed opening client web socket session against {}. Server WebSocket session is {}", routedSession.getTargetUrl(), serverSession.getId(), throwable);
         try {
             routedSession.getClientHandler().handleMessage(serverSession, new TextMessage("Failed opening a session against " + routedSession.getTargetUrl() + ": " + throwable.getMessage()));
-            serverSession.close(CloseStatus.SERVER_ERROR);
             routedSessions.remove(serverSession.getId());
         } catch (Exception e) {
-            log.debug("Failed sending / closing WebSocket session", e);
+            log.debug("Failed sending server error WebSocket message to client: {}", e.getMessage());
+        } finally {
+            try {
+                serverSession.close(CloseStatus.SERVER_ERROR);
+            } catch (IOException e) {
+                log.debug("Failed closing server WebSocket session: {}", e.getMessage());
+            }
         }
     }
 }
