@@ -307,6 +307,7 @@ logging:
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework.web.socket: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
 
 ---
