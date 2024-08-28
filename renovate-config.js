@@ -22,7 +22,7 @@ module.exports = {
         {
             //for v3.x.x branch find all packages which are minor and patches,
             // slug them and make PR with name "all non-major dependencies"
-            "matchBaseBranches": ["v3.x.x-renovate"],
+            "matchBaseBranches": ["v3.x.x"],
             "groupName": "all non-major dependencies",
             "groupSlug": "all-minor-patch",
             "matchPackageNames": ["*"],
