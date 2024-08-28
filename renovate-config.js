@@ -30,7 +30,7 @@ module.exports = {
         },
         {
             //for v3.x.x make dashboard approval to all major dependencies updates
-            "matchBaseBranches": ["v3.x.x-renovate"],
+            "matchBaseBranches": ["v3.x.x"],
             "matchUpdateTypes": ["major"],
             "dependencyDashboardApproval": true,
         }
