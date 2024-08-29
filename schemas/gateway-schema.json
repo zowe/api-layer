@@ -64,29 +64,29 @@
                                                     "properties": {
                                                         "alias": {
                                                             "type": "string",
-                                                            "description": "This parameter specifies the alias used to address the private key in the keystore."
+                                                            "description": "Specifies the alias used to address the private key in the keystore."
                                                         },
                                                         "key": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "password": {
                                                                     "type": "string",
-                                                                    "description": "This parameter specifies the password associated with the private key."
+                                                                    "description": "Specifies the password associated with the private key."
                                                                 }
                                                             }
                                                         },
                                                         "file": {
                                                             "type": "string",
-                                                            "description": "This parameter specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
+                                                            "description": "Specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
                                                         },
                                                         "password": {
                                                             "type": "string",
-                                                            "description": "This parameter specifies the password used to unlock the keystore."
+                                                            "description": "Specifies the password used to unlock the keystore."
                                                         },
                                                         "type": {
                                                             "type": "string",
                                                             "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                                                            "description": "This parameter specifies the type of the keystore.",
+                                                            "description": "Specifies the type of the keystore.",
                                                             "default": "PKCS12"
                                                         }
                                                     },
@@ -114,16 +114,16 @@
                                                     "properties": {
                                                         "file": {
                                                             "type": "string",
-                                                            "description": "This parameter specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
+                                                            "description": "Specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
                                                         },
                                                         "password": {
                                                             "type": "string",
-                                                            "description": "This parameter specifies the password used to unlock the truststore."
+                                                            "description": "Specifies the password used to unlock the truststore."
                                                         },
                                                         "type": {
                                                             "type": "string",
                                                             "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                                                            "description": "This parameter specifies the truststore type. The default for this parameter is PKCS12.",
+                                                            "description": "Specifies the truststore type. The default for this parameter is PKCS12.",
                                                             "default": "PKCS12"
                                                         }
                                                     },
