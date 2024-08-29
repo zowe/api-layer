@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.MethodNotAllowedException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
@@ -114,7 +115,7 @@ public class GatewayExceptionHandler {
     @ExceptionHandler({AccessDeniedException.class, WebClientResponseException.Forbidden.class})
     public Mono<Void> handleAccessDeniedException(ServerWebExchange exchange, Exception ex) {
         log.debug("Unauthenticated access on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_FORBIDDEN, "org.zowe.apiml.security.forbidden");
+        return setBodyResponse(exchange, SC_FORBIDDEN, "org.zowe.apiml.security.forbidden", exchange.getRequest().getURI());
     }
 
     @ExceptionHandler({NoResourceFoundException.class, WebClientResponseException.NotFound.class})
@@ -141,6 +142,14 @@ public class GatewayExceptionHandler {
             log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         }
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
+    }
+
+    @ExceptionHandler({ResponseStatusException.class})
+    public Mono<Void> handleStatusError(ServerWebExchange exchange, ResponseStatusException ex) {
+        if (log.isDebugEnabled()) {
+            log.debug("Unexpected response status on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        }
+        return setBodyResponse(exchange, ex.getStatusCode().value(), "org.zowe.apiml.gateway.responseStatusError");
     }
 
     @ExceptionHandler({ServiceNotAccessibleException.class, WebClientResponseException.ServiceUnavailable.class})
