@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +19,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import reactor.core.publisher.Mono;
@@ -28,10 +26,8 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 class ForbidEncodedCharactersFilterFactoryTest {
@@ -74,31 +70,8 @@ class ForbidEncodedCharactersFilterFactoryTest {
                 .method(HttpMethod.GET, uri)
                 .build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
-
-            var response = filter.apply("").filter(exchange, e -> Mono.empty());
-            response.block();
-            assertEquals(SC_BAD_REQUEST, exchange.getResponse().getStatusCode().value());
-            String body = exchange.getResponse().getBodyAsString().block();
-            var message = objectMapperError.readValue(body, ApiMessageView.class);
-            assertEquals("org.zowe.apiml.gateway.requestContainEncodedCharacter", message.getMessages().get(0).getMessageKey());
+            assertThrows(ForbidCharacterException.class, () -> filter.apply("").filter(exchange, e -> Mono.empty()).block());
         }
-    }
-
-    @Nested
-    class Errors {
-
-        @Test
-        void givenRequestUriWithEncodedCharacters_whenJsonProcessorThrowsAnException_thenThrownRuntimeException() throws JsonProcessingException, URISyntaxException {
-            MockServerHttpRequest request = MockServerHttpRequest
-                .method(HttpMethod.GET, new URI(ENCODED_REQUEST_URI))
-                .build();
-            MockServerWebExchange exchange = MockServerWebExchange.from(request);
-
-            doThrow(new JsonGenerationException("error")).when(objectMapperError).writeValueAsBytes(any());
-            RuntimeException er = assertThrows(RuntimeException.class, () -> filter.apply("").filter(exchange, e -> Mono.empty()));
-            assertEquals("com.fasterxml.jackson.core.JsonGenerationException: error", er.getMessage());
-        }
-
     }
 
 }

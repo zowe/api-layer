@@ -135,13 +135,13 @@ public class GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_UNSUPPORTED_MEDIA_TYPE, "org.zowe.apiml.common.unsupportedMediaType");
     }
 
-//    @ExceptionHandler({Exception.class})
-//    public Mono<Void> handleInternalError(ServerWebExchange exchange, Exception ex) {
-//        if (log.isDebugEnabled()) {
-//            log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-//        }
-//        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
-//    }
+    @ExceptionHandler({Exception.class})
+    public Mono<Void> handleInternalError(ServerWebExchange exchange, Exception ex) {
+        if (log.isDebugEnabled()) {
+            log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        }
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
+    }
 
     @ExceptionHandler({ServiceNotAccessibleException.class, WebClientResponseException.ServiceUnavailable.class})
     public Mono<Void> handleServiceNotAccessibleException(ServerWebExchange exchange, Exception ex) {

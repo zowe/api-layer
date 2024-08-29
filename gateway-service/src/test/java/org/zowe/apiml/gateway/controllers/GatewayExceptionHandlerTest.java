@@ -17,13 +17,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MockService;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
@@ -33,13 +34,14 @@ import static org.hamcrest.CoreMatchers.containsString;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ActiveProfiles("gatewayExceptionHandlerTest")
 class GatewayExceptionHandlerTest extends AcceptanceTestWithMockServices {
 
     private static final AtomicReference<Exception> mockException = new AtomicReference<>();
 
     @BeforeAll
-    void createAllZaasServices() throws IOException {
-        mockService("service").scope(MockService.Scope.CLASS).start();
+    void createAllZaasServices() {
+        mockService("serv1ce").scope(MockService.Scope.CLASS).start();
     }
 
     @ParameterizedTest
@@ -54,16 +56,17 @@ class GatewayExceptionHandlerTest extends AcceptanceTestWithMockServices {
         "503,org.zowe.apiml.common.serviceUnavailable",
     })
     void givenErrorResponse_whenCallGateway_thenDecorateIt(int code, String messageKey) throws MalformedURLException {
-        mockException.set(WebClientResponseException.create(code, "msg",null, null, null));
+        mockException.set(WebClientResponseException.create(code, "msg", null, null, null));
 
         given().when()
-            .get(new URL(basePath + "/service/api/v1/test"))
-        .then()
+            .get(new URL(basePath + "/serv1ce/api/v1/test"))
+            .then()
             .statusCode(code)
             .body("messages[0].messageKey", containsString(messageKey));
     }
 
     @Configuration
+    @Profile("gatewayExceptionHandlerTest")
     static class Config {
 
         @Bean
