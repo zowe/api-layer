@@ -13,6 +13,7 @@ package org.zowe.apiml.message.log;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.util.ObjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,16 +68,24 @@ public final class ApimlLogger {
      * @param parameters for message
      */
     public Message log(String key, Object... parameters) {
-        ObjectUtil.requireNotNull(key, "key can't be null");
-        ObjectUtil.requireNotNull(parameters, "parameters can't be null");
+        Message message;
+        try {
+            ObjectUtil.requireNotNull(key, "key can't be null");
+            ObjectUtil.requireNotNull(parameters, "parameters can't be null");
 
-        if (messageService != null) {
-            Message message = messageService.createMessage(key, parameters);
-            log(message);
-            return message;
+            if (messageService == null) {
+                return null;
+            }
+            message = messageService.createMessage(key, parameters);
+        } catch (IllegalArgumentException exception) {
+            message = (messageService == null ? Message.of(Message.INVALID_KEY_MESSAGE,
+                new MessageTemplate(Message.INVALID_KEY_MESSAGE, "ZWEAM102", MessageType.ERROR,
+                    "Internal error: Invalid message key '%s' provided. No default message found. " +
+                        "Please contact support of further assistance."), new Object[]{key}) :
+                messageService.createMessage(Message.INVALID_KEY_MESSAGE));
         }
-
-        return null;
+        log(message);
+        return message;
     }
 
     /**
@@ -94,9 +103,9 @@ public final class ApimlLogger {
     /**
      * Method which allows to log text in its level type.
      *
-     * @param messageType  type of the message
-     * @param text text for message
-     * @param arguments arguments for message text
+     * @param messageType type of the message
+     * @param text        text for message
+     * @param arguments   arguments for message text
      * @throws IllegalArgumentException when parameters are null
      */
     @SuppressWarnings("squid:S2629")
