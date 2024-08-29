@@ -21,8 +21,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.server.i18n.LocaleContextResolver;
-import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -32,9 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -90,14 +86,11 @@ class ForbidEncodedSlashesFilterFactoryTest {
         void givenRequestUriWithEncodedCharacters_whenJsonProcessorThrowsAnException_thenThrownRuntimeException() throws JsonProcessingException, URISyntaxException {
             MessageService messageService = mock(MessageService.class);
             doReturn(mock(Message.class)).when(messageService).createMessage(any(), (Object[]) any());
-            ObjectMapper objectMapperError = spy(objectMapper);
-            GatewayExceptionHandler gatewayExceptionHandler = new GatewayExceptionHandler(objectMapperError, messageService, mock(LocaleContextResolver.class));
-            ForbidEncodedSlashesFilterFactory filter = new ForbidEncodedSlashesFilterFactory(gatewayExceptionHandler);
-
+            ForbidEncodedSlashesFilterFactory filter = new ForbidEncodedSlashesFilterFactory();
 
             MockServerHttpRequest request = MockServerHttpRequest
-                    .method(HttpMethod.GET, new URI(ENCODED_REQUEST_URI))
-                    .build();
+                .method(HttpMethod.GET, new URI(ENCODED_REQUEST_URI))
+                .build();
             MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
             doThrow(new JsonGenerationException("error")).when(objectMapperError).writeValueAsBytes(any());

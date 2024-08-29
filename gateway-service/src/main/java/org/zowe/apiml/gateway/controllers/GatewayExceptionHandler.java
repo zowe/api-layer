@@ -30,6 +30,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
+import org.zowe.apiml.gateway.filters.ForbidCharacterException;
+import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -62,7 +64,7 @@ public class GatewayExceptionHandler {
         return String.format(WWW_AUTHENTICATE_FORMAT, realm);
     }
 
-    public Mono<Void> setBodyResponse(ServerWebExchange exchange, int responseCode, String messageCode, Object...args) {
+    public Mono<Void> setBodyResponse(ServerWebExchange exchange, int responseCode, String messageCode, Object... args) {
         var sessionManager = new DefaultWebSessionManager();
         var serverCodecConfigurer = ServerCodecConfigurer.create();
 
@@ -88,6 +90,18 @@ public class GatewayExceptionHandler {
     public Mono<Void> handleBadRequestException(ServerWebExchange exchange, WebClientResponseException.BadRequest ex) {
         log.debug("Invalid request structure on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.common.badRequest");
+    }
+
+    @ExceptionHandler(ForbidCharacterException.class)
+    public Mono<Void> handleForbidCharacterException(ServerWebExchange exchange, WebClientResponseException.BadRequest ex) {
+        log.debug("Forbidden character in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedCharacter");
+    }
+
+    @ExceptionHandler(ForbidSlashException.class)
+    public Mono<Void> handleForbidSlashException(ServerWebExchange exchange, WebClientResponseException.BadRequest ex) {
+        log.debug("Forbidden slash in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedSlash");
     }
 
     @ExceptionHandler({AuthenticationException.class, WebClientResponseException.Unauthorized.class})
@@ -121,15 +135,13 @@ public class GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_UNSUPPORTED_MEDIA_TYPE, "org.zowe.apiml.common.unsupportedMediaType");
     }
 
-    @ExceptionHandler({Exception.class})
-    public Mono<Void> handleInternalError(ServerWebExchange exchange, Exception ex) {
-        if (log.isDebugEnabled()) {
-            log.debug("Unhandled internal error on {}", ex, exchange.getRequest().getURI());
-        } else {
-            log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        }
-        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
-    }
+//    @ExceptionHandler({Exception.class})
+//    public Mono<Void> handleInternalError(ServerWebExchange exchange, Exception ex) {
+//        if (log.isDebugEnabled()) {
+//            log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+//        }
+//        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
+//    }
 
     @ExceptionHandler({ServiceNotAccessibleException.class, WebClientResponseException.ServiceUnavailable.class})
     public Mono<Void> handleServiceNotAccessibleException(ServerWebExchange exchange, Exception ex) {

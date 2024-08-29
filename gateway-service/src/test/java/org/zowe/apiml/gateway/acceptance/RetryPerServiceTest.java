@@ -77,6 +77,7 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
             .when()
                 .post(basePath + "/503")
             .then()
+                .body(is("Unauthorized"))
                 .statusCode(is(SC_SERVICE_UNAVAILABLE));
             assertEquals(1, mockService.getCounter());
         }

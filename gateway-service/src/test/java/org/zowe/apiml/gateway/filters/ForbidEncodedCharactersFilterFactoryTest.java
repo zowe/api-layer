@@ -20,7 +20,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -30,12 +29,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 class ForbidEncodedCharactersFilterFactoryTest {
@@ -49,9 +45,7 @@ class ForbidEncodedCharactersFilterFactoryTest {
     @BeforeEach
     public void setUp() {
         MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
-        filter = new ForbidEncodedCharactersFilterFactory(
-            messageService, objectMapperError, mock(LocaleContextResolver.class)
-        );
+        filter = new ForbidEncodedCharactersFilterFactory();
     }
 
     @Nested
