@@ -13,7 +13,6 @@ package org.zowe.apiml.message.log;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.util.ObjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,20 +68,15 @@ public final class ApimlLogger {
      */
     public Message log(String key, Object... parameters) {
         Message message;
-        try {
-            ObjectUtil.requireNotNull(key, "key can't be null");
+        if (key == null) {
+            message = Message.invalidKeyMessage(null);
+        } else {
             ObjectUtil.requireNotNull(parameters, "parameters can't be null");
 
             if (messageService == null) {
                 return null;
             }
             message = messageService.createMessage(key, parameters);
-        } catch (IllegalArgumentException exception) {
-            message = (messageService == null ? Message.of(Message.INVALID_KEY_MESSAGE,
-                new MessageTemplate(Message.INVALID_KEY_MESSAGE, "ZWEAM102", MessageType.ERROR,
-                    "Internal error: Invalid message key '%s' provided. No default message found. " +
-                        "Please contact support of further assistance."), new Object[]{key}) :
-                messageService.createMessage(Message.INVALID_KEY_MESSAGE));
         }
         log(message);
         return message;
