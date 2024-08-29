@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.acceptance.common;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.zowe.apiml.acceptance.requests.SecurityRequests;
@@ -26,5 +27,6 @@ public class AcceptanceTestWithBasePath {
     public void setBasePath() {
         basePath = String.format("https://localhost:%d", port);
         securityRequests = new SecurityRequests(basePath);
+        RestAssured.useRelaxedHTTPSValidation();
     }
 }

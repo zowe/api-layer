@@ -74,7 +74,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     private WebClient webClient;
 
     @PostConstruct
-    void initWeClient() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
+    void initWebClient() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(
             HttpClient.create().secure(SslProvider.builder().sslContext(getSslContext()).build())
         )).build();
