@@ -79,12 +79,7 @@ class LocalApiDocServiceTest {
             instanceRetrievalService,
             gatewayClient);
 
-        ReflectionUtils.doWithFields(apiDocRetrievalService.getClass(), field -> {
-            if (field.getAnnotation(InjectApimlLogger.class) != null) {
-                ReflectionUtils.makeAccessible(field);
-                field.set(apiDocRetrievalService, apimlLogger);
-            }
-        });
+        ReflectionTestUtils.setField(apiDocRetrievalService, "apimlLogger", apimlLogger);
     }
 
     @Nested
