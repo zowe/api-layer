@@ -23,7 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
@@ -31,7 +31,6 @@ import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundExcepti
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.io.IOException;
 import java.util.Collections;
