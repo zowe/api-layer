@@ -35,11 +35,12 @@ import java.util.List;
 @SuperBuilder
 public class ApiInfo {
 
-    public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String documentationUrl) {
+    public ApiInfo(String apiId, String gatewayUrl, String version, String swaggerUrl, String graphqlUrl, String documentationUrl) {
         this.apiId = apiId;
         this.gatewayUrl = gatewayUrl;
         this.version = version;
         this.swaggerUrl = swaggerUrl;
+        this.graphqlUrl = graphqlUrl;
         this.documentationUrl = documentationUrl;
         this.codeSnippet = new ArrayList<>();
     }
@@ -64,6 +65,7 @@ public class ApiInfo {
     private String gatewayUrl;
     private String version;
     private String swaggerUrl;
+    private String graphqlUrl;
     private String documentationUrl;
 
     @Builder.Default

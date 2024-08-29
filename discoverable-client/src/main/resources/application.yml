@@ -12,6 +12,7 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.springframework.web.socket.adapter: DEBUG
 
 spring:
     cloud:
@@ -28,6 +29,11 @@ spring:
         allow-circular-references: true
     profiles.group:
         dev: diag
+
+    graphql:
+        graphiql:
+            enabled: true
+        path:  "/api/v3/graphql"
 
 eureka:
     client:
@@ -68,8 +74,8 @@ apiml:
                 service-url: ${apiml.service.contextPath}/ws
             -   gateway-url: "/sse/v1"
                 service-url: ${apiml.service.contextPath}/
-            -   gateway-url: "/graphql/v1"
-                service-url: ${apiml.service.contextPath}/
+            -   gateway-url: "/api/v3"
+                service-url: ${apiml.service.contextPath}/api/v3
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 1.0.0
@@ -160,7 +166,7 @@ server:
         mime-types: image/png
         enabled: true
         min-response-size: 500
-
+    max-http-request-header-size: 65536
 management:
     endpoints:
         migrate-legacy-ids: true
@@ -212,3 +218,4 @@ apiml:
 server:
     ssl:
         enabled: false
+

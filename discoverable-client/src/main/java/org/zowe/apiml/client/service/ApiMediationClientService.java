@@ -45,7 +45,7 @@ public class ApiMediationClientService {
     }
 
     public boolean register() throws ServiceDefinitionException {
-        ApiInfo apiInfo = new ApiInfo(SERVICE_ID, GATEWAY_URL, "1.0.0", null, null);
+        ApiInfo apiInfo = new ApiInfo(SERVICE_ID, GATEWAY_URL, "1.0.0", null, null, null);
         Authentication authentication = new Authentication("bypass", null, null);
         Ssl ssl = new Ssl(dcConfig.isSslEnabled(), dcConfig.isVerifyCerts(), dcConfig.isNonStrictVerifyCerts(), dcConfig.getSslProtocol(), dcConfig.getKeyAlias(),
             dcConfig.getKeyPassword().toCharArray(), dcConfig.getKeyStore(), dcConfig.getKeyStorePassword().toCharArray(),

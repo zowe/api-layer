@@ -75,6 +75,7 @@ dependencies {
     implementation libs.spring.boot.starter.websocket
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
+    implementation libs.spring.boot.starter.graphql
 
     testImplementation libs.spring.boot.starter.test
 

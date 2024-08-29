@@ -153,10 +153,12 @@ logging:
         org.springframework.cloud.gateway: DEBUG
         org.springframework.security: DEBUG
         org.springframework.web.reactive: DEBUG
+        org.springframework.web.reactive.socket: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
+        org.apache.tomcat.util.net: DEBUG
 
 ---
 spring.config.activate.on-profile: attls
