@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import jakarta.websocket.ContainerProvider;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +92,11 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     }
                 }
             }
+
+            @Override
+            public boolean supportsPartialMessages() {
+                return true;
+            }
         };
     }
 
@@ -103,7 +110,13 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
         throws Exception {
+        var wsContainer = ContainerProvider.getWebSocketContainer();
+        wsContainer.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
+        wsContainer.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
+        wsContainer.setAsyncSendTimeout(10_000_000L);
+        wsContainer.setDefaultMaxSessionIdleTimeout(10_000_000L);
         StandardWebSocketClient client = new StandardWebSocketClient();
+
         client.setSslContext(HttpClientUtils.ignoreSslContext());
         URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
         return client.execute(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
@@ -186,6 +199,32 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                         assertEquals("jakarta.websocket.DeploymentException: The HTTP response from the server [404] did not permit the HTTP upgrade to WebSocket",
                             exception.getMessage());
+                    }
+
+                    @Test
+                    void whenHandshakeRequestIsTooLarge() throws Exception {
+                        final StringBuilder response = new StringBuilder();
+                        if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
+                            VALID_AUTH_HEADERS.add("X-Test", "value");
+                        }
+                        VALID_AUTH_HEADERS.add("Cookie", validToken);
+
+                        char[] data = new char[3000];
+                        Arrays.fill(data, 'a');
+                        for (int i = 0; i < 3; i++) {
+                            VALID_AUTH_HEADERS.add("X-Test-" + i, String.valueOf(data));
+                        }
+                        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_HEADER), VALID_AUTH_HEADERS, response, 1);
+
+                        session.sendMessage(new TextMessage("gimme those headers"));
+                        synchronized (response) {
+                            response.wait();
+                        }
+
+
+                        assertTrue(response.toString().contains("x-test-2"), "WebSocket response: " + response + ". Does not contain x-test-2");
+                        session.close();
+
                     }
                 }
             }

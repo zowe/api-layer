@@ -18,14 +18,14 @@ import static org.hamcrest.CoreMatchers.is;
 class ApiInfoTest {
     @Test
     void whenThereIsNoVersionReturnMinusOne() {
-        ApiInfo underTest = new ApiInfo("org.zowe", "api/v1", null, "swaggerUrl", "documentationUrl");
+        ApiInfo underTest = new ApiInfo("org.zowe", "api/v1", null, "swaggerUrl", null, "documentationUrl");
 
         assertThat(underTest.getMajorVersion(), is(-1));
     }
 
     @Test
     void whenThereIsMajorVersionReturnIt() {
-        ApiInfo underTest = new ApiInfo("org.zowe", "api/v1", "1.0.0", "swaggerUrl", "documentationUrl");
+        ApiInfo underTest = new ApiInfo("org.zowe", "api/v1", "1.0.0", "swaggerUrl", null, "documentationUrl");
 
         assertThat(underTest.getMajorVersion(), is(1));
     }

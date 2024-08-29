@@ -97,6 +97,27 @@ services:
             gatewayUrl: api/v1
             version: 1.0.0
 
+    -   serviceId: graphqlclient   # unique lowercase ID of the service
+        catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+        title: Discoverable client with GraphQL   # Title of the service in the API catalog
+        description: Sample for data demonstration using GraphiQL Playround.
+        instanceBaseUrls: # list of base URLs for each instance
+            - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+        homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
+        statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+        healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+        routes:
+            -   gatewayUrl: api/v3  # [api/ui/ws]/v{majorVersion}
+                serviceRelativeUrl: /api/v3 # relativePath that is added to baseUrl of an instance
+        authentication:
+            scheme: httpBasicPassTicket
+        apiInfo:
+            -   apiId: zowe.apiml.discoverableclient
+                gatewayUrl: api/v3
+                version: 1.0.0
+                graphqlUrl: https://localhost:10012/discoverableclient/api/v3/graphql
+
+
     - serviceId: dcpassticket  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Discoverable client with passTicket authentication scheme  # Title of the service in the API catalog

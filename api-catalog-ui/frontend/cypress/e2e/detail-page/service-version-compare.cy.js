@@ -36,7 +36,7 @@ describe('>>> Service version compare Test', () => {
         );
         cy.get('div.MuiTabs-flexContainer.MuiTabs-flexContainerVertical') // Select the parent div
             .find('a.MuiTab-root') // Find all the anchor elements within the div
-            .should('have.length', 12); // Check if there are 12 anchor elements within the div
+            .should('have.length', 13); // Check if there are 13 anchor elements within the div -- changed from 12 to 13 after adding Discoverable client with GraphQL
         cy.get('.version-text').should('exist');
         cy.get('.version-text').should('contain.text', 'Compare');
     });
