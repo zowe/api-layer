@@ -13,23 +13,30 @@ package org.zowe.apiml.gateway.controllers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MockService;
+import org.zowe.apiml.gateway.filters.ForbidCharacterException;
+import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import reactor.core.publisher.Mono;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -37,8 +44,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("gatewayExceptionHandlerTest")
-@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"management.server.port=10987"})
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GatewayExceptionHandlerTest extends AcceptanceTestWithMockServices {
 
     private static final AtomicReference<Exception> mockException = new AtomicReference<>();
@@ -67,6 +73,26 @@ class GatewayExceptionHandlerTest extends AcceptanceTestWithMockServices {
             .then()
             .statusCode(code)
             .body("messages[0].messageKey", containsString(messageKey));
+    }
+
+    Stream<Arguments> getExceptions() {
+        return Stream.of(
+            Arguments.of(new ForbidSlashException(""), 400, "org.zowe.apiml.gateway.requestContainEncodedSlash"),
+            Arguments.of(new ForbidCharacterException(""), 400, "org.zowe.apiml.gateway.requestContainEncodedCharacter"),
+            Arguments.of(new ResponseStatusException(HttpStatusCode.valueOf(504)), 504, "org.zowe.apiml.gateway.responseStatusError")
+        );
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("getExceptions")
+    void whenExceptionIsThrown_thenTranslateToCorrectMessage(Exception ex, int status, String message) throws MalformedURLException {
+        mockException.set(ex);
+        given().when()
+            .get(new URL(basePath + "/serv1ce/api/v1/test"))
+            .then()
+            .statusCode(status)
+            .body("messages[0].messageKey", containsString(message));
     }
 
     @Configuration

@@ -94,13 +94,13 @@ public class GatewayExceptionHandler {
     }
 
     @ExceptionHandler(ForbidCharacterException.class)
-    public Mono<Void> handleForbidCharacterException(ServerWebExchange exchange, WebClientResponseException.BadRequest ex) {
+    public Mono<Void> handleForbidCharacterException(ServerWebExchange exchange, ForbidCharacterException ex) {
         log.debug("Forbidden character in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedCharacter");
     }
 
     @ExceptionHandler(ForbidSlashException.class)
-    public Mono<Void> handleForbidSlashException(ServerWebExchange exchange, WebClientResponseException.BadRequest ex) {
+    public Mono<Void> handleForbidSlashException(ServerWebExchange exchange, ForbidSlashException ex) {
         log.debug("Forbidden slash in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedSlash");
     }
@@ -138,17 +138,13 @@ public class GatewayExceptionHandler {
 
     @ExceptionHandler({Exception.class})
     public Mono<Void> handleInternalError(ServerWebExchange exchange, Exception ex) {
-        if (log.isDebugEnabled()) {
-            log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        }
+        log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
     }
 
     @ExceptionHandler({ResponseStatusException.class})
     public Mono<Void> handleStatusError(ServerWebExchange exchange, ResponseStatusException ex) {
-        if (log.isDebugEnabled()) {
-            log.debug("Unexpected response status on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        }
+        log.debug("Unexpected response status on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, ex.getStatusCode().value(), "org.zowe.apiml.gateway.responseStatusError");
     }
 
