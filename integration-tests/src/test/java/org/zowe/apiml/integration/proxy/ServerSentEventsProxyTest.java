@@ -14,7 +14,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.client.reactive.ClientHttpConnector;
@@ -76,7 +75,6 @@ public class ServerSentEventsProxyTest {
         @Nested
         class GivenIncorrectPath_thenReturnError {
             @Test
-            @Disabled("FIXME: fix messaging to be same as in the original ZUUL Gateway")
             void givenInvalidServiceId() {
                 String path = "/bad/sse/v1/events";
                 FluxExchangeResult<String> fluxResult = webTestClient
@@ -92,7 +90,6 @@ public class ServerSentEventsProxyTest {
             }
 
             @Test
-            @Disabled("FIXME: fix messaging to be same as in the original ZUUL Gateway")
             void givenInvalidVersion() {
                 String path = "/discoverableclient/sse/bad/events";
                 FluxExchangeResult<String> fluxResult = webTestClient
@@ -108,7 +105,6 @@ public class ServerSentEventsProxyTest {
             }
 
             @Test
-            @Disabled("FIXME: fix messaging to be same as in the original ZUUL Gateway")
             void givenNoServiceId() {
                 FluxExchangeResult<String> fluxResult = webTestClient
                     .get()
