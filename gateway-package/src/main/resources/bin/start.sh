@@ -201,6 +201,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-} \
     -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-} \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-} \
+    -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-jwt} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_gateway_registry_enabled:-false} \
     -Dserver.address=0.0.0.0 \

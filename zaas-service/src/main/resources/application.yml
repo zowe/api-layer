@@ -56,6 +56,8 @@ apiml:
         useInternalMapper: false
         auth:
             provider: zosmf
+            zosmf:
+                jwtAutoconfiguration: jwt
         oidc:
             enabled: false
             clientId:
