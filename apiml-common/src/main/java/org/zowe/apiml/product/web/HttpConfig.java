@@ -28,17 +28,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -112,11 +107,11 @@ public class HttpConfig {
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
 
+    private HttpsFactory factory;
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
-    private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
@@ -161,12 +156,11 @@ public class HttpConfig {
 
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
-            HttpsFactory factory = new HttpsFactory(httpsConfig);
+            factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
             secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
-            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
             optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
@@ -293,12 +287,12 @@ public class HttpConfig {
 
     @Bean
     public EurekaJerseyClient eurekaJerseyClient() {
-        return eurekaJerseyClientBuilder.build();
+        return eurekaJerseyClientBuilder().get().build();
     }
 
     @Bean
-    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
-        return eurekaJerseyClientBuilder;
+    public Supplier<EurekaJerseyClientBuilder> eurekaJerseyClientBuilder() {
+        return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
     }
 
 }
