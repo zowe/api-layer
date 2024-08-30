@@ -317,7 +317,7 @@ public class WebSecurity {
             )
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(
-                (exchange, ex) -> gatewayExceptionHandler.handleAuthenticationException(exchange, ex))
+                gatewayExceptionHandler::handleAuthenticationException)
             );
     }
 
@@ -347,12 +347,11 @@ public class WebSecurity {
             .authorizeExchange(authorizeExchangeSpec -> {
                     if (!isHealthEndpointProtected) {
                         authorizeExchangeSpec
-                            .pathMatchers( "/application/info", "/application/version", "/application/health")
+                            .pathMatchers("/application/info", "/application/version", "/application/health")
                             .permitAll();
-                    }
-                    else {
+                    } else {
                         authorizeExchangeSpec
-                            .pathMatchers( "/application/info", "/application/version")
+                            .pathMatchers("/application/info", "/application/version")
                             .permitAll();
                     }
                 }

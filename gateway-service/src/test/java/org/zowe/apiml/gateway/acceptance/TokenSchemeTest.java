@@ -291,14 +291,14 @@ public abstract class TokenSchemeTest {
                 .and().start();
         }
 
-        MockService createZaasFailure() throws IOException {
+        MockService createZaasFailure() {
             return mockService("zaas").scope(MockService.Scope.TEST)
                 .addEndpoint(getTokenEndpoint())
                 .responseCode(SC_UNAUTHORIZED)
                 .and().start();
         }
 
-        MockService createService() throws IOException {
+        MockService createService() {
             return mockService("service").scope(MockService.Scope.CLASS)
                 .authenticationScheme(getAuthenticationScheme())
                 .addEndpoint("/service/test/success")
