@@ -102,7 +102,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenNoInstanceOfZosmf_whenCallingAService_thenReturn500() {
+        void givenNoInstanceOfZosmf_whenCallingAService_thenReturn503() {
             zaasZombie.stop();
             zaasError.stop();
             zaasOk.stop();
@@ -302,41 +302,41 @@ public abstract class TokenSchemeTest {
             return mockService("service").scope(MockService.Scope.CLASS)
                 .authenticationScheme(getAuthenticationScheme())
                 .addEndpoint("/service/test/success")
-                .assertion(he -> assertEquals(JWT, getCookie(he, COOKIE_NAME)))
+                    .assertion(he -> assertEquals(JWT, getCookie(he, COOKIE_NAME)))
 
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
-                .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+                    .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
 
-                .assertion(he -> assertNull(getCookie(he, "personalAccessToken")))
-                .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken")))
-                .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken.2")))
-                .assertion(he -> assertNull(getCookie(he, "jwtToken")))
-                .assertion(he -> assertNull(getCookie(he, "LtpaToken2")))
-                .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
+                    .assertion(he -> assertNull(getCookie(he, "personalAccessToken")))
+                    .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken")))
+                    .assertion(he -> assertNull(getCookie(he, "apimlAuthenticationToken.2")))
+                    .assertion(he -> assertNull(getCookie(he, "jwtToken")))
+                    .assertion(he -> assertNull(getCookie(he, "LtpaToken2")))
+                    .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
                 .and()
 
                 .addEndpoint("/service/test/fail")
-                .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
+                    .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
 
-                .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
-                .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
-                .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
-                .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
+                    .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
+                    .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-DistinguishedName")))
+                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-CommonName")))
+                    .assertion(he -> assertEquals("myvalue", he.getRequestHeaders().getFirst("myheader")))
 
-                .assertion(he -> assertNotNull(getCookie(he, "personalAccessToken")))
-                .assertion(he -> assertNotNull(getCookie(he, "apimlAuthenticationToken")))
-                .assertion(he -> assertNotNull(getCookie(he, "apimlAuthenticationToken.2")))
-                .assertion(he -> assertNotNull(getCookie(he, "jwtToken")))
-                .assertion(he -> assertNotNull(getCookie(he, "LtpaToken2")))
-                .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
+                    .assertion(he -> assertNotNull(getCookie(he, "personalAccessToken")))
+                    .assertion(he -> assertNotNull(getCookie(he, "apimlAuthenticationToken")))
+                    .assertion(he -> assertNotNull(getCookie(he, "apimlAuthenticationToken.2")))
+                    .assertion(he -> assertNotNull(getCookie(he, "jwtToken")))
+                    .assertion(he -> assertNotNull(getCookie(he, "LtpaToken2")))
+                    .assertion(he -> assertEquals("mycookievalue", getCookie(he, "mycookie")))
                 .and().start();
         }
 
@@ -361,9 +361,9 @@ public abstract class TokenSchemeTest {
                 .cookie("apimlAuthenticationToken.2", "jwt2")
                 .cookie("jwtToken", "jwtToken")
                 .cookie("LtpaToken2", "LtpaToken2")
-                .when()
+            .when()
                 .get(getServiceUrl(path))
-                .then()
+            .then()
                 .statusCode(200);
         }
 

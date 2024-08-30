@@ -189,7 +189,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     ) {
         Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
         if (!i.hasNext()) {
-            throw new ServiceNotAccessibleException("No ZAAS is available");
+            throw new ServiceNotAccessibleException("No instance of ZAAS is available");
         }
 
         return requestWithHa(i, requestCreator).flatMap(responseProcessor);

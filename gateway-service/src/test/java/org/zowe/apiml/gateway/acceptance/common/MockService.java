@@ -45,27 +45,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * necessary to mock registry and routing. The easiest way is to use the method
  * {@link AcceptanceTestWithMockServices#mockService(String)}. It allows to you to use the same features and also
  * takes care about clean up, mocking of service register, and updating routing rules.
- * <p>
+ *
  * Example:
- * <p>
- * try (MockService mockservice = MockService.builder()
- * .serviceId("myservice")
- * .scope(MockService.Scope.CLASS)
- * .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("MYAPPLID")
- * .addEndpoint("/test")
- * .responseCode(403)
- * .bodyJson("{\"error\": \"authenticatin failed\"}")
- * .assertions(httpExchange -> assertNull(he.getRequestHeaders().getFirst("X-My-Header")))
- * .and().addEndpoint("/404")
- * .responseCode(404)
- * .and().start()
- * ) {
- * // do a test
- * <p>
- * assertEquals(5, mockservice.getCounter());
- * MockService.checkAssertionErrors();
- * }
- * <p>
+ *
+ *  try (MockService mockservice = MockService.builder()
+ *      .serviceId("myservice")
+ *      .scope(MockService.Scope.CLASS)
+ *      .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("MYAPPLID")
+ *      .addEndpoint("/test")
+ *          .responseCode(403)
+ *          .bodyJson("{\"error\": \"authenticatin failed\"}")
+ *          .assertions(httpExchange -> assertNull(he.getRequestHeaders().getFirst("X-My-Header")))
+ *      .and().addEndpoint("/404")
+ *          .responseCode(404)
+ *      .and().start()
+ *  ) {
+ *      // do a test
+ *
+ *      assertEquals(5, mockservice.getCounter());
+ *      MockService.checkAssertionErrors();
+ *  }
+ *
  * Note: Before implementation please check the full list of methods.
  */
 @Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
@@ -505,14 +505,16 @@ public class MockService implements AutoCloseable {
 
     public enum Status {
 
-        // service is stopped (not registred)
-        STOPPED,
-        // service is up and could be called by gateway
-        STARTED,
-        // service was stopped, and it should be removed from the memory
-        CANCELLING,
-        // service is registered but it is also down
-        ZOMBIE;
+            // service is stopped (not registred)
+            STOPPED,
+            // service is up and could be called by gateway
+            STARTED,
+            // service was stopped, and it should be removed from the memory
+            CANCELLING,
+            // service is registered but it is also down
+            ZOMBIE
+
+        ;
 
         public boolean isUp() {
             return this == STARTED;
