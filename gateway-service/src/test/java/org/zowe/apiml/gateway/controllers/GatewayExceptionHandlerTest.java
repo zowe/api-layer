@@ -14,12 +14,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MockService;
@@ -35,6 +37,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("gatewayExceptionHandlerTest")
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"management.server.port=10987"})
 class GatewayExceptionHandlerTest extends AcceptanceTestWithMockServices {
 
     private static final AtomicReference<Exception> mockException = new AtomicReference<>();
