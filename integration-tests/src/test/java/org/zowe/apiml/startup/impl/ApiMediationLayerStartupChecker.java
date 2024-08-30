@@ -109,9 +109,10 @@ public class ApiMediationLayerStartupChecker {
             // Consider properly the case with multiple gateway services running on different ports.
             if (gatewayConfiguration.getInternalPorts() != null && !gatewayConfiguration.getInternalPorts().isEmpty()) {
                 String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
-                for (String port : internalPorts) {
-                    log.debug("Trying to access the Gateway at port {}", port);
-                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(port), gatewayConfiguration.getHost());
+                String[] hosts = gatewayConfiguration.getHost().split(",");
+                for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
+                    log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
+                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(internalPorts[i]), hosts[i]);
                 }
             }
 
