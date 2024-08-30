@@ -135,6 +135,38 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
         --add-opens=java.base/java.io=ALL-UNNAMED"
 
+get_enabled_protocol_limit()
+{
+    target=$1
+    type=$2
+    key_component=ZWE_configs_zowe_network_${target}_tls_${type}Tls
+    key_zowe=ZWE_zowe_network_${target}_tls_${type}Tls
+    echo ${!key_component:-${!key_zowe:-}}
+}
+
+get_enabled_protocol()
+{
+    target=$1
+    enabled_protocols_min=$(get_enabled_protocol_limit "${target}" "min")
+    enabled_protocols_max=$(get_enabled_protocol_limit "${target}" "max")
+
+    if [ "${enabled_protocols_min:-}" == "${enabled_protocols_max:-}" ]; then
+        echo "${enabled_protocols_max:-}"
+    elif [ -z "${enabled_protocols_min:-}" ]; then
+        echo "${enabled_protocols_max:-}"
+    else
+        enabled_protocols_max=${enabled_protocols_max:-TLSv1.3}
+
+        enabled_protocols=,SSLv3,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
+        enabled_protocols=${enabled_protocols%%,${enabled_protocols_max}*}
+        enabled_protocols=${enabled_protocols#*${enabled_protocols_min},}
+        if [ ! -z ${enabled_protocols} ]; then
+          enabled_protocols=",${enabled_protocols}"
+        fi
+        echo "${enabled_protocols_min}${enabled_protocols},${enabled_protocols_max}"
+    fi
+}
+
 ATTLS_ENABLED="false"
 # ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
 if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
@@ -231,7 +263,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-} \
     -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-} \
-    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Dserver.ssl.ciphers=${server_ciphers} \
+    -Dserver.ssl.protocol=${server_protocol} \
+    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
