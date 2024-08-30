@@ -24,8 +24,8 @@ import org.zowe.apiml.gateway.acceptance.config.DiscoveryClientTestConfig;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = {"management.endpoint.gateway.enabled=true", "apiml.health.protected=false"})
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"apiml.health.protected=false"})
 @Import(DiscoveryClientTestConfig.class)
 public class ProtectedHealthEndpointTest {
 

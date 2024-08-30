@@ -25,7 +25,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ComponentScan(basePackages = "org.zowe.apiml.gateway")
-@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"management.port=-1"})
 @Import(DiscoveryClientTestConfig.class)
 @DirtiesContext
 public @interface AcceptanceTest {
