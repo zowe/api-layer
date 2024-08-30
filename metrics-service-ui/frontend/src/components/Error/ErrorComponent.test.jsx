@@ -13,12 +13,12 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 
-import Error from './Error';
+import ErrorComponent from './ErrorComponent';
 
 describe('>>> Error component tests', () => {
     it('should display a styled Typography', () => {
         const errorText = 'my error';
-        const sample = shallow(<Error text={errorText} />);
+        const sample = shallow(<ErrorComponent text={errorText} />);
 
         const ErrorTypography = sample.find('WithStyles(WithStyles(ForwardRef(Typography)))');
         expect(ErrorTypography).toExist();
@@ -26,7 +26,7 @@ describe('>>> Error component tests', () => {
     });
 
     it('should display an element with id erroricon', () => {
-        const sample = shallow(<Error />);
+        const sample = shallow(<ErrorComponent />);
         expect(sample.find('[id="erroricon"]')).toExist();
     });
 });
