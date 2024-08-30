@@ -327,7 +327,6 @@ public class WebSecurity {
         return defaultSecurityConfig(http).build();
     }
 
-    // TODO the security for the endpoints below is still not working
     @Bean
     @Order(1)
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
