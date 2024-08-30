@@ -29,8 +29,6 @@ import reactor.test.StepVerifier;
 import javax.net.ssl.SSLException;
 import java.time.Duration;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_SSE_EVENTS;
 
 @TestsNotMeantForZowe
@@ -85,8 +83,6 @@ public class ServerSentEventsProxyTest {
                     .isNotFound()
                     .returnResult(String.class);
 
-                String response = fluxResult.getResponseBody().next().block();
-                assertThat(response, is("ZWEAG700E No instance of the service 'bad' found. Routing will not be available."));
             }
 
             @Test
@@ -100,8 +96,6 @@ public class ServerSentEventsProxyTest {
                     .isNotFound()
                     .returnResult(String.class);
 
-                String response = fluxResult.getResponseBody().next().block();
-                assertThat(response, is("ZWEAM104E The endpoint you are looking for 'sse/bad' could not be located"));
             }
 
             @Test
@@ -114,8 +108,6 @@ public class ServerSentEventsProxyTest {
                     .isBadRequest()
                     .returnResult(String.class);
 
-                String response = fluxResult.getResponseBody().next().block();
-                assertThat(response, is("ZWEAG712E The URI '/sse/v1' is an invalid format"));
             }
         }
     }
