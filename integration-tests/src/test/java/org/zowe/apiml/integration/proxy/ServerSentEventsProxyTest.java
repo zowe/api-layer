@@ -75,7 +75,7 @@ public class ServerSentEventsProxyTest {
             @Test
             void givenInvalidServiceId() {
                 String path = "/bad/sse/v1/events";
-                FluxExchangeResult<String> fluxResult = webTestClient
+                webTestClient
                     .get()
                     .uri(path)
                     .exchange()
@@ -88,7 +88,7 @@ public class ServerSentEventsProxyTest {
             @Test
             void givenInvalidVersion() {
                 String path = "/discoverableclient/sse/bad/events";
-                FluxExchangeResult<String> fluxResult = webTestClient
+                webTestClient
                     .get()
                     .uri(path)
                     .exchange()
@@ -100,12 +100,12 @@ public class ServerSentEventsProxyTest {
 
             @Test
             void givenNoServiceId() {
-                FluxExchangeResult<String> fluxResult = webTestClient
+                webTestClient
                     .get()
                     .uri("/sse/v1")
                     .exchange()
                     .expectStatus()
-                    .isBadRequest()
+                    .isNotFound()
                     .returnResult(String.class);
 
             }
