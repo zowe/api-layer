@@ -207,6 +207,68 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "zowe": {
+                                            "type": "object",
+                                            "description": "Section to override Zowe default configuration.",
+                                            "properties": {
+                                                "network": {
+                                                    "type": "object",
+                                                    "description": "Specifies configuration of the network configuration.",
+                                                    "properties": {
+                                                        "client": {
+                                                            "type": "object",
+                                                            "description": "Specifies client side of network configuration.",
+                                                            "properties": {
+                                                                "tls": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "minTls": {
+                                                                            "$ref": "#/$defs/tlsType",
+                                                                            "description": "Specifies the oldest SSL/TLS protocol to be used."
+                                                                        },
+                                                                        "maxTls": {
+                                                                            "$ref": "#/$defs/tlsType",
+                                                                            "description": "Specifies the newest SSL/TLS protocol to be used."
+                                                                        },
+                                                                        "ciphers": {
+                                                                            "type": "string",
+                                                                            "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
+                                                                            "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
+                                                                            "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)*$"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "server": {
+                                                            "type": "object",
+                                                            "description": "Specifies server side of network configuration.",
+                                                            "properties": {
+                                                                "tls": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "minTls": {
+                                                                            "$ref": "#/$defs/tlsType",
+                                                                            "description": "Specifies the oldest SSL/TLS protocol to be used."
+                                                                        },
+                                                                        "maxTls": {
+                                                                            "$ref": "#/$defs/tlsType",
+                                                                            "description": "Specifies the newest SSL/TLS protocol to be used."
+                                                                        },
+                                                                        "ciphers": {
+                                                                            "type": "string",
+                                                                            "description": "Specifies list of SSL/tls ciphers used during the secured communication.",
+                                                                            "default": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384",
+                                                                            "pattern": "^[A-Z0-9_]+(,[A-Z0-9_]+)*$"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
