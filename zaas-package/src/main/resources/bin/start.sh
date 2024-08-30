@@ -229,8 +229,12 @@ fi
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.security.auth.jwtKeyAlias=${PKCS11_TOKEN_LABEL:-jwtsecret} \
 
+if [ -n "${ZWE_java_home}" ]; then
+    JAVA_BIN_DIR=${ZWE_java_home}/bin/
+fi
+
 ZAAS_CODE=AZ
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} java \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
     ${ADD_OPENS} \

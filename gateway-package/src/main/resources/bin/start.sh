@@ -169,9 +169,13 @@ if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true
   keystore_location=
 fi
 
+if [ -n "${ZWE_java_home}" ]; then
+    JAVA_BIN_DIR=${ZWE_java_home}/bin/
+fi
+
 GATEWAY_CODE=AG
 _BPXK_AUTOCVT=OFF
-_BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
+_BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
