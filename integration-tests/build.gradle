@@ -501,6 +501,7 @@ task runHATests(type: Test) {
     outputs.cacheIf { false }
 
     systemProperty "environment.ha", true
+    systemProperty "cloudGateway.enabled", false
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
@@ -534,6 +535,7 @@ task runChaoticHATests(type: Test) {
     outputs.cacheIf { false }
 
     systemProperty "environment.ha", true
+    systemProperty "cloudGateway.enabled", false
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
