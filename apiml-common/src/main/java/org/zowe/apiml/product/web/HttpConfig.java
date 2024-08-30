@@ -21,7 +21,6 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -195,7 +194,6 @@ public class HttpConfig {
     }
 
     @Bean
-    @Qualifier("publicKeyCertificatesBase64")
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
     }
@@ -209,7 +207,6 @@ public class HttpConfig {
     }
 
     @Bean
-    @Qualifier("jettyClientSslContextFactory")
     public SslContextFactory.Client jettyClientSslContextFactory() {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setProtocol(protocol);
@@ -232,7 +229,6 @@ public class HttpConfig {
      */
     @Bean
     @Primary
-    @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         factory.setReadTimeout(readTimeout);
@@ -248,7 +244,6 @@ public class HttpConfig {
      * @return default RestTemplate, which doesn't use certificate from keystore
      */
     @Bean
-    @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
         factory.setReadTimeout(readTimeout);
@@ -259,9 +254,8 @@ public class HttpConfig {
     /**
      * @return HttpClient which use a certificate to authenticate
      */
-    @Bean
+    @Bean("secureHttpClientWithKeystore")
     @Primary
-    @Qualifier("secureHttpClientWithKeystore")
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
     }
@@ -270,7 +264,6 @@ public class HttpConfig {
      * @return HttpClient, which doesn't use a certificate to authenticate
      */
     @Bean
-    @Qualifier("secureHttpClientWithoutKeystore")
     public CloseableHttpClient secureHttpClientWithoutKeystore() {
         return secureHttpClientWithoutKeystore;
     }
