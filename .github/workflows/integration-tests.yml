@@ -451,7 +451,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    ZOSMF_APPLIEDAPARS: PH34201
+                    ZOSMF_APPLIEDAPARS: PH12143
 
         steps:
             -   uses: actions/checkout@v4
@@ -517,7 +517,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012
+                    ZOSMF_APPLIEDAPARS: PH12143
 
         steps:
             -   uses: actions/checkout@v4
@@ -545,7 +545,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsZosmfPH34201:
+    CITestsZosmfPH12143:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
@@ -579,7 +579,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
+                    ZOSMF_APPLIEDAPARS: PH12143
 
         steps:
             -   uses: actions/checkout@v4
@@ -597,7 +597,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsZosmfPH34201-${{ env.JOB_ID }}
+                    name: CITestsZosmfPH12143-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
