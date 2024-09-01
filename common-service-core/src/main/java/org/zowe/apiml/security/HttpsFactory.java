@@ -250,8 +250,6 @@ public class HttpsFactory {
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
             builder.withCustomSSL(getSslContext());
 
             builder.withHostnameVerifier(getHostnameVerifier());
