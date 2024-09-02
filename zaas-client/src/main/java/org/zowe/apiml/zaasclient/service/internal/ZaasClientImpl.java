@@ -135,7 +135,6 @@ public class ZaasClientImpl implements ZaasClient {
     }
 
     @Override
-    @SuppressWarnings("squid:S2147")
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
         if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
             throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);

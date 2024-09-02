@@ -11,7 +11,7 @@
 package org.zowe.apiml.security.client.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -34,7 +34,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 @Component
 public class RestResponseHandler {
 
-    public void handleErrorType(CloseableHttpResponse response, ErrorType errorType, Object... logParameters) {
+    public void handleErrorType(HttpResponse response, ErrorType errorType, Object... logParameters) {
         switch (response.getCode()) {
             case 401:
                 if (errorType != null) {

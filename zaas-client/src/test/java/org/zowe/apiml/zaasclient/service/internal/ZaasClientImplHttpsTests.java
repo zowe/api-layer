@@ -14,15 +14,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.utils.Base64;
 import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.message.StatusLine;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -38,19 +37,10 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Properties;
@@ -59,16 +49,9 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ZaasClientImplHttpsTests {
@@ -81,13 +64,7 @@ class ZaasClientImplHttpsTests {
     @Mock
     private ZaasHttpsClientProvider zaasHttpsClientProvider;
     @Mock
-    private StatusLine statusLine;
-    @Mock
-    private HeaderElement headerElement;
-    @Mock
     private Header header;
-    @Mock
-    private CloseableHttpResponse closeableHttpResponse;
     @Mock
     private CloseableHttpClient closeableHttpClient;
     @Mock
@@ -185,14 +162,14 @@ class ZaasClientImplHttpsTests {
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
             doReturn(httpResponseCode).when(response).getCode();
             when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
-            doReturn(response).when(closeableHttpClient).execute(any(HttpUriRequestBase.class));
+            HttpClientMockHelper.mockExecuteWithResponse(closeableHttpClient, response);
             if (withResponseHeaders) {
                 Header[] headers = new Header[]{ header };
                 when(response.getHeaders("Set-Cookie")).thenReturn(headers);
                 when(header.getValue()).thenReturn("apimlAuthenticationToken=token");
             }
             return response;
-        } catch (ZaasConfigurationException | IOException e) {
+        } catch (ZaasConfigurationException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -201,8 +178,8 @@ class ZaasClientImplHttpsTests {
     private void prepareResponseForServerUnavailable() {
         try {
             when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
-            when(closeableHttpClient.execute(any(HttpPost.class))).thenThrow(IOException.class);
-        } catch (IOException | ZaasConfigurationException e) {
+            HttpClientMockHelper.whenExecuteThenThrow(closeableHttpClient, new IOException("An IO Exception"));
+        } catch (ZaasConfigurationException e) {
             e.printStackTrace();
         }
     }
@@ -210,9 +187,10 @@ class ZaasClientImplHttpsTests {
     private void prepareResponseForUnexpectedException() {
         try {
             when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
-            when(closeableHttpClient.execute(any(HttpPost.class))).thenAnswer(invocation -> {
-                throw new Exception();
-            });
+            when(closeableHttpClient.execute(any(HttpPost.class), any(HttpClientResponseHandler.class)))
+                .thenAnswer(invocation -> {
+                    throw new Exception();
+                });
         } catch (IOException | ZaasConfigurationException e) {
             e.printStackTrace();
         }
@@ -349,10 +327,9 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
-    void testLoginWithToken_WhenResponseCodeIs400_ZaasClientException() throws IOException {
+    void testLoginWithToken_WhenResponseCodeIs400_ZaasClientException() {
         var response = prepareResponse(400, false);
         when(response.getEntity()).thenReturn(httpsEntity);
-
 
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(token));
         assertTrue(exception.getMessage().contains("'ZWEAS121E', message='Empty or null username or password values provided'"), "Message was: " + exception.getMessage());
@@ -388,7 +365,7 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
-    void givenValidTokenInBearer_whenLogout_thenSuccess() throws ZaasClientException, IOException {
+    void givenValidTokenInBearer_whenLogout_thenSuccess() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
         String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
         token = "Bearer " + token;

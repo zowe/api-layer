@@ -16,11 +16,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.http.HttpHeaders;
@@ -72,21 +70,22 @@ public class GatewaySecurityService {
             HttpPost post = new HttpPost(uri);
             String json = objectMapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
-            CloseableHttpResponse response = closeableHttpClient.execute(post);
-            final int statusCode = response.getCode();
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                final HttpEntity responseEntity = response.getEntity();
-                String responseBody = null;
-                if (responseEntity != null) {
-                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            return closeableHttpClient.execute(post, response -> {
+                final int statusCode = response.getCode();
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    final HttpEntity responseEntity = response.getEntity();
+                    String responseBody = null;
+                    if (responseEntity != null) {
+                        responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                    }
+                    ErrorType errorType = getErrorType(responseBody);
+                    responseHandler.handleErrorType(response, errorType,
+                        "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                    return Optional.empty();
                 }
-                ErrorType errorType = getErrorType(responseBody);
-                responseHandler.handleErrorType(response, errorType,
-                    "Cannot access Gateway service. Uri '{}' returned: {}", uri);
-                return Optional.empty();
-            }
-            return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
-        } catch (IOException | ParseException e) { //TODO: Consider different error
+                return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
+            });
+        } catch (IOException e) {
             responseHandler.handleException(e);
         } finally {
             // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
@@ -107,25 +106,26 @@ public class GatewaySecurityService {
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
 
-
         try {
             HttpGet get = new HttpGet(uri);
             get.addHeader(HttpHeaders.COOKIE, cookie);
-            CloseableHttpResponse response = closeableHttpClient.execute(get);
-            final HttpEntity responseEntity = response.getEntity();
-            String responseBody = null;
-            if (responseEntity != null) {
-                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-            }
-            final int statusCode = response.getCode();
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                ErrorType errorType = getErrorType(responseBody);
-                responseHandler.handleErrorType(response, errorType,
-                    "Cannot access Gateway service. Uri '{}' returned: {}", uri);
-                return null;
-            }
-            return objectMapper.readValue(responseBody, QueryResponse.class);
-        } catch (IOException | ParseException e) {
+
+            return closeableHttpClient.execute(get, response -> {
+                final HttpEntity responseEntity = response.getEntity();
+                String responseBody = null;
+                if (responseEntity != null) {
+                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                }
+                final int statusCode = response.getCode();
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    ErrorType errorType = getErrorType(responseBody);
+                    responseHandler.handleErrorType(response, errorType,
+                        "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                    return null;
+                }
+                return objectMapper.readValue(responseBody, QueryResponse.class);
+            });
+        } catch (IOException e) {
             responseHandler.handleException(e);
         }
         return null;

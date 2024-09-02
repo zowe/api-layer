@@ -109,7 +109,7 @@ dependencies {
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
-    testImplementation(testFixtures(project(":integration-tests")))
+    testImplementation(testFixtures(project(":apiml-common")))
 }
 
 bootJar {

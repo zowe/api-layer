@@ -9,6 +9,7 @@ dependencies {
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.jakarta.servlet.api
     testImplementation libs.jjwt
+    testImplementation(testFixtures(project(":apiml-common")))
 
     testRuntimeOnly libs.jjwt.impl
     testRuntimeOnly libs.jjwt.jackson

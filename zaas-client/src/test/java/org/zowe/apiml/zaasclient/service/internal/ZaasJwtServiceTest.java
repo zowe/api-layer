@@ -18,6 +18,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -93,7 +95,7 @@ class ZaasJwtServiceTest {
     void givenJwtToken_whenLogout_thenSetCookie() throws ZaasClientException, IOException {
         mockHttpClient(204);
         zaasJwtService.logout(JWT_TOKEN);
-        verify(closeableHttpClient, times(1)).execute(requestCaptor.capture());
+        verify(closeableHttpClient, times(1)).execute(requestCaptor.capture(), any(HttpClientResponseHandler.class));
         var capturedRequest = requestCaptor.getValue();
         assertTrue((capturedRequest.getHeaders(HttpHeaders.COOKIE) != null) &&
             (capturedRequest.getHeaders(HttpHeaders.COOKIE).length == 1) &&
@@ -105,7 +107,7 @@ class ZaasJwtServiceTest {
         mockHttpClient(204);
         zaasJwtService.logout(HEADER_AUTHORIZATION);
 
-        verify(closeableHttpClient, times(1)).execute(requestCaptor.capture());
+        verify(closeableHttpClient, times(1)).execute(requestCaptor.capture(), any(HttpClientResponseHandler.class));
         var capturedRequest = requestCaptor.getValue();
         assertTrue((capturedRequest.getHeaders(HttpHeaders.AUTHORIZATION) != null) &&
             (capturedRequest.getHeaders(HttpHeaders.AUTHORIZATION).length == 1) &&
@@ -195,7 +197,7 @@ class ZaasJwtServiceTest {
     }
 
     @Test
-    void givenExpiredPassword_whenLogin_thenThrowException() throws IOException {
+    void givenExpiredPassword_whenLogin_thenThrowException() {
         mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
         zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
             () -> zaasJwtService.login("user", "password".toCharArray()));
@@ -212,12 +214,12 @@ class ZaasJwtServiceTest {
         mockHttpClient(statusCode, "null");
     }
 
-    private void mockHttpClient(int statusCode, String content) throws IOException {
+    private void mockHttpClient(int statusCode, String content) {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
         doReturn(statusCode).when(response).getCode();
         HttpEntity entity = new StringEntity(content, ContentType.TEXT_PLAIN);
         doReturn(entity).when(response).getEntity();
-        doReturn(response).when(closeableHttpClient).execute(any(HttpUriRequestBase.class));
+        HttpClientMockHelper.mockExecuteWithResponse(closeableHttpClient, response);
     }
 
     private void zaasClientTestAssertThrows(ZaasClientErrorCodes code, String message, Executable executable) {
