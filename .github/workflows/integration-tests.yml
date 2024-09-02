@@ -634,7 +634,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: ''
 
         steps:
             -   uses: actions/checkout@v4
@@ -1430,7 +1430,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
+                    ZOSMF_APPLIEDAPARS: ''
         steps:
             -   uses: actions/checkout@v4
                 with:
