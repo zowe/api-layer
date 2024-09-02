@@ -39,11 +39,6 @@ public class AuthConfigurationProperties {
     private String gatewayQueryEndpoint = "/gateway/api/v1/auth/query";
     private String gatewayTicketEndpoint = "/gateway/api/v1/auth/ticket";
 
-    private String gatewayLoginEndpointOldFormat = "/api/v1/gateway/auth/login";
-    private String gatewayLogoutEndpointOldFormat = "/api/v1/gateway/auth/logout";
-    private String gatewayQueryEndpointOldFormat = "/api/v1/gateway/auth/query";
-    private String gatewayTicketEndpointOldFormat = "/api/v1/gateway/auth/ticket";
-
     private String zaasLoginEndpoint = "/zaas/api/v1/auth/login";
     private String zaasLogoutEndpoint = "/zaas/api/v1/auth/logout";
     private String zaasQueryEndpoint = "/zaas/api/v1/auth/query";
@@ -58,7 +53,6 @@ public class AuthConfigurationProperties {
     private String gatewayEvictAccessTokensAndRules = "/gateway/auth/access-token/evict";
     private String zaasEvictAccessTokensAndRules = "/zaas/api/v1/auth/access-token/evict";
 
-    private String gatewayRefreshEndpointOldFormat = "/api/v1/gateway/auth/refresh";
     private String gatewayRefreshEndpoint = "/gateway/api/v1/auth/refresh";
     private String zaasRefreshEndpoint = "/zaas/api/v1/auth/refresh";
 
