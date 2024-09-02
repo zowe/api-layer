@@ -30,7 +30,7 @@ public class PH12143 extends FunctionalApar {
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
         if (noAuthentication(headers)) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 //        if (isUnauthorized(headers)) {
 //            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
