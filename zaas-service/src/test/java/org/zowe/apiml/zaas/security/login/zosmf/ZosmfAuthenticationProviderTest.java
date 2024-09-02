@@ -55,6 +55,7 @@ import java.util.EnumMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.*;
 
 @ExtendWith(MockitoExtension.class)
 class ZosmfAuthenticationProviderTest {
@@ -130,7 +131,7 @@ class ZosmfAuthenticationProviderTest {
     void setUp() {
         usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD);
         authConfigurationProperties = new AuthConfigurationProperties();
-        authConfigurationProperties.getZosmf().setJwtAutoconfiguration("JWT");
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
         zosmfInstance = createInstanceInfo(HOST, PORT);
 
         lenient().doAnswer((Answer<TokenAuthentication>) invocation -> TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1))).when(authenticationService).createTokenAuthentication(anyString(), anyString());
@@ -141,7 +142,7 @@ class ZosmfAuthenticationProviderTest {
     void loginWithExistingUser() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
         when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
@@ -302,7 +303,7 @@ class ZosmfAuthenticationProviderTest {
         String cookie = "LtpaToken2=test;";
 
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
-        authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
 
         when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
@@ -415,7 +416,7 @@ class ZosmfAuthenticationProviderTest {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
-        authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
         EnumMap<ZosmfService.TokenType, String> tokens = new EnumMap<>(ZosmfService.TokenType.class);
         tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
         when(zosmfService.authenticate(any())).thenReturn(new ZosmfService.AuthenticationResponse("domain", tokens));
@@ -458,7 +459,7 @@ class ZosmfAuthenticationProviderTest {
         void willChooseLtpaWhenOnlyLtpa() {
             when(authenticationService.createJwtToken(any(), any(), any())).thenReturn("ltpaToken");
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             underTest.authenticate(usernamePasswordAuthenticationToken);
             verify(authenticationService, atLeastOnce()).createTokenAuthentication("userId", "ltpaToken");
         }
@@ -467,7 +468,7 @@ class ZosmfAuthenticationProviderTest {
         void willChooseLtpaWhenOverride() {
             when(authenticationService.createJwtToken(any(), any(), any())).thenReturn("ltpaToken");
 
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
             underTest.authenticate(usernamePasswordAuthenticationToken);
@@ -476,7 +477,7 @@ class ZosmfAuthenticationProviderTest {
 
         @Test
         void willChooseJwtWhenOverride() {
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("JWT");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
             underTest.authenticate(usernamePasswordAuthenticationToken);
@@ -485,27 +486,27 @@ class ZosmfAuthenticationProviderTest {
 
         @Test
         void willThrowWhenOverrideAndWrongTokenLtpa() {
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("JWT");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
             assertThrows(InvalidTokenTypeException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
 
         @Test
         void willThrowWhenOverrideAndWrongTokenJwt() {
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
             assertThrows(InvalidTokenTypeException.class, () -> underTest.authenticate(usernamePasswordAuthenticationToken));
         }
 
         @Test
         void willThrowBadCredentialsWhenNoTokenPresentExpectingLtpa() {
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("LTPA");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
         }
 
         @Test
         void willThrowBadCredentialsWhenNoTokenPresentExpectingJwt() {
-            authConfigurationProperties.getZosmf().setJwtAutoconfiguration("JWT");
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
             assertThrows(BadCredentialsException.class, () -> underTest.authenticate(usernamePasswordAuthentication));
         }
 

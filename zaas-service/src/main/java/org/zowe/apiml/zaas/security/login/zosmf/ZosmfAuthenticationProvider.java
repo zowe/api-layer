@@ -61,15 +61,15 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         } catch (TokenNotValidException e) {
             throw new BadCredentialsException("Invalid Credentials");
         }
-        switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration().toUpperCase()) {
-            case "LTPA":
+        switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
+            case LTPA:
                 if (ar.getTokens().containsKey(LTPA)) {
                     return getApimlJwtToken(user, ar);
                 } else if (ar.getTokens().containsKey(JWT)) {
                     throw new InvalidTokenTypeException("JWT token in z/OSMF response but configured to expect LTPA");
                 }
                 break;
-            case "JWT":
+            case JWT:
                 if (ar.getTokens().containsKey(JWT)) {
                     return getZosmfJwtToken(user, ar);
                 } else if (ar.getTokens().containsKey(LTPA)) {

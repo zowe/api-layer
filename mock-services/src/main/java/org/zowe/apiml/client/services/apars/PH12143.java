@@ -35,6 +35,9 @@ public class PH12143 extends FunctionalApar {
         if (isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
+        if (containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers) && !isValidJwtCookie(headers)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         String[] credentials = getPiecesOfCredentials(headers);
         return validJwtResponse(response, credentials[0], keystorePath);
