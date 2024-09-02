@@ -105,6 +105,13 @@ messages:
       reason: "The service has accepted the authentication of the user but the user does not have access rights to the resource."
       action: "Contact your security administrator to give you access."
 
+    - key: org.zowe.apiml.gateway.responseStatusError
+      number: ZWEAG510
+      type: ERROR
+      text: "Request to the resource ended with unexpected status code."
+      reason: "The service did not respond properly."
+      action: "Verify that the target service is healthy."
+
     - key: org.zowe.apiml.gateway.servicesRequestFailed
       number: ZWESG100
       type: WARNING

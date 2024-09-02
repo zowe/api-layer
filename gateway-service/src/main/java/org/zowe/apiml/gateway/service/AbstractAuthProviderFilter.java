@@ -15,6 +15,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.gateway.filters.RobinRoundIterator;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import reactor.core.publisher.Mono;
 
 import java.util.Iterator;
@@ -29,7 +30,7 @@ public abstract class AbstractAuthProviderFilter<T> {
     protected final WebClient webClient;
     protected final InstanceInfoService instanceInfoService;
 
-    protected abstract  Mono<T> processResponse(WebClient.RequestHeadersSpec<?> rhs);
+    protected abstract Mono<T> processResponse(WebClient.RequestHeadersSpec<?> rhs);
 
     protected abstract String getEndpointPath();
 
@@ -62,7 +63,7 @@ public abstract class AbstractAuthProviderFilter<T> {
     ) {
         Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
         if (!i.hasNext()) {
-            throw new IllegalArgumentException("No ZAAS is available");
+            throw new ServiceNotAccessibleException("There are no instance of ZAAS available");
         }
 
         return requestWithHa(i, requestCreator);
