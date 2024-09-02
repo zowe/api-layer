@@ -20,14 +20,17 @@ import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.util.Timeout;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.*;
+import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -189,7 +192,6 @@ public class HttpConfig {
     }
 
     @Bean
-    @Qualifier("publicKeyCertificatesBase64")
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
     }
@@ -202,7 +204,6 @@ public class HttpConfig {
      */
     @Bean
     @Primary
-    @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         factory.setConnectionRequestTimeout(requestConnectionTimeout);
@@ -218,7 +219,6 @@ public class HttpConfig {
      * @return default RestTemplate, which doesn't use certificate from keystore
      */
     @Bean
-    @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
         factory.setConnectionRequestTimeout(requestConnectionTimeout);
@@ -229,9 +229,8 @@ public class HttpConfig {
     /**
      * @return HttpClient which use a certificate to authenticate
      */
-    @Bean
+    @Bean("secureHttpClientWithKeystore")
     @Primary
-    @Qualifier("secureHttpClientWithKeystore")
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
     }
@@ -240,7 +239,6 @@ public class HttpConfig {
      * @return HttpClient, which doesn't use a certificate to authenticate
      */
     @Bean
-    @Qualifier("secureHttpClientWithoutKeystore")
     public CloseableHttpClient secureHttpClientWithoutKeystore() {
         return secureHttpClientWithoutKeystore;
     }
