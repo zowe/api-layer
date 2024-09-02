@@ -12,7 +12,6 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -61,14 +60,13 @@ class GatewayAuthenticationTest {
     }
 
     @Nested
-    @Disabled("// FIXME response is 401 but empty, possibly missing exception handler")
     class GivenInvalidBearerAuthentication {
         @Nested
         class WhenAccessingProtectedEndpoint {
             @ParameterizedTest
             @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
-                String expectedMessage = "Token is not valid for URL '" + ACTUATOR_ENDPOINT + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 // Gateway request to url
                 given()
                     .header("Authorization", "Bearer invalidToken")
@@ -77,7 +75,7 @@ class GatewayAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
         }

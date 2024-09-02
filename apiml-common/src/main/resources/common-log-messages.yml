@@ -37,6 +37,13 @@ messages:
     # HTTP,Protocol messages
     # 400-499
 
+    - key: org.zowe.apiml.common.badRequest
+      number: ZWEAO400
+      type: ERROR
+      reason: "A value in the request is missing or contains an invalid value."
+      action: "Fix the request and try again."
+      text: "The structure of the request is invalid: %s"
+
     - key: org.zowe.apiml.common.unknownHttpsConfigError
       number: ZWEAO401
       type: ERROR
@@ -44,8 +51,43 @@ messages:
       reason: "An Unknown error occurred while setting up an HTTP client during service initialization, followed by a system exit."
       action: "Start the service again in debug mode to get a more descriptive message. This error indicates it is not a configuration issue."
 
+    - key: org.zowe.apiml.common.unauthorized
+      number: ZWEAO402
+      type: ERROR
+      text: "The request has not been applied because it lacks valid authentication credentials."
+      reason: "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."
+      action: "Review the product documentation for more details about acceptable authentication. Verify that your credentials are valid and contact security administrator to obtain valid credentials."
+
+    - key: org.zowe.apiml.common.notFound
+      number: ZWEAO404
+      type: ERROR
+      text: "The service can not find the requested resource."
+
+    - key: org.zowe.apiml.common.methodNotAllowed
+      number: ZWEAO405
+      type: ERROR
+      text: "The request method has been disabled and cannot be used for the requested resource."
+
+    - key: org.zowe.apiml.common.unsupportedMediaType
+      number: ZWEAO415
+      type: ERROR
+      text: "The media format of the requested data is not supported by the service, so the service has rejected the request."
+
     # TLS,Certificate messages
     # 500-599
+
+    - key: org.zowe.apiml.common.internalServerError
+      number: ZWEAO500
+      type: ERROR
+      text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
+
+    - key: org.zowe.apiml.common.serviceUnavailable
+      number: ZWEAO503
+      type: ERROR
+      text: "The server is not ready to handle the request: %s"
+      reason: "The service is not ready to handle the request, it is being initialized or waiting for another service to start."
+      action: "Repeat the request later. Please contact support for further assistance."
+
 
     # Various messages
     # 600-699

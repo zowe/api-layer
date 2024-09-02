@@ -24,8 +24,8 @@ import org.zowe.apiml.gateway.acceptance.config.DiscoveryClientTestConfig;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = {"management.endpoint.gateway.enabled=true","management.server.port=10091","apiml.health.protected=false"})
+@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"apiml.health.protected=false"})
 @Import(DiscoveryClientTestConfig.class)
 public class ProtectedHealthEndpointTest {
 
@@ -40,20 +40,16 @@ public class ProtectedHealthEndpointTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
-    protected String getGatewayUriWithPath(String path) {
-        return getGatewayUriWithPath("https", path);
-    }
+    /*
+     Service return 503 because of health indicator. Test validates only the access to the endpoint.
+     */
+    @Test
+    void givenNoCredentials_thenReturnServiceUnavailable() {
 
-    protected String getGatewayUriWithPath(String scheme, String path) {
-        return String.format("%s://%s:%d/%s", scheme, hostname, 10091, path);
-    }
-        @Test
-        void requestSuccessWith200() {
-
-            given()
-                .when()
-                .get(getGatewayUriWithPath("application/health"))
-                .then()
-                .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE));
+        given()
+            .when()
+            .get(String.format("https://%s:%d/application/health", hostname, port))
+            .then()
+            .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE));
     }
 }

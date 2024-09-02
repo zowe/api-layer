@@ -17,6 +17,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.assertj.core.error.MultipleAssertionsError;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
@@ -69,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
 @Getter
+@Slf4j
 public class MockService implements AutoCloseable {
 
     private static int idCounter = 1;
@@ -233,6 +235,7 @@ public class MockService implements AutoCloseable {
 
     /**
      * The method returns the endpoint if there is just one registered, otherwise end with an exception.
+     *
      * @return once registred endpoint
      */
     public Endpoint getEndpoint() {
@@ -294,6 +297,7 @@ public class MockService implements AutoCloseable {
 
     /**
      * Construct InstanceInfo for the mock service
+     *
      * @return instanceInfo with all related data
      */
     public InstanceInfo getInstanceInfo() {
@@ -310,6 +314,7 @@ public class MockService implements AutoCloseable {
 
     /**
      * Method call {@link MockService#getInstanceInfo()} converted to EurekaServiceInstance
+     *
      * @return EurekaServiceInstance with all related data
      */
     public EurekaServiceInstance getEurekaServiceInstance() {
@@ -323,6 +328,7 @@ public class MockService implements AutoCloseable {
 
         /**
          * Create a new endpoint of the Mock Service
+         *
          * @param path Path of the endpoint
          * @return builder to define other values
          */
@@ -335,6 +341,7 @@ public class MockService implements AutoCloseable {
 
         /**
          * To build mock service. It will be stopped (not registred). It is necessary to call method start or zombie.
+         *
          * @return instance of mockService
          */
         public MockService build() {
@@ -346,14 +353,26 @@ public class MockService implements AutoCloseable {
 
         /**
          * To start build and start MockService
+         *
          * @return instance of MockService
          * @throws IOException - in case of any issue with starting server
          */
-        public MockService start() throws IOException {
+        public MockService start() {
             MockService mockService = build();
-            mockService.start();
+            try {
+                mockService.start();
+            } catch (RuntimeException | IOException e) {
+                int i = atCounter.getAndIncrement();
+                log.info("Not able to start mock server. Number of retries: {}", i);
+                if (i < 4) {
+                    start();
+                }
+            }
+            atCounter.set(0);
             return mockService;
         }
+
+        AtomicInteger atCounter = new AtomicInteger(0);
 
     }
 
@@ -445,6 +464,7 @@ public class MockService implements AutoCloseable {
 
             /**
              * Definition of the endpoint is done, continue with defining of the MockService
+             *
              * @return instance of MockService's builder
              */
             public MockServiceBuilder and() {
@@ -455,6 +475,7 @@ public class MockService implements AutoCloseable {
 
             /**
              * To set body and content type to application/json
+             *
              * @param body object to be converted to the json (to be returned in the response)
              * @return builder of the endpoint
              * @throws JsonProcessingException in case an issue with generation of JSON

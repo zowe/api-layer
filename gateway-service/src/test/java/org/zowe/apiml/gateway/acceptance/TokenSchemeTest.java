@@ -12,7 +12,10 @@ package org.zowe.apiml.gateway.acceptance;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
@@ -99,12 +102,12 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenNoInstanceOfZosmf_whenCallingAService_thenReturn500() {
+        void givenNoInstanceOfZosmf_whenCallingAService_thenReturn503() {
             zaasZombie.stop();
             zaasError.stop();
             zaasOk.stop();
 
-            given().when().get(getServiceUrl()).then().statusCode(500);
+            given().when().get(getServiceUrl()).then().statusCode(503);
             assertEquals(0, service.getCounter());
         }
 
@@ -288,14 +291,14 @@ public abstract class TokenSchemeTest {
                 .and().start();
         }
 
-        MockService createZaasFailure() throws IOException {
+        MockService createZaasFailure() {
             return mockService("zaas").scope(MockService.Scope.TEST)
                 .addEndpoint(getTokenEndpoint())
                 .responseCode(SC_UNAUTHORIZED)
                 .and().start();
         }
 
-        MockService createService() throws IOException {
+        MockService createService() {
             return mockService("service").scope(MockService.Scope.CLASS)
                 .authenticationScheme(getAuthenticationScheme())
                 .addEndpoint("/service/test/success")
