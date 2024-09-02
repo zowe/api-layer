@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.message.log;
 
+import org.junit.jupiter.api.Nested;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageType;
 
@@ -37,39 +38,6 @@ class ApimlLoggerTest {
         assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
 
         assertNull(apimlLogger.log("someKey"));
-    }
-
-    @Test
-    void when_nullMessageService_return_nullMessage() {
-        ApimlLogger apimlLogger = ApimlLogger.empty();
-
-        assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
-        assertNull(apimlLogger.log("org.zowe.apiml.common.invalidMessageKey"));
-    }
-
-    @Test
-    void when_invalidKey_return_invalidKeyMessage() {
-        ApimlLogger apimlLogger = new ApimlLogger(ApimlLoggerTest.class, null);
-
-        Logger logger = mock(Logger.class);
-        ReflectionTestUtils.setField(apimlLogger, "logger", logger);
-
-        Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
-
-        assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
-
-        Message message = apimlLogger.log(null, new Object[]{});
-        MessageTemplate messageTemplate = (MessageTemplate) ReflectionTestUtils.getField(message, "messageTemplate");
-        String invalidKeyMessageText = "Internal error: Invalid message key '%s' provided. " +
-            "No default message found. Please contact support of further assistance.";
-        assertNull(ReflectionTestUtils.getField(message, "requestedKey"));
-        assertEquals("org.zowe.apiml.common.invalidMessageKey", messageTemplate.getKey());
-        assertEquals("ZWEAM102", messageTemplate.getNumber());
-        assertEquals(MessageType.ERROR, messageTemplate.getType());
-        assertEquals(invalidKeyMessageText, messageTemplate.getText());
-
-        verify(logger, times(1)).error(marker, "ZWEAM102E Internal error: Invalid message key " +
-            "'null' provided. No default message found. Please contact support of further assistance.", new Object[0]);
     }
 
     @Test
@@ -101,6 +69,40 @@ class ApimlLoggerTest {
         verify(logger, times(1)).info((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).warn((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).error((Marker) any(), anyString(), (Object[]) any());
+    }
+
+    @Nested
+    class GivenNullMessageService {
+        ApimlLogger apimlLogger = ApimlLogger.empty();
+
+        @Test
+        void when_nullMessageService_return_nullMessage() {
+            assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
+            assertNull(apimlLogger.log("org.zowe.apiml.common.invalidMessageKey"));
+        }
+
+        @Test
+        void when_nullKey_return_invalidKeyMessage() {
+            assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
+
+            Logger logger = mock(Logger.class);
+            ReflectionTestUtils.setField(apimlLogger, "logger", logger);
+
+            Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
+
+            Message message = apimlLogger.log(null, new Object[]{});
+            MessageTemplate messageTemplate = (MessageTemplate) ReflectionTestUtils.getField(message, "messageTemplate");
+            String invalidKeyMessageText = "Internal error: Invalid message key '%s' provided. " +
+                "No default message found. Please contact support of further assistance.";
+            assertNull(ReflectionTestUtils.getField(message, "requestedKey"));
+            assertEquals("org.zowe.apiml.common.invalidMessageKey", messageTemplate.getKey());
+            assertEquals("ZWEAM102", messageTemplate.getNumber());
+            assertEquals(MessageType.ERROR, messageTemplate.getType());
+            assertEquals(invalidKeyMessageText, messageTemplate.getText());
+
+            verify(logger, times(1)).error(marker, "ZWEAM102E Internal error: Invalid message key " +
+                "'null' provided. No default message found. Please contact support of further assistance.", new Object[0]);
+        }
     }
 
 }
