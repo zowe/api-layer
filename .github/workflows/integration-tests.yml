@@ -1584,7 +1584,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZosmfRsu2012,CITestsZaas,GatewayProxy,GatewayServiceRouting ]
+        needs: [ CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1606,10 +1606,6 @@ jobs:
                     path: citestswithinfinispan
             -   uses: actions/download-artifact@v4
                 with:
-                    name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
-                    path: containercitestszosmfrsu2012
-            -   uses: actions/download-artifact@v4
-                with:
                     name: GatewayProxy-${{ env.JOB_ID }}
                     path: GatewayProxy
             -   uses: actions/download-artifact@v4
@@ -1623,7 +1619,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,containercitestszaas/results"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,containercitestszaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
