@@ -10,11 +10,8 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.i18n.LocaleContextResolver;
-import org.zowe.apiml.message.core.MessageService;
 
 /**
  * This filter should run on all requests for services, which do not have enabled encoded characters in URL
@@ -29,8 +26,8 @@ public class ForbidEncodedCharactersFilterFactory extends AbstractEncodedCharact
 
     private static final char[] PROHIBITED_CHARACTERS = {'%', ';', '\\'};
 
-    public ForbidEncodedCharactersFilterFactory(MessageService messageService, ObjectMapper mapper, LocaleContextResolver localeContextResolver) {
-        super(messageService, mapper, localeContextResolver, "org.zowe.apiml.gateway.requestContainEncodedCharacter");
+    public ForbidEncodedCharactersFilterFactory() {
+        super();
     }
 
     @Override
@@ -38,4 +35,7 @@ public class ForbidEncodedCharactersFilterFactory extends AbstractEncodedCharact
         return StringUtils.containsAny(uri, PROHIBITED_CHARACTERS);
     }
 
+    RuntimeException getException(String uri) {
+        return new ForbidCharacterException(uri);
+    }
 }
