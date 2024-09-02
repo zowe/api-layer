@@ -93,6 +93,13 @@ messages:
         reason: "JZOS toolkit used to communicate with JZOS is unavailable. Either you are running outside of zOS with VSAM as the storage or your zOS Java is misconfigured."
         action: "Check that you run on zOS and that the JZOS toolkit Java classes are on classpath."
 
+    -   key: org.zowe.apiml.cache.storage.deprecated
+        number: ZWECS155
+        type: WARNING
+        text: "'%s' storage option is deprecated."
+        reason: "Specified storage option is deprecated and will be removed in the next major version."
+        action: "Switch to one of the supported options."
+
     # Service specific messages (700 - 799)
     -   key: org.zowe.apiml.cache.gatewayUnavailable
         number: ZWECS700

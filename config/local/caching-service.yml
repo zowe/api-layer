@@ -4,7 +4,7 @@ jgroups:
         address: localhost
 caching:
     storage:
-        mode: infinispan
+        mode: vsam
         infinispan:
             initialHosts: localhost[7099]
 spring:
