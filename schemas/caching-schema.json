@@ -47,13 +47,63 @@
                                             "mode": {
                                                 "type": "string",
                                                 "description": "Type of storge in caching service.",
-                                                "enum": ["inMemory","VSAM","redis"],
+                                                "enum": ["inMemory","VSAM","redis","infinispan"],
                                                 "default": "inMemory"
                                             },
                                             "size": {
                                                 "type": "integer",
                                                 "description": "the number of records stored before the eviction strategy is initiated",
                                                 "default": 10000
+                                            },
+                                            "infinispan":{
+                                                "type": "object",
+                                                "description": "Use Infinispan as the selected storage solution",
+                                                "properties": {
+                                                    "jgroups": {
+                                                        "type": "object",
+                                                        "description": "Data synchronization between Caching instances.",
+                                                        "properties": {
+                                                            "port": {
+                                                                "type": "integer",
+                                                                "description": "TCP port number",
+                                                                "default": 7600
+                                                            },
+                                                            "host": {
+                                                                "type": "string",
+                                                                "description": "TCP hostname"
+                                                            },
+                                                            "keyExchange": {
+                                                                "type": "object",
+                                                                "description": "Data encryption key exchange.",
+                                                                "properties": {
+                                                                    "port": {
+                                                                        "type": "integer",
+                                                                        "description": "TCP port number",
+                                                                        "default": 7601
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "persistence": {
+                                                        "type": "object",
+                                                        "description": "Where to persistently store caching data.",
+                                                        "properties": {
+                                                            "dataLocation": {
+                                                                "type": "string",
+                                                                "description": "File location where to store data."
+                                                            },
+                                                            "indexLocation": {
+                                                                "type": "string",
+                                                                "description": "File location where to store index."
+                                                            }
+                                                        }
+                                                    },
+                                                    "initialHosts": {
+                                                        "type": "string",
+                                                        "description": "Address of the other Caching services. Consists of jgroups port and host in the form of 'host[port]'."
+                                                    }
+                                                }
                                             },
                                             "vsam": {
                                                 "type": "object",
