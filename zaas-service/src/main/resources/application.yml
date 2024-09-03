@@ -20,6 +20,7 @@ logging:
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
+        javax.net.ssl: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty.util.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
@@ -222,6 +223,7 @@ logging:
         org.ehcache: DEBUG
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        javax.net.ssl: INFO
 
 ---
 spring.config.activate.on-profile: diag
