@@ -40,6 +40,6 @@ module.exports = {
     dependencyDashboardLabels: ['dependencies'],
     commitMessagePrefix: 'chore: ',
     prHourlyLimit: 0, // removes rate limit for PR creation per hour
-    npmrc: 'legacy-peer-deps=true', //for updating lock-files
+    npmrc: 'legacy-peer-deps=true\nregistry=https://zowe.jfrog.io/artifactory/api/npm/npm-org/', //for updating lock-files
     npmrcMerge: true //be combined with a "global" npmrc
 };

@@ -27,9 +27,12 @@ public class VsamConfiguration {
     private final VsamConfig vsamConfig;
     private final VsamInitializer vsamInitializer;
 
+
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "vsam")
     @Bean
     public Storage vsam(MessageService messageService, EvictionStrategyProducer evictionStrategyProducer) {
-        return new VsamStorage(vsamConfig, vsamInitializer, ApimlLogger.of(VsamStorage.class, messageService), evictionStrategyProducer);
+        var logger = ApimlLogger.of(VsamStorage.class, messageService);
+        logger.log("org.zowe.apiml.cache.storage.deprecated", "vsam");
+        return new VsamStorage(vsamConfig, vsamInitializer, logger, evictionStrategyProducer);
     }
 }
