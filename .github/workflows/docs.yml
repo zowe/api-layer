@@ -4,8 +4,7 @@ on:
     schedule:
         # * is a special character in YAML so you have to quote this string
         - cron:  '0 0 * * 5'
-    pull_request:
-        branches: [ v2.x.x, v3.x.x ]
+
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
