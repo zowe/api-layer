@@ -107,13 +107,10 @@ public class Providers {
      */
     public boolean zosmfSupportsJwt() {
         switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
-            case JWT:
-                return true;
             case LTPA:
                 return false;
             default:
-                throw new IllegalArgumentException(
-                    String.format("Unknown provider is given, Please verify if the provider is supported" ));
+                return true;
         }
     }
 
