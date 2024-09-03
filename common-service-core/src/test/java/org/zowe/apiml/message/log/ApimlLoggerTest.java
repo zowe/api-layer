@@ -10,12 +10,15 @@
 
 package org.zowe.apiml.message.log;
 
+import org.junit.jupiter.api.Nested;
+import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageType;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.message.template.MessageTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -46,26 +49,60 @@ class ApimlLoggerTest {
 
         Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
 
-        apimlLogger.log(MessageType.TRACE, "traceLog", new Object[] {"param1"});
-        verify(logger, times(1)).trace(marker, "traceLog", new Object[] {"param1"});
+        apimlLogger.log(MessageType.TRACE, "traceLog", new Object[]{"param1"});
+        verify(logger, times(1)).trace(marker, "traceLog", new Object[]{"param1"});
 
-        apimlLogger.log(MessageType.DEBUG, "debugLog", new Object[] {"param2"});
-        verify(logger, times(1)).debug(marker, "debugLog", new Object[] {"param2"});
+        apimlLogger.log(MessageType.DEBUG, "debugLog", new Object[]{"param2"});
+        verify(logger, times(1)).debug(marker, "debugLog", new Object[]{"param2"});
 
-        apimlLogger.log(MessageType.INFO, "infoLog", new Object[] {"param3"});
-        verify(logger, times(1)).info(marker, "infoLog", new Object[] {"param3"});
+        apimlLogger.log(MessageType.INFO, "infoLog", new Object[]{"param3"});
+        verify(logger, times(1)).info(marker, "infoLog", new Object[]{"param3"});
 
-        apimlLogger.log(MessageType.WARNING, "warningLog", new Object[] {"param4"});
-        verify(logger, times(1)).warn(marker, "warningLog", new Object[] {"param4"});
+        apimlLogger.log(MessageType.WARNING, "warningLog", new Object[]{"param4"});
+        verify(logger, times(1)).warn(marker, "warningLog", new Object[]{"param4"});
 
-        apimlLogger.log(MessageType.ERROR, "errorLog", new Object[] {"param5"});
-        verify(logger, times(1)).error(marker, "errorLog", new Object[] {"param5"});
+        apimlLogger.log(MessageType.ERROR, "errorLog", new Object[]{"param5"});
+        verify(logger, times(1)).error(marker, "errorLog", new Object[]{"param5"});
 
         verify(logger, times(1)).trace((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).debug((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).info((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).warn((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).error((Marker) any(), anyString(), (Object[]) any());
+    }
+
+    @Nested
+    class GivenNullMessageService {
+        ApimlLogger apimlLogger = ApimlLogger.empty();
+
+        @Test
+        void when_nullMessageService_return_nullMessage() {
+            assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
+            assertNull(apimlLogger.log("org.zowe.apiml.common.invalidMessageKey"));
+        }
+
+        @Test
+        void when_nullKey_return_invalidKeyMessage() {
+            assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
+
+            Logger logger = mock(Logger.class);
+            ReflectionTestUtils.setField(apimlLogger, "logger", logger);
+
+            Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
+
+            Message message = apimlLogger.log(null, new Object[]{});
+            MessageTemplate messageTemplate = (MessageTemplate) ReflectionTestUtils.getField(message, "messageTemplate");
+            String invalidKeyMessageText = "Internal error: Invalid message key '%s' provided. " +
+                "No default message found. Please contact support of further assistance.";
+            assertNull(ReflectionTestUtils.getField(message, "requestedKey"));
+            assertEquals("org.zowe.apiml.common.invalidMessageKey", messageTemplate.getKey());
+            assertEquals("ZWEAM102", messageTemplate.getNumber());
+            assertEquals(MessageType.ERROR, messageTemplate.getType());
+            assertEquals(invalidKeyMessageText, messageTemplate.getText());
+
+            verify(logger, times(1)).error(marker, "ZWEAM102E Internal error: Invalid message key " +
+                "'null' provided. No default message found. Please contact support of further assistance.", new Object[0]);
+        }
     }
 
 }
