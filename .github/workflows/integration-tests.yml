@@ -1131,7 +1131,7 @@ jobs:
             -   name: Run Gateway Service Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1151,7 +1151,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsDicoverableClientChaoticHA:
+    CITestsDiscoverableClientChaoticHA:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
@@ -1205,7 +1205,7 @@ jobs:
             -   name: Run Discoverable Client Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1219,7 +1219,7 @@ jobs:
                 uses: actions/upload-artifact@v2
                 if: always()
                 with:
-                    name: CITestsDicoverableClientChaoticHA-${{ env.JOB_ID }}
+                    name: CITestsDiscoverableClientChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1279,7 +1279,7 @@ jobs:
             -   name: Run WebSocket Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
