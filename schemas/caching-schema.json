@@ -57,7 +57,7 @@
                                             },
                                             "infinispan":{
                                                 "type": "object",
-                                                "description": "When storage is selected infinispan",
+                                                "description": "Use Infinispan as the selected storage solution",
                                                 "properties": {
                                                     "jgroups": {
                                                         "type": "object",
@@ -74,7 +74,7 @@
                                                             },
                                                             "keyExchange": {
                                                                 "type": "object",
-                                                                "description": "Dat encryption key exchange.",
+                                                                "description": "Data encryption key exchange.",
                                                                 "properties": {
                                                                     "port": {
                                                                         "type": "integer",
