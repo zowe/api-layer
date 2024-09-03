@@ -14,8 +14,8 @@ jobs:
         steps:
             -   name: Check PR title
                 env:
+                    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                     TITLE: ${{ github.event.pull_request.title }}
-                    GITHUB_TOKEN: ${{ secrets.ROBOT_PAT }}
                     PR: ${{ github.event.pull_request.html_url }}
                 run: |
                     for prefix in 'fix:' 'feat:' 'docs:' 'refactor:' 'chore:'; do
