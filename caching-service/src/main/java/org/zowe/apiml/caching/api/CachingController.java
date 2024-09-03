@@ -313,23 +313,22 @@ public class CachingController {
         throw new StorageException(Messages.KEY_NOT_PROVIDED.getKey(), Messages.KEY_NOT_PROVIDED.getStatus());
     }
 
-    private void invalidPayload(String keyValue, String message) {
-        throw new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(),
+    private StorageException invalidPayloadException(String keyValue, String message) {
+        return new StorageException(Messages.INVALID_PAYLOAD.getKey(), Messages.INVALID_PAYLOAD.getStatus(),
             keyValue, message);
     }
 
     private void checkForInvalidPayload(KeyValue keyValue) {
         if (keyValue == null) {
-            invalidPayload(null, "No KeyValue provided in the payload");
+            throw invalidPayloadException(null, "No KeyValue provided in the payload");
         }
 
         if (keyValue.getValue() == null) {
-            invalidPayload(keyValue.toString(), "No value provided in the payload");
+            throw invalidPayloadException(keyValue.toString(), "No value provided in the payload");
         }
 
-        String key = keyValue.getKey();
-        if (key == null) {
-            invalidPayload(keyValue.toString(), "No key provided in the payload");
+        if (keyValue.getKey() == null) {
+            throw invalidPayloadException(keyValue.toString(), "No key provided in the payload");
         }
     }
 

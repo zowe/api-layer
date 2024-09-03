@@ -16,7 +16,7 @@ import './LoginWebflow.css';
 import LoginBackground from '../../assets/images/login_background.jpg';
 import Spinner from '../Spinner/Spinner';
 import MetricsIconButton from '../Icons/MetricsIconButton';
-import Error from '../Error/Error';
+import ErrorComponent from '../Error/ErrorComponent';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -76,7 +76,7 @@ const LoginError = withStyles(() => ({
     root: {
         marginLeft: 20,
     },
-}))(Error);
+}))(ErrorComponent);
 
 function unexpectedError(error) {
     return (
