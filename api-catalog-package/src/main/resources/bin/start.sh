@@ -140,8 +140,9 @@ get_enabled_protocol_limit()
     target=$1
     type=$2
     key_component=ZWE_configs_zowe_network_${target}_tls_${type}Tls
+    key_gateway=ZWE_configs_gateway_zowe_network_${target}_tls_${type}Tls
     key_zowe=ZWE_zowe_network_${target}_tls_${type}Tls
-    echo ${!key_component:-${!key_zowe:-}}
+    echo ${!key_component:-${!key_gateway:-${!key_zowe:-}}}
 }
 
 get_enabled_protocol()
@@ -191,6 +192,17 @@ ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInst
 if [ "$ATTLS_ENABLED" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
+
+server_protocol=$(get_enabled_protocol_limit "server" "max")
+server_protocol=${server_protocol:-TLS}
+server_enabled_protocols=$(get_enabled_protocol "server")
+server_enabled_protocols=${server_enabled_protocols:-TLSv1.3}
+server_ciphers=${ZWE_configs_network_server_tls_ciphers:-${ZWE_configs_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
+
+client_protocol=$(get_enabled_protocol_limit "client" "max")
+client_protocol=${client_protocol:-${server_protocol}}
+client_enabled_protocols=$(get_enabled_protocol "client")
+client_enabled_protocols=${client_enabled_protocols:-${server_enabled_protocols}}
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
