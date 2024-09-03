@@ -130,29 +130,30 @@ get_enabled_protocol_limit()
     key_component=ZWE_configs_zowe_network_${target}_tls_${type}Tls
     key_gateway=ZWE_configs_gateway_zowe_network_${target}_tls_${type}Tls
     key_zowe=ZWE_zowe_network_${target}_tls_${type}Tls
-    echo ${!key_component:-${!key_gateway:-${!key_zowe:-}}}
+    enabled_protocol_limit=${!key_component:-${!key_gateway:-${!key_zowe:-}}}
 }
 
 get_enabled_protocol()
 {
     target=$1
-    enabled_protocols_min=$(get_enabled_protocol_limit "${target}" "min")
-    enabled_protocols_max=$(get_enabled_protocol_limit "${target}" "max")
+    get_enabled_protocol_limit "${target}" "min"
+    enabled_protocols_min=${enabled_protocol_limit}
+    get_enabled_protocol_limit "${target}" "max"
+    enabled_protocols_max=${enabled_protocol_limit}
 
     if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
-        echo "${enabled_protocols_max:-}"
+        result="${enabled_protocols_max:-}"
     elif [ -z "${enabled_protocols_min:-}" ]; then
-        echo "${enabled_protocols_max:-}"
+        result="${enabled_protocols_max:-}"
     else
         enabled_protocols_max=${enabled_protocols_max:-TLSv1.3}
-
         enabled_protocols=,SSLv3,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
         enabled_protocols=${enabled_protocols%%,${enabled_protocols_max}*}
         enabled_protocols=${enabled_protocols#*${enabled_protocols_min},}
-        if [ ! -z ${enabled_protocols} ]; then
+        if [ ! -z "${enabled_protocols}" ]; then
           enabled_protocols=",${enabled_protocols}"
         fi
-        echo "${enabled_protocols_min}${enabled_protocols},${enabled_protocols_max}"
+        result="${enabled_protocols_min}${enabled_protocols},${enabled_protocols_max}"
     fi
 }
 
@@ -175,16 +176,16 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 
-server_protocol=$(get_enabled_protocol_limit "server" "max")
-server_protocol=${server_protocol:-TLS}
-server_enabled_protocols=$(get_enabled_protocol "server")
-server_enabled_protocols=${server_enabled_protocols:-TLSv1.3}
+get_enabled_protocol_limit "server" "max"
+server_protocol=${enabled_protocol_limit:-TLS}
+get_enabled_protocol "server"
+server_enabled_protocols=${result:-TLSv1.3}
 server_ciphers=${ZWE_configs_network_server_tls_ciphers:-${ZWE_configs_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
 
-client_protocol=$(get_enabled_protocol_limit "client" "max")
-client_protocol=${client_protocol:-${server_protocol}}
-client_enabled_protocols=$(get_enabled_protocol "client")
-client_enabled_protocols=${client_enabled_protocols:-${server_enabled_protocols}}
+get_enabled_protocol_limit "client" "max"
+client_protocol=${enabled_protocol_limit:-${server_protocol}}
+get_enabled_protocol "client"
+client_enabled_protocols=${result:-${server_enabled_protocols}}
 
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
