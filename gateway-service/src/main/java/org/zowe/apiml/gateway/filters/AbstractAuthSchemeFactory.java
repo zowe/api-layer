@@ -28,6 +28,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
@@ -188,7 +189,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     ) {
         Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
         if (!i.hasNext()) {
-            throw new IllegalArgumentException("No ZAAS is available");
+            throw new ServiceNotAccessibleException("There are no instance of ZAAS available");
         }
 
         return requestWithHa(i, requestCreator).flatMap(responseProcessor);

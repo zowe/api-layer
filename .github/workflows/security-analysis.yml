@@ -9,6 +9,7 @@ jobs:
         name: Identify security related PR
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        permissions: write-all
 
         steps:
             - uses: actions/github-script@v6

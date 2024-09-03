@@ -10,12 +10,9 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.i18n.LocaleContextResolver;
-import org.zowe.apiml.message.core.MessageService;
 
 /**
  * This filter checks if encoded slashes in the URI are allowed based on configuration.
@@ -27,8 +24,8 @@ public class ForbidEncodedSlashesFilterFactory extends AbstractEncodedCharacters
 
     private static final String ENCODED_SLASH = "%2f";
 
-    public ForbidEncodedSlashesFilterFactory(MessageService messageService, ObjectMapper mapper, LocaleContextResolver localeContextResolver) {
-        super(messageService, mapper, localeContextResolver, "org.zowe.apiml.gateway.requestContainEncodedSlash");
+    public ForbidEncodedSlashesFilterFactory() {
+        super();
     }
 
     @Override
@@ -36,4 +33,8 @@ public class ForbidEncodedSlashesFilterFactory extends AbstractEncodedCharacters
         return StringUtils.containsIgnoreCase(uri, ENCODED_SLASH);
     }
 
+    @Override
+    RuntimeException getException(String uri) {
+        return new ForbidSlashException(uri);
+    }
 }
