@@ -139,7 +139,7 @@ get_enabled_protocol()
     enabled_protocols_min=$(get_enabled_protocol_limit "${target}" "min")
     enabled_protocols_max=$(get_enabled_protocol_limit "${target}" "max")
 
-    if [ "${enabled_protocols_min:-}" == "${enabled_protocols_max:-}" ]; then
+    if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
         echo "${enabled_protocols_max:-}"
     elif [ -z "${enabled_protocols_min:-}" ]; then
         echo "${enabled_protocols_max:-}"
