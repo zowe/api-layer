@@ -34,7 +34,7 @@ const branchHash = randomBytes(32).toString('hex');
                 repo: 'docs-site',
                 title: 'Automatic update for the Error messages in API-Layer PR',
                 head: branch,
-                base: 'docs-staging',
+                base: 'v3-doc-branch',
                 body: 'Updated API ML error messages'
             });
 
