@@ -130,6 +130,7 @@ logging:
         org.springframework.context.support: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        javax.net.ssl: ERROR
 
 management:
     endpoint:
@@ -159,6 +160,7 @@ logging:
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
         org.apache.tomcat.util.net: DEBUG
+        javax.net.ssl: INFO
 
 ---
 spring.config.activate.on-profile: attls
