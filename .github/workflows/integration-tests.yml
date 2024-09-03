@@ -450,8 +450,6 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    ZOSMF_APPLIEDAPARS: PH12143
 
         steps:
             -   uses: actions/checkout@v4
@@ -480,6 +478,62 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsZosmfWithoutJwt:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+            zaas-service:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
 
@@ -541,64 +595,6 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsZosmfWithoutJwt:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 15
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    ZOSMF_APPLIEDAPARS: ''
-
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Build with Gradle
-                run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-            # Coverage results are not stored in this job as it would not provide much additional data
-            -   name: Store results
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
 
     CITestsZosmfWithoutJwtWithAuthenticateEndpoint:
         needs: PublishJibContainers
@@ -633,8 +629,6 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    ZOSMF_APPLIEDAPARS: ''
 
         steps:
             -   uses: actions/checkout@v4
@@ -1429,8 +1423,6 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    ZOSMF_APPLIEDAPARS: ''
         steps:
             -   uses: actions/checkout@v4
                 with:
