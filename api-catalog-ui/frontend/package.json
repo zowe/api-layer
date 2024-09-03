@@ -139,7 +139,7 @@
         "@braintree/sanitize-url": "6.0.4",
         "resolve-url-loader": "5.0.0",
         "lodash": "4.17.21",
-        "semver": "7.6.0",
+        "semver": "7.6.3",
         "@babel/traverse": "7.24.7",
         "dompurify": "3.1.6"
     },
