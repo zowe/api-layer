@@ -23,6 +23,8 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import java.util.List;
 
+import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.*;
+
 @Slf4j
 @RequiredArgsConstructor
 public class Providers {
@@ -103,15 +105,10 @@ public class Providers {
     /**
      * This method decides whether used zOSMF instance supports JWT tokens.
      *
-     * @return True is the instance support JWT
+     * @return True is the instance support JWT ; false if its LTPA
      */
     public boolean zosmfSupportsJwt() {
-        switch (authConfigurationProperties.getZosmf().getJwtAutoconfiguration()) {
-            case LTPA:
-                return false;
-            default:
-                return true;
-        }
+      return authConfigurationProperties.getZosmf().getJwtAutoconfiguration() != LTPA;
     }
 
     /**
