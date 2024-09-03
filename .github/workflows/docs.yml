@@ -4,7 +4,8 @@ on:
     schedule:
         # * is a special character in YAML so you have to quote this string
         - cron:  '0 0 * * 5'
-
+    pull_request:
+        branches: [ v2.x.x, v3.x.x ]
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
@@ -22,12 +23,14 @@ jobs:
 
             - name: Checkout repository
               uses: actions/checkout@v3
+              with:
+                  ref: ${{ github.head_ref }}
 
             - name: Generate and compare the Error messages
               run: |
                   git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/docs-site.git
                   cd docs-site
-                  git checkout docs-staging
+                  git checkout v3-doc-branch
                   cd ../docs/docgen/
                   java -jar Docgen-1.0.jar ./config.yml
                   cp ../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md original-codes.md
