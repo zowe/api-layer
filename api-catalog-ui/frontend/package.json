@@ -126,7 +126,7 @@
         "redux-mock-store": "1.5.4",
         "rimraf": "3.0.2",
         "source-map-explorer": "2.5.3",
-        "start-server-and-test": "2.0.3",
+        "start-server-and-test": "2.0.5",
         "tmpl": "1.0.5",
         "yaml": "1.10.2"
     },
