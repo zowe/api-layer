@@ -20,6 +20,7 @@ dependencyResolutionManagement {
             version('commonsLang3', '3.17.0')
             version('commonsText', '1.12.0')
             version('commonsIo', '2.16.1')
+            version('commonsCompress', '1.21')
             version('ehCache', '3.10.8')
             version('eureka', '2.0.3')
             version('gradleGitProperties', '2.4.2') // Used in classpath dependencies
@@ -129,6 +130,7 @@ dependencyResolutionManagement {
 
             library('apache_commons_lang3', 'org.apache.commons', 'commons-lang3').versionRef('commonsLang3')
             library('apache_commons_text', 'org.apache.commons', 'commons-text').versionRef('commonsText')
+            library('apache_commons_compress', 'org.apache.commons', 'commons-compress').versionRef('commonsCompress')
 
             library('apache_velocity', 'org.apache.velocity', 'velocity-engine-core').versionRef('velocity')
             library('awaitility', 'org.awaitility', 'awaitility').versionRef('awaitility')

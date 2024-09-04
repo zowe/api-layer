@@ -90,6 +90,8 @@ dependencies {
 
     implementation libs.bundles.jaxb
 
+    implementation libs.guava
+
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
 
