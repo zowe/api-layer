@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.eureka;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
@@ -36,6 +37,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,7 +72,8 @@ class RefreshablePeerEurekaNodesTest {
 
     @BeforeEach
     void setUp() {
-        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
+        Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder = () -> new EurekaJerseyClientImpl.EurekaJerseyClientBuilder();
+        eurekaNodes = new RefreshablePeerEurekaNodes(eurekaJerseyClientBuilder, registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
     }
 
     @Test

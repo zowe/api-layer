@@ -116,21 +116,6 @@ class HttpsFactoryTest {
     }
 
     @Test
-    void shouldSetSystemSslProperties() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        httpsFactory.setSystemSslProperties();
-
-        assertEquals(SecurityUtils.formatKeyringUrl(httpsConfig.getKeyStore()), System.getProperty("javax.net.ssl.keyStore"));
-        assertEquals(String.valueOf(httpsConfig.getKeyStorePassword()), System.getProperty("javax.net.ssl.keyStorePassword"));
-        assertEquals(httpsConfig.getKeyStoreType(), System.getProperty("javax.net.ssl.keyStoreType"));
-
-        assertEquals(SecurityUtils.formatKeyringUrl(httpsConfig.getTrustStore()), System.getProperty("javax.net.ssl.trustStore"));
-        assertEquals(String.valueOf(httpsConfig.getTrustStorePassword()), System.getProperty("javax.net.ssl.trustStorePassword"));
-        assertEquals(httpsConfig.getTrustStoreType(), System.getProperty("javax.net.ssl.trustStoreType"));
-    }
-
-    @Test
     void shouldCreateDefaultHostnameVerifier() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);

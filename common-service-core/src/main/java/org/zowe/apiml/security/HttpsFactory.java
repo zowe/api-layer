@@ -229,26 +229,6 @@ public class HttpsFactory {
         }
     }
 
-    private void setSystemProperty(String key, String value) {
-        if (value == null) {
-            System.clearProperty(key);
-        } else {
-            System.setProperty(key, value);
-        }
-    }
-
-    public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.formatKeyringUrl(config.getKeyStore()));
-        setSystemProperty("javax.net.ssl.keyStorePassword",
-            config.getKeyStorePassword() == null ? null : String.valueOf(config.getKeyStorePassword()));
-        setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
-
-        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.formatKeyringUrl(config.getTrustStore()));
-        setSystemProperty("javax.net.ssl.trustStorePassword",
-            config.getTrustStorePassword() == null ? null : String.valueOf(config.getTrustStorePassword()));
-        setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
-    }
-
     public HostnameVerifier getHostnameVerifier() {
         if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
@@ -270,11 +250,6 @@ public class HttpsFactory {
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
-            if (config.isVerifySslCertificatesOfServices()) {
-                setSystemSslProperties();
-            }
             builder.withCustomSSL(getSslContext());
 
             builder.withHostnameVerifier(getHostnameVerifier());
