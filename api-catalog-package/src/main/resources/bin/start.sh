@@ -140,9 +140,12 @@ get_enabled_protocol_limit()
     target=$1
     type=$2
     key_component=ZWE_configs_zowe_network_${target}_tls_${type}Tls
+    value_component=$(eval echo \$$key_component)
     key_gateway=ZWE_configs_gateway_zowe_network_${target}_tls_${type}Tls
+    value_gateway=$(eval echo \$$key_gateway)
     key_zowe=ZWE_zowe_network_${target}_tls_${type}Tls
-    enabled_protocol_limit=${!key_component:-${!key_gateway:-${!key_zowe:-}}}
+    value_zowe=$(eval echo \$$key_zowe)
+    enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
 }
 
 get_enabled_protocol()
@@ -195,13 +198,11 @@ if [ "$ATTLS_ENABLED" = "true" ]; then
 fi
 
 get_enabled_protocol_limit "server" "max"
-server_protocol=${enabled_protocol_limit:-TLS}
+server_protocol=${enabled_protocol_limit:-TLSv1.2}
 get_enabled_protocol "server"
 server_enabled_protocols=${result:-TLSv1.3}
 server_ciphers=${ZWE_configs_network_server_tls_ciphers:-${ZWE_configs_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
 
-get_enabled_protocol_limit "client" "max"
-client_protocol=${enabled_protocol_limit:-${server_protocol}}
 get_enabled_protocol "client"
 client_enabled_protocols=${result:-${server_enabled_protocols}}
 
@@ -283,7 +284,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${keystore_type}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
