@@ -88,6 +88,7 @@ dependencyResolutionManagement {
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
+            version('micronautPlatform', '4.6.0')
             version('micronaut', '4.6.3')
             version('micronautPlugin', '4.4.2')
             version('shadow', '8.1.1')
@@ -218,7 +219,6 @@ dependencyResolutionManagement {
             plugin('gradle_node', 'com.github.node-gradle.node').versionRef('gradleNode')
             plugin('task_tree', 'com.dorongold.task-tree').versionRef('taskTree')
             plugin('test_logger', 'com.adarshr.test-logger').versionRef('testLogger')
-            plugin('micronaut_application', 'io.micronaut.application').versionRef('micronautPlugin')
             plugin('micronaut_minimal_application', 'io.micronaut.minimal.application').versionRef('micronautPlugin')
             plugin('micronaut_docker', 'io.micronaut.docker').versionRef('micronautPlugin')
 
