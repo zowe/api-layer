@@ -33,7 +33,7 @@ public class ApiCatalogMultipleInstancesTest {
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
     @BeforeEach
     void setUp() {
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig().relaxedHTTPSValidation());
     }
 
     @Nested
