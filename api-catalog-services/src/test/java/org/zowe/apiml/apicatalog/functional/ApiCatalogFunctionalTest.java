@@ -34,6 +34,7 @@ public abstract class ApiCatalogFunctionalTest {
     @BeforeEach
     void setUp() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
     protected String getCatalogUriWithPath(String path) {

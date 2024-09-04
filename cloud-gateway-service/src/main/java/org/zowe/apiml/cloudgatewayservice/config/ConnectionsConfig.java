@@ -153,7 +153,6 @@ public class ConnectionsConfig {
             serverProperties.getSsl().setTrustStore(trustStorePath);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
-        factory().setSystemSslProperties();
     }
 
     public HttpsFactory factory() {

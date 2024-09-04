@@ -84,6 +84,8 @@ public class ApiMediationLayerStartupChecker {
                 return false;
             }
 
+            boolean cloudGatewayEnabled = Boolean.parseBoolean(System.getProperty("cloudGateway.enabled", "true"));
+
             boolean areAllServicesUp = true;
             for (Service toCheck : servicesToCheck) {
                 boolean isUp = isServiceUp(context, toCheck.path);
@@ -97,7 +99,9 @@ public class ApiMediationLayerStartupChecker {
             boolean isTestApplicationUp = allComponents.contains("discoverableclient");
             boolean isCloudGatewayUp = allComponents.contains("cloud-gateway");
             log.debug("Discoverable Client is {}", isTestApplicationUp);
-            log.debug("Cloud gateway is {}", isCloudGatewayUp);
+            if (cloudGatewayEnabled) {
+                log.debug("Cloud gateway is {}", isCloudGatewayUp);
+            }
 
             Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
@@ -109,14 +113,14 @@ public class ApiMediationLayerStartupChecker {
             // Consider properly the case with multiple gateway services running on different ports.
             if (gatewayConfiguration.getInternalPorts() != null && !gatewayConfiguration.getInternalPorts().isEmpty()) {
                 String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
-                for (String port : internalPorts) {
-                    log.debug("Trying to access the Gateway at port {}", port);
-                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(port), gatewayConfiguration.getHost());
+                String[] hosts = gatewayConfiguration.getHost().split(",");
+                for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
+                    log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
+                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(internalPorts[i]), hosts[i]);
                 }
             }
 
-            return areAllServicesUp &&
-                isTestApplicationUp && isCloudGatewayUp;
+            return areAllServicesUp && isTestApplicationUp && (isCloudGatewayUp || !cloudGatewayEnabled);
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;

@@ -24,19 +24,19 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +74,7 @@ class DiscoveryClientConfigTest {
             lenient().when(appManager.getInfo()).thenReturn(instanceInfo);
             lenient().when(apimlDiscoveryClientFactory.buildApimlDiscoveryClient(any(), any(), any(), any())).thenReturn(discoveryClientClient);
             lenient().when(apimlDiscoveryClientFactory.createInstanceInfo(any())).thenReturn(instanceInfo);
+            ReflectionTestUtils.setField(discoveryClientConfig, "eurekaJerseyClientBuilder", (Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder>) () -> eurekaJerseyClientBuilder);
         }
 
         @Test
