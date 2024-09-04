@@ -27,16 +27,24 @@ import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Set;
+
+import static org.zowe.apiml.security.SecurityUtils.loadKeyStore;
 
 @Slf4j
 public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
@@ -44,6 +52,15 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
 
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
     private int maxPeerRetries;
+
+    @Value("${server.ssl.trustStore:#{null}}")
+    private String trustStorePath;
+
+    @Value("${server.ssl.trustStorePassword:#{null}}")
+    private char[] trustStorePassword;
+
+    @Value("${server.ssl.trustStoreType:PKCS12}")
+    private String trustStoreType;
 
     public RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
                                       final EurekaServerConfig serverConfig,
@@ -69,7 +86,18 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl, replicationClient, serverConfig, maxPeerRetries);
     }
 
-    private static Jersey3ReplicationClient createReplicationClient(EurekaServerConfig config,
+    private void updateTrustStore(EurekaJersey3Client jerseyClient) throws NoSuchAlgorithmException, CertificateException, IOException, KeyStoreException, KeyManagementException {
+        if (StringUtils.isNotBlank(trustStoreType)) {
+            var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            KeyStore trustStore = loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
+            tmf.init(trustStore);
+            jerseyClient.getClient().getSslContext().init(null, tmf.getTrustManagers(), new SecureRandom());
+        } else {
+            log.warn("Truststore is not configured");
+        }
+    }
+
+    private Jersey3ReplicationClient createReplicationClient(EurekaServerConfig config,
                                                                     ServerCodecs serverCodecs, String serviceUrl, Collection<ClientRequestFilter> additionalFilters) {
         String name = Jersey3ReplicationClient.class.getSimpleName() + ": " + serviceUrl + "apps/: ";
 
@@ -98,6 +126,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                 clientBuilder.withSystemSSLConfiguration();
             }
             jerseyClient = clientBuilder.build();
+            updateTrustStore(jerseyClient);
         } catch (Throwable e) {
             throw new RuntimeException("Cannot Create new Replica Node :" + name, e);
         }

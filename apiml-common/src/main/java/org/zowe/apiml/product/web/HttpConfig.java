@@ -102,7 +102,11 @@ public class HttpConfig {
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     @Getter
+    private HttpsConfig httpsConfig;
+    @Getter
     private SSLContext secureSslContext;
+    @Getter
+    private SSLContext secureSslContextWithoutKeystore;
     @Getter
     private HostnameVerifier secureHostnameVerifier;
     private Set<String> publicKeyCertificatesBase64;
@@ -134,7 +138,7 @@ public class HttpConfig {
                     .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
                     .timeToLive(timeToLive);
 
-            HttpsConfig httpsConfig = httpsConfigSupplier.get()
+            httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
                 .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
                 .build();
@@ -151,8 +155,7 @@ public class HttpConfig {
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
-
-            factory.setSystemSslProperties();
+            secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
 

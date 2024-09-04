@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -46,12 +47,28 @@ class ZaasClientTest {
     private static final String VALID_APPLICATION_ID = "APPLID";
     private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
+    private static final String[] SSL_SYSTEM_ENVIRONMENT_VALUES = {
+        "javax.net.ssl.keyStore",
+        "javax.net.ssl.keyStorePassword",
+        "javax.net.ssl.keyStoreType",
+        "javax.net.ssl.trustStore",
+        "javax.net.ssl.trustStorePassword",
+        "javax.net.ssl.trustStoreType"
+    };
+
     @BeforeEach
     void setUp() {
         tokens = mock(TokenService.class);
         passTickets = mock(PassTicketService.class);
 
         underTest = new ZaasClientImpl(tokens, passTickets);
+    }
+
+    @AfterEach
+    void assertSystemEnvironmentValues() {
+        for (String env : SSL_SYSTEM_ENVIRONMENT_VALUES) {
+            assertNull(System.getProperty(env));
+        }
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {

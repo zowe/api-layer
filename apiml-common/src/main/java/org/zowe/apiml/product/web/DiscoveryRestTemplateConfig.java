@@ -42,8 +42,6 @@ public class DiscoveryRestTemplateConfig {
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
             clientArgs.setSSLContext(secureSslContext);
             clientArgs.setHostnameVerifier(secureHostnameVerifier);
         }

@@ -156,7 +156,6 @@ public class ConnectionsConfig {
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
         httpsFactory = factory();
-        httpsFactory.setSystemSslProperties();
     }
 
     public HttpsFactory factory() {
@@ -280,8 +279,6 @@ public class ConnectionsConfig {
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
             clientArgs.setSSLContext(httpsFactory.getSslContext());
             clientArgs.setHostnameVerifier(httpsFactory.getHostnameVerifier());
         }
