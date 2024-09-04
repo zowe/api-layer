@@ -395,7 +395,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void testAuthenticateJwt() {
-        AuthenticationService authenticationService = mock(AuthenticationService.class);
+
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
         Authentication authentication = mock(Authentication.class);
@@ -413,7 +413,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void testJwt_givenZosmfJwt_whenItIsIgnoring_thenCreateZoweJwt() {
-        AuthenticationService authenticationService = mock(AuthenticationService.class);
+
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
         authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
