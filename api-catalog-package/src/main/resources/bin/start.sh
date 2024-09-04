@@ -198,7 +198,7 @@ if [ "$ATTLS_ENABLED" = "true" ]; then
 fi
 
 get_enabled_protocol_limit "server" "max"
-server_protocol=${enabled_protocol_limit:-TLSv1.2}
+server_protocol=${enabled_protocol_limit:-TLS}
 get_enabled_protocol "server"
 server_enabled_protocols=${result:-TLSv1.3}
 server_ciphers=${ZWE_configs_network_server_tls_ciphers:-${ZWE_configs_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
