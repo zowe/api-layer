@@ -23,12 +23,8 @@ As we mainly use zOSMF to authenticate the user, there are two properties in the
 
 The Mock can simulate different configurations of zOSMF. This can be set via the `zosmf.appliedApars` field. If left empty, base zOSMF will be mocked.
 The supported APARs are:
-* PH12143
-* PH17867
-* PH28507
-* PH28532
-* RSU2012
-* PH34912 - which mocks the password change functionality
+* PH12143 - provides JWT support to validate LTPA and JWT tokens.
+
 
 Multiple APARs can be set in `zosmf.appliedApars`. Conflicting functionality will result in only one functionality mocked, but it is not guaranteed which will be mocked. 
 
