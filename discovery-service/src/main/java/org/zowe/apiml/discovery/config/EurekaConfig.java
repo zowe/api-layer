@@ -20,6 +20,7 @@ import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -64,11 +65,11 @@ public class EurekaConfig {
         PeerAwareInstanceRegistry registry, ServerCodecs serverCodecs,
         Collection<ClientRequestFilter> replicationClientAdditionalFilters,
         ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig,
-        EurekaClientConfig eurekaClientConfig, SSLContext secureSslContextWithoutKeystore
+        EurekaClientConfig eurekaClientConfig, @Qualifier("secureSslContext") SSLContext secureSslContext
     ) {
         return new RefreshablePeerEurekaNodes(registry, eurekaServerConfig,
             eurekaClientConfig, serverCodecs, applicationInfoManager,
-            replicationClientAdditionalFilters, secureSslContextWithoutKeystore, maxPeerRetries);
+            replicationClientAdditionalFilters, secureSslContext, maxPeerRetries);
     }
 
     public static class Tuple {

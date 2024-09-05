@@ -60,7 +60,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     private static final String USER_AGENT = "Java-EurekaClient-Replication";
 
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
-    private SSLContext secureSslContextWithoutKeystore;
+    private SSLContext secureSslContext;
     private int maxPeerRetries;
 
     public RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
@@ -68,12 +68,12 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                                       final EurekaClientConfig clientConfig, final ServerCodecs serverCodecs,
                                       final ApplicationInfoManager applicationInfoManager,
                                       final Collection<ClientRequestFilter> replicationClientAdditionalFilters,
-                                      final @Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore,
+                                      final @Qualifier("secureSslContext") SSLContext secureSslContext,
                                       final int maxPeerRetries) {
         super(registry, serverConfig, clientConfig, serverCodecs,
             applicationInfoManager);
         this.replicationClientAdditionalFilters = replicationClientAdditionalFilters;
-        this.secureSslContextWithoutKeystore = secureSslContextWithoutKeystore;
+        this.secureSslContext = secureSslContext;
         this.maxPeerRetries = maxPeerRetries;
     }
 
@@ -114,11 +114,9 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                             register(discoveryJerseyProvider);
 
                             // Common properties to all clients
-                            ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContextWithoutKeystore, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                            ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                             Registry registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
                             var cm = new PoolingHttpClientConnectionManager(registry);
-
-
                             cm.setDefaultMaxPerRoute(config.getPeerNodeTotalConnectionsPerHost());
                             cm.setMaxTotal(config.getPeerNodeTotalConnections());
                             property(ApacheClientProperties.CONNECTION_MANAGER, cm);
