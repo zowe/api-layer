@@ -14,17 +14,18 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+
 import static io.restassured.RestAssured.given;
 
 @TestPropertySource( properties = {"apiml.health.protected=false"} )
 @DirtiesContext
-public class ApiCatalogProtectedEndpointTest  extends  ApiCatalogFunctionalTest {
+public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
     @Test
     void requestSuccessWith200() {
         given()
             .when()
             .get(getCatalogUriWithPath("apicatalog/application/health"))
             .then()
-            .statusCode(HttpStatus.SC_SERVICE_UNAVAILABLE);
+            .statusCode(HttpStatus.SC_OK);
     }
 }
