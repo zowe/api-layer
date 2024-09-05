@@ -16,16 +16,20 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 @TestPropertySource( properties = {"apiml.health.protected=false"} )
 @DirtiesContext
 public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
     @Test
-    void requestSuccessWith200() {
-        given()
-            .when()
+    void requestSuccessWithBody() {
+        // the method could return 200 or 503 depends on the state, but the aim is to check if it is accessible
+        given().when()
             .get(getCatalogUriWithPath("apicatalog/application/health"))
-            .then()
-            .statusCode(HttpStatus.SC_OK);
+        .then()
+            .statusCode(not(HttpStatus.SC_UNAUTHORIZED))
+            .body("status", not(nullValue()))
+            .body("components.apiCatalog.status", not(nullValue()));
     }
 }
