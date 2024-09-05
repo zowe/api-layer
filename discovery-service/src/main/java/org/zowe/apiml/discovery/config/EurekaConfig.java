@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 
+import javax.net.ssl.SSLContext;
 import java.util.Collection;
 
 /**
@@ -59,14 +60,16 @@ public class EurekaConfig {
 
     @Bean
     @Primary
-    public PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry,
-                                           ServerCodecs serverCodecs,
-                                           Collection<ClientRequestFilter> replicationClientAdditionalFilters, ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig, EurekaClientConfig eurekaClientConfig) {
+    public PeerEurekaNodes peerEurekaNodes(
+        PeerAwareInstanceRegistry registry, ServerCodecs serverCodecs,
+        Collection<ClientRequestFilter> replicationClientAdditionalFilters,
+        ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig,
+        EurekaClientConfig eurekaClientConfig, SSLContext secureSslContextWithoutKeystore
+    ) {
         return new RefreshablePeerEurekaNodes(registry, eurekaServerConfig,
             eurekaClientConfig, serverCodecs, applicationInfoManager,
-            replicationClientAdditionalFilters, maxPeerRetries);
+            replicationClientAdditionalFilters, secureSslContextWithoutKeystore, maxPeerRetries);
     }
-
 
     public static class Tuple {
 

@@ -30,10 +30,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import javax.net.ssl.SSLContext;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +70,7 @@ class RefreshablePeerEurekaNodesTest {
     EurekaClientConfig clientConfig;
     @Mock
     ServerCodecs serverCodecs;
+    SSLContext secureSslContextWithoutKeystore;
 
     List<ClientRequestFilter> replicationClientAdditionalFilters = new ArrayList<>();
 
@@ -77,13 +80,14 @@ class RefreshablePeerEurekaNodesTest {
 
     @BeforeAll
     @SuppressWarnings("unused")
-    void init() {
+    void init() throws NoSuchAlgorithmException {
         Class<?> monitor = StatsMonitor.class;
+        secureSslContextWithoutKeystore = SSLContext.getDefault();
     }
 
     @BeforeEach
     void setUp() {
-        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, DEFAULT_MAX_RETRIES);
+        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, secureSslContextWithoutKeystore, DEFAULT_MAX_RETRIES);
     }
 
     @Test
