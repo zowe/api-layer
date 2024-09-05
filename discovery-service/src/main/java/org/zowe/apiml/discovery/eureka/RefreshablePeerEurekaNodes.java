@@ -28,13 +28,16 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.client.JerseyClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,6 +46,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.zowe.apiml.security.SecurityUtils.loadKeyStore;
 
@@ -91,7 +95,17 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
             var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore trustStore = loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
             tmf.init(trustStore);
-            jerseyClient.getClient().getSslContext().init(null, tmf.getTrustManagers(), new SecureRandom());
+            var client = jerseyClient.getClient();
+
+            try {
+                Field sslContextField = JerseyClient.class.getDeclaredField("sslContext");
+                sslContextField.setAccessible(true);
+                var sslContext = client.getSslContext();
+                sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
+                sslContextField.set(client, (Supplier<SSLContext>) () -> sslContext);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             log.warn("Truststore is not configured");
         }
