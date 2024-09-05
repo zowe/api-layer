@@ -131,7 +131,7 @@ class ZosmfAuthenticationProviderTest {
     void setUp() {
         usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD);
         authConfigurationProperties = new AuthConfigurationProperties();
-        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(AUTO);
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
         zosmfInstance = createInstanceInfo(HOST, PORT);
 
         lenient().doAnswer((Answer<TokenAuthentication>) invocation -> TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1))).when(authenticationService).createTokenAuthentication(anyString(), anyString());
@@ -142,6 +142,7 @@ class ZosmfAuthenticationProviderTest {
     void loginWithExistingUser() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
         when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
@@ -302,6 +303,7 @@ class ZosmfAuthenticationProviderTest {
         String cookie = "LtpaToken2=test;";
 
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
 
         when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
 
@@ -393,7 +395,7 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void testAuthenticateJwt() {
-        AuthenticationService authenticationService = mock(AuthenticationService.class);
+
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
         Authentication authentication = mock(Authentication.class);
@@ -411,10 +413,10 @@ class ZosmfAuthenticationProviderTest {
 
     @Test
     void testJwt_givenZosmfJwt_whenItIsIgnoring_thenCreateZoweJwt() {
-        AuthenticationService authenticationService = mock(AuthenticationService.class);
+
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
-
+        authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
         EnumMap<ZosmfService.TokenType, String> tokens = new EnumMap<>(ZosmfService.TokenType.class);
         tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
         when(zosmfService.authenticate(any())).thenReturn(new ZosmfService.AuthenticationResponse("domain", tokens));
@@ -457,7 +459,7 @@ class ZosmfAuthenticationProviderTest {
         void willChooseLtpaWhenOnlyLtpa() {
             when(authenticationService.createJwtToken(any(), any(), any())).thenReturn("ltpaToken");
             tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
-
+            authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
             underTest.authenticate(usernamePasswordAuthenticationToken);
             verify(authenticationService, atLeastOnce()).createTokenAuthentication("userId", "ltpaToken");
         }

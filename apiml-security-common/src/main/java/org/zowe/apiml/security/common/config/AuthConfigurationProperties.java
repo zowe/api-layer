@@ -71,7 +71,6 @@ public class AuthConfigurationProperties {
     private AuthConfigurationProperties.PassTicketAuthProperties passTicket = new AuthConfigurationProperties.PassTicketAuthProperties();
 
     public enum JWT_AUTOCONFIGURATION_MODE {
-        AUTO,
         LTPA,
         JWT
     }
@@ -120,7 +119,7 @@ public class AuthConfigurationProperties {
     public static class Zosmf {
         private String serviceId;
         private String jwtEndpoint = "/jwt/ibm/api/zOSMFBuilder/jwk";
-        private JWT_AUTOCONFIGURATION_MODE jwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.AUTO;
+        private JWT_AUTOCONFIGURATION_MODE jwtAutoconfiguration = JWT_AUTOCONFIGURATION_MODE.JWT;
     }
 
     public AuthConfigurationProperties() {

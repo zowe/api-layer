@@ -103,8 +103,8 @@ then
 fi
 
 # setting the cookieName based on the instances
-unique_cookie=${ZWE_configs_apiml_security_auth_uniqueCookie:${ZWE_components_gateway_apiml_security_auth_uniqueCookie}}
-if [  "${unique_cookie}" = "true" ]; then
+
+if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
     cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
 fi
 
