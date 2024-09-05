@@ -132,6 +132,13 @@ public class SwaggerConfig {
         openApi.setPaths(paths);
     }
 
+    String download(URI uri) {
+        return webClient
+            .get().uri(zaasUri)
+            .retrieve()
+            .bodyToMono(String.class).share().block();
+    }
+
     @Bean
     public OpenApiCustomizer servletEndpoints(@Value("${springdoc.pathsToMatch:/}") String pathToMatch) {
         return (openApi) -> {
@@ -139,8 +146,7 @@ public class SwaggerConfig {
                 throw new ServiceNotAccessibleException("ZAAS is not available yet");
             }
 
-            var response = webClient.get().uri(zaasUri).retrieve().bodyToMono(String.class).share().block();
-            OpenAPI servletEndpoints = new OpenAPIV3Parser().readContents(response).getOpenAPI();
+            OpenAPI servletEndpoints = new OpenAPIV3Parser().readContents(download(zaasUri)).getOpenAPI();
 
             for (var entry : servletEndpoints.getPaths().entrySet()) {
                 if (openApi.getPaths() == null) {
