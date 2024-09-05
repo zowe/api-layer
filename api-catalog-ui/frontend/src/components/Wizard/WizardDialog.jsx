@@ -421,7 +421,7 @@ export default class WizardDialog extends Component {
                             Select your YAML configuration file to prefill the fields:
                         </DialogContentText>
                         <div id="yaml-upload-container">
-                            <label id="yaml-upload" nesting="true" htmlFor="yaml-browser">
+                            <label id="yaml-upload" htmlFor="yaml-browser">
                                 <input
                                     id="yaml-browser"
                                     type="file"
