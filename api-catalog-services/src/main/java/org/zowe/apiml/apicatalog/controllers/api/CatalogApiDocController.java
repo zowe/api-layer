@@ -58,7 +58,7 @@ public class CatalogApiDocController {
         description = "Returns the API documentation for a specific service {serviceId} and version {apiId}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",
         security = {
-            @SecurityRequirement(name = "Basic authorization"), @SecurityRequirement(name = "CookieAuth")
+            @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
         })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
@@ -85,7 +85,7 @@ public class CatalogApiDocController {
     @Operation(summary = "Retrieves the API documentation for the default service version",
         description = "Returns the API documentation for a specific service {serviceId} and its default version.",
         security = {
-            @SecurityRequirement(name = "Basic authorization"), @SecurityRequirement(name = "CookieAuth")
+            @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
         })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
@@ -104,7 +104,7 @@ public class CatalogApiDocController {
     @Operation(summary = "Retrieve diff of two api versions for a specific service",
         description = "Returns an HTML document which details the difference between two versions of a API service",
         security = {
-            @SecurityRequirement(name = "Basic authorization"), @SecurityRequirement(name = "CookieAuth")
+            @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
         })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),

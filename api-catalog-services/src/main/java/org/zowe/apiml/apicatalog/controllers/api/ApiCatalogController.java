@@ -75,7 +75,7 @@ public class ApiCatalogController {
     @Operation(summary = "Lists catalog dashboard tiles",
         description = "Returns a list of tiles including status and tile description",
         security = {
-            @SecurityRequirement(name = "Basic authorization"), @SecurityRequirement(name = "CookieAuth")
+            @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
         }
     )
     @ApiResponses(value = {
@@ -111,7 +111,7 @@ public class ApiCatalogController {
     @Operation(summary = "Retrieves a specific dashboard tile information",
         description = "Returns information for a specific tile {id} including status and tile description",
         security = {
-            @SecurityRequirement(name = "Basic authorization"), @SecurityRequirement(name = "CookieAuth")
+            @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
         }
     )
     @ApiResponses(value = {

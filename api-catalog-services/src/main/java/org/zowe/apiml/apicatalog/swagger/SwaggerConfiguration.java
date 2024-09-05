@@ -39,7 +39,7 @@ public class SwaggerConfiguration {
                 .version(apiVersion)
             )
             .components(new Components()
-                .addSecuritySchemes("Basic authorization", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"))
+                .addSecuritySchemes("BasicAuthorization", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"))
                 .addSecuritySchemes("CookieAuth", new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER).name("apimlAuthenticationToken"))
             );
     }
