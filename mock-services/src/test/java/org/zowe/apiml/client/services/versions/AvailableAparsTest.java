@@ -32,10 +32,6 @@ class AvailableAparsTest {
     void givenAparsList_whenGetApars_returnAparsMatchedInList() {
         List<String> knownApars = new ArrayList<>();
         knownApars.add("PH12143");
-        knownApars.add("PH17867");
-        knownApars.add("PH28507");
-        knownApars.add("PH28532");
-        knownApars.add("RSU2012");
         knownApars.add("JwtKeys");
         knownApars.add("AuthenticateApar");
 

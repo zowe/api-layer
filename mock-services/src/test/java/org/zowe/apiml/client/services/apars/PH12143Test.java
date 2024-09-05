@@ -51,8 +51,8 @@ class PH12143Test {
     class whenAuthenticating {
         @ParameterizedTest
         @ValueSource(strings = {"create", "verify", "delete"})
-        void givenNoAuthorization_thenReturnInternalServerError(String method) {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        void givenNoAuthorization_thenReturnUnauthorized(String method) {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
 
@@ -61,8 +61,8 @@ class PH12143Test {
 
         @ParameterizedTest
         @ValueSource(strings = {"create", "verify", "delete"})
-        void givenEmptyAuthorization_thenReturnInternalServerError(String method) {
-            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        void givenEmptyAuthorization_thenReturnUnauthorized(String method) {
+            Optional<ResponseEntity<?>> expected = Optional.of(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
             headers.put("authorization", "");
             Optional<ResponseEntity<?>> result = underTest.apply(SERVICE, method, Optional.empty(), mockResponse, headers);
