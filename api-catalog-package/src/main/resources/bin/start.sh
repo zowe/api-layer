@@ -162,7 +162,7 @@ get_enabled_protocol()
         result="${enabled_protocols_max:-}"
     else
         enabled_protocols_max=${enabled_protocols_max:-TLSv1.3}
-        enabled_protocols=,SSLv3,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
+        enabled_protocols=,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
         enabled_protocols=${enabled_protocols%%,${enabled_protocols_max}*}
         enabled_protocols=${enabled_protocols#*${enabled_protocols_min},}
         if [ ! -z "${enabled_protocols}" ]; then
