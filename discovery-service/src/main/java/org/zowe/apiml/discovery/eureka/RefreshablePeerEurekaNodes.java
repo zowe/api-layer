@@ -38,6 +38,7 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
@@ -67,7 +68,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                                       final EurekaClientConfig clientConfig, final ServerCodecs serverCodecs,
                                       final ApplicationInfoManager applicationInfoManager,
                                       final Collection<ClientRequestFilter> replicationClientAdditionalFilters,
-                                      final SSLContext secureSslContextWithoutKeystore,
+                                      final @Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore,
                                       final int maxPeerRetries) {
         super(registry, serverConfig, clientConfig, serverCodecs,
             applicationInfoManager);

@@ -15,6 +15,8 @@ import org.apache.tomcat.websocket.Constants;
 import org.apache.tomcat.websocket.WsWebSocketContainer;
 import org.junit.jupiter.api.Test;
 
+import javax.net.ssl.SSLContext;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,9 +25,9 @@ import static org.mockito.Mockito.mock;
 class ApimlWebSocketClientTest {
 
     @Test
-    void whenCreateEndpointConfig_thenConfigContainsUserProperties() {
+    void whenCreateEndpointConfig_thenConfigContainsUserProperties() throws NoSuchAlgorithmException {
         var wsContainer = mock(WsWebSocketContainer.class);
-        var client = new ApimlWebSocketClient(wsContainer);
+        var client = new ApimlWebSocketClient(wsContainer, SSLContext.getDefault());
         var configurator = mock(ClientEndpointConfig.Configurator.class);
         var endpointConfig = client.createEndpointConfig(configurator, Collections.emptyList());
         assertTrue(endpointConfig.getUserProperties().containsKey(Constants.IO_TIMEOUT_MS_PROPERTY));
