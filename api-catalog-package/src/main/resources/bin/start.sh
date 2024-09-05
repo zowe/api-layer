@@ -139,11 +139,11 @@ get_enabled_protocol_limit()
 {
     target=$1
     type=$2
-    key_component=ZWE_configs_zowe_network_${target}_tls_${type}Tls
+    key_component="ZWE_configs_zowe_network_${target}_tls_${type}Tls"
     value_component=$(eval echo \$$key_component)
-    key_gateway=ZWE_configs_gateway_zowe_network_${target}_tls_${type}Tls
+    key_gateway="ZWE_configs_gateway_zowe_network_${target}_tls_${type}Tls"
     value_gateway=$(eval echo \$$key_gateway)
-    key_zowe=ZWE_zowe_network_${target}_tls_${type}Tls
+    key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
     value_zowe=$(eval echo \$$key_zowe)
     enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
 }
