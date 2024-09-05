@@ -28,7 +28,6 @@ import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -39,28 +38,19 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.JerseyClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.*;
-import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static com.netflix.discovery.util.DiscoveryBuildInfo.buildVersion;
-import static org.zowe.apiml.security.SecurityUtils.loadKeyStore;
 
 @Slf4j
 public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
@@ -71,15 +61,6 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
     private SSLContext secureSslContextWithoutKeystore;
     private int maxPeerRetries;
-
-    @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStorePath;
-
-    @Value("${server.ssl.trustStorePassword:#{null}}")
-    private char[] trustStorePassword;
-
-    @Value("${server.ssl.trustStoreType:PKCS12}")
-    private String trustStoreType;
 
     public RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
                                       final EurekaServerConfig serverConfig,
@@ -105,27 +86,6 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
             targetHost = "host";
         }
         return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl, replicationClient, serverConfig, maxPeerRetries);
-    }
-
-    private void updateTrustStore(EurekaJersey3Client jerseyClient) throws NoSuchAlgorithmException, CertificateException, IOException, KeyStoreException, KeyManagementException {
-        if (StringUtils.isNotBlank(trustStoreType)) {
-            var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            KeyStore trustStore = loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
-            tmf.init(trustStore);
-            var client = jerseyClient.getClient();
-
-            try {
-                Field sslContextField = JerseyClient.class.getDeclaredField("sslContext");
-                sslContextField.setAccessible(true);
-                var sslContext = client.getSslContext();
-                sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
-                sslContextField.set(client, (Supplier<SSLContext>) () -> sslContext);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            log.warn("Truststore is not configured");
-        }
     }
 
     private Jersey3ReplicationClient createReplicationClient(EurekaServerConfig config,
@@ -196,7 +156,6 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                 clientBuilder.withSystemSSLConfiguration();
             }
             jerseyClient = clientBuilder.build();
-            updateTrustStore(jerseyClient);
         } catch (Throwable e) {
             throw new RuntimeException("Cannot Create new Replica Node :" + name, e);
         }
