@@ -26,7 +26,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.5')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.767')
+            version('awsJavaSdk', '1.12.770')
             version('bouncyCastle', '1.78.1')
             version('bootstrap', '4.3.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
@@ -34,14 +34,14 @@ dependencyResolutionManagement {
             version('commonsCodec', '1.17.1')
             version('commonsConfiguration', '1.10')
             version('commonsLang3', '3.16.0')
-            version('commonsLogging', '1.3.3')
+            version('commonsLogging', '1.3.4')
             version('commonsText', '1.12.0')
             version('commonsIo', '2.16.1')
             version('commonsFileUpload', '1.5')
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
-            version('githubClassgraph', '4.8.174')
+            version('githubClassgraph', '4.8.175')
             version('gradleGitProperties', '2.2.4') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.11.0')
@@ -64,7 +64,7 @@ dependencyResolutionManagement {
             version('jaxbApi', '2.3.1')
             version('jersey', '2.44')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '9.4.55.v20240627')
+            version('jettyWebSocketClient', '9.4.56.v20240826')
             version('jettison', '1.5.4')
             version('jjwt', '0.11.5')
             version('jjwtFull', '0.9.1')
@@ -124,11 +124,11 @@ dependencyResolutionManagement {
                 strictly '[1.6.15, 1.7.0['
                 prefer '1.6.15'
             }
-            version('swagger3Core', '2.2.22')
+            version('swagger3Core', '2.2.23')
             version('swagger3Parser', '2.1.22')
             version('swaggerCore', '1.6.14')
             version('swaggerInflector', '2.0.12')
-            version('swaggerJaxrs2', '2.2.22')
+            version('swaggerJaxrs2', '2.2.23')
             version('thymeleaf', '3.1.2.RELEASE')
             version('tomcat', '9.0.93')
             version('velocity', '2.3')
