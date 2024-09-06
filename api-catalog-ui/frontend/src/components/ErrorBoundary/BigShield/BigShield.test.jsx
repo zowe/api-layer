@@ -41,7 +41,8 @@ describe('>>> BigShield component tests', () => {
 
         const container = document.createElement('div');
         act(() => {
-            render(
+            const root = createRoot(container);
+            root.render(
                 <BigShield history={historyMock}>
                     <Child history={historyMock} />
                 </BigShield>,

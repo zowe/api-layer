@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import act from 'react';
+import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { shallow } from 'enzyme';
 import { describe, expect, it, jest } from '@jest/globals';

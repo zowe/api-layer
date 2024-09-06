@@ -11,6 +11,10 @@ import { shallow } from 'enzyme';
 import { describe, expect, it } from '@jest/globals';
 import DetailPage from './DetailPage';
 
+Object.defineProperty(global, 'performance', {
+    writable: true,
+});
+
 const tile = {
     version: '1.0.0',
     id: 'apicatalog',
