@@ -48,6 +48,11 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    // Remove Spring Cloud enabler
+    exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-eureka-client"
+}
+
 dependencies {
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
@@ -67,7 +72,9 @@ dependencies {
     testImplementation(testFixtures(project(":apiml-common")))
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter
     testImplementation libs.rest.assured
+
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
