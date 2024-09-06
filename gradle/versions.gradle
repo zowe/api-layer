@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             version('commonsText', '1.12.0')
             version('commonsIo', '2.16.1')
             version('ehCache', '3.10.8')
-            version('eureka', '2.0.3')
+            version('eureka', '2.0.2') // Likely breaking to 2.0.3
             version('netflixServo', '0.13.2')
             version('gradleGitProperties', '2.4.2') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
@@ -66,7 +66,7 @@ dependencyResolutionManagement {
             version('picocli', '4.7.6')
 
             version('reactor', '3.6.9')
-            version('restAssured', '5.5.0')
+            version('restAssured', '5.4.0') // 5.5.0 has some class cast exceptions
             version('springDoc', '2.6.0')
             version('swaggerInflector', '2.0.12')
             version('swagger2Parser', '1.0.71')
