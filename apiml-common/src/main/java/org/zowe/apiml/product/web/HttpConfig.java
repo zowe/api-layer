@@ -26,11 +26,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -102,7 +98,11 @@ public class HttpConfig {
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     @Getter
+    private HttpsConfig httpsConfig;
+    @Getter
     private SSLContext secureSslContext;
+    @Getter
+    private SSLContext secureSslContextWithoutKeystore;
     @Getter
     private HostnameVerifier secureHostnameVerifier;
     private Set<String> publicKeyCertificatesBase64;
@@ -134,7 +134,7 @@ public class HttpConfig {
                     .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
                     .timeToLive(timeToLive);
 
-            HttpsConfig httpsConfig = httpsConfigSupplier.get()
+            httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
                 .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
                 .build();
@@ -151,8 +151,7 @@ public class HttpConfig {
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
-
-            factory.setSystemSslProperties();
+            secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
 
@@ -246,6 +245,11 @@ public class HttpConfig {
     @Bean
     public SSLContext secureSslContext() {
         return secureSslContext;
+    }
+
+    @Bean
+    public SSLContext secureSslContextWithoutKeystore() {
+        return secureSslContextWithoutKeystore;
     }
 
     @Bean

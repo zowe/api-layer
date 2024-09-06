@@ -20,6 +20,7 @@ import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -29,6 +30,7 @@ import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 
+import javax.net.ssl.SSLContext;
 import java.util.Collection;
 
 /**
@@ -59,14 +61,16 @@ public class EurekaConfig {
 
     @Bean
     @Primary
-    public PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry,
-                                           ServerCodecs serverCodecs,
-                                           Collection<ClientRequestFilter> replicationClientAdditionalFilters, ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig, EurekaClientConfig eurekaClientConfig) {
+    public PeerEurekaNodes peerEurekaNodes(
+        PeerAwareInstanceRegistry registry, ServerCodecs serverCodecs,
+        Collection<ClientRequestFilter> replicationClientAdditionalFilters,
+        ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig,
+        EurekaClientConfig eurekaClientConfig, @Qualifier("secureSslContext") SSLContext secureSslContext
+    ) {
         return new RefreshablePeerEurekaNodes(registry, eurekaServerConfig,
             eurekaClientConfig, serverCodecs, applicationInfoManager,
-            replicationClientAdditionalFilters, maxPeerRetries);
+            replicationClientAdditionalFilters, secureSslContext, maxPeerRetries);
     }
-
 
     public static class Tuple {
 

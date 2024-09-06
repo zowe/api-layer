@@ -10,20 +10,31 @@
 
 package org.zowe.apiml.gateway.acceptance.common;
 
+import io.restassured.RestAssured;
+import io.restassured.config.SSLConfig;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.zowe.apiml.product.web.HttpConfig;
 
 @AcceptanceTest
 public class AcceptanceTestWithBasePath {
+
     protected String basePath;
 
     @LocalServerPort
     protected int port;
 
+    @Autowired
+    HttpConfig httpConfig;
+
     @BeforeEach
     void setBasePath() {
         basePath = String.format("https://localhost:%d", port);
+        RestAssured.config = RestAssured.config.sslConfig(new SSLConfig().sslSocketFactory(
+            new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+        ));
     }
-
 
 }
