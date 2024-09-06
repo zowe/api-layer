@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.eureka;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.provider.DiscoveryJerseyProvider;
 import com.netflix.discovery.shared.transport.jersey3.EurekaIdentityHeaderFilter;
 import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3Client;
 import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3ClientImpl;
@@ -27,10 +28,22 @@ import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.params.CoreProtocolPNames;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import javax.net.ssl.SSLContext;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,11 +51,16 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Set;
 
+import static com.netflix.discovery.util.DiscoveryBuildInfo.buildVersion;
+
 @Slf4j
 public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     implements ApplicationListener<EnvironmentChangeEvent> {
 
+    private static final String USER_AGENT = "Java-EurekaClient-Replication";
+
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
+    private SSLContext secureSslContext;
     private int maxPeerRetries;
 
     public RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
@@ -50,10 +68,12 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                                       final EurekaClientConfig clientConfig, final ServerCodecs serverCodecs,
                                       final ApplicationInfoManager applicationInfoManager,
                                       final Collection<ClientRequestFilter> replicationClientAdditionalFilters,
+                                      final @Qualifier("secureSslContext") SSLContext secureSslContext,
                                       final int maxPeerRetries) {
         super(registry, serverConfig, clientConfig, serverCodecs,
             applicationInfoManager);
         this.replicationClientAdditionalFilters = replicationClientAdditionalFilters;
+        this.secureSslContext = secureSslContext;
         this.maxPeerRetries = maxPeerRetries;
     }
 
@@ -69,7 +89,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl, replicationClient, serverConfig, maxPeerRetries);
     }
 
-    private static Jersey3ReplicationClient createReplicationClient(EurekaServerConfig config,
+    private Jersey3ReplicationClient createReplicationClient(EurekaServerConfig config,
                                                                     ServerCodecs serverCodecs, String serviceUrl, Collection<ClientRequestFilter> additionalFilters) {
         String name = Jersey3ReplicationClient.class.getSimpleName() + ": " + serviceUrl + "apps/: ";
 
@@ -83,10 +103,47 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
             }
 
             String jerseyClientName = "Discovery-PeerNodeClient-" + hostname;
-            EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder clientBuilder = new EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder()
-                .withClientName(jerseyClientName).withUserAgent("Java-EurekaClient-Replication")
-                .withEncoderWrapper(serverCodecs.getFullJsonCodec())
-                .withDecoderWrapper(serverCodecs.getFullJsonCodec())
+            var fullJsonCodec = serverCodecs.getFullJsonCodec();
+            EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder clientBuilder = new EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder() {
+                @Override
+                public EurekaJersey3Client build() {
+                    ClientConfig clientConfig = new ClientConfig() {
+                        {
+
+                            DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(fullJsonCodec, fullJsonCodec);
+                            register(discoveryJerseyProvider);
+
+                            // Common properties to all clients
+                            ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                            Registry registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
+                            var cm = new PoolingHttpClientConnectionManager(registry);
+                            cm.setDefaultMaxPerRoute(config.getPeerNodeTotalConnectionsPerHost());
+                            cm.setMaxTotal(config.getPeerNodeTotalConnections());
+                            property(ApacheClientProperties.CONNECTION_MANAGER, cm);
+
+                            String fullUserAgentName = USER_AGENT + "/v" + buildVersion();
+                            property(CoreProtocolPNames.USER_AGENT, fullUserAgentName);
+
+                            // To pin a client to specific server in case redirect happens, we handle redirects directly
+                            // (see DiscoveryClient.makeRemoteCall methods).
+                            property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
+                            property(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
+                        }
+                    };
+                    try {
+                        return new EurekaJersey3ClientImpl(
+                            config.getPeerNodeConnectTimeoutMs(),
+                            config.getPeerNodeReadTimeoutMs(),
+                            config.getPeerNodeConnectionIdleTimeoutSeconds(),
+                            clientConfig);
+                    } catch (Throwable e) {
+                        throw new RuntimeException("Cannot create Jersey client ", e);
+                    }
+                }
+            }
+                .withClientName(jerseyClientName).withUserAgent(USER_AGENT)
+                .withEncoderWrapper(fullJsonCodec)
+                .withDecoderWrapper(fullJsonCodec)
                 .withConnectionTimeout(config.getPeerNodeConnectTimeoutMs())
                 .withReadTimeout(config.getPeerNodeReadTimeoutMs())
                 .withMaxConnectionsPerHost(config.getPeerNodeTotalConnectionsPerHost())

@@ -30,6 +30,7 @@ import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import java.net.URI;
@@ -76,6 +77,7 @@ public class SwaggerConfig {
     private boolean isAttlsEnabled;
 
     private final EurekaClient eurekaClient;
+    private final WebClient webClient;
 
     private URI zaasUri;
 
@@ -130,6 +132,13 @@ public class SwaggerConfig {
         openApi.setPaths(paths);
     }
 
+    String download(URI uri) {
+        return webClient
+            .get().uri(zaasUri)
+            .retrieve()
+            .bodyToMono(String.class).share().block();
+    }
+
     @Bean
     public OpenApiCustomizer servletEndpoints(@Value("${springdoc.pathsToMatch:/}") String pathToMatch) {
         return (openApi) -> {
@@ -137,7 +146,7 @@ public class SwaggerConfig {
                 throw new ServiceNotAccessibleException("ZAAS is not available yet");
             }
 
-            OpenAPI servletEndpoints = new OpenAPIV3Parser().read(zaasUri.toString());
+            OpenAPI servletEndpoints = new OpenAPIV3Parser().readContents(download(zaasUri)).getOpenAPI();
 
             for (var entry : servletEndpoints.getPaths().entrySet()) {
                 if (openApi.getPaths() == null) {

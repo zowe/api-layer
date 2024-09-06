@@ -13,17 +13,20 @@ package org.zowe.apiml.gateway.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.servers.Server;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class SwaggerConfigTest {
 
@@ -38,7 +41,7 @@ class SwaggerConfigTest {
                 .servers(Collections.singletonList(new Server().url("https://localhost:10010/contextPath")))
                 .path("/api/v1/test", pathItem1)
                 .path("/api/v1/test2", pathItem2);
-            new SwaggerConfig(null).updatePaths(openAPI, "/api/v1/**");
+            new SwaggerConfig(null, null).updatePaths(openAPI, "/api/v1/**");
             assertEquals(2, openAPI.getPaths().size());
             assertEquals("https://localhost:10010/contextPath/api/v1/", openAPI.getServers().get(0).getUrl());
             assertSame(pathItem1, openAPI.getPaths().get("/test"));
@@ -51,7 +54,7 @@ class SwaggerConfigTest {
                 .servers(Collections.singletonList(new Server().url("https://localhost:10010/")))
                 .path("/api/v1/test", new PathItem())
                 .path("/different/test", new PathItem());
-            new SwaggerConfig(null).updatePaths(openAPI, "/api/v1");
+            new SwaggerConfig(null, null).updatePaths(openAPI, "/api/v1");
             assertEquals("https://localhost:10010/api/v1", openAPI.getServers().get(0).getUrl());
             assertNotNull(openAPI.getPaths().get("/test"));
             assertNotNull(openAPI.getPaths().get("/different/test"));
@@ -63,10 +66,14 @@ class SwaggerConfigTest {
     class Customizer {
 
         @Test
-        void givenOpenApiCustomizer_whenCustomizing_thenUpdatePaths() throws IOException {
+        void givenOpenApiCustomizer_whenCustomizing_thenUpdatePaths() throws IOException, URISyntaxException {
+            URI zaasUri = new URI("http://service/api-doc.json");
+            String openApi = IOUtils.toString(new ClassPathResource("api-doc.json").getInputStream(), StandardCharsets.UTF_8);
+
             OpenAPI openAPI = new OpenAPI();
-            SwaggerConfig swaggerConfig = spy(new SwaggerConfig(null));
-            ReflectionTestUtils.setField(swaggerConfig, "zaasUri", new ClassPathResource("api-doc.json").getURI());
+            SwaggerConfig swaggerConfig = spy(new SwaggerConfig(null, null));
+            doReturn(openApi).when(swaggerConfig).download(zaasUri);
+            ReflectionTestUtils.setField(swaggerConfig, "zaasUri", zaasUri);
             swaggerConfig.servletEndpoints("/some/path").customise(openAPI);
             verify(swaggerConfig).updatePaths(openAPI, "/some/path");
         }
