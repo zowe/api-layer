@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.config;
 
 import org.apache.tomcat.websocket.WsWebSocketContainer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import org.springframework.web.reactive.socket.client.WebSocketClient;
 import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
 import org.zowe.apiml.gateway.websocket.ApimlRequestUpgradeStrategy;
 import org.zowe.apiml.gateway.websocket.ApimlWebSocketClient;
+
+import javax.net.ssl.SSLContext;
 
 @Configuration
 public class WebSocketConfig {
@@ -32,13 +35,13 @@ public class WebSocketConfig {
 
     @Bean
     @Primary
-    public WebSocketClient tomcatWebSocketClient() {
+    public WebSocketClient tomcatWebSocketClient(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
         var wsContainer = new WsWebSocketContainer();
         wsContainer.setDefaultMaxTextMessageBufferSize(bufferSize);
         wsContainer.setDefaultMaxBinaryMessageBufferSize(bufferSize);
         wsContainer.setAsyncSendTimeout(sendTimeout);
         wsContainer.setDefaultMaxSessionIdleTimeout(idleTimeout);
-        return new ApimlWebSocketClient(wsContainer);
+        return new ApimlWebSocketClient(wsContainer, secureSslContextWithoutKeystore);
     }
 
     @Bean

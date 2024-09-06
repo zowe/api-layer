@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
@@ -35,15 +36,13 @@ public class DiscoveryRestTemplateConfig {
 
     @Bean
     public RestTemplateDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
-                                                               SSLContext secureSslContext,
+                                                               @Qualifier("secureSslContext") SSLContext secureSslContext,
                                                                HostnameVerifier secureHostnameVerifier) {
         RestTemplateDiscoveryClientOptionalArgs clientArgs = new RestTemplateDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
 
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
             clientArgs.setSSLContext(secureSslContext);
             clientArgs.setHostnameVerifier(secureHostnameVerifier);
         }

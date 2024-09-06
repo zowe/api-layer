@@ -58,7 +58,7 @@
                 },
                 "security": [
                     {
-                        "Basic authorization": []
+                        "BasicAuthorization": []
                     },
                     {
                         "CookieAuth": []
@@ -84,7 +84,7 @@
                 },
                 "security": [
                     {
-                        "Basic authorization": []
+                        "BasicAuthorization": []
                     },
                     {
                         "CookieAuth": []
@@ -124,7 +124,7 @@
                 },
                 "security": [
                     {
-                        "Basic authorization": []
+                        "BasicAuthorization": []
                     },
                     {
                         "CookieAuth": []

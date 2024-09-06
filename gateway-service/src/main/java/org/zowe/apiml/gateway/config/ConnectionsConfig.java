@@ -35,8 +35,7 @@ import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.gateway.config.GlobalCorsProperties;
-import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.config.*;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
@@ -156,7 +155,6 @@ public class ConnectionsConfig {
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
         httpsFactory = factory();
-        httpsFactory.setSystemSslProperties();
     }
 
     public HttpsFactory factory() {
@@ -280,8 +278,6 @@ public class ConnectionsConfig {
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
             clientArgs.setSSLContext(httpsFactory.getSslContext());
             clientArgs.setHostnameVerifier(httpsFactory.getHostnameVerifier());
         }
@@ -335,6 +331,21 @@ public class ConnectionsConfig {
     public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
             .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(requestTimeout)).build()).build());
+    }
+
+    @Bean
+    public HttpClientFactory gatewayHttpClientFactory(
+        HttpClientProperties properties,
+        ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
+        HttpClientSslConfigurer sslConfigurer
+    ) {
+        SslContext sslContext = sslContext(false);
+        return new HttpClientFactory(properties, serverProperties, sslConfigurer, customizers) {
+            @Override
+            protected HttpClient createInstance() {
+                return super.createInstance().secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
+            }
+        };
     }
 
     @Bean

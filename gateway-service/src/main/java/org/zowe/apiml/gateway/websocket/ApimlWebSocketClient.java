@@ -15,12 +15,14 @@ import jakarta.websocket.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.websocket.Constants;
 import org.apache.tomcat.websocket.WsWebSocketContainer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.socket.HandshakeInfo;
 import org.springframework.web.reactive.socket.adapter.StandardWebSocketSession;
 import org.springframework.web.reactive.socket.client.StandardWebSocketClient;
 import reactor.core.publisher.Sinks;
 
+import javax.net.ssl.SSLContext;
 import java.util.List;
 
 @Slf4j
@@ -29,8 +31,14 @@ public class ApimlWebSocketClient extends StandardWebSocketClient {
     @Value("${server.webSocket.connectTimeout:45000}")
     private String ioTimeout = "45000";
 
-    public ApimlWebSocketClient(WsWebSocketContainer webSocketContainer) {
+    private final SSLContext secureSslContextWithoutKeystore;
+
+    public ApimlWebSocketClient(
+        WsWebSocketContainer webSocketContainer,
+        @Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore
+    ) {
         super(webSocketContainer);
+        this.secureSslContextWithoutKeystore = secureSslContextWithoutKeystore;
     }
 
     @Override
@@ -44,6 +52,7 @@ public class ApimlWebSocketClient extends StandardWebSocketClient {
         var config = ClientEndpointConfig.Builder.create()
             .configurator(configurator)
             .preferredSubprotocols(subProtocols)
+            .sslContext(secureSslContextWithoutKeystore)
             .build();
         config.getUserProperties().put(Constants.IO_TIMEOUT_MS_PROPERTY, ioTimeout);
         return config;

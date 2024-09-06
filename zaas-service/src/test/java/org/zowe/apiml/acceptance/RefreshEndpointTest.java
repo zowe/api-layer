@@ -13,7 +13,6 @@ package org.zowe.apiml.acceptance;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,15 +46,8 @@ public class RefreshEndpointTest {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    private RestAssuredConfig restAssuredConfig;
-
     @Autowired
     HttpConfig httpConfig;
-
-    @BeforeEach
-    void setUp() {
-        initializeTls();
-    }
 
     private String getBasePath() {
         return "https://" + hostname + ":" + port;
@@ -65,10 +57,18 @@ public class RefreshEndpointTest {
     @SuppressWarnings("squid:S2699") // sonar doesn't identify the restAssured assertions
     class GivenIllegalAccessModes {
 
+        private RestAssuredConfig getSslConfig(SSLContext sslContext) {
+            return RestAssuredConfig.newConfig().sslConfig(
+                new SSLConfig().sslSocketFactory(
+                    new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+                )
+            );
+        }
+
         @Test
         void noClientCertificateGivesForbidden() {
             //@formatter:off
-            given().config(RestAssuredConfig.newConfig().sslConfig(new SSLConfig()))
+            given().config(getSslConfig(httpConfig.getSecureSslContextWithoutKeystore()))
                 .when().post(getBasePath() + "/zaas/api/v1/auth/refresh") //REFRESH_URL
                 .then().statusCode(is(SC_FORBIDDEN));
             //@formatter:on
@@ -79,7 +79,7 @@ public class RefreshEndpointTest {
             LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
             //@formatter:off
-            given().config(restAssuredConfig)
+            given().config(getSslConfig(httpConfig.secureSslContext()))
                 .when()
                     .contentType(JSON)
                     .body(loginRequest)
@@ -89,13 +89,6 @@ public class RefreshEndpointTest {
             //@formatter:on
         }
 
-    }
-
-    public synchronized void initializeTls() {
-        if (restAssuredConfig == null) {
-            SSLContext sslContext = httpConfig.secureSslContext();
-            restAssuredConfig =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
-        }
     }
 
 }

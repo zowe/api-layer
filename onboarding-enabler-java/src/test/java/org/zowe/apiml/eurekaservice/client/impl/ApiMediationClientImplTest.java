@@ -12,6 +12,7 @@ package org.zowe.apiml.eurekaservice.client.impl;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
@@ -40,6 +41,15 @@ class ApiMediationClientImplTest {
     private static final char[] PASSWORD = "password".toCharArray();
 
     private EurekaClientConfigProvider eurekaClientConfigProvider;
+
+    private static final String[] SSL_SYSTEM_ENVIRONMENT_VALUES = {
+        "javax.net.ssl.keyStore",
+        "javax.net.ssl.keyStorePassword",
+        "javax.net.ssl.keyStoreType",
+        "javax.net.ssl.trustStore",
+        "javax.net.ssl.trustStorePassword",
+        "javax.net.ssl.trustStoreType"
+    };
 
     ApiMediationServiceConfig getValidConfiguration() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null, null);
@@ -70,6 +80,13 @@ class ApiMediationClientImplTest {
             .ssl(ssl)
             .serviceIpAddress("127.0.0.1")
             .build();
+    }
+
+    @AfterEach
+    void assertSystemEnvironmentValues() {
+        for (String env : SSL_SYSTEM_ENVIRONMENT_VALUES) {
+            assertNull(System.getProperty(env));
+        }
     }
 
     @Test
