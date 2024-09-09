@@ -148,6 +148,7 @@ else
     externalProtocol="http"
 fi
 
+GATEWAY_LOADER_PATH=""
 # Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
 if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
 then
