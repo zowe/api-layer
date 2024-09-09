@@ -16,18 +16,23 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
 
@@ -46,15 +51,14 @@ class ZaasJwtService implements TokenService {
     private final String loginEndpoint;
     private final String queryEndpoint;
     private final String logoutEndpoint;
-    private final CloseableClientProvider httpClientProvider;
+    private final CloseableHttpClient httpClient;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     ConfigProperties zassConfigProperties;
 
-    public ZaasJwtService(CloseableClientProvider client, String baseUrl, ConfigProperties configProperties) {
-        this.httpClientProvider = client;
-
+    public ZaasJwtService(CloseableHttpClient client, String baseUrl, ConfigProperties configProperties) {
+        httpClient = client;
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
         logoutEndpoint = baseUrl + "/logout";
@@ -63,7 +67,7 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
-        return (String) doLoginRequest(
+        return (String) doRequest(
             () -> loginWithCredentials(userId, password, newPassword),
             this::processJwtTokenResponse,
             this::extractToken);
@@ -71,7 +75,7 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public String login(String userId, char[] password) throws ZaasClientException {
-        return (String) doLoginRequest(
+        return (String) doRequest(
             () -> loginWithCredentials(userId, password, null),
             this::processJwtTokenResponse,
             this::extractToken);
@@ -88,8 +92,10 @@ class ZaasJwtService implements TokenService {
     }
 
     private SimpleHttpResponse processJwtTokenResponse(ClassicHttpResponse response) throws ParseException, IOException {
-        var cookieHeader = response.getHeaders(HttpHeaders.SET_COOKIE);
-        Map<String, Header> headers = (cookieHeader != null) ? Map.of(HttpHeaders.SET_COOKIE, cookieHeader[0]) : Map.of();
+        var headers = Arrays.stream(response.getHeaders(HttpHeaders.SET_COOKIE))
+            .findFirst()
+            .map(header -> Map.of(HttpHeaders.SET_COOKIE, header))
+            .orElse(Map.of());
         if (response.getEntity() != null) {
             return new SimpleHttpResponse(response.getCode(), EntityUtils.toString(response.getEntity()), headers);
         } else {
@@ -99,7 +105,7 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public String login(String authorizationHeader) throws ZaasClientException {
-        return (String) doLoginRequest(
+        return (String) doRequest(
             () -> loginWithHeader(authorizationHeader),
             this::processJwtTokenResponse,
             this::extractToken);
@@ -117,7 +123,7 @@ class ZaasJwtService implements TokenService {
             throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
         }
 
-        return (ZaasToken) doLoginRequest(
+        return (ZaasToken) doRequest(
             () -> queryWithJwtToken(jwtToken),
             SimpleHttpResponse::fromResponseWithBytesBodyOnSuccess,
             this::extractZaasToken);
@@ -180,7 +186,6 @@ class ZaasJwtService implements TokenService {
     }
 
     private ClassicHttpRequest logoutJwtToken(String jwtToken) {
-        clearZaasClientCookies();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
         if (jwtToken.startsWith(BEARER_AUTHENTICATION_PREFIX)) {
             httpPost.addHeader(HttpHeaders.AUTHORIZATION, jwtToken);
@@ -188,12 +193,6 @@ class ZaasJwtService implements TokenService {
             httpPost.addHeader(HttpHeaders.COOKIE, zassConfigProperties.getTokenPrefix() + "=" + jwtToken);
         }
         return httpPost;
-    }
-
-    private void clearZaasClientCookies() {
-        if (httpClientProvider instanceof ZaasHttpsClientProvider) {
-            ((ZaasHttpsClientProvider) httpClientProvider).clearCookieStore();
-        }
     }
 
     private void handleErrorMessage(JsonNode message, Predicate<ZaasClientErrorCodes> condition) throws ZaasClientException {
@@ -221,9 +220,9 @@ class ZaasJwtService implements TokenService {
     }
 
     private ZaasToken extractZaasToken(SimpleHttpResponse response) throws IOException, ZaasClientException {
-        int statusCode = response.code();
+        int statusCode = response.getCode();
         if (statusCode == 200) {
-            ZaasToken token = objectMapper.readValue(response.byteBody(), ZaasToken.class);
+            ZaasToken token = objectMapper.readValue(response.getByteBody(), ZaasToken.class);
 
             if (token == null) {
                 throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "Queried token is null");
@@ -236,17 +235,17 @@ class ZaasJwtService implements TokenService {
         }
 
         if (statusCode == 401) {
-            handleErrorMessage(response.stringBody(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
+            handleErrorMessage(response.getStringBody(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired");
         }
-        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, response.stringBody());
+        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, response.getStringBody());
     }
 
     private String extractToken(SimpleHttpResponse response) throws ZaasClientException, IOException {
         String token = "";
-        int httpResponseCode = response.code();
+        int httpResponseCode = response.getCode();
         if (httpResponseCode == 204) {
-            var vals = response.headers().get(HttpHeaders.SET_COOKIE).getValue().split(";");
+            var vals = response.getHeaders().get(HttpHeaders.SET_COOKIE).getValue().split(";");
             var apimlAuthCookie = Stream.of(vals).filter(v -> v.startsWith(zassConfigProperties.getTokenPrefix())).map(v -> v.substring(v.indexOf("=") + 1)).findFirst();
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get();
@@ -255,26 +254,26 @@ class ZaasJwtService implements TokenService {
         }
 
         if (httpResponseCode == 401) {
-            handleErrorMessage(response.stringBody(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, response.stringBody());
+            handleErrorMessage(response.getStringBody(), ZaasClientErrorCodes.EXPIRED_PASSWORD::equals);
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, response.getStringBody());
         }
         if (httpResponseCode == 400) {
-            throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, response.stringBody());
+            throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, response.getStringBody());
         }
-        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, response.stringBody());
+        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, response.getStringBody());
     }
 
     private void doLogoutRequest(OperationGenerator requestGenerator) throws ZaasClientException {
         var response = getSimpleResponse(requestGenerator, SimpleHttpResponse::fromResponseWithBytesBodyOnSuccess);
 
-        if (response.code() == 401) {
-            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, response.stringBody());
+        if (response.getCode() == 401) {
+            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, response.getStringBody());
         } else if (!response.isSuccess()) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, response.stringBody());
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, response.getStringBody());
         }
     }
 
-    private Object doLoginRequest(
+    private Object doRequest(
         OperationGenerator requestGenerator,
         HttpClientResponseHandler<SimpleHttpResponse> responseHandler,
         TokenExtractor token) throws ZaasClientException {
@@ -294,18 +293,18 @@ class ZaasJwtService implements TokenService {
     private SimpleHttpResponse getSimpleResponse(OperationGenerator operationGenerator, HttpClientResponseHandler<SimpleHttpResponse> responseHandler)
         throws ZaasClientException {
 
-        try (var closableHttpClient = httpClientProvider.getHttpClient()) {
-            return closableHttpClient.execute(operationGenerator.request(), responseHandler);
-        } catch (IOException | ZaasConfigurationException e) {
+        try {
+            return httpClient.execute(operationGenerator.request(), responseHandler);
+        } catch (IOException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         }
     }
 
-    record Credentials(
-        String username,
-        char[] password,
-        char[] newPassword
-    ) {
+    @AllArgsConstructor
+    static class Credentials {
+        String username;
+        char[] password;
+        char[] newPassword;
     }
 
     interface TokenExtractor {

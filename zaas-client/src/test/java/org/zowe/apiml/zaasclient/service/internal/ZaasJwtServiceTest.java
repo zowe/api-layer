@@ -16,6 +16,7 @@ import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
@@ -35,19 +36,13 @@ import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -65,35 +60,32 @@ class ZaasJwtServiceTest {
     ArgumentCaptor<HttpUriRequestBase> requestCaptor;
 
     private static final String EXPIRED_PASSWORD_RESPONSE =
-        "{\n" +
-            "    \"messages\": [\n" +
-            "        {\n" +
-            "            \"messageType\": \"ERROR\",\n" +
-            "            \"messageNumber\": \"ZWEAT412E\",\n" +
-            "            \"messageContent\": \"The password for the specified identity has expired\",\n" +
-            "            \"messageKey\": \"org.zowe.apiml.security.platform.errno.EMVSEXPIRE\"\n" +
-            "        }\n" +
-            "    ]\n" +
-            "}";
+        //language=JSON
+        """
+            {
+                "messages": [
+                    {
+                        "messageType": "ERROR",
+                        "messageNumber": "ZWEAT412E",
+                        "messageContent": "The password for the specified identity has expired",
+                        "messageKey": "org.zowe.apiml.security.platform.errno.EMVSEXPIRE"
+                    }
+                ]
+            }""";
 
     @Mock
     private CloseableHttpClient closeableHttpClient;
 
-    @Mock
-    private CloseableClientProvider closeableClientProvider;
-
     private ZaasJwtService zaasJwtService;
 
     @BeforeEach
-    void setUp() throws ZaasConfigurationException {
-        doReturn(closeableHttpClient).when(closeableClientProvider).getHttpClient();
-
-        zaasJwtService = new ZaasJwtService(closeableClientProvider, BASE_URL, configProperties);
+    void setUp() {
+        zaasJwtService = new ZaasJwtService(closeableHttpClient, BASE_URL, configProperties);
     }
 
     @Test
     void givenJwtToken_whenLogout_thenSetCookie() throws ZaasClientException, IOException {
-        mockHttpClient(204);
+        mockHttpClientResponse(204);
         zaasJwtService.logout(JWT_TOKEN);
         verify(closeableHttpClient, times(1)).execute(requestCaptor.capture(), any(HttpClientResponseHandler.class));
         var capturedRequest = requestCaptor.getValue();
@@ -104,7 +96,7 @@ class ZaasJwtServiceTest {
 
     @Test
     void givenAuthorizationHeaderWithJwtToken_whenLogout_thenAuthorizationHeader() throws ZaasClientException, IOException {
-        mockHttpClient(204);
+        mockHttpClientResponse(204);
         zaasJwtService.logout(HEADER_AUTHORIZATION);
 
         verify(closeableHttpClient, times(1)).execute(requestCaptor.capture(), any(HttpClientResponseHandler.class));
@@ -117,7 +109,7 @@ class ZaasJwtServiceTest {
     @Test
     void givenValidJwtToken_whenQueryToken_thenReturnToken() throws ZaasClientException, IOException {
         ZaasToken expectedToken = new ZaasToken();
-        mockHttpClient(200, mapper.writeValueAsString(expectedToken));
+        mockHttpClientResponse(200, mapper.writeValueAsString(expectedToken));
 
         ZaasToken actualToken = zaasJwtService.query("token");
         assertEquals(expectedToken, actualToken);
@@ -134,8 +126,8 @@ class ZaasJwtServiceTest {
     }
 
     @Test
-    void givenInvalidJwtToken_whenQueryToken_thenThrowException() throws IOException {
-        mockHttpClient(401);
+    void givenInvalidJwtToken_whenQueryToken_thenThrowException() {
+        mockHttpClientResponse(401);
         zaasClientTestAssertThrows(ZaasClientErrorCodes.INVALID_JWT_TOKEN, "Queried token is invalid or expired", () -> zaasJwtService.query("bad token"));
     }
 
@@ -144,7 +136,7 @@ class ZaasJwtServiceTest {
         ZaasToken expiredToken = new ZaasToken();
         expiredToken.setExpired(true);
 
-        mockHttpClient(200, mapper.writeValueAsString(expiredToken));
+        mockHttpClientResponse(200, mapper.writeValueAsString(expiredToken));
         zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, "Queried token is expired", () -> zaasJwtService.query("expired token"));
     }
 
@@ -155,7 +147,7 @@ class ZaasJwtServiceTest {
         mockRequest.setCookies(cookies);
 
         ZaasToken expectedToken = new ZaasToken();
-        mockHttpClient(200, mapper.writeValueAsString(expectedToken));
+        mockHttpClientResponse(200, mapper.writeValueAsString(expectedToken));
 
         ZaasToken actualToken = zaasJwtService.query(mockRequest);
         assertEquals(expectedToken, actualToken);
@@ -167,7 +159,7 @@ class ZaasJwtServiceTest {
         mockRequest.addHeader(HttpHeaders.AUTHORIZATION, HEADER_AUTHORIZATION);
 
         ZaasToken expectedToken = new ZaasToken();
-        mockHttpClient(200, mapper.writeValueAsString(expectedToken));
+        mockHttpClientResponse(200, mapper.writeValueAsString(expectedToken));
 
         ZaasToken actualToken = zaasJwtService.query(mockRequest);
         assertEquals(expectedToken, actualToken);
@@ -198,28 +190,30 @@ class ZaasJwtServiceTest {
 
     @Test
     void givenExpiredPassword_whenLogin_thenThrowException() {
-        mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
+        var responseMock = mockHttpClientResponse(401, EXPIRED_PASSWORD_RESPONSE);
+        when(responseMock.getHeaders(HttpHeaders.SET_COOKIE)).thenReturn(new Header[0]);
         zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
             () -> zaasJwtService.login("user", "password".toCharArray()));
     }
 
     @Test
-    void givenExpiredPassword_whenQuery_thenThrowException() throws IOException {
-        mockHttpClient(401, EXPIRED_PASSWORD_RESPONSE);
+    void givenExpiredPassword_whenQuery_thenThrowException() {
+        mockHttpClientResponse(401, EXPIRED_PASSWORD_RESPONSE);
         zaasClientTestAssertThrows(ZaasClientErrorCodes.EXPIRED_PASSWORD, "The specified password is expired",
             () -> zaasJwtService.query("jwt"));
     }
 
-    private void mockHttpClient(int statusCode) throws IOException {
-        mockHttpClient(statusCode, "null");
+    private void mockHttpClientResponse(int statusCode) {
+        mockHttpClientResponse(statusCode, "null");
     }
 
-    private void mockHttpClient(int statusCode, String content) {
+    private CloseableHttpResponse mockHttpClientResponse(int statusCode, String content) {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
         doReturn(statusCode).when(response).getCode();
         HttpEntity entity = new StringEntity(content, ContentType.TEXT_PLAIN);
         doReturn(entity).when(response).getEntity();
         HttpClientMockHelper.mockExecuteWithResponse(closeableHttpClient, response);
+        return response;
     }
 
     private void zaasClientTestAssertThrows(ZaasClientErrorCodes code, String message, Executable executable) {

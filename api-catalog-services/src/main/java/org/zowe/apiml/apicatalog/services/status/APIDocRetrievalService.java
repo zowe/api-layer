@@ -44,7 +44,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -313,14 +312,14 @@ public class APIDocRetrievalService {
                 var responseEntity = response.getEntity();
                 if (responseEntity != null) {
                     responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-            }
+                }
 
-                if (response.getCode() != HttpStatus.SC_OK) {
+            if (HttpStatus.SC_OK == response.getCode()) {
+                return responseBody;
+            } else {
                     throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
                         " server error: '" + responseBody + "'.");
                 }
-
-                return responseBody;
             }
         );
     }
@@ -365,19 +364,16 @@ public class APIDocRetrievalService {
         String apiId = api.length > 0 ? api[0] : "";
         String version = api.length > 1 ? api[1].replace("v", "") : "";
 
-        Optional<ApiInfo> result = apiInfos.stream()
+        return apiInfos.stream()
             .filter(
                 f -> apiId.equals(f.getApiId()) && (version.equals(f.getVersion()))
             )
-            .findFirst();
-
-        if (result.isEmpty()) {
-            String errMessage = String.format("Error finding api doc: there is no api doc for '%s %s'.", apiId, version);
-            log.error(errMessage);
-            throw new ApiDocNotFoundException(errMessage);
-        } else {
-            return result.get();
-        }
+            .findFirst()
+            .orElseThrow(() -> {
+                String errMessage = String.format("Error finding api doc: there is no api doc for '%s %s'.", apiId, version);
+                log.error(errMessage);
+                return new ApiDocNotFoundException(errMessage);
+            });
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {

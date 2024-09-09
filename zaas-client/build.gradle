@@ -1,5 +1,6 @@
 dependencies {
     implementation libs.spring.boot.starter
+    implementation libs.spring.web
 
     implementation libs.jackson.databind
     implementation libs.http.client5

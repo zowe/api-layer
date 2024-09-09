@@ -17,6 +17,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
@@ -79,7 +80,7 @@ public class StaticAPIService {
     }
 
     private boolean isSuccessful(StaticAPIResponse response) {
-        return response.getStatusCode() >= 200 && response.getStatusCode() <= 299;
+        return HttpStatus.valueOf(response.getStatusCode()).is2xxSuccessful();
     }
 
     private HttpPost getHttpRequest(String discoveryServiceUrl) {

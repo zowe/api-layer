@@ -19,7 +19,6 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
@@ -28,24 +27,24 @@ import java.io.IOException;
 
 class PassTicketServiceImpl implements PassTicketService {
 
-    private final CloseableClientProvider httpClientProvider;
+    private final CloseableHttpClient httpClient;
     private final String ticketUrl;
 
     ConfigProperties passConfigProperties;
 
-    public PassTicketServiceImpl(CloseableClientProvider client, String baseUrl, ConfigProperties configProperties) {
-        httpClientProvider = client;
+    public PassTicketServiceImpl(CloseableHttpClient client, String baseUrl, ConfigProperties configProperties) {
+        httpClient = client;
         ticketUrl = baseUrl + "/ticket";
         passConfigProperties = configProperties;
     }
 
     @Override
-    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
-        try (CloseableHttpClient closeableHttpsClient = httpClientProvider.getHttpClient()) {
+    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
+        try {
             HttpPost httpPost = getHttpPost(jwtToken, applicationId);
-            var passTicketResponse = closeableHttpsClient.execute(httpPost, SimpleHttpResponse::fromResponseWithBytesBodyOnSuccess);
+            var passTicketResponse = httpClient.execute(httpPost, SimpleHttpResponse::fromResponseWithBytesBodyOnSuccess);
             return extractPassTicket(passTicketResponse);
-        } catch (ZaasConfigurationException | ZaasClientException e) {
+        } catch (ZaasClientException e) {
             throw e;
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
@@ -65,14 +64,14 @@ class PassTicketServiceImpl implements PassTicketService {
     }
 
     private String extractPassTicket(SimpleHttpResponse response) throws IOException, ZaasClientException {
-        int statusCode = response.code();
+        int statusCode = response.getCode();
         if (statusCode == 200) {
             ObjectMapper mapper = new ObjectMapper();
             ZaasPassTicketResponse zaasPassTicketResponse = mapper
-                .readValue(response.byteBody(), ZaasPassTicketResponse.class);
+                .readValue(response.getByteBody(), ZaasPassTicketResponse.class);
             return zaasPassTicketResponse.getTicket();
         } else {
-            String obtainedMessage = response.stringBody();
+            String obtainedMessage = response.getStringBody();
             if (statusCode == 401) {
                 throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
             } else if (statusCode == 400) {

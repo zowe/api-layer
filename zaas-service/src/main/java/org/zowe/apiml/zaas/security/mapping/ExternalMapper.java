@@ -23,6 +23,7 @@ import org.apache.hc.core5.http.message.BasicHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -78,19 +79,16 @@ public abstract class ExternalMapper {
                 if (httpResponse.getEntity() != null) {
                     responseBody = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
                 }
-                if (statusCode == 0) {
-                    return null;
-                }
-                if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
-                    if (org.springframework.http.HttpStatus.valueOf(statusCode).is5xxServerError()) {
-                        apimlLog.log("org.zowe.apiml.zaas.security.unexpectedMappingResponse", statusCode, httpResponse);
-                    } else {
-                        log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, httpResponse);
-                    }
-                    return null;
-                }
+
                 log.debug("External identity mapper API returned: {}", responseBody);
-                return responseBody;
+                if (HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
+                    return responseBody;
+                } else if (HttpStatus.valueOf(statusCode).is5xxServerError()) {
+                    apimlLog.log("org.zowe.apiml.zaas.security.unexpectedMappingResponse", statusCode, httpResponse);
+                } else {
+                    log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, httpResponse);
+                }
+                return null;
             });
 
             if (StringUtils.isNotEmpty(response)) {

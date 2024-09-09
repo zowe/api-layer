@@ -20,10 +20,13 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
@@ -147,11 +150,13 @@ public class InstanceRetrievalService {
         return httpClient.execute(httpGet, response -> {
             final int statusCode = response.getCode();
             final HttpEntity responseEntity = response.getEntity();
+
             String responseBody = "";
             if (responseEntity != null) {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
             }
-            if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
+
+            if (HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
                 return responseBody;
             }
 
@@ -178,7 +183,7 @@ public class InstanceRetrievalService {
         try {
             application = mapper.readValue(responseBody, ApplicationWrapper.class);
         } catch (IOException e) {
-            log.debug("Could not extract service: " + serviceId + " info from discovery --" + e.getMessage(), e);
+            log.debug("Could not extract service: {} info from discovery --{}", serviceId, e.getMessage(), e);
         }
 
 

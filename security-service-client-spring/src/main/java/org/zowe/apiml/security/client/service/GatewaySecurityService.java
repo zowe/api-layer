@@ -18,10 +18,10 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -71,8 +71,7 @@ public class GatewaySecurityService {
             String json = objectMapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             return closeableHttpClient.execute(post, response -> {
-                final int statusCode = response.getCode();
-                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                if (!HttpStatus.valueOf(response.getCode()).is2xxSuccessful()) {
                     final HttpEntity responseEntity = response.getEntity();
                     String responseBody = null;
                     if (responseEntity != null) {
@@ -116,8 +115,7 @@ public class GatewaySecurityService {
                 if (responseEntity != null) {
                     responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
                 }
-                final int statusCode = response.getCode();
-                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                if (!HttpStatus.valueOf(response.getCode()).is2xxSuccessful()) {
                     ErrorType errorType = getErrorType(responseBody);
                     responseHandler.handleErrorType(response, errorType,
                         "Cannot access Gateway service. Uri '{}' returned: {}", uri);

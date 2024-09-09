@@ -10,10 +10,9 @@
 
 package org.zowe.apiml.zaasclient.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Get JWT tokens, PaasTickets and details about the Tokens.
