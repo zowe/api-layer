@@ -22,7 +22,12 @@
                                         },
                                         "debug": {
                                             "type": "boolean",
-                                            "description": "Enable debug logs in gateway service"
+                                            "description": "Enable debug logs in gateway service",
+                                            "default": false
+                                        },
+                                        "sslDebug": {
+                                            "type": "string",
+                                            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
                                         },
                                         "heap": {
                                             "type": "object",
@@ -30,11 +35,116 @@
                                             "properties": {
                                                 "init": {
                                                     "type": "integer",
-                                                    "description": "Initial heap size in MB."
+                                                    "description": "Initial heap size in MB.",
+                                                    "default": 32
                                                 },
                                                 "max": {
                                                     "type": "integer",
-                                                    "description": "Maximum heap size in MB."
+                                                    "description": "Maximum heap size in MB.",
+                                                    "max": 512
+                                                }
+                                            }
+                                        },
+                                        "apimlId": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9]{1,64}$",
+                                            "description": "Specifies identifier of the domain gateway for routing purpose in the central Gateway."
+                                        },
+                                        "certificate": {
+                                            "type": "object",
+                                            "description": "Network encryption for gateway service connections.",
+                                            "properties": {
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "Should gateway use encrypted communication?",
+                                                    "default": true
+                                                },
+                                                "keystore": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "alias": {
+                                                            "type": "string",
+                                                            "description": "Specifies the alias used to address the private key in the keystore."
+                                                        },
+                                                        "key": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "password": {
+                                                                    "type": "string",
+                                                                    "description": "Specifies the password associated with the private key."
+                                                                }
+                                                            }
+                                                        },
+                                                        "file": {
+                                                            "type": "string",
+                                                            "description": "Specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
+                                                        },
+                                                        "password": {
+                                                            "type": "string",
+                                                            "description": "Specifies the password used to unlock the keystore."
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
+                                                            "description": "Specifies the type of the keystore.",
+                                                            "default": "PKCS12"
+                                                        }
+                                                    },
+                                                    "allOf": [
+                                                        {
+                                                            "if": {
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "pattern": "^JCE.*RACFKS$"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "then": {
+                                                                "properties": {
+                                                                    "file": {
+                                                                        "pattern": "^safkeyring[^:]*://"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "truststore": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "file": {
+                                                            "type": "string",
+                                                            "description": "Specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
+                                                        },
+                                                        "password": {
+                                                            "type": "string",
+                                                            "description": "Specifies the password used to unlock the truststore."
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
+                                                            "description": "Specifies the truststore type. The default for this parameter is PKCS12.",
+                                                            "default": "PKCS12"
+                                                        }
+                                                    },
+                                                    "allOf": [
+                                                        {
+                                                            "if": {
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "pattern": "^JCE.*RACFKS$"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "then": {
+                                                                "properties": {
+                                                                    "file": {
+                                                                        "pattern": "^safkeyring[^:]*://"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
                                                 }
                                             }
                                         },
@@ -42,36 +152,258 @@
                                             "type": "object",
                                             "description": "Zowe API ML specific properties.",
                                             "properties": {
-                                                "service": {
+                                                "connection": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "allowEncodedSlashes": {
-                                                            "type": "boolean",
-                                                            "description": "Allow URLs on gateway to contain encoded slashes.",
-                                                            "default": true
+                                                        "idleConnectionTimeoutSeconds" : {
+                                                            "type": "integer",
+                                                            "description": "Specifies a timeout limit for idle client connections, in seconds.",
+                                                            "default": 5
                                                         },
-                                                        "additionalRegistration": {
-                                                            "type": "array",
-                                                            "description": "List of additional Discovery Services URLs to register with and the routing patterns.",
-                                                            "minItems": 1,
-                                                            "items": {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "discoveryServiceUrls": {
-                                                                        "type": "string",
-                                                                        "description": "List of Discovery Services URLs in one security domain. You can separate multiple urls by comma or semicolon."
-                                                                    },
-                                                                    "routes": {
-                                                                        "$ref": "#/$defs/routes"
+                                                        "timeout": {
+                                                            "type": "integer",
+                                                            "description": "Specifies a timeout limit for a connection, in milliseconds.",
+                                                            "default": 60000
+                                                        },
+                                                        "timeToLive": {
+                                                            "type": "integer",
+                                                            "description": "Specifies a timeout limit how long to keep open connection to be reused, in milliseconds.",
+                                                            "default": 60000
+                                                        }
+                                                    }
+                                                },
+                                                "gateway": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "registry": {
+                                                            "type": "object",
+                                                            "description": "Gateway configuration of a service registry endpoint.",
+                                                            "properties": {
+                                                                "cachePeriodSec": {
+                                                                    "type": "integer",
+                                                                    "description": "Specifies time in seconds to expired of cached data about /registry endpoint.",
+                                                                    "default": 120
+                                                                },
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "description": "Specifies whether the /registry endpoint is enabled.",
+                                                                    "default": false
+                                                                },
+                                                                "maxSimultaneousRequests": {
+                                                                    "type": "integer",
+                                                                    "description": "Specifies amount of parallel connection to obtain information from other APIML instances about services to construct response of /registry endpoint.",
+                                                                    "default": 20
+                                                                },
+                                                                "metadataKeyAllowList": {
+                                                                    "type": "string",
+                                                                    "description": "Specifies what custom metadata are displayed in the /registry endpoint.",
+                                                                    "pattern": "^[^,]+(,[^,]+)*$"
+                                                                },
+                                                                "refreshIntervalMs": {
+                                                                    "type": "integer",
+                                                                    "description": "Specifies time period in milliseconds for how often to update data in /registry endpoint.",
+                                                                    "default": 30000
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "health": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "protected": {
+                                                            "type": "boolean",
+                                                            "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
+                                                            "default": true
+                                                        }
+                                                    }
+                                                },
+                                                "security": {
+                                                    "type": "object",
+                                                    "description": "Security configuration of the Gateway",
+                                                    "properties": {
+                                                        "auth": {
+                                                            "type": "object",
+                                                            "description": "Detail configuration of authentication schemes.",
+                                                            "properties": {
+                                                                "jwt": {
+                                                                    "type": "object",
+                                                                    "description": "Detail configuration of zoweJwt scheme.",
+                                                                    "properties": {
+                                                                        "customAuthHeader": {
+                                                                            "type": "string",
+                                                                            "description": "Additional header to set JWT token in case of zoweJwt scheme."
+                                                                        }
                                                                     }
                                                                 },
-                                                                "required": ["discoveryServiceUrls","routes"]
+                                                                "passticket": {
+                                                                    "type": "object",
+                                                                    "description": "Detail configuration of httpBasicPassTicket scheme.",
+                                                                    "properties": {
+                                                                        "customAuthHeader": {
+                                                                            "type": "string",
+                                                                            "description": "Additional header to set passticket in case of httpBasicPassTicket scheme."
+                                                                        },
+                                                                        "customUserHeader": {
+                                                                            "type": "string",
+                                                                            "description": "Additional header to set userId in case of httpBasicPassTicket scheme."
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "uniqueCookie": {
+                                                                    "type": "boolean",
+                                                                    "default": false
+                                                                }
                                                             }
+                                                        },
+                                                        "authorization": {
+                                                            "type": "object",
+                                                            "description": "Authorization configuration.",
+                                                            "properties": {
+                                                                "endpoint": {
+                                                                    "type": "object",
+                                                                    "description": "Configuration of SAF resource to check authorization via HTTP call.",
+                                                                    "properties": {
+                                                                        "enabled": {
+                                                                            "type": "boolean",
+                                                                            "description": "Enable provider based on endpoint. to verify SAF authorization.",
+                                                                            "default": false
+                                                                        },
+                                                                        "url": {
+                                                                            "type": "string",
+                                                                            "format": "uri",
+                                                                            "pattern": "^(https?)://",
+                                                                            "description": "URL of endpoint to verify SAF resource. Ie. https://&lt;zss hostname&gt;:&lt;zss port&gt;/saf-auth"
+                                                                        }
+                                                                    },
+                                                                    "allOf": [
+                                                                        {
+                                                                            "if": {
+                                                                                "properties": {
+                                                                                    "enabled": {
+                                                                                        "const": true
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                            "then": {
+                                                                                "required": [
+                                                                                    "url"
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "provider": {
+                                                                    "type": "string",
+                                                                    "enum": ["endpoint", "native", "dummy"],
+                                                                    "description": "Specifies security provider to be used by the Gateway."
+                                                                }
+                                                            },
+                                                            "allOf": [
+                                                                {
+                                                                    "if": {
+                                                                        "properties": {
+                                                                            "provider": {
+                                                                                "const": "endpoint"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "then": {
+                                                                        "required": [
+                                                                            "endpoint"
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        "x509": {
+                                                            "type": "object",
+                                                            "description": "Client certificate configuration.",
+                                                            "properties": {
+                                                                "acceptForwardedCert": {
+                                                                    "type": "boolean",
+                                                                    "description": "To enable accepting client certificate from request header. It is used in domain APIML to accept forwarded client certificate by the caller.",
+                                                                    "default": false
+                                                                },
+                                                                "certificatesUrl": {
+                                                                    "type": "string",
+                                                                    "format": "uri",
+                                                                    "pattern": "^(https?)://",
+                                                                    "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                                                },
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "default": false,
+                                                                    "description": "To enable accepting client certificate in the Gateway."
+                                                                },
+                                                                "registry": {
+                                                                    "type": "object",
+                                                                    "description": "Security configuration of /registry endpoint.",
+                                                                    "properties": {
+                                                                        "allowedUsers": {
+                                                                            "type": "string",
+                                                                            "pattern": "^[*]?|([a-zA-Z0-9]+(,[a-zA-Z0-9]+)*)$",
+                                                                            "description": "Specifies the comma-separated list of users that are permitted to use /registry endpoints. The user is obtained from the common name in the provided client certificate."
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "allOf": [
+                                                                {
+                                                                    "if": {
+                                                                        "properties": {
+                                                                            "acceptForwardedCert": {
+                                                                                "const": true
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "then": {
+                                                                        "required": [
+                                                                            "certificatesUrl"
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                "service": {
+                                                    "type": "object",
+                                                    "description": "General configuration of the Gateway.",
+                                                    "properties": {
+                                                        "additionalRegistration": {
+                                                            "type": "object",
+                                                            "description": "List of additional Discovery Services URLs to register with and the routing patterns.",
+                                                            "patternProperties": {
+                                                                "^[0-9]+$": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "discoveryServiceUrls": {
+                                                                            "type": "string",
+                                                                            "description": "List of Discovery Services URLs in one security domain. You can separate multiple urls by comma or semicolon."
+                                                                        },
+                                                                        "routes": {
+                                                                            "$ref": "#/$defs/routes"
+                                                                        }
+                                                                    },
+                                                                    "required": ["discoveryServiceUrls","routes"]
+                                                                }
+                                                            }
+                                                        },
+                                                        "allowEncodedSlashes": {
+                                                            "type": "boolean",
+                                                            "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
+                                                            "default": true
                                                         },
                                                         "corsEnabled": {
                                                             "type": "boolean",
                                                             "description": "Allow CORS on gateway.",
-                                                            "default": true
+                                                            "default": false
+                                                        },
+                                                        "forwardClientCertEnabled": {
+                                                            "type": "boolean",
+                                                            "description": "Enable forwarding client certificate to the next service or APIML.",
+                                                            "default": false
                                                         }
                                                     }
                                                 }
@@ -103,32 +435,30 @@
                                                         "connectTimeout": {
                                                             "type": "integer",
                                                             "description": "The gateway acts as a server and client. This parameters customizes the default connect timeout for its client role.",
-                                                            "default": 15000
-                                                        },
-                                                        "stopTimeout": {
-                                                            "type": "integer",
-                                                            "description": "The gateway acts as a server and client. This parameters customizes the default stop timeout for its client role.",
-                                                            "default": 30000
+                                                            "default": 45000
                                                         },
                                                         "asyncWriteTimeout": {
                                                             "type": "integer",
                                                             "description": "The gateway acts as a server and client. This parameters customizes the default async write timeout for its client role.",
                                                             "default": 60000
+                                                        },
+                                                        "requestBufferSize": {
+                                                            "type": "integer",
+                                                            "description": "Specifies the buffer size in bytes to load request headers.",
+                                                            "default": 8192
                                                         }
                                                     }
                                                 },
                                                 "ssl": {
                                                     "type": "object",
-                                                    "description": "Network encryption for gateway service connections.",
                                                     "properties": {
                                                         "enabled": {
                                                             "type": "boolean",
-                                                            "description": "Should gateway use encrypted communication?",
+                                                            "description": "To enable SSL/tls layer.",
                                                             "default": true
                                                         }
                                                     }
                                                 }
-
                                             }
                                         },
                                         "spring": {
@@ -141,7 +471,90 @@
                                                     "properties": {
                                                         "active": {
                                                             "type": "string",
-                                                            "description": "List of the active configuration profiles."
+                                                            "description": "List of the active configuration profiles.",
+                                                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
+                                                        }
+                                                    }
+                                                },
+                                                "security": {
+                                                    "type": "object",
+                                                    "description": "Security configuration.",
+                                                    "properties": {
+                                                        "oauth2": {
+                                                            "type": "object",
+                                                            "description": "OAuth2 configuration values.",
+                                                            "properties": {
+                                                                "client": {
+                                                                    "type": "object",
+                                                                    "description": "Configuration of OAuth2 communication.",
+                                                                    "properties": {
+                                                                        "registration": {
+                                                                            "type": "object",
+                                                                            "description": "Provider specific values.",
+                                                                            "patternProperties": {
+                                                                                "^.+$": {
+                                                                                    "clientId": {
+                                                                                        "type": "string",
+                                                                                        "description": "The client identifier."
+                                                                                    },
+                                                                                    "clientSecret":{
+                                                                                        "type": "string",
+                                                                                        "description": "The client secret."
+                                                                                    },
+                                                                                    "redirectUri": {
+                                                                                        "type": "string",
+                                                                                        "description": "The client’s registered redirect URI that the Authorization Server redirects the end-user’s user-agent to after the end-user has authenticated and authorized access to the client."
+                                                                                    },
+                                                                                    "scope": {
+                                                                                        "type": "array",
+                                                                                        "description": "The scope(s) requested by the client during the Authorization Request flow, such as openid, email, or profile.",
+                                                                                        "items": {
+                                                                                            "type": "string",
+                                                                                            "description": "The scope identifier."
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "provider": {
+                                                                            "type": "object",
+                                                                            "description": "Provider specific values.",
+                                                                            "patternProperties": {
+                                                                                "^.+$": {
+                                                                                    "authorizationUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The Authorization Endpoint URI for the Authorization Server."
+                                                                                    },
+                                                                                    "tokenUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The Token Endpoint URI for the Authorization Server."
+                                                                                    },
+                                                                                    "userInfoUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The URL of endpoint to obtain details about user by provided token."
+                                                                                    },
+                                                                                    "userNameAttribute": {
+                                                                                        "type": "string",
+                                                                                        "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user."
+                                                                                    },
+                                                                                    "jwkSetUri": {
+                                                                                        "type": "string",
+                                                                                        "format": "uri",
+                                                                                        "pattern": "^(https?)://",
+                                                                                        "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -180,6 +593,11 @@
                 },
                 "required": ["gatewayUrl","serviceUrl"]
             }
+        },
+        "tlsType": {
+            "type": "string",
+            "description": "List of supported SSL/TLS protocols",
+            "enum": ["TLSv1.1", "TLSv1.2", "TLSv1.3", "TLSv1.4"]
         }
     }
 }
