@@ -8,9 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 /* eslint-disable no-console */
-import React from 'react';
-import { render } from 'react-dom';
-import { act } from 'react-dom/test-utils';
+import { React, act } from 'react';
+import { createRoot } from 'react-dom/client';
 import BigShield from './BigShield';
 
 const Child = () => {
@@ -26,7 +25,8 @@ describe('>>> BigShield component tests', () => {
         );
         const container = document.createElement('div');
         act(() => {
-            render(
+            const root = createRoot(container);
+            root.render(
                 <BigShield>
                     <Child />
                 </BigShield>,
@@ -41,7 +41,8 @@ describe('>>> BigShield component tests', () => {
 
         const container = document.createElement('div');
         act(() => {
-            render(
+            const root = createRoot(container);
+            root.render(
                 <BigShield history={historyMock}>
                     <Child history={historyMock} />
                 </BigShield>,

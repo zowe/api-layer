@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.util;
 
-import com.google.common.net.HttpHeaders;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.message.BasicHeader;
 

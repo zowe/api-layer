@@ -18,7 +18,7 @@ version "0.1"
 group "org.zowe.apiml"
 
 micronaut {
-    version = libs.versions.micronaut.get()
+    version = libs.versions.micronautPlatform.get()
     runtime "netty"
     testRuntime "junit5"
     processing {
