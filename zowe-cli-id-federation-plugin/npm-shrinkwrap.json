@@ -2001,6 +2001,17 @@
         "node": ">=14"
       }
     },
+    "node_modules/@popperjs/core": {
+      "version": "2.11.8",
+      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/@popperjs/core/-/core-2.11.8.tgz",
+      "integrity": "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==",
+      "dev": true,
+      "peer": true,
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/popperjs"
+      }
+    },
     "node_modules/@shikijs/core": {
       "version": "1.16.1",
       "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/@shikijs/core/-/core-1.16.1.tgz",
