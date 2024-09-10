@@ -59,11 +59,6 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
-configurations.all {
-    // Remove deprecated HTTP client (unused transitive dependency of openDiff)
-    exclude group: "commons-httpclient", module: "commons-httpclient"
-}
-
 dependencies {
     api project(':apiml-tomcat-common')
     api project(':security-service-client-spring')
@@ -80,6 +75,8 @@ dependencies {
 
     implementation(libs.openapidiff) {
         exclude group: "io.swagger.core.v3", module: "swagger-core"
+        // Remove deprecated HTTP client (unused transitive dependency of openDiff)
+        exclude group: "commons-httpclient", module: "commons-httpclient"
     }
     implementation(libs.swagger.inflector) {
         exclude group: "io.swagger.core.v3", module: "swagger-core"
