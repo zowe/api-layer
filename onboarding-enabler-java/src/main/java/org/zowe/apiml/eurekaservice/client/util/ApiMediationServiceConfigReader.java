@@ -10,75 +10,78 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import jakarta.servlet.ServletContext;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.util.FileUtils;
 import org.zowe.apiml.util.ObjectUtil;
 import org.zowe.apiml.util.StringUtils;
 import org.zowe.apiml.util.UrlUtils;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
-import jakarta.servlet.ServletContext;
-import java.io.*;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_ABSENT;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 /**
- *  This class implements a facility for loading API ML service on-boarding configuration.
- *  <p>
- *  The implementation provides several methods for building the service configuration:
- *      <ul>
- *          <li>single filename in YAML format</li>
- *          <li>two file names in YAML format</li>
- *          <li>ServletContext initialized with servlet init parameters containing one or two file names under predefined
- *          keys and/or additional parameters to overwrite some of the properties contained in the configuration files
- *          </li>
- *          <li>String containing the YAML as text</li>
- *          <li>Java System properties which can be provided on the command line at service boot time</li>
- *      </ul>
- *  The file names can point to files placed anywhere in the file system, provided that the service has access to them.
- *  </p>
+ * This class implements a facility for loading API ML service on-boarding configuration.
+ * <p>
+ * The implementation provides several methods for building the service configuration:
+ *     <ul>
+ *         <li>single filename in YAML format</li>
+ *         <li>two file names in YAML format</li>
+ *         <li>ServletContext initialized with servlet init parameters containing one or two file names under predefined
+ *         keys and/or additional parameters to overwrite some of the properties contained in the configuration files
+ *         </li>
+ *         <li>String containing the YAML as text</li>
+ *         <li>Java System properties which can be provided on the command line at service boot time</li>
+ *     </ul>
+ * The file names can point to files placed anywhere in the file system, provided that the service has access to them.
+ * </p>
  *
- *  <p>
- *  The first file is usually internal to the service deployment artifact and should be located on
- *  the service classpath. It contains basic API ML configuration containing values known at development time.
- *  Typically it is provided by the service developer and is located in the /resources folder of java project source
- *  tree. In the deployment artifact it usually can be found under /WEB-INF/classes.
- *  </p>
+ * <p>
+ * The first file is usually internal to the service deployment artifact and should be located on
+ * the service classpath. It contains basic API ML configuration containing values known at development time.
+ * Typically it is provided by the service developer and is located in the /resources folder of java project source
+ * tree. In the deployment artifact it usually can be found under /WEB-INF/classes.
+ * </p>
  *
- *  <p>
- *  The second configuration file is used to externalize the configuration. It is populated with values dependent on
- *  the target deployment environment. The file can be placed in arbitrary location, where the order of searching it is as follows:
- *      <ul>
- *          <li>Service classpath</li>
- *          <li>System classpath classpath</li>
- *          <li>Absolute path</li>
- *          <li>Path relative to the Web server home directory</li>
- *          <li>Path relative to the User home directory</li>
- *          <li>Path relative to any of the file system roots</li>
- *      </ul>
+ * <p>
+ * The second configuration file is used to externalize the configuration. It is populated with values dependent on
+ * the target deployment environment. The file can be placed in arbitrary location, where the order of searching it is as follows:
+ *     <ul>
+ *         <li>Service classpath</li>
+ *         <li>System classpath classpath</li>
+ *         <li>Absolute path</li>
+ *         <li>Path relative to the Web server home directory</li>
+ *         <li>Path relative to the User home directory</li>
+ *         <li>Path relative to any of the file system roots</li>
+ *     </ul>
+ * <p>
+ * When the service web context is initialized, the on-boarding configuration is build from the one or two configurations,
+ * where the externalized configuration (if provided) has higher priority.
+ * </p>
  *
- *  When the service web context is initialized, the on-boarding configuration is build from the one or two configurations,
- *  where the externalized configuration (if provided) has higher priority.
- *  </p>
- *
- *  <p>
- *  The values of the properties configured in both files can be overwritten by Java System properties and/or
- *  ServletContext parameters. Set a parameter value in the YAML file to ${apiml.your.config.key} and provide the actual
- *  value  under the same key in a servlet context init parameter:
- *      <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
- *
- *  , or in the corresponding Java System property.
- *  </p>
- *
+ * <p>
+ * The values of the properties configured in both files can be overwritten by Java System properties and/or
+ * ServletContext parameters. Set a parameter value in the YAML file to ${apiml.your.config.key} and provide the actual
+ * value  under the same key in a servlet context init parameter:
+ *     <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
+ * <p>
+ * , or in the corresponding Java System property.
+ * </p>
  */
+@Slf4j
 public class ApiMediationServiceConfigReader {
 
     public static final String APIML_DEFAULT_CONFIG = "apiml.config.location";
@@ -144,7 +147,7 @@ public class ApiMediationServiceConfigReader {
      * while the second one provides externalization of deployment environment dependent properties.
      * The externalized file has precedence over the basic one, i.e the properties values of the basic YAML file can be rewritten
      * by the values of the same properties defined in the externalized configuration file.
-     *
+     * <p>
      * Note: This method implementation relies on caller to set a map with API ML related System properties and
      * context parameters provided by system admin. Service context parameters take precedence over system properties.
      *
@@ -159,7 +162,7 @@ public class ApiMediationServiceConfigReader {
     }
 
     private ApiMediationServiceConfig loadConfiguration(String internalConfigFileName, String externalizedConfigFileName, boolean isInitialized)
-            throws ServiceDefinitionException {
+        throws ServiceDefinitionException {
 
         /*
          * Loading new configuration. Clean context map which might be kept in ThreadLocal object from previous configs.
@@ -198,8 +201,12 @@ public class ApiMediationServiceConfigReader {
     }
 
     public static void setServiceIpAddress(ApiMediationServiceConfig serviceConfig) throws ServiceDefinitionException {
+        if ((serviceConfig == null) || !serviceConfig.isPreferIpAddress()) {
+            log.debug("IP Address is not preferred, will not resolve address from hostname.");
+            return;
+        }
         // Set instance ipAddress if required by Eureka and not set in the configuration files
-        if ((serviceConfig != null) && (serviceConfig.getServiceIpAddress() == null)) {
+        if ((serviceConfig.getServiceIpAddress() == null)) {
             String urlString = serviceConfig.getBaseUrl();
             try {
                 serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(urlString));
@@ -230,7 +237,7 @@ public class ApiMediationServiceConfigReader {
      * @param fileName
      * @return
      * @throws ServiceDefinitionException
-    */
+     */
     public ApiMediationServiceConfig buildConfiguration(String fileName, Map<String, String> properties) throws ServiceDefinitionException {
         if (fileName == null) {
             return null;
@@ -272,13 +279,13 @@ public class ApiMediationServiceConfigReader {
 
     /**
      * Uses {@link ApiMediationServiceConfigReader} to build {@link ApiMediationServiceConfig} configuration.
-     *
+     * <p>
      * This is the most flexible API ML service configuration method using several configuration sources in the following order:
-     *     - internal configuration file with default name service-config.yml
-     *     - external configuration file if provided as Java system property or servlet context parameter
-     *     - Java system properties prefixed with "apiml."
-     *     - Servlet context parameters prefixed with "apiml."
-     *
+     * - internal configuration file with default name service-config.yml
+     * - external configuration file if provided as Java system property or servlet context parameter
+     * - Java system properties prefixed with "apiml."
+     * - Servlet context parameters prefixed with "apiml."
+     * <p>
      * The internal and external service configuration is provided by YAML files. The names of of the configuration files can be set using
      * Java system properties or servlet context parameters with following parameter names:
      *
@@ -292,24 +299,24 @@ public class ApiMediationServiceConfigReader {
      *          Can be placed anywhere on a file system accessible from the service application.
      *      </li>
      *  </ul>
-     *
+     * <p>
      * If the basic configuration file name is not provided, the called API ML enabler configuration loader
      * will use "/service-configuration.yml" as default name.
-     *
+     * <p>
      * The externalized configuration file is optional. The deployer of the service may decide not to use it. Consequently
      * the deployment environment dependent configuration values can be provided as additional servlet context
      * parameters with key names prefixed by "apiml.". They will be transferred to Java system properties
      * and can be used to substitute corresponding service configuration properties. This approach can be used only
      * for configuration properties which are tokenized in the YAML configuration file.
-     *
+     * <p>
      * For example if the service developer would define/tokenize the serviceId parameter as:
      *      serviceId: ${apiml.serviceId}
-     *
+     * <p>
      *  The service deployer must define following context parameter:
      *      <Parameter name="apiml.serviceId" value="helloapiml" />
-     *
+     * <p>
      * The value "helloapiml" will then be used as "serviceId".
-     *
+     * <p>
      * This properties overwriting mechanism can be also used for the externalized configuration file.
      *
      * @param context
@@ -359,9 +366,8 @@ public class ApiMediationServiceConfigReader {
 
     /**
      * Add/Replace all system properties prefixed with "apiml." to the apiml context map stored in ThreadLocal.
-     *
+     * <p>
      * WARNING: This method could rewrite previously set Servlet context parameters
-     *
      */
     private Map<String, String> setApiMlSystemProperties() {
 
@@ -369,7 +375,7 @@ public class ApiMediationServiceConfigReader {
 
         Enumeration<?> propertyNames = System.getProperties().propertyNames();
         while (propertyNames.hasMoreElements()) {
-            String param = (String)propertyNames.nextElement();
+            String param = (String) propertyNames.nextElement();
             String value = System.getProperties().getProperty(param);
             if (param.startsWith("apiml.")) {
                 threadContextMap.put(param, value);
@@ -380,9 +386,9 @@ public class ApiMediationServiceConfigReader {
     }
 
     /**
-     *  Because this class is intended to be used mainly in web containers it is expected that
-     *  the thread instances belong to a thread pool.
-     *  We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
+     * Because this class is intended to be used mainly in web containers it is expected that
+     * the thread instances belong to a thread pool.
+     * We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
      */
     private void initializeContextMap() {
         threadConfigurationContext.remove();
