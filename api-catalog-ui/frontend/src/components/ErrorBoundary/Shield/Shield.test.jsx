@@ -8,9 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 /* eslint-disable no-console */
-import React from 'react';
-import { render } from 'react-dom';
-import { act } from 'react-dom/test-utils';
+import { React, act } from 'react';
+import { createRoot } from 'react-dom/client';
 import Shield from './Shield';
 
 const Child = () => {
@@ -23,7 +22,8 @@ describe('>>> Shield component tests', () => {
         const errorMessage = 'Display the error stack';
         const container = document.createElement('div');
         act(() => {
-            render(
+            const root = createRoot(container);
+            root.render(
                 <Shield>
                     <Child />
                 </Shield>,

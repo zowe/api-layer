@@ -10,6 +10,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import * as enzyme from 'enzyme';
 import 'jest-enzyme';
-import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
+import Adapter from '@cfaester/enzyme-adapter-react-18';
 
 enzyme.configure({ adapter: new Adapter() });

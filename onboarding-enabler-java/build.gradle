@@ -3,6 +3,7 @@ dependencies {
 
     implementation libs.eureka.jersey.client
     implementation libs.jackson.dataformat.yaml
+    implementation libs.guava
 
     compileOnly libs.jakarta.servlet.api
 

@@ -7,8 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { act } from 'react-dom/test-utils';
-import { render } from 'react-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { shallow } from 'enzyme';
 import { describe, expect, it, jest } from '@jest/globals';
 import SwaggerUI from './SwaggerUIApiml';
@@ -104,7 +104,7 @@ describe('>>> Swagger component tests', () => {
 
         const container = document.createElement('div');
         document.body.appendChild(container);
-        await act(async () => render(<SwaggerUI selectedService={service} />, container));
+        await act(async () => createRoot(container).render(<SwaggerUI selectedService={service} />, container));
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
 
@@ -148,7 +148,9 @@ describe('>>> Swagger component tests', () => {
         const container = document.createElement('div');
         document.body.appendChild(container);
 
-        await act(async () => render(<SwaggerUI selectedService={service} tiles={tiles} />, container));
+        await act(async () =>
+            createRoot(container).render(<SwaggerUI selectedService={service} tiles={tiles} />, container)
+        );
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint}`);
     });
 
@@ -213,9 +215,13 @@ describe('>>> Swagger component tests', () => {
         const container = document.createElement('div');
         document.body.appendChild(container);
         const tiles = [{}];
-        await act(async () => render(<SwaggerUI selectedService={service1} tiles={tiles} />, container));
+        await act(async () =>
+            createRoot(container).render(<SwaggerUI selectedService={service1} tiles={tiles} />, container)
+        );
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint1}`);
-        await act(async () => render(<SwaggerUI selectedService={service2} tiles={tiles} />, container));
+        await act(async () =>
+            createRoot(container).render(<SwaggerUI selectedService={service2} tiles={tiles} />, container)
+        );
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint2}`);
     });
 
@@ -251,7 +257,9 @@ describe('>>> Swagger component tests', () => {
         const container = document.createElement('div');
         document.body.appendChild(container);
 
-        await act(async () => render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container));
+        await act(async () =>
+            createRoot(container).render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container)
+        );
         expect(container).not.toBeNull();
     });
 

@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.3.1'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.3.2'
 
 
     testImplementation libs.spring.boot.starter.actuator

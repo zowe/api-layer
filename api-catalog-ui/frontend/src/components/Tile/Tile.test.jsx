@@ -8,8 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { shallow } from 'enzyme';
-import { render } from 'react-dom';
-import { act } from 'react-dom/test-utils';
+import { createRoot } from 'react-dom/client';
+import { act } from 'react';
 import Tile from './Tile';
 
 const match = {
@@ -116,7 +116,7 @@ describe('>>> Tile component tests', () => {
     it('should show sso if it is set', () => {
         const container = document.createElement('div');
         act(() => {
-            render(<Tile tile={sampleTile} service={sampleTile.services[0]} />, container);
+            createRoot(container).render(<Tile tile={sampleTile} service={sampleTile.services[0]} />, container);
         });
 
         expect(container.textContent).toEqual(expect.stringContaining('SSO'));
