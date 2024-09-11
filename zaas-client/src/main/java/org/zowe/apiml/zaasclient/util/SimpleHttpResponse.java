@@ -14,9 +14,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.Map;
@@ -88,6 +88,6 @@ public class SimpleHttpResponse {
     }
 
     private static boolean isSuccessInternal(int code) {
-        return HttpStatus.valueOf(code).is2xxSuccessful();
+        return code >= HttpStatus.SC_OK && code < HttpStatus.SC_MULTIPLE_CHOICES;
     }
 }
