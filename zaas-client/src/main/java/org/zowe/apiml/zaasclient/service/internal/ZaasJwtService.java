@@ -300,6 +300,7 @@ class ZaasJwtService implements TokenService {
         }
     }
 
+    @Data
     @AllArgsConstructor
     static class Credentials {
         String username;
