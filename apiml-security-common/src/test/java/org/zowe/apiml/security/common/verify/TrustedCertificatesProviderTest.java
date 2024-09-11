@@ -14,24 +14,22 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.util.HttpClientMockHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.reset;
 
 @ExtendWith(MockitoExtension.class)
 class TrustedCertificatesProviderTest {
@@ -75,16 +73,23 @@ class TrustedCertificatesProviderTest {
     private HttpEntity responseEntity;
     private TrustedCertificatesProvider provider;
 
+    @BeforeEach
+    void setup() {
+        HttpClientMockHelper.mockExecuteWithResponse(closeableHttpClient, httpResponse);
+        provider = new TrustedCertificatesProvider(closeableHttpClient);
+    }
+
+    @AfterEach
+    void tearDown() {
+        reset(httpResponse);
+    }
+
     @Nested
     class GivenResponseWithValidCertificate {
 
         @Test
-        void whenGetTrustedCerts_thenCertificatesReturned() throws UnsupportedOperationException, IOException {
-            when(httpResponse.getCode()).thenReturn(HttpStatus.SC_OK);
-            when(httpResponse.getEntity()).thenReturn(responseEntity);
-            when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream(VALID_CERTIFICATE.getBytes()));
-            when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+        void whenGetTrustedCerts_thenCertificatesReturned() throws UnsupportedOperationException {
+            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_OK, VALID_CERTIFICATE);
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertEquals(1, result.size());
@@ -95,16 +100,16 @@ class TrustedCertificatesProviderTest {
 
         @Test
         void whenInvalidUrl_thenNoCertificatesReturned() {
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            reset(closeableHttpClient);
             List<Certificate> result = provider.getTrustedCerts("htpp>\\\\//wrong.url");
             assertNotNull(result);
             assertTrue(result.isEmpty());
         }
 
         @Test
-        void whenIOError_thenNoCertificatesReturned() throws IOException {
-            when(closeableHttpClient.execute(any())).thenThrow(new IOException("communication error"));
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+        void whenIOError_thenNoCertificatesReturned() {
+            reset(closeableHttpClient);
+            HttpClientMockHelper.whenExecuteThenThrow(closeableHttpClient, new IOException("communication error"));
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
@@ -115,15 +120,11 @@ class TrustedCertificatesProviderTest {
     class GivenResponseWithInvalidCertificate {
 
         @Test
-        void whenGetTrustedCerts_thenNoCertificatesReturned() throws IOException {
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
-            when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
-            when(httpResponse.getEntity()).thenReturn(responseEntity);
-            when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream("invalid_certificate".getBytes()));
+        void whenGetTrustedCerts_thenNoCertificatesReturned() {
+            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_OK, "invalid_response_causing_certificate_parsing_error");
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
-            // check for log message
         }
     }
 
@@ -131,24 +132,16 @@ class TrustedCertificatesProviderTest {
     class GivenEmptyResponse {
 
         @Test
-        void whenGetTrustedCerts_thenNoCertificatesReturned() throws UnsupportedOperationException, IOException {
-            when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
-            when(httpResponse.getEntity()).thenReturn(responseEntity);
-            when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream(new byte[0]));
-
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+        void whenGetTrustedCerts_thenNoCertificatesReturned() {
+            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_OK, "");
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
         }
 
         @Test
-        void whenNoHttpEntity_thenNoCertificatesReturned() throws IOException {
-            when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
-            when(httpResponse.getEntity()).thenReturn(responseEntity);
-            when(httpResponse.getEntity()).thenReturn(null);
-
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+        void whenNoHttpEntity_thenNoCertificatesReturned() {
+            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_OK, null);
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
@@ -158,29 +151,20 @@ class TrustedCertificatesProviderTest {
     @Nested
     class GivenErrorResponseCode {
 
-        @BeforeEach
-        void setup() throws IOException {
-            when(httpResponse.getCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
-            when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
-            when(httpResponse.getEntity()).thenReturn(responseEntity);
-        }
-
         @Test
-        void whenGetTrustedCerts_thenNoCertificatesReturned() throws IOException {
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+        void whenGetTrustedCerts_thenNoCertificatesReturned() {
+            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_BAD_REQUEST);
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
-            //check for log message
         }
 
         @Test
         void whenNoStatusLine_thenNoCertificatesReturned() {
-            provider = new TrustedCertificatesProvider(closeableHttpClient);
+            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_BAD_REQUEST);
             List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
             assertNotNull(result);
             assertTrue(result.isEmpty());
-            //check for log message
         }
     }
 }

@@ -1,3 +1,7 @@
+plugins {
+    id "java-test-fixtures"
+}
+
 dependencies {
     api project(':apiml-utility')
 
@@ -17,4 +21,11 @@ dependencies {
 
     testCompileOnly libs.lombok
     annotationProcessor libs.lombok
+
+    testFixturesImplementation libs.spring.boot.starter.test
+    testFixturesImplementation libs.commons.io
+    testFixturesImplementation libs.http.client5
+    testFixturesImplementation libs.rest.assured
+    testFixturesImplementation libs.lombok
+    testFixturesAnnotationProcessor libs.lombok
 }

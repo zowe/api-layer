@@ -20,13 +20,13 @@ public enum ZaasClientErrorCodes {
     EMPTY_NULL_USERNAME_PASSWORD("ZWEAS121E", "Empty or null username or password values provided", 400),
     EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAS122E", "Empty or null authorization header provided", 400),
     INVALID_JWT_TOKEN("ZWEAS130E", "Invalid token provided", 400),
-    GENERIC_EXCEPTION("ZWEAS170E", "An exception occurred while trying to get the token", 400),
+    GENERIC_EXCEPTION("ZWEAS170E", "An exception occurred while trying to get the token", 500),
     BAD_REQUEST("ZWEAS400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
         "and application ID is configured properly by referring to  Using PassTickets in the guide for your security provider", 400),
     TOKEN_NOT_PROVIDED("ZWEAS401E", "Token is not provided", 401),
-    SERVICE_UNAVAILABLE("ZWEAS404E", "Gateway service is unavailable", 404),
+    SERVICE_UNAVAILABLE("ZWEAS404E", "Gateway service is unavailable", 503),
     EXPIRED_PASSWORD("ZWEAT412E", "The specified password is expired", 401),
-    APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The application name wasn't found", 404);
+    APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The application name wasn't found", 400);
 
     private final String id;
     private final String message;

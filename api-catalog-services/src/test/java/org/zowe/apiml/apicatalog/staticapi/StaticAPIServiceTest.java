@@ -13,7 +13,9 @@ package org.zowe.apiml.apicatalog.staticapi;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
+import org.zowe.apiml.util.HttpClientMockHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -162,15 +165,12 @@ class StaticAPIServiceTest {
     private void mockRestTemplateExchange(String discoveryUrl) throws IOException {
         HttpPost post = new HttpPost(discoveryUrl.replace("/eureka", "") + REFRESH_ENDPOINT);
 
-        when(httpClient.execute(any())).thenAnswer((invocation) -> {
+        when(httpClient.execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class))).thenAnswer((invocation) -> {
             HttpPost httpRequest = (HttpPost) invocation.getArguments()[0];
             URI uri = httpRequest.getUri();
             int i = uri.compareTo(post.getUri());
-            if (i == 0) {
-                return okResponse;
-            } else {
-                return notFoundResponse;
-            }
+
+            return HttpClientMockHelper.invokeResponseHandler(invocation, i == 0 ? okResponse : notFoundResponse);
         });
     }
 }
