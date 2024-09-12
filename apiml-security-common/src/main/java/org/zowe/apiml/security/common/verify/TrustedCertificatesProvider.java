@@ -14,9 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -75,22 +73,22 @@ public class TrustedCertificatesProvider {
     private String callCertificatesEndpoint(String url) {
         try {
             HttpGet httpGet = new HttpGet(new URI(url));
-            ClassicHttpResponse httpResponse = httpClient.execute(httpGet);
-            final int statusCode = httpResponse.getCode();
-            String body = "";
-            if (httpResponse.getEntity() != null) {
-                body = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-            }
-            if (statusCode != HttpStatus.SC_OK) {
-                apimlLog.log("org.zowe.apiml.security.common.verify.invalidResponse", url, statusCode, body);
-                return null;
-            }
-            log.debug("Trusted certificates from {}: {}", url, body);
-            return body;
-
+            return httpClient.execute(httpGet, response -> {
+                final int statusCode = response.getCode();
+                String body = "";
+                if (response.getEntity() != null) {
+                    body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                }
+                if (statusCode != HttpStatus.SC_OK) {
+                    apimlLog.log("org.zowe.apiml.security.common.verify.invalidResponse", url, statusCode, body);
+                    return null;
+                }
+                log.debug("Trusted certificates from {}: {}", url, body);
+                return body;
+            });
         } catch (URISyntaxException e) {
             apimlLog.log("org.zowe.apiml.security.common.verify.invalidURL", e.getMessage());
-        } catch (IOException | ParseException e) { //TODO: Consider a better message
+        } catch (IOException e) {
             apimlLog.log("org.zowe.apiml.security.common.verify.httpError", e.getMessage());
         }
         return null;

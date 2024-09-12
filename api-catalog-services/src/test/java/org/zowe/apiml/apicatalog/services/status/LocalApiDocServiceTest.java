@@ -11,10 +11,9 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +30,7 @@ import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundExcepti
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.util.HttpClientMockHelper;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -60,9 +59,6 @@ class LocalApiDocServiceTest {
     private static final String SWAGGER_URL = "https://service:8080/service/api-doc";
 
     @Mock
-    private CloseableHttpClient httpClient;
-
-    @Mock
     private InstanceRetrievalService instanceRetrievalService;
 
     private APIDocRetrievalService apiDocRetrievalService;
@@ -70,13 +66,20 @@ class LocalApiDocServiceTest {
     @Mock
     private ApimlLogger apimlLogger;
 
+    @Mock
+    private CloseableHttpClient httpClient;
+
+    @Mock
+    private CloseableHttpResponse response;
+
     @BeforeEach
     void setup() {
-        GatewayClient gatewayClient = new GatewayClient(getProperties());
+        HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
+
         apiDocRetrievalService = new APIDocRetrievalService(
             httpClient,
             instanceRetrievalService,
-            gatewayClient);
+            new GatewayClient(getProperties()));
 
         ReflectionTestUtils.setField(apiDocRetrievalService, "apimlLogger", apimlLogger);
     }
@@ -84,13 +87,13 @@ class LocalApiDocServiceTest {
     @Nested
     class WhenGetApiDoc {
         @Test
-        void givenValidApiInfo_thenReturnApiDoc() throws IOException {
+        void givenValidApiInfo_thenReturnApiDoc() {
             String responseBody = "api-doc body";
 
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -115,26 +118,26 @@ class LocalApiDocServiceTest {
             }
 
             @Test
-            void givenServerErrorWhenRequestingSwaggerUrl() throws IOException {
+            void givenServerErrorWhenRequestingSwaggerUrl() {
                 String responseBody = "Server not found";
 
                 when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
-                when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody));
+                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody);
 
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
             }
 
             @Test
-            void givenNoInstanceMetadata() throws IOException {
+            void givenNoInstanceMetadata() {
                 String responseBody = "api-doc body";
 
                 when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                     .thenReturn(getStandardInstance(new HashMap<>(), true));
 
-                when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
                 Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
@@ -143,42 +146,45 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void givenNoSwaggerUrl_thenReturnSubstituteApiDoc() throws IOException {
-            String generatedResponseBody = "{\n" +
-                "    \"swagger\": \"2.0\",\n" +
-                "    \"info\": {\n" +
-                "        \"title\": \"Test service\"\n" +
-                "      , \"description\": \"Test service description\"\n" +
-                "      , \"version\": \"1.0.0\"\n" +
-                "    },\n" +
-                "    \"host\": \"gateway:10000\",\n" +
-                "    \"basePath\": \"/service/api/v1\",\n" +
-                "    \"schemes\": [\"http\"],\n" +
-                "    \"tags\": [\n" +
-                "        {\n" +
-                "            \"name\": \"apimlHidden\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"paths\": {\n" +
-                "        \"/apimlHidden\": {\n" +
-                "            \"get\": {\n" +
-                "                \"tags\": [\"apimlHidden\"],\n" +
-                "                \"responses\": {\n" +
-                "                    \"200\": {\n" +
-                "                        \"description\": \"OK\"\n" +
-                "                    }\n" +
-                "                }\n" +
-                "            }\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n";
+        void givenNoSwaggerUrl_thenReturnSubstituteApiDoc() {
+            //language=JSON
+            String generatedResponseBody = """
+                {
+                    "swagger": "2.0",
+                    "info": {
+                        "title": "Test service"
+                      , "description": "Test service description"
+                      , "version": "1.0.0"
+                    },
+                    "host": "gateway:10000",
+                    "basePath": "/service/api/v1",
+                    "schemes": ["http"],
+                    "tags": [
+                        {
+                            "name": "apimlHidden"
+                        }
+                    ],
+                    "paths": {
+                        "/apimlHidden": {
+                            "get": {
+                                "tags": ["apimlHidden"],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """;
             String responseBody = "api-doc body";
 
             generatedResponseBody = generatedResponseBody.replaceAll("\\s+", "");
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -195,13 +201,13 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void givenApiDocUrlInRouting_thenCreateApiDocUrlFromRoutingAndReturnApiDoc() throws IOException {
+        void givenApiDocUrlInRouting_thenCreateApiDocUrlFromRoutingAndReturnApiDoc() {
             String responseBody = "api-doc body";
 
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -212,13 +218,13 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void shouldCreateApiDocUrlFromRoutingAndUseHttp() throws IOException {
+        void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
             String responseBody = "api-doc body";
 
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
@@ -229,12 +235,12 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void givenServerCommunicationErrorWhenRequestingSwaggerUrl_thenLogCustomError() throws IOException {
+        void givenServerCommunicationErrorWhenRequestingSwaggerUrl_thenLogCustomError() {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
             var exception = new IOException("Unable to reach the host");
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenThrow(exception);
+            HttpClientMockHelper.whenExecuteThenThrow(httpClient, exception);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -252,14 +258,14 @@ class LocalApiDocServiceTest {
     @Nested
     class WhenGetDefaultApiDoc {
         @Test
-        void givenDefaultApiDoc_thenReturnIt() throws IOException {
+        void givenDefaultApiDoc_thenReturnIt() {
             String responseBody = "api-doc body";
             Map<String, String> metadata = getMetadataWithMultipleApiInfo();
 
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -276,7 +282,7 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void givenNoDefaultApiDoc_thenReturnHighestVersion() throws IOException {
+        void givenNoDefaultApiDoc_thenReturnHighestVersion() {
             String responseBody = "api-doc body";
             Map<String, String> metadata = getMetadataWithMultipleApiInfo();
             metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
@@ -284,7 +290,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -301,13 +307,13 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void givenNoDefaultApiDocAndDifferentVersionFormat_thenReturnHighestVersion() throws IOException {
+        void givenNoDefaultApiDocAndDifferentVersionFormat_thenReturnHighestVersion() {
             String responseBody = "api-doc body";
 
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -324,13 +330,13 @@ class LocalApiDocServiceTest {
         }
 
         @Test
-        void givenNoApiDocs_thenReturnNull() throws IOException {
+        void givenNoApiDocs_thenReturnNull() {
             String responseBody = "api-doc body";
 
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
-            when(httpClient.execute(any(), any(HttpClientResponseHandler.class))).thenReturn(Pair.of(HttpStatus.SC_OK, responseBody));
+            HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
             ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -356,9 +362,9 @@ class LocalApiDocServiceTest {
         void givenNoApiVersions_thenThrowException() {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-            Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
-                apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
-            });
+            Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
+                apiDocRetrievalService.retrieveApiVersions(SERVICE_ID)
+            );
             assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
         }
     }
@@ -390,9 +396,9 @@ class LocalApiDocServiceTest {
         void givenNoApiInfo_thenThrowException() {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
-            Exception exception = assertThrows(ApiVersionNotFoundException.class, () -> {
-                apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
-            });
+            Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
+                apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID)
+            );
             assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
         }
     }

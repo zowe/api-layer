@@ -23,21 +23,16 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ExternalMapperTest {
 
@@ -57,11 +52,11 @@ class ExternalMapperTest {
 
 
     @BeforeEach
-    void setup() throws IOException {
+    void setup() {
         closeableHttpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
         when(httpResponse.getCode()).thenReturn(HttpStatus.SC_OK);
-        when(closeableHttpClient.execute(any())).thenReturn(httpResponse);
+        HttpClientMockHelper.mockExecuteWithResponse(closeableHttpClient, httpResponse);
         tokenCreationService = mock(TokenCreationService.class);
         when(tokenCreationService.createJwtTokenWithoutCredentials(anyString())).thenReturn("validJwtToken");
         responseEntity = mock(HttpEntity.class);

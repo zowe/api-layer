@@ -11,27 +11,26 @@
 package org.zowe.apiml.zaas.security.mapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,31 +73,28 @@ public abstract class ExternalMapper {
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             log.debug("Executing request against external identity mapper API: {}", httpPost);
 
+            var response = secureHttpClientWithoutKeystore.execute(httpPost, httpResponse -> {
+                final int statusCode = httpResponse.getCode();
+                String responseBody = "";
+                if (httpResponse.getEntity() != null) {
+                    responseBody = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+                }
 
-
-            CloseableHttpResponse httpResponse = secureHttpClientWithoutKeystore.execute(httpPost);
-
-            final int statusCode = httpResponse.getCode();
-            String response = "";
-            if (httpResponse.getEntity() != null) {
-                response = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
-            }
-            if (statusCode == 0) {
-                return null;
-            }
-            if (!org.springframework.http.HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
-                if (org.springframework.http.HttpStatus.valueOf(statusCode).is5xxServerError()) {
-                    apimlLog.log("org.zowe.apiml.zaas.security.unexpectedMappingResponse", statusCode, response);
+                log.debug("External identity mapper API returned: {}", responseBody);
+                if (HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
+                    return responseBody;
+                } else if (HttpStatus.valueOf(statusCode).is5xxServerError()) {
+                    apimlLog.log("org.zowe.apiml.zaas.security.unexpectedMappingResponse", statusCode, httpResponse);
                 } else {
-                    log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, response);
+                    log.debug("Unexpected response from the external identity mapper. Status: {} body: {}", statusCode, httpResponse);
                 }
                 return null;
-            }
-            log.debug("External identity mapper API returned: {}", response);
+            });
+
             if (StringUtils.isNotEmpty(response)) {
                 return objectMapper.readValue(response, MapperResponse.class);
             }
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             apimlLog.log("org.zowe.apiml.zaas.security.InvalidMappingResponse", e);
         } catch (URISyntaxException e) {
             apimlLog.log("org.zowe.apiml.zaas.security.InvalidMapperUrl", e);

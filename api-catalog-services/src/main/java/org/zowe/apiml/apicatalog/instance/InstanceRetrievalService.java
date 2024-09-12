@@ -16,14 +16,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Applications;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
@@ -32,7 +35,6 @@ import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
 
-import jakarta.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -139,30 +141,34 @@ public class InstanceRetrievalService {
      * @param eurekaServiceInstanceRequest information used to query the discovery service
      * @return ResponseEntity<String> query response
      */
-    private String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException, ParseException {
+    private String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException {
         HttpGet httpGet = new HttpGet(eurekaServiceInstanceRequest.getEurekaRequestUrl());
         for (Header header : createRequestHeader(eurekaServiceInstanceRequest)) {
             httpGet.setHeader(header);
         }
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        final int statusCode = response.getCode();
-        final HttpEntity responseEntity = response.getEntity();
-        String responseBody = "";
-        if (responseEntity != null) {
-            responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-        }
-        if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
-            return responseBody;
-        }
 
-        apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
-            eurekaServiceInstanceRequest.getServiceId(),
-            eurekaServiceInstanceRequest.getEurekaRequestUrl(),
-            statusCode,
-            response.getReasonPhrase() != null ? response.getReasonPhrase() : responseBody
+        return httpClient.execute(httpGet, response -> {
+            final int statusCode = response.getCode();
+            final HttpEntity responseEntity = response.getEntity();
+
+            String responseBody = "";
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+
+            if (HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
+                return responseBody;
+            }
+
+            apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
+                eurekaServiceInstanceRequest.getServiceId(),
+                eurekaServiceInstanceRequest.getEurekaRequestUrl(),
+                statusCode,
+                response.getReasonPhrase() != null ? response.getReasonPhrase() : responseBody
             );
 
-        return null;
+            return null;
+        });
     }
 
     /**
@@ -177,7 +183,7 @@ public class InstanceRetrievalService {
         try {
             application = mapper.readValue(responseBody, ApplicationWrapper.class);
         } catch (IOException e) {
-            log.debug("Could not extract service: " + serviceId + " info from discovery --" + e.getMessage(), e);
+            log.debug("Could not extract service: {} info from discovery --{}", serviceId, e.getMessage(), e);
         }
 
 
