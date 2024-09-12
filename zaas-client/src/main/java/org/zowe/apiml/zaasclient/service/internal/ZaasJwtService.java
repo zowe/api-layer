@@ -37,7 +37,9 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
 
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -242,8 +244,8 @@ class ZaasJwtService implements TokenService {
         String token = "";
         int httpResponseCode = response.getCode();
         if (httpResponseCode == 204) {
-            var cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE).stream().map(header -> header.getValue().split(";")).flatMap(Arrays::stream).toList();
-            var apimlAuthCookie = cookies.stream().filter(v -> v.startsWith(zassConfigProperties.getTokenPrefix())).map(v -> v.substring(v.indexOf("=") + 1)).findFirst();
+            var cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE).stream().map(header -> HttpCookie.parse(header.getValue())).flatMap(List::stream).toList();
+            var apimlAuthCookie = cookies.stream().filter(cookie -> cookie.getName().equals(zassConfigProperties.getTokenPrefix())).map(HttpCookie::getValue).findFirst();
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get();
             }

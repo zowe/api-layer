@@ -198,7 +198,7 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
-    void testLoginWithCredentials_ValidUserName_ValidPassword_multipleResponseHeaders() throws ZaasClientException {
+    void testLoginWithCredentials_ValidUserName_ValidPassword_multipleResponseCookieHeaders() throws ZaasClientException {
         var response = prepareResponse(HttpStatus.SC_NO_CONTENT, false);
         var tokenCookieHeader = mock(Header.class);
         Header[] headers = new Header[]{header, tokenCookieHeader};
