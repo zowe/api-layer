@@ -297,6 +297,7 @@ class WizardInputs extends Component {
         ) {
             return null;
         }
+        const { multiple } = this.props.data;
         let result = [];
         let index = 0;
         dataAsObject.content.forEach((c) => {

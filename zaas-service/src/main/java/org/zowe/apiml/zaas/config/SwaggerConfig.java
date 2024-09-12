@@ -36,21 +36,19 @@ public class SwaggerConfig {
     @Bean
     public OpenApiCustomizer servletEndpoints() {
         return (openApi) -> {
-            OpenAPI servletEndpoints = new OpenAPIV3Parser().read(servletEndpointDocLocation.toString());
-
-            for (var entry : servletEndpoints.getPaths().entrySet()) {
-                openApi.getPaths().addPathItem(entry.getKey(), entry.getValue());
+            if (openApi != null) {
+                OpenAPI servletEndpoints = new OpenAPIV3Parser().read(servletEndpointDocLocation.toString());
+                if (servletEndpoints != null) {
+                    for (var entry : servletEndpoints.getPaths().entrySet()) {
+                        openApi.getPaths().addPathItem(entry.getKey(), entry.getValue());
+                    }
+                    openApi.getComponents().getSchemas().putAll(servletEndpoints.getComponents().getSchemas());
+                    if (openApi.getTags() == null) {
+                        openApi.setTags(new ArrayList<>());
+                    }
+                    openApi.getTags().addAll(servletEndpoints.getTags());
+                }
             }
-
-            openApi.getComponents().getSchemas().putAll(
-                servletEndpoints.getComponents().getSchemas()
-            );
-
-            if (openApi.getTags() == null) {
-                openApi.setTags(new ArrayList<>());
-            }
-
-            openApi.getTags().addAll(servletEndpoints.getTags());
         };
     }
 
