@@ -289,7 +289,6 @@ class WizardInputs extends Component {
      */
     loadInputs = () => {
         const dataAsObject = this.props.data;
-        const { multiple } = this.props.data;
         if (
             dataAsObject === undefined ||
             dataAsObject.content === undefined ||
