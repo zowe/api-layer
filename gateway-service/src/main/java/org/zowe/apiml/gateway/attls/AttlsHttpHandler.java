@@ -103,7 +103,10 @@ public class AttlsHttpHandler implements BeanPostProcessor {
         nativeRequest.setAttribute("jakarta.servlet.request.X509Certificate", certs);
 
         var sslInfo = AttlsSslInfo.builder().peerCertificates(certs).build();
-        return request.mutate().sslInfo(sslInfo).build();
+        if (sslInfo != null) {
+            return request.mutate().sslInfo(sslInfo).build();
+       }
+       return request;
     }
 
     @Override
