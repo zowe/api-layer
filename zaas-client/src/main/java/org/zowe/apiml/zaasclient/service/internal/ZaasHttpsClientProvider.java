@@ -13,8 +13,6 @@ package org.zowe.apiml.zaasclient.service.internal;
 import lombok.AllArgsConstructor;
 import org.apache.hc.client5.http.UserTokenHandler;
 import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.cookie.BasicCookieStore;
-import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
@@ -54,8 +52,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     private final String keyStoreType;
     private final String keyStorePath;
 
-    private final CookieStore cookieStore = new BasicCookieStore();
-
     private CloseableHttpClient httpsClient;
 
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
@@ -84,10 +80,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
         return input;
-    }
-
-    public void clearCookieStore() {
-        this.cookieStore.clear();
     }
 
     @Override

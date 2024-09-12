@@ -127,6 +127,7 @@ dependencyResolutionManagement {
             library('spring_tx', 'org.springframework', 'spring-tx').versionRef('springFramework')
             library('spring_webmvc', 'org.springframework', 'spring-webmvc').versionRef('springFramework')
             library('spring_context_support', 'org.springframework', 'spring-context-support').versionRef('springFramework')
+            library('spring_beans', 'org.springframework', 'spring-beans').versionRef('springFramework')
 
             library('apache_commons_lang3', 'org.apache.commons', 'commons-lang3').versionRef('commonsLang3')
             library('apache_commons_text', 'org.apache.commons', 'commons-text').versionRef('commonsText')

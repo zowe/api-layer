@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -18,44 +20,34 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ZaasClientImpl implements ZaasClient {
+public class ZaasClientImpl implements ZaasClient, Closeable {
     private final TokenService tokens;
     private final PassTicketService passTickets;
+    private final CloseableHttpClient httpClientWithoutCert;
+    private final CloseableHttpClient httpClient;
 
     public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
         if (!configProperties.isHttpOnly() && (configProperties.getKeyStorePath() == null)) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
         }
 
-        CloseableClientProvider httpClientProvider = getTokenProvider(configProperties);
-        CloseableClientProvider httpClientProviderWithoutCert = getTokenProviderWithoutCert(configProperties, httpClientProvider);
+        if (configProperties.isHttpOnly()) {
+            httpClient = new ZaasHttpClientProvider().getHttpClient();
+            httpClientWithoutCert = new ZaasHttpClientProvider().getHttpClient();
+        } else {
+            httpClient = new ZaasHttpsClientProvider(configProperties).getHttpClient();
+            httpClientWithoutCert = new ZaasHttpsClientProvider(configProperties.withoutKeyStore()).getHttpClient();
+        }
 
         String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
             configProperties.getApimlBaseUrl());
-        tokens = new ZaasJwtService(httpClientProviderWithoutCert, baseUrl, configProperties);
-        passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl, configProperties);
-    }
-
-    private CloseableClientProvider getTokenProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
-        if (configProperties.isHttpOnly()) {
-            return new ZaasHttpClientProvider();
-        } else {
-            return new ZaasHttpsClientProvider(configProperties);
-        }
-    }
-
-    private CloseableClientProvider getTokenProviderWithoutCert (
-        ConfigProperties configProperties,
-        CloseableClientProvider defaultCloseableClientProvider) throws ZaasConfigurationException
-    {
-        if (configProperties.isHttpOnly()) {
-            return defaultCloseableClientProvider;
-        }
-        return getTokenProvider(configProperties.withoutKeyStore());
+        tokens = new ZaasJwtService(httpClientWithoutCert, baseUrl, configProperties);
+        passTickets = new PassTicketServiceImpl(httpClient, baseUrl, configProperties);
     }
 
     private Object getScheme(boolean httpOnly) {
@@ -69,6 +61,8 @@ public class ZaasClientImpl implements ZaasClient {
     ZaasClientImpl(TokenService tokens, PassTicketService passTickets) {
         this.tokens = tokens;
         this.passTickets = passTickets;
+        this.httpClientWithoutCert = null;
+        this.httpClient = null;
     }
 
     @Override
@@ -135,7 +129,6 @@ public class ZaasClientImpl implements ZaasClient {
     }
 
     @Override
-    @SuppressWarnings("squid:S2147")
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
         if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
             throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
@@ -149,5 +142,11 @@ public class ZaasClientImpl implements ZaasClient {
     @Override
     public void logout(String jwtToken) throws ZaasConfigurationException, ZaasClientException {
         tokens.logout(jwtToken);
+    }
+
+    @Override
+    public void close() throws IOException {
+        httpClient.close();
+        httpClientWithoutCert.close();
     }
 }

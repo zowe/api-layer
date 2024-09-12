@@ -14,12 +14,10 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -35,8 +33,8 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -46,7 +44,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -60,7 +57,6 @@ import java.util.Optional;
 @Slf4j
 public class APIDocRetrievalService {
 
-    @Autowired
     @Qualifier("secureHttpClientWithoutKeystore")
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
 
@@ -311,17 +307,21 @@ public class APIDocRetrievalService {
         HttpGet httpGet = new HttpGet(apiDocUrl);
         httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
-        var responseCodeBodyPair = secureHttpClientWithoutKeystore.execute(httpGet, response -> {
-                var responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                return Pair.of(response.getCode(), responseBody);
+        return secureHttpClientWithoutKeystore.execute(httpGet, response -> {
+                String responseBody = "";
+                var responseEntity = response.getEntity();
+                if (responseEntity != null) {
+                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                }
+
+            if (HttpStatus.SC_OK == response.getCode()) {
+                return responseBody;
+            } else {
+                    throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
+                        " server error: '" + responseBody + "'.");
+                }
             }
         );
-
-        if (responseCodeBodyPair.getLeft() != HttpStatus.SC_OK) {
-            throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
-                " server error: '" + responseCodeBodyPair.getRight() + "'.");
-        }
-        return responseCodeBodyPair.getRight();
     }
 
     /**
@@ -364,19 +364,16 @@ public class APIDocRetrievalService {
         String apiId = api.length > 0 ? api[0] : "";
         String version = api.length > 1 ? api[1].replace("v", "") : "";
 
-        Optional<ApiInfo> result = apiInfos.stream()
+        return apiInfos.stream()
             .filter(
-                f -> apiId.equals(f.getApiId()) && (version == null || version.equals(f.getVersion()))
+                f -> apiId.equals(f.getApiId()) && (version.equals(f.getVersion()))
             )
-            .findFirst();
-
-        if (!result.isPresent()) {
-            String errMessage = String.format("Error finding api doc: there is no api doc for '%s %s'.", apiId, version);
-            log.error(errMessage);
-            throw new ApiDocNotFoundException(errMessage);
-        } else {
-            return result.get();
-        }
+            .findFirst()
+            .orElseThrow(() -> {
+                String errMessage = String.format("Error finding api doc: there is no api doc for '%s %s'.", apiId, version);
+                log.error(errMessage);
+                return new ApiDocNotFoundException(errMessage);
+            });
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {

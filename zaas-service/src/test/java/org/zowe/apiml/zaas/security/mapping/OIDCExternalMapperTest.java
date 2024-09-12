@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
@@ -97,15 +98,15 @@ class OIDCExternalMapperTest {
     class GivenIdentityMappingExists {
 
         @BeforeEach
-        void setup() throws IOException {
+        void setup() {
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
             when(response.getCode()).thenReturn(HttpStatus.SC_OK);
             when(response.getEntity()).thenReturn(responseEntity);
-            when(httpClient.execute(any())).thenReturn(response);
+            HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
         }
 
         @Test
-        void thenZosUserIsReturned() throws Exception {
+        void thenZosUserIsReturned() {
             String userId = oidcExternalMapper.mapToMainframeUserId(authSource);
             assertEquals(ZOSUSER, userId);
         }
@@ -122,7 +123,7 @@ class OIDCExternalMapperTest {
             CloseableHttpResponse response = mock(CloseableHttpResponse.class);
             when(response.getCode()).thenReturn(HttpStatus.SC_OK);
             when(response.getEntity()).thenReturn(responseEntity);
-            when(httpClient.execute(any())).thenReturn(response);
+            HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
         }
 
         @Test
