@@ -87,7 +87,6 @@ export default class DetailPage extends Component {
             }
         }
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
-        const showSideBar = false;
         if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
@@ -194,8 +193,6 @@ export default class DetailPage extends Component {
                         )}
                     </div>
                 </div>
-
-                {showSideBar && <div className="side-bar" />}
             </div>
         );
     }

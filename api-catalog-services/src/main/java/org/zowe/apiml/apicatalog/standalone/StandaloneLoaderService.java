@@ -78,7 +78,7 @@ public class StandaloneLoaderService {
         File[] openAPIFiles = getFiles(servicesDirectory + "/apiDocs");
         log.debug("Found {} API Doc files", openAPIFiles.length);
         if (openAPIFiles.length == 0) {
-            log.error("No apiDocs files found.");
+            log.error("No apiDocs files found or I/O error occured.");
             return;
         }
 
@@ -154,8 +154,9 @@ public class StandaloneLoaderService {
             log.error("Directory '{}' does not exists.", directory);
             return new File[0];
         }
-
-        return dir.listFiles(f -> f.isFile() && f.getName().endsWith(".json"));
+        var files = dir.listFiles(f -> f.isFile() && f.getName().endsWith(".json"));
+        if (files == null) {
+            return new File[0];
+        } else return files;
     }
-
 }
