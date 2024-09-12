@@ -165,4 +165,12 @@ public final class Message {
     public MessageTemplate getMessageTemplate() {
         return messageTemplate;
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + "[" +
+            "requestedKey=" + requestedKey + ", " +
+            "messageTemplate=" + messageTemplate +
+            "]";
+    }
 }

@@ -92,7 +92,7 @@ public final class ApimlLogger {
             ObjectUtil.requireNotNull(message, "message can't be null");
             ObjectUtil.requireNotNull(message.getMessageTemplate(), "message template can't be null");
         } catch (IllegalArgumentException e) {
-            logInvalidArguments(e);
+            logInvalidArguments(e, message);
             return;
         }
 
@@ -114,7 +114,7 @@ public final class ApimlLogger {
             ObjectUtil.requireNotNull(text, "text can't be null");
             ObjectUtil.requireNotNull(arguments, "arguments can't be null");
         } catch (IllegalArgumentException e) {
-            logInvalidArguments(e);
+            logInvalidArguments(e, messageType, text, arguments);
             return;
         }
 
@@ -141,8 +141,8 @@ public final class ApimlLogger {
         }
     }
 
-    private void logInvalidArguments(IllegalArgumentException e) {
-        logger.warn(marker, "Invalid log message cannot be logged, enable debug for stack trace: {}", e.getMessage());
+    private void logInvalidArguments(IllegalArgumentException e, Object... arguments) {
+        logger.warn(marker, "Invalid log message cannot be logged: {}, enable debug for stack trace: {}", arguments, e.getMessage());
         logger.debug(marker, "Invalid log message cannot be logged", e);
     }
 
