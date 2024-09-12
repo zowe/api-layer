@@ -57,7 +57,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
         }
     }
 
-    private AuthenticationProvider getConfiguredLoginAuthProvider() {
+    private synchronized AuthenticationProvider getConfiguredLoginAuthProvider() {
         String providerBeanName = loginProvider.getAuthProviderBeanName();
         AuthenticationProvider authenticationProvider = authProvidersMap.get(providerBeanName);
         if (authenticationProvider == null) {
