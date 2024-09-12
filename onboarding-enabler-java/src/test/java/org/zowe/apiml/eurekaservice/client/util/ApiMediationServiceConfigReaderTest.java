@@ -54,11 +54,11 @@ class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
-        String file = "/bad-format-of-service-configuration.yml";
+    void whenIPAddressMissing_thenProvideLocalhostAsDefault() throws ServiceDefinitionException{
+        String file = "/service-configuration-without-ip-address.yml";
 
         ApiMediationServiceConfigReader apimlConfigReader = new ApiMediationServiceConfigReader();
-        assertThrows(ServiceDefinitionException.class, () -> apimlConfigReader.loadConfiguration(file));
+        assertEquals("127.0.0.1",apimlConfigReader.loadConfiguration(file).getServiceIpAddress());
     }
 
     @Test
@@ -224,7 +224,7 @@ class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    void testLoadConfiguration_IpAddressIsNull_bad_baseUrl() throws ServiceDefinitionException {
+    void testLoadConfiguration_IpAddressIsNull_bad_baseUrl() {
         String internalFileName = "/additional-service-configuration_ip-address-null_bad-baseUrl.yml";
         String additionalFileName = "/additional-service-configuration_ip-address-null_bad-baseUrl.yml";
 
@@ -237,7 +237,7 @@ class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    void testLoadConfiguration_IpAddressIsNull_UnknownHost() throws ServiceDefinitionException {
+    void testLoadConfiguration_IpAddressIsNull_UnknownHost() {
         String internalFileName = "/additional-service-configuration_ip-address-null_UnknownHost.yml";
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
