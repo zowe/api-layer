@@ -30,6 +30,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
@@ -114,7 +115,7 @@ public class StandaloneLoaderService {
     }
 
     private void loadApiDocCache(File file) {
-        try {
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             String[] name = FilenameUtils.removeExtension(file.getName()).split("_");
             if (name.length < 2 || name.length > 3 || (name.length == 3 && !"default".equals(name[2]))) {
                 log.warn("ApiDoc file has incorrect name format '{}'. The correct format is '{serviceId}_{version}(_default)'.", file.getName());
@@ -123,14 +124,13 @@ public class StandaloneLoaderService {
             String serviceId = name[0];
             String apiVersion = name[1];
 
-            String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
+                String apiDoc = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                ApiDocInfo apiDocInfo = createApiDocInfo(serviceId, apiDoc);
+                apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
 
-            ApiDocInfo apiDocInfo = createApiDocInfo(serviceId, apiDoc);
-            apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
-
-            if (name.length > 2 && name[2].equals("default")) {
-                cachedApiDocService.updateApiDocForService(serviceId, CachedApiDocService.DEFAULT_API_KEY, apiDoc);
-            }
+                if (name.length > 2 && name[2].equals("default")) {
+                    cachedApiDocService.updateApiDocForService(serviceId, CachedApiDocService.DEFAULT_API_KEY, apiDoc);
+                }
 
             cachedApiDocService.updateApiDocForService(serviceId, apiVersion, apiDoc);
 
