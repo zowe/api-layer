@@ -203,6 +203,9 @@ public class ApiMediationServiceConfigReader {
 
     public static void setServiceIpAddress(ApiMediationServiceConfig serviceConfig) throws ServiceDefinitionException {
         if ((serviceConfig == null) || !serviceConfig.isPreferIpAddress()) {
+            if (serviceConfig != null && org.apache.commons.lang3.StringUtils.isEmpty(serviceConfig.getServiceIpAddress())) {
+                serviceConfig.setServiceIpAddress("127.0.0.1");
+            }
             log.debug("IP Address is not preferred, will not resolve address from hostname.");
             return;
         }
