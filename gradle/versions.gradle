@@ -89,7 +89,7 @@ dependencyResolutionManagement {
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
-            version('micronautPlatform', '4.6.0')
+            version('micronautPlatform', '4.6.1')
             version('micronaut', '4.6.3')
             version('micronautPlugin', '4.4.2')
             version('shadow', '8.1.1')
@@ -230,7 +230,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.6')
+            version('logback', '1.5.8')
             version('mockitoCore', '5.13.0')
             version('mockitoInline', '5.2.0')
 
