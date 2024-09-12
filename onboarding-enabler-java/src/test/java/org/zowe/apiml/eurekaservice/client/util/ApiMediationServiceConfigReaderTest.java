@@ -16,6 +16,7 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import jakarta.servlet.ServletContext;
+
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -54,17 +55,17 @@ class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    void whenIPAddressMissing_thenProvideLocalhostAsDefault() throws ServiceDefinitionException{
+    void whenIPAddressMissing_thenProvideLocalhostAsDefault() throws ServiceDefinitionException {
         String file = "/service-configuration-without-ip-address.yml";
 
         ApiMediationServiceConfigReader apimlConfigReader = new ApiMediationServiceConfigReader();
-        assertEquals("127.0.0.1",apimlConfigReader.loadConfiguration(file).getServiceIpAddress());
+        assertEquals("127.0.0.1", apimlConfigReader.loadConfiguration(file).getServiceIpAddress());
     }
 
     @Test
     void testMapMerge_FULL() throws ServiceDefinitionException {
-        ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
-        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration.yml", null);
+        ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile("/service-configuration.yml", null);
+        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile("/additional-service-configuration.yml", null);
 
         ApiMediationServiceConfig apiMediationServiceConfig = new ApiMediationServiceConfigReader().mergeConfigurations(apimlServcieConfig1, apimlServcieConfig2);
 
@@ -88,8 +89,8 @@ class ApiMediationServiceConfigReaderTest {
     @Test
     void testMapMerge_PART_serviceid_keystore_truststore() throws ServiceDefinitionException {
 
-        ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
-        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration_serviceid-andkeystore-truststore-only.yml", null);
+        ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile("/service-configuration.yml", null);
+        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile("/additional-service-configuration_serviceid-andkeystore-truststore-only.yml", null);
 
         ApiMediationServiceConfig apiMediationServiceConfig = new ApiMediationServiceConfigReader().mergeConfigurations(apimlServcieConfig1, apimlServcieConfig2);
 
@@ -104,8 +105,8 @@ class ApiMediationServiceConfigReaderTest {
 
     @Test
     void testMapMerge_PART_serviceid_ciphers() throws ServiceDefinitionException {
-        ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
-        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration_serviceid-ssl-ciphers-only.yml", null);
+        ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile("/service-configuration.yml", null);
+        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile("/additional-service-configuration_serviceid-ssl-ciphers-only.yml", null);
 
         ApiMediationServiceConfig apiMediationServiceConfig = new ApiMediationServiceConfigReader().mergeConfigurations(apimlServcieConfig1, apimlServcieConfig2);
         assertNotNull(apiMediationServiceConfig);
@@ -154,7 +155,7 @@ class ApiMediationServiceConfigReaderTest {
         ServletContext context = getMockServletContext();
 
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
-        Map<String, String>  contextMap = reader.setApiMlServiceContext(context);
+        Map<String, String> contextMap = reader.setApiMlServiceContext(context);
         checkContextMap(contextMap);
     }
 
@@ -163,7 +164,7 @@ class ApiMediationServiceConfigReaderTest {
         ServletContext context = getMockServletContext();
 
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
-        Map<String, String>  contextMap = reader.setApiMlServiceContext(context);
+        Map<String, String> contextMap = reader.setApiMlServiceContext(context);
 
         checkContextMap(contextMap);
     }
