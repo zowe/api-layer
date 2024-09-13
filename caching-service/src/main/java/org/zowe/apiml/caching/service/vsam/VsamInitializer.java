@@ -61,7 +61,11 @@ public class VsamInitializer {
         log.info("Test record for deletion found: {}", found);
         if (found) {
             byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-            zFile.read(recBuf); //has to be read before update/delete
+            //has to be read before update/delete
+            if (vsamConfig.getRecordLength() != zFile.read(recBuf)) {
+                log.warn("Configured VSAM record length is different that the actual data read from {}", zFile.getActualFilename());
+            }
+
             zFile.delrec();
             log.info("Test record deleted.");
         }
