@@ -72,8 +72,11 @@ const formatError = (error) => {
     }
 
     if (error.name === 'AjaxError') {
-        const { msg, clr } = extractAjaxError(error);
-        return formaHtmlError(msg, clr);
+        const extractedAjaxError = extractAjaxError(error);
+        if (extractedAjaxError) {
+            const {msg, clr} = extractedAjaxError;
+            return formaHtmlError(msg, clr);
+        }
     }
 
     if (error.message !== undefined) {
