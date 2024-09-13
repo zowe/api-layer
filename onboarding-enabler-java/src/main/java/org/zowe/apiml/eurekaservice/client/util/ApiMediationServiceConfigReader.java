@@ -10,22 +10,25 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import jakarta.servlet.ServletContext;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.util.FileUtils;
 import org.zowe.apiml.util.ObjectUtil;
 import org.zowe.apiml.util.StringUtils;
 import org.zowe.apiml.util.UrlUtils;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
-import jakarta.servlet.ServletContext;
-import java.io.*;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_ABSENT;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -79,6 +82,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  *  </p>
  *
  */
+@Slf4j
 public class ApiMediationServiceConfigReader {
 
     public static final String APIML_DEFAULT_CONFIG = "apiml.config.location";
@@ -159,7 +163,7 @@ public class ApiMediationServiceConfigReader {
     }
 
     private ApiMediationServiceConfig loadConfiguration(String internalConfigFileName, String externalizedConfigFileName, boolean isInitialized)
-            throws ServiceDefinitionException {
+        throws ServiceDefinitionException {
 
         /*
          * Loading new configuration. Clean context map which might be kept in ThreadLocal object from previous configs.
@@ -198,8 +202,15 @@ public class ApiMediationServiceConfigReader {
     }
 
     public static void setServiceIpAddress(ApiMediationServiceConfig serviceConfig) throws ServiceDefinitionException {
+        if ((serviceConfig == null) || !serviceConfig.isPreferIpAddress()) {
+            if (serviceConfig != null && org.apache.commons.lang3.StringUtils.isEmpty(serviceConfig.getServiceIpAddress())) {
+                serviceConfig.setServiceIpAddress("127.0.0.1");
+            }
+            log.debug("IP Address is not preferred, will not resolve address from hostname.");
+            return;
+        }
         // Set instance ipAddress if required by Eureka and not set in the configuration files
-        if ((serviceConfig != null) && (serviceConfig.getServiceIpAddress() == null)) {
+        if ((serviceConfig.getServiceIpAddress() == null)) {
             String urlString = serviceConfig.getBaseUrl();
             try {
                 serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(urlString));
@@ -369,7 +380,7 @@ public class ApiMediationServiceConfigReader {
 
         Enumeration<?> propertyNames = System.getProperties().propertyNames();
         while (propertyNames.hasMoreElements()) {
-            String param = (String)propertyNames.nextElement();
+            String param = (String) propertyNames.nextElement();
             String value = System.getProperties().getProperty(param);
             if (param.startsWith("apiml.")) {
                 threadContextMap.put(param, value);
