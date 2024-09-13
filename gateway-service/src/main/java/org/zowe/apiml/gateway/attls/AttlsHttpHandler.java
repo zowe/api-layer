@@ -134,8 +134,8 @@ public class AttlsHttpHandler implements BeanPostProcessor {
     @Value
     static class AttlsSslInfo implements SslInfo {
 
-        private String sessionId;
-        private X509Certificate[] peerCertificates;
+        String sessionId;
+        X509Certificate[] peerCertificates;
 
     }
 
