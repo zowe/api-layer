@@ -11,6 +11,7 @@
 package org.zowe.apiml.util;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 
@@ -24,6 +25,7 @@ import java.util.stream.Stream;
 /**
  * A utility class for Cookies administration
  */
+@Slf4j
 @UtilityClass
 public final class CookieUtil {
 
@@ -163,6 +165,7 @@ public final class CookieUtil {
         try {
             return HttpCookie.parse(cookie);
         } catch (Exception e) {
+            log.debug("Cannot parse cookie from String `{}`: {}", cookie, e.getMessage());
             return Collections.emptyList();
         }
     }
