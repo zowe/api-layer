@@ -12,6 +12,7 @@ package org.zowe.apiml.eurekaservice.client.impl;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.HealthCheckCallbackToHandlerBridge;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
 import com.netflix.discovery.*;
@@ -102,6 +103,9 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         EurekaClientConfig clientConfiguration = eurekaClientConfigProvider.config(config);
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
         eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
+        if (eurekaClient != null) {
+            eurekaClient.registerHealthCheck(new HealthCheckCallbackToHandlerBridge());
+        }
     }
 
     /**
