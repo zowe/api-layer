@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.message.core;
 
+import lombok.ToString;
 import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.template.MessageTemplate;
@@ -23,6 +24,7 @@ import java.util.MissingFormatArgumentException;
 /**
  * Message creator immutable class
  */
+@ToString
 public final class Message {
     public static final String INVALID_KEY_MESSAGE = "org.zowe.apiml.common.invalidMessageKey";
     public static final String INVALID_KEY_MESSAGE_TEXT = "Internal error: Invalid message key '%s' provided. " +
@@ -164,13 +166,5 @@ public final class Message {
      */
     public MessageTemplate getMessageTemplate() {
         return messageTemplate;
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName() + "[" +
-            "requestedKey=" + requestedKey + ", " +
-            "messageTemplate=" + messageTemplate +
-            "]";
     }
 }

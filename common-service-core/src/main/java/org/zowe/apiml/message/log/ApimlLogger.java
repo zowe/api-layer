@@ -73,7 +73,7 @@ public final class ApimlLogger {
             ObjectUtil.requireNotNull(parameters, "parameters can't be null");
 
             if (messageService == null) {
-                logger.warn(marker, "Logger is not properly initialized, unable to log custom error messages. MessageService is null.");
+                logger.warn(marker, "Logger is not properly initialized, unable to log custom error messages with key '{}' and arguments {}", key, parameters);
                 return null;
             }
             message = messageService.createMessage(key, parameters);
@@ -142,8 +142,11 @@ public final class ApimlLogger {
     }
 
     private void logInvalidArguments(IllegalArgumentException e, Object... arguments) {
-        logger.warn(marker, "Invalid log message cannot be logged: {}, enable debug for stack trace: {}", arguments, e.getMessage());
-        logger.debug(marker, "Invalid log message cannot be logged", e);
+        if (logger.isDebugEnabled()) {
+            logger.debug(marker, "Invalid log message cannot be logged: {}", arguments, e);
+        } else {
+            logger.warn(marker, "Invalid log message cannot be logged: {}, enable debug for stack trace: {}", arguments, e.getMessage());
+        }
     }
 
 }
