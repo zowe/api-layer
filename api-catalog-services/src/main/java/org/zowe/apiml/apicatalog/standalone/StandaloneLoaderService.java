@@ -124,13 +124,13 @@ public class StandaloneLoaderService {
             String serviceId = name[0];
             String apiVersion = name[1];
 
-                String apiDoc = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-                ApiDocInfo apiDocInfo = createApiDocInfo(serviceId, apiDoc);
-                apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
+            String apiDoc = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            ApiDocInfo apiDocInfo = createApiDocInfo(serviceId, apiDoc);
+            apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
 
-                if (name.length > 2 && name[2].equals("default")) {
-                    cachedApiDocService.updateApiDocForService(serviceId, CachedApiDocService.DEFAULT_API_KEY, apiDoc);
-                }
+            if (name.length > 2 && name[2].equals("default")) {
+                cachedApiDocService.updateApiDocForService(serviceId, CachedApiDocService.DEFAULT_API_KEY, apiDoc);
+            }
 
             cachedApiDocService.updateApiDocForService(serviceId, apiVersion, apiDoc);
 
