@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.config;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -17,7 +18,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -49,8 +49,9 @@ class SwaggerConfigTest {
         assertNotNull(openApi.getTags());
     }
 
+    //TODO consider create en exception in Sonar instead
     @Test
-    void servletEndpointsCustomizer_tagsNotNull() throws IOException {
+    void servletEndpointsCustomizer_works_tagsNotNull() throws IOException {
         swaggerConfig.initServletEndpointDocLocation();
         var openApi = new OpenAPIV3Parser().readContents(DUMMY_OPENAPI).getOpenAPI();
         openApi.setTags(new ArrayList<>());
@@ -72,5 +73,11 @@ class SwaggerConfigTest {
         assertTrue(openApi.getPaths().isEmpty());
         assertTrue(openApi.getComponents().getSchemas().isEmpty());
         assertNull(openApi.getTags());
+    }
+
+    //TODO consider create en exception in Sonar instead
+    @Test
+    void doNotFailOnNullOpenApi() {
+        assertDoesNotThrow(() -> ReflectionTestUtils.invokeMethod(swaggerConfig, "customizeSwagger", (OpenAPI) null));
     }
 }

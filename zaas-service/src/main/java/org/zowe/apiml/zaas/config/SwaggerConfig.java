@@ -35,7 +35,10 @@ public class SwaggerConfig {
 
     @Bean
     public OpenApiCustomizer servletEndpoints() {
-        return (openApi) -> {
+        return this::customizeSwagger;
+    }
+
+    private void customizeSwagger(OpenAPI openApi) {
             if (openApi != null) {
                 OpenAPI servletEndpoints = new OpenAPIV3Parser().read(servletEndpointDocLocation.toString());
                 if (servletEndpoints != null) {
@@ -49,7 +52,6 @@ public class SwaggerConfig {
                     openApi.getTags().addAll(servletEndpoints.getTags());
                 }
             }
-        };
     }
 
     @Bean
