@@ -159,7 +159,7 @@ public final class CookieUtil {
         return sb.toString();
     }
 
-    private static List<HttpCookie> parseCookieSuppress(String cookie) {
+    static List<HttpCookie> parseCookieSuppress(String cookie) {
         try {
             return HttpCookie.parse(cookie);
         } catch (Exception e) {
