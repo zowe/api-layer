@@ -145,29 +145,21 @@ public class ExampleService {
      */
     public void generateExamples(String serviceId, String apiDoc) {
         try {
-                SwaggerParseResult parseResult = new OpenAPIParser().readContents(apiDoc, null, null);
-                if (parseResult == null) {
-                    return;
-                }
-                OpenAPI swagger = parseResult.getOpenAPI();
-                if (swagger == null) {
-                    return;
-                }
-                processSwaggerPaths(swagger, serviceId);
-            } catch (Exception e) {
-            log.debug("Cannot analyze API doc file {}", apiDoc, e);
-        }
-    }
-    private void processSwaggerPaths(OpenAPI swagger, String serviceId) {
-        Paths paths = swagger.getPaths();
-        if (paths != null) {
+            SwaggerParseResult parseResult = new OpenAPIParser().readContents(apiDoc, null, null);
+
+            OpenAPI swagger = parseResult.getOpenAPI();
+            Paths paths = swagger.getPaths();
+
             for (Map.Entry<String, PathItem> pathItemEntry : paths.entrySet()) {
                 for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
                     generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
                 }
             }
+        } catch (Exception e) {
+            log.warn("Cannot generate example from API doc file {}", apiDoc, e);
         }
     }
+
     /**
      * To find a prepared example for specific endpoint defined by request method and URL path. If no example is found
      * it returns the default one (empty JSON object).
