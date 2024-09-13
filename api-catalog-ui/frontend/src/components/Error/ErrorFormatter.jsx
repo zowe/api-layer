@@ -74,7 +74,7 @@ const formatError = (error) => {
     if (error.name === 'AjaxError') {
         const extractedAjaxError = extractAjaxError(error);
         if (extractedAjaxError) {
-            const {msg, clr} = extractedAjaxError;
+            const { msg, clr } = extractedAjaxError;
             return formaHtmlError(msg, clr);
         }
     }
