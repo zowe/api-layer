@@ -68,7 +68,7 @@ class ExampleServiceTest {
 
         @Test
         void generateExampleDoesNotThrowException() {
-             assertDoesNotThrow(()->exampleService.generateExamples("testService", " "));
+             assertDoesNotThrow( () -> exampleService.generateExamples("testService", " "));
         }
 
         @Test
