@@ -160,6 +160,51 @@ if [ "$ATTLS_ENABLED" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 
+get_enabled_protocol_limit() {
+    target=$1
+    type=$2
+    key_component="ZWE_configs_zowe_network_${target}_tls_${type}Tls"
+    value_component=$(eval echo \$$key_component)
+    key_gateway="ZWE_components_gateway_zowe_network_${target}_tls_${type}Tls"
+    value_gateway=$(eval echo \$$key_gateway)
+    key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
+    value_zowe=$(eval echo \$$key_zowe)
+    enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
+}
+
+extract_between() {
+    echo "$1" | sed -e "s/.*$2,//" -e "s/$3.*//"
+}
+
+get_enabled_protocol() {
+    target=$1
+    get_enabled_protocol_limit "${target}" "min"
+    enabled_protocols_min=${enabled_protocol_limit}
+    get_enabled_protocol_limit "${target}" "max"
+    enabled_protocols_max=${enabled_protocol_limit}
+
+    if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
+        result="${enabled_protocols_max:-}"
+    elif [ -z "${enabled_protocols_min:-}" ]; then
+        result="${enabled_protocols_max:-}"
+    else
+        enabled_protocols_max=${enabled_protocols_max:-"TLSv1.3"}
+        enabled_protocols=,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
+        # Extract protocols between min and max (inclusive)
+        result=$(extract_between "$enabled_protocols" "$enabled_protocols_min" "$enabled_protocols_max")
+        result="$enabled_protocols_min,$result$enabled_protocols_max"
+    fi
+}
+
+get_enabled_protocol_limit "server" "max"
+server_protocol=${enabled_protocol_limit:-"TLS"}
+get_enabled_protocol "server"
+server_enabled_protocols=${result:-"TLSv1.3"}
+server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
+get_enabled_protocol "client"
+client_enabled_protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${result:-${server_enabled_protocols}}}
+client_ciphers=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_components_gateway_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${server_ciphers}}}}
+
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
 key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
@@ -231,11 +276,14 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-} \
     -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-} \
-    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Dserver.ssl.ciphers=${server_ciphers} \
+    -Dserver.ssl.protocol=${server_protocol} \
+    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
     -Dspring.profiles.include=$LOG_LEVEL \
-    -Dserver.address=0.0.0.0 \
+    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
     -Dserver.ssl.keyStore="${keystore_location}" \
     -Dserver.ssl.keyStoreType="${keystore_type}" \
     -Dserver.ssl.keyStorePassword="${keystore_pass}" \
