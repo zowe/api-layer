@@ -12,10 +12,16 @@ package org.zowe.apiml.zaas.config;
 
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SwaggerConfigTest {
 
@@ -41,5 +47,30 @@ class SwaggerConfigTest {
         assertFalse(openApi.getPaths().isEmpty());
         assertFalse(openApi.getComponents().getSchemas().isEmpty());
         assertNotNull(openApi.getTags());
+    }
+
+    @Test
+    void servletEndpointsCustomizer_tagsNotNull() throws IOException {
+        swaggerConfig.initServletEndpointDocLocation();
+        var openApi = new OpenAPIV3Parser().readContents(DUMMY_OPENAPI).getOpenAPI();
+        openApi.setTags(new ArrayList<>());
+        swaggerConfig.servletEndpoints().customise(openApi);
+        assertFalse(openApi.getPaths().isEmpty());
+        assertFalse(openApi.getComponents().getSchemas().isEmpty());
+        assertNotNull(openApi.getTags());
+    }
+
+    //TODO consider create en exception in Sonar instead
+    @Test
+    void servletEndpointCustomizer_doesNotFail_whenOpenApiParserReturnsNull() {
+        var servletEndpointDocLocationMock = mock(URI.class);
+        ReflectionTestUtils.setField(swaggerConfig, "servletEndpointDocLocation", servletEndpointDocLocationMock);
+        when(servletEndpointDocLocationMock.toString()).thenReturn(null);
+
+        var openApi = new OpenAPIV3Parser().readContents(DUMMY_OPENAPI).getOpenAPI();
+        swaggerConfig.servletEndpoints().customise(openApi);
+        assertTrue(openApi.getPaths().isEmpty());
+        assertTrue(openApi.getComponents().getSchemas().isEmpty());
+        assertNull(openApi.getTags());
     }
 }
