@@ -159,6 +159,14 @@ public final class CookieUtil {
         return sb.toString();
     }
 
+    private static List<HttpCookie> parseCookieSuppress(String cookie) {
+        try {
+            return HttpCookie.parse(cookie);
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
     /**
      * Read cookie from HTTP header and return it as stream, otherwise return empty list.
      * @param httpHeaders the HTTP header
@@ -171,7 +179,7 @@ public final class CookieUtil {
             .map(v -> StringUtils.split(v, ";"))
             .flatMap(Arrays::stream)
             .map(StringUtils::trim)
-            .map(HttpCookie::parse)
+            .map(CookieUtil::parseCookieSuppress)
             .flatMap(List::stream);
     }
 
