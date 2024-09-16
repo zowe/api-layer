@@ -207,7 +207,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
 
                 // Common properties to all clients
                 ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, NoopHostnameVerifier.INSTANCE);
-                Registry registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
+                Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
                 var cm = new PoolingHttpClientConnectionManager(registry);
                 cm.setDefaultMaxPerRoute(config.getPeerNodeTotalConnectionsPerHost());
                 cm.setMaxTotal(config.getPeerNodeTotalConnections());
