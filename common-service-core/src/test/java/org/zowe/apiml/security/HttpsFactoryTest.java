@@ -21,14 +21,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.security.KeyStoreException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class HttpsFactoryTest {
-    private static final String EUREKA_URL_NO_SCHEME = "://localhost:10011/eureka/";
-    private static final String TEST_SERVICE_ID = "service1";
     private static final String INCORRECT_PARAMETER_VALUE = "WRONG";
 
     private HttpsConfig.HttpsConfigBuilder httpsConfigBuilder;
