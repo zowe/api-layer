@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.eureka;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.converters.wrappers.CodecWrapper;
 import com.netflix.discovery.provider.DiscoveryJerseyProvider;
 import com.netflix.discovery.shared.transport.jersey3.EurekaIdentityHeaderFilter;
 import com.netflix.discovery.shared.transport.jersey3.EurekaJersey3Client;
@@ -32,6 +33,7 @@ import org.apache.http.client.params.ClientPNames;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.params.CoreProtocolPNames;
@@ -104,43 +106,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
 
             String jerseyClientName = "Discovery-PeerNodeClient-" + hostname;
             var fullJsonCodec = serverCodecs.getFullJsonCodec();
-            EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder clientBuilder = new EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder() {
-                @Override
-                public EurekaJersey3Client build() {
-                    ClientConfig clientConfig = new ClientConfig() {
-                        {
-
-                            DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(fullJsonCodec, fullJsonCodec);
-                            register(discoveryJerseyProvider);
-
-                            // Common properties to all clients
-                            ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-                            Registry registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
-                            var cm = new PoolingHttpClientConnectionManager(registry);
-                            cm.setDefaultMaxPerRoute(config.getPeerNodeTotalConnectionsPerHost());
-                            cm.setMaxTotal(config.getPeerNodeTotalConnections());
-                            property(ApacheClientProperties.CONNECTION_MANAGER, cm);
-
-                            String fullUserAgentName = USER_AGENT + "/v" + buildVersion();
-                            property(CoreProtocolPNames.USER_AGENT, fullUserAgentName);
-
-                            // To pin a client to specific server in case redirect happens, we handle redirects directly
-                            // (see DiscoveryClient.makeRemoteCall methods).
-                            property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-                            property(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
-                        }
-                    };
-                    try {
-                        return new EurekaJersey3ClientImpl(
-                            config.getPeerNodeConnectTimeoutMs(),
-                            config.getPeerNodeReadTimeoutMs(),
-                            config.getPeerNodeConnectionIdleTimeoutSeconds(),
-                            clientConfig);
-                    } catch (Throwable e) {
-                        throw new RuntimeException("Cannot create Jersey client ", e);
-                    }
-                }
-            }
+            EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder clientBuilder = new CustomEurekaJersey3ClientBuilder(fullJsonCodec, config)
                 .withClientName(jerseyClientName).withUserAgent(USER_AGENT)
                 .withEncoderWrapper(fullJsonCodec)
                 .withDecoderWrapper(fullJsonCodec)
@@ -212,4 +178,49 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         return false;
     }
 
+    class CustomEurekaJersey3ClientBuilder extends EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder {
+        private final CodecWrapper fullJsonCodec;
+        private final EurekaServerConfig config;
+
+        public CustomEurekaJersey3ClientBuilder(CodecWrapper fullJsonCodec, EurekaServerConfig config) {
+            this.fullJsonCodec = fullJsonCodec;
+            this.config = config;
+        }
+
+        @Override
+        public EurekaJersey3Client build() {
+            try {
+                return new EurekaJersey3ClientImpl(
+                    config.getPeerNodeConnectTimeoutMs(),
+                    config.getPeerNodeReadTimeoutMs(),
+                    config.getPeerNodeConnectionIdleTimeoutSeconds(),
+                    new CustomClientConfig(fullJsonCodec, config));
+            } catch (Throwable e) {
+                throw new RuntimeException("Cannot create Jersey client ", e);
+            }
+        }
+
+        class CustomClientConfig extends ClientConfig {
+            public CustomClientConfig(CodecWrapper fullJsonCodec, EurekaServerConfig config) {
+                DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(fullJsonCodec, fullJsonCodec);
+                register(discoveryJerseyProvider);
+
+                // Common properties to all clients
+                ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, NoopHostnameVerifier.INSTANCE);
+                Registry registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
+                var cm = new PoolingHttpClientConnectionManager(registry);
+                cm.setDefaultMaxPerRoute(config.getPeerNodeTotalConnectionsPerHost());
+                cm.setMaxTotal(config.getPeerNodeTotalConnections());
+                property(ApacheClientProperties.CONNECTION_MANAGER, cm);
+
+                String fullUserAgentName = USER_AGENT + "/v" + buildVersion();
+                property(CoreProtocolPNames.USER_AGENT, fullUserAgentName);
+
+                // To pin a client to specific server in case redirect happens, we handle redirects directly
+                // (see DiscoveryClient.makeRemoteCall methods).
+                property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
+                property(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
+            }
+        }
+    }
 }
