@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography } from '@material-ui/core';
+import {Typography} from '@material-ui/core';
 import htmr from 'htmr';
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 
 const colorDanger = '#de1b1b';
 const colorWarning = '#ad5f00';
@@ -47,12 +47,30 @@ const formatError = (error) => {
         return formaHtmlError(message, color);
     }
 
+    handleValidError(error, message, color)
+
+    if (error.name === 'AjaxError') {
+        const extractedAjaxError = extractAjaxError(error);
+        if (extractedAjaxError) {
+            const { msg, clr } = extractedAjaxError;
+            return formaHtmlError(msg, clr);
+        }
+    }
+
+    if (error.message !== undefined) {
+        return formaHtmlError(error.message, colorDanger);
+    }
+
+    return formaHtmlError(message, color);
+};
+
+function handleValidError(error, message, color) {
     if (error.id !== undefined && error.timestamp !== undefined) {
         message = error.error;
         color = colorDanger;
         const extractedAjaxError = extractAjaxError(error.error);
         if (extractedAjaxError) {
-            const { msg, clr } = extractedAjaxError;
+            const {msg, clr} = extractedAjaxError;
             return formaHtmlError(msg, clr);
         }
         if (error.key !== null && error.key !== undefined) {
@@ -70,20 +88,6 @@ const formatError = (error) => {
         }
         return formaHtmlError(message, color);
     }
-
-    if (error.name === 'AjaxError') {
-        const extractedAjaxError = extractAjaxError(error);
-        if (extractedAjaxError) {
-            const { msg, clr } = extractedAjaxError;
-            return formaHtmlError(msg, clr);
-        }
-    }
-
-    if (error.message !== undefined) {
-        return formaHtmlError(error.message, colorDanger);
-    }
-
-    return formaHtmlError(message, color);
-};
+}
 
 export default formatError;
