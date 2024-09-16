@@ -75,11 +75,14 @@ public class BookControllerTest {
             }
         }
         """;
-        tester.document(document)
+
+        var books = tester.document(document)
             .execute()
             .path("getAllBooks")
             .entityList(Book.class)
             .get();
+
+        assertTrue(books.isEmpty());
     }
 
     @Test
