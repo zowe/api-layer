@@ -37,11 +37,12 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
 
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
@@ -55,14 +56,14 @@ class ZaasJwtService implements TokenService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    ConfigProperties zassConfigProperties;
+    ConfigProperties zaasConfigProperties;
 
     public ZaasJwtService(CloseableHttpClient client, String baseUrl, ConfigProperties configProperties) {
         httpClient = client;
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
         logoutEndpoint = baseUrl + "/logout";
-        zassConfigProperties = configProperties;
+        zaasConfigProperties = configProperties;
     }
 
     @Override
@@ -93,9 +94,7 @@ class ZaasJwtService implements TokenService {
 
     private SimpleHttpResponse processJwtTokenResponse(ClassicHttpResponse response) throws ParseException, IOException {
         var headers = Arrays.stream(response.getHeaders(HttpHeaders.SET_COOKIE))
-            .findFirst()
-            .map(header -> Map.of(HttpHeaders.SET_COOKIE, header))
-            .orElse(Map.of());
+            .collect(Collectors.groupingBy((__) -> HttpHeaders.SET_COOKIE));
         if (response.getEntity() != null) {
             return new SimpleHttpResponse(response.getCode(), EntityUtils.toString(response.getEntity()), headers);
         } else {
@@ -160,7 +159,7 @@ class ZaasJwtService implements TokenService {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return Optional.empty();
         return Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(zassConfigProperties.getTokenPrefix()))
+            .filter(cookie -> cookie.getName().equals(zaasConfigProperties.getTokenPrefix()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
             .map(Cookie::getValue);
@@ -181,7 +180,7 @@ class ZaasJwtService implements TokenService {
 
     private ClassicHttpRequest queryWithJwtToken(String jwtToken) {
         var httpGet = new HttpGet(queryEndpoint);
-        httpGet.addHeader(HttpHeaders.COOKIE, zassConfigProperties.getTokenPrefix() + "=" + jwtToken);
+        httpGet.addHeader(HttpHeaders.COOKIE, zaasConfigProperties.getTokenPrefix() + "=" + jwtToken);
         return httpGet;
     }
 
@@ -190,7 +189,7 @@ class ZaasJwtService implements TokenService {
         if (jwtToken.startsWith(BEARER_AUTHENTICATION_PREFIX)) {
             httpPost.addHeader(HttpHeaders.AUTHORIZATION, jwtToken);
         } else {
-            httpPost.addHeader(HttpHeaders.COOKIE, zassConfigProperties.getTokenPrefix() + "=" + jwtToken);
+            httpPost.addHeader(HttpHeaders.COOKIE, zaasConfigProperties.getTokenPrefix() + "=" + jwtToken);
         }
         return httpPost;
     }
@@ -245,8 +244,8 @@ class ZaasJwtService implements TokenService {
         String token = "";
         int httpResponseCode = response.getCode();
         if (httpResponseCode == 204) {
-            var vals = response.getHeaders().get(HttpHeaders.SET_COOKIE).getValue().split(";");
-            var apimlAuthCookie = Stream.of(vals).filter(v -> v.startsWith(zassConfigProperties.getTokenPrefix())).map(v -> v.substring(v.indexOf("=") + 1)).findFirst();
+            var cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE).stream().map(header -> HttpCookie.parse(header.getValue())).flatMap(List::stream).toList();
+            var apimlAuthCookie = cookies.stream().filter(cookie -> cookie.getName().equals(zaasConfigProperties.getTokenPrefix())).map(HttpCookie::getValue).findFirst();
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get();
             }
