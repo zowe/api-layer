@@ -251,7 +251,7 @@ public class WebSecurity {
     @Bean
     public ReactiveClientRegistrationRepository clientRegistrationRepository() {
         if (!clientConfiguration.isConfigured()) {
-            return null;
+            return registrationId -> null;
         }
         return new InMemoryReactiveClientRegistrationRepository(this.getClientRegistrations());
     }
@@ -275,7 +275,7 @@ public class WebSecurity {
         Optional<ReactiveOAuth2AuthorizedClientService> authorizedClientService
     ) {
         if (!clientConfiguration.isConfigured()) {
-            return null;
+            return registrationId -> null;
         }
 
         var authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
