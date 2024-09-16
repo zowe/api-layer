@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.message.core;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.message.storage.MessageTemplateStorage;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.message.template.MessageTemplates;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,7 +70,7 @@ public abstract class AbstractMessageService implements MessageService {
         return parameters.stream()
             .filter(Objects::nonNull)
             .map(ob -> createMessage(key, ob))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**

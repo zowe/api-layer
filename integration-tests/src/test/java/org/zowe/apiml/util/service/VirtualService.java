@@ -42,20 +42,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * This class simulate a service. You can create new instance dynamically in the test. It will register into discovery
@@ -576,7 +569,7 @@ public class VirtualService implements AutoCloseable {
     public List<String> getGatewayUrls() {
         return DiscoveryUtils.getGatewayUrls().stream()
                 .map(x -> String.format("%s/%s%s", x, serviceId.toLowerCase(), gatewayPath))
-                .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -584,21 +577,21 @@ public class VirtualService implements AutoCloseable {
      * @return list of url to the header servlet, for each registered gateway one
      */
     public List<String> getGatewayHeaderUrls(String headerName) {
-        return getGatewayUrls().stream().map(x -> x + "/header/" + headerName).collect(Collectors.toList());
+        return getGatewayUrls().stream().map(x -> x + "/header/" + headerName).toList();
     }
 
     /**
      * @return url of all gateways to this service and health service
      */
     public List<String> getGatewayHealthUrls() {
-        return getGatewayUrls().stream().map(x -> x + "/application/health").collect(Collectors.toList());
+        return getGatewayUrls().stream().map(x -> x + "/application/health").toList();
     }
 
     /**
      * @return URL of all gateways to this service and servlet {@link VerifyServlet}
      */
     public List<String> getGatewayVerifyUrls() {
-        return getGatewayUrls().stream().map(x -> x + "/verify").collect(Collectors.toList());
+        return getGatewayUrls().stream().map(x -> x + "/verify").toList();
     }
 
     @AllArgsConstructor

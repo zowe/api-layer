@@ -304,7 +304,7 @@ public class WebSecurity {
                 .jwkSetUri(c.getProvider().getJwkSetUri())
                 .clientName(c.getId())
                 .build()
-            ).collect(Collectors.toList());
+            ).toList();
     }
 
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {

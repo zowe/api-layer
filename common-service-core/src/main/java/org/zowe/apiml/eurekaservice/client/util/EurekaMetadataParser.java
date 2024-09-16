@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -125,7 +124,7 @@ public class EurekaMetadataParser {
             .filter(this::filterMetadata)
             .map(metadata -> mapMetadataToRoutedService(metadata, routeMap))
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private boolean filterMetadata(Map.Entry<String, String> metadata) {

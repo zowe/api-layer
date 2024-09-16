@@ -42,7 +42,6 @@ import reactor.test.StepVerifier;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,7 +81,7 @@ class WebSecurityTest {
                     assertThat(details.getAuthorities()).hasSize(1);
                     assertThat(details.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                        .toList())
                         .containsExactly("REGISTRY");
                 })
                 .verifyComplete();
@@ -126,7 +125,7 @@ class WebSecurityTest {
                     assertThat(details.getAuthorities()).hasSize(1);
                     assertThat(details.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                        .toList())
                         .containsExactly("REGISTRY");
                 })
                 .verifyComplete();
@@ -165,7 +164,7 @@ class WebSecurityTest {
                     assertThat(details.getAuthorities()).hasSize(1);
                     assertThat(details.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                        .toList())
                         .containsExactly("REGISTRY");
                 })
                 .verifyComplete();

@@ -32,19 +32,11 @@ import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ENABLE_URL_ENCODED_CHARACTERS;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @Service
 public class RouteLocator implements RouteDefinitionLocator {
@@ -176,10 +168,10 @@ public class RouteLocator implements RouteDefinitionLocator {
                         setAuth(serviceInstance, routeDefinition, auth);
 
                         return routeDefinition;
-                    }).collect(Collectors.toList())
+                    }).toList()
             )
             .flatMap(List::stream)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**

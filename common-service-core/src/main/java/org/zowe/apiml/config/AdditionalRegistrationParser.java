@@ -13,14 +13,9 @@ package org.zowe.apiml.config;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
@@ -48,7 +43,7 @@ public class AdditionalRegistrationParser {
             parseGatewayUrl(entry.getKey()).ifPresent(pair -> putRouteGatewayUrl(map, pair, entry.getValue()));
         }
         map.values().forEach(registration -> registration.setRoutes(registration.getRoutes().stream()
-            .filter(AdditionalRegistrationParser::isRouteDefined).collect(Collectors.toList())));
+            .filter(AdditionalRegistrationParser::isRouteDefined).toList()));
         return new ArrayList<>(map.values());
     }
 

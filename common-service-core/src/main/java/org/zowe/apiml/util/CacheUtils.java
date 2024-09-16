@@ -96,7 +96,7 @@ public class CacheUtils {
         final Object nativeCache = cache.getNativeCache();
         if (nativeCache instanceof javax.cache.Cache) {
             Spliterator<javax.cache.Cache.Entry<Object, T>> spliterator = ((javax.cache.Cache<Object, T>) nativeCache).spliterator();
-            return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).collect(Collectors.toList());
+            return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).toList();
         } else if (nativeCache instanceof NoOpCache) {
             return Collections.emptyList();
         } else {

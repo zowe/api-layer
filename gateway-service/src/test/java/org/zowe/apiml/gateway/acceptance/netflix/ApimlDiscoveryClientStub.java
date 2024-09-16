@@ -21,7 +21,6 @@ import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClient
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ApimlDiscoveryClientStub extends CloudEurekaClient {
     private ApplicationRegistry applicationRegistry;
@@ -47,7 +46,7 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
         return applicationRegistry.getInstances().stream()
             .filter(x -> StringUtils.equalsAnyIgnoreCase(vipAddress, x.getVIPAddress()))
             .filter(x -> !secure || x.getSecurePort() != 0)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override
@@ -55,7 +54,7 @@ public class ApimlDiscoveryClientStub extends CloudEurekaClient {
         return applicationRegistry.getInstances().stream()
             .filter(x -> StringUtils.equalsAnyIgnoreCase(vipAddress, x.getVIPAddress()))
             .filter(x -> !secure || x.getSecurePort() != 0)
-            .collect(Collectors.toList());
+            .toList();
     }
 
 }

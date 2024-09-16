@@ -10,6 +10,12 @@
 
 package org.zowe.apiml.security.common.filter;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +26,6 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
@@ -33,7 +33,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
@@ -147,7 +146,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
         return Arrays.stream(certs)
             .filter(test)
-            .collect(Collectors.toList()).toArray(new X509Certificate[0]);
+            .toList().toArray(new X509Certificate[0]);
     }
 
     public String base64EncodePublicKey(X509Certificate cert) {

@@ -30,7 +30,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
@@ -84,7 +83,9 @@ public class GatewayScanJob {
      */
     protected Flux<List<ServiceInfo>> doScanExternalGateway() {
         Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(CoreService.GATEWAY.getServiceId())
-                .map(gateways -> gateways.stream().filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId)).collect(Collectors.toList()));
+            .map(gateways -> gateways.stream()
+                .filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId))
+                .toList());
 
         Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
 

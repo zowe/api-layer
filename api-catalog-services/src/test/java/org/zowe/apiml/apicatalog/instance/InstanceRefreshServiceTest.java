@@ -11,6 +11,12 @@
 package org.zowe.apiml.apicatalog.instance;
 
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.shared.Applications;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
@@ -18,26 +24,13 @@ import org.zowe.apiml.apicatalog.util.ContainerServiceMockUtil;
 import org.zowe.apiml.apicatalog.util.ContainerServiceState;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class InstanceRefreshServiceTest {
 
@@ -79,7 +72,7 @@ class InstanceRefreshServiceTest {
                 discoveredState.setServices(new ArrayList<>());
                 discoveredState.setContainers(new ArrayList<>());
                 discoveredState.setInstances(new ArrayList<>());
-                discoveredState.setApplications(new ArrayList<>()); 
+                discoveredState.setApplications(new ArrayList<>());
             }
 
             @Nested
@@ -97,7 +90,7 @@ class InstanceRefreshServiceTest {
                     discoveredState.getInstances().add(newInstanceOfService);
                     Application service5 = new Application("service5", Collections.singletonList(newInstanceOfService));
                     discoveredState.getApplications().add(service5);
-                
+
                     teachMocks();
                 }
 
@@ -110,7 +103,7 @@ class InstanceRefreshServiceTest {
 
                     verify(cachedProductFamilyService, times(1))
                         .saveContainerFromInstance("api-five", newInstanceOfService);
-                }   
+                }
             }
 
             @Nested
@@ -123,21 +116,21 @@ class InstanceRefreshServiceTest {
                     service3 = cachedState.getApplications()
                         .stream()
                         .filter(application -> application.getName().equalsIgnoreCase("service3"))
-                        .collect(Collectors.toList()).get(0);
-                    
+                        .toList().get(0);
+
                     changedInstanceOfService = service3.getInstances().get(0);
                     changedInstanceOfService.getMetadata().put(CATALOG_ID, "api-three");
                     service3.getInstances().add(0, changedInstanceOfService);
-                    discoveredState.getApplications().add(service3); 
-                
+                    discoveredState.getApplications().add(service3);
+
                     teachMocks();
-                    
+
                 }
 
                 @Test
                 void serviceIsRemovedFromCache() {
                     changedInstanceOfService.setActionType(InstanceInfo.ActionType.DELETED);
-                    
+
                     underTest.refreshCacheFromDiscovery();
 
                     verify(cachedProductFamilyService, times(1))
@@ -149,7 +142,7 @@ class InstanceRefreshServiceTest {
                 @Test
                 void serviceIsModifiedInCache() {
                     changedInstanceOfService.setActionType(InstanceInfo.ActionType.MODIFIED);
-                    
+
                     APIContainer apiContainer3 = cachedState.getContainers()
                         .stream()
                         .filter(apiContainer -> apiContainer.getId().equals("api-three"))

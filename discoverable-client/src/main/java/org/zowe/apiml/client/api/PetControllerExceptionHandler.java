@@ -10,12 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.client.exception.PetIdMismatchException;
-import org.zowe.apiml.client.exception.PetNotFoundException;
-import org.zowe.apiml.message.api.ApiMessage;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
@@ -30,10 +24,15 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.zowe.apiml.client.exception.PetIdMismatchException;
+import org.zowe.apiml.client.exception.PetNotFoundException;
+import org.zowe.apiml.message.api.ApiMessage;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * This class creates responses for exceptional behavior of the PetController
@@ -115,7 +114,7 @@ public class PetControllerExceptionHandler {
             .createMessage("org.zowe.apiml.sampleservice.api.petMethodArgumentNotValid", messages)
             .stream()
             .map(Message::mapToApiMessage)
-            .collect(Collectors.toList());
+            .toList();
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)

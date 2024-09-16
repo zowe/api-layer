@@ -33,13 +33,10 @@ import reactor.core.publisher.Flux;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ENABLE_URL_ENCODED_CHARACTERS;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 class RouteLocatorTest {
 
@@ -207,7 +204,7 @@ class RouteLocatorTest {
         @Test
         void givenNonGatewayService_whenGetRoutedService_thenReturnRoutingFromMetadata() {
             ServiceInstance s = createServiceInstance("myservice", "api/v1", "ui/v1");
-            List<RoutedService> rs = routeLocator.getRoutedService(s).collect(Collectors.toList());
+            List<RoutedService> rs = routeLocator.getRoutedService(s).toList();
             assertEquals(2, rs.size());
         }
 

@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
@@ -46,7 +45,7 @@ public class DiscoveryUtils {
     }
 
     public static List<String> getGatewayUrls() {
-        return getInstances("gateway").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
+        return getInstances("gateway").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).toList();
     }
 
     public static List<InstanceInfo> getInstances(String serviceId) {
