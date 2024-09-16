@@ -133,8 +133,7 @@ public class VsamFile implements Closeable {
         log.info("Attempting to read record: {}", vsamRec);
 
         return recordOperation(vsamRec, () -> {
-            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-            zfile.read(recBuf);
+            byte[] recBuf = readRecord();
             log.trace("RecBuf: {}", recBuf); //NOSONAR
             log.info("ConvertedStringValue: {}", new String(recBuf, vsamConfig.getEncoding()));
             VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
@@ -147,8 +146,7 @@ public class VsamFile implements Closeable {
         log.info("Attempting to update record: {}", vsamRec);
 
         return recordOperation(vsamRec, () -> {
-            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-            zfile.read(recBuf); //has to be read before update
+            byte[] recBuf = readRecord();
             log.trace("Read found record: {}", new String(recBuf, ZFileConstants.DEFAULT_EBCDIC_CODE_PAGE));
             log.info("Will update record: {}", vsamRec);
             int nUpdated = zfile.update(vsamRec.getBytes());
@@ -161,13 +159,21 @@ public class VsamFile implements Closeable {
         log.info("Attempting to delete record: {}", vsamRec);
 
         return recordOperation(vsamRec, () -> {
-            byte[] recBuf = new byte[vsamConfig.getRecordLength()];
-            zfile.read(recBuf); //has to be read before delete
+            //has to be read before delete
+            byte[] recBuf = readRecord();
             VsamRecord returned = new VsamRecord(vsamConfig, recBuf);
             zfile.delrec();
             log.info("Deleted vsam record: {}", returned);
             return Optional.of(returned);
         });
+    }
+
+    private byte[] readRecord() throws ZFileException {
+        byte[] recBuf = new byte[vsamConfig.getRecordLength()];
+        if (vsamConfig.getRecordLength() != zfile.read(recBuf)) {
+            log.warn("Configured VSAM record length is different that the actual data read from {}", zfile.getActualFilename());
+        }
+        return recBuf;
     }
 
     private Optional<VsamRecord> recordOperation(VsamRecord vsamRec, RecordHandler recordHandler) {

@@ -95,8 +95,10 @@ public abstract class AbstractMessageService implements MessageService {
      *
      * @param messageTemplates the list of message templates
      * @throws DuplicateMessageException when a message key already exists
+     * @throws IllegalArgumentException when message template is null
      */
     private void validateMessageTemplates(MessageTemplates messageTemplates) {
+        Objects.requireNonNull(messageTemplates);
         String existedMessageTemplates = messageTemplates.getMessages()
             .stream()
             .collect(

@@ -156,7 +156,7 @@ public class ExampleService {
                 }
             }
         } catch (Exception e) {
-            log.debug("Cannot analyze API doc file {}", apiDoc, e);
+            log.warn("Cannot generate example from API doc file {}", apiDoc, e);
         }
     }
 

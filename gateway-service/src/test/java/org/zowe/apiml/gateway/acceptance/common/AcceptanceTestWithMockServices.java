@@ -44,7 +44,7 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     }
 
     /**
-     * Create mock service. It will be automatically registred and removed on the time. It is not necessary to handle
+     * Create mock service. It will be automatically registered and removed on the time. It is not necessary to handle
      * its lifecycle.
      *
      * Example:

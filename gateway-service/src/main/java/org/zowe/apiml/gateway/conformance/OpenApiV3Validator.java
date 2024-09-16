@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.conformance;
 
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.springframework.http.HttpMethod;
@@ -51,7 +52,10 @@ public class OpenApiV3Validator extends AbstractSwaggerValidator {
     private HashMap<String, Set<String>> getValidResponses(PathItem value) {
         HashMap<String, Set<String>> result = new HashMap<>();
         for (HttpMethod httpMethod : getMethod(value)) {
-            result.put(httpMethod.name(), value.readOperationsMap().get(convertSpringHttpToSwagger(httpMethod)).getResponses().keySet());
+            ApiResponses apiResponses = value.readOperationsMap().get(convertSpringHttpToSwagger(httpMethod)).getResponses();
+            if (!apiResponses.isEmpty()) {
+            result.put(httpMethod.name(), apiResponses.keySet());
+            }
         }
         return result;
     }
