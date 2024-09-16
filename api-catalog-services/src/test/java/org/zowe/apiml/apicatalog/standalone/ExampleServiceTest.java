@@ -67,6 +67,11 @@ class ExampleServiceTest {
         }
 
         @Test
+        void generateExampleDoesNotThrowException() {
+             assertDoesNotThrow( () -> exampleService.generateExamples("testService", " "));
+        }
+
+        @Test
         void nonExistingGetExample() {
             ExampleService.Example example = exampleService.getExample("GET", "/unkwnown");
             assertEquals(200, example.getResponseCode());

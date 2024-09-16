@@ -88,10 +88,10 @@ function Login(props) {
             if (invalidNewPassword || isSuspended) {
                 messageText = `${filter[0].messageText}`;
             }
-        } else if (error.status === 401 && authentication.sessionOn) {
+        } else if (error?.status === 401 && authentication.sessionOn) {
             messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`;
             authentication.onCompleteHandling();
-        } else if (error.status === 500) {
+        } else if (error?.status === 500) {
             messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
         return { messageText, expired, invalidNewPassword, isSuspended, invalidCredentials };
