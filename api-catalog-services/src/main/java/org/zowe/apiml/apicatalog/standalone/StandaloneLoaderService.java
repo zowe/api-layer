@@ -30,6 +30,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
@@ -77,7 +78,7 @@ public class StandaloneLoaderService {
         File[] openAPIFiles = getFiles(servicesDirectory + "/apiDocs");
         log.debug("Found {} API Doc files", openAPIFiles.length);
         if (openAPIFiles.length == 0) {
-            log.error("No apiDocs files found.");
+            log.error("No apiDocs files found or I/O error occured.");
             return;
         }
 
@@ -114,7 +115,7 @@ public class StandaloneLoaderService {
     }
 
     private void loadApiDocCache(File file) {
-        try {
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             String[] name = FilenameUtils.removeExtension(file.getName()).split("_");
             if (name.length < 2 || name.length > 3 || (name.length == 3 && !"default".equals(name[2]))) {
                 log.warn("ApiDoc file has incorrect name format '{}'. The correct format is '{serviceId}_{version}(_default)'.", file.getName());
@@ -123,8 +124,7 @@ public class StandaloneLoaderService {
             String serviceId = name[0];
             String apiVersion = name[1];
 
-            String apiDoc = IOUtils.toString(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
-
+            String apiDoc = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             ApiDocInfo apiDocInfo = createApiDocInfo(serviceId, apiDoc);
             apiDoc = beanApiDocFactory.apply(apiDoc).transformApiDoc(serviceId, apiDocInfo);
 
@@ -154,8 +154,9 @@ public class StandaloneLoaderService {
             log.error("Directory '{}' does not exists.", directory);
             return new File[0];
         }
-
-        return dir.listFiles(f -> f.isFile() && f.getName().endsWith(".json"));
+        var files = dir.listFiles(f -> f.isFile() && f.getName().endsWith(".json"));
+        if (files == null) {
+            return new File[0];
+        } else return files;
     }
-
 }
