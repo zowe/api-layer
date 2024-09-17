@@ -39,6 +39,7 @@ eureka:
     client:
         fetchRegistry: true
         registerWithEureka: true
+        instanceInfoReplicationIntervalSeconds: 1
         region: default
         serviceUrl:
             defaultZone: ${apiml.service.discoveryServiceUrls}
