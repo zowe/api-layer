@@ -75,6 +75,8 @@ dependencies {
 
     implementation(libs.openapidiff) {
         exclude group: "io.swagger.core.v3", module: "swagger-core"
+        // Remove deprecated HTTP client (unused transitive dependency of openDiff)
+        exclude group: "commons-httpclient", module: "commons-httpclient"
     }
     implementation(libs.swagger.inflector) {
         exclude group: "io.swagger.core.v3", module: "swagger-core"

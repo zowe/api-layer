@@ -19,6 +19,7 @@ import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,25 +41,25 @@ public class SimpleHttpResponse {
     private final int code;
     private final byte[] byteBody;
     private final String stringBody;
-    private final Map<String, Header> headers;
+    private final Map<String, List<Header>> headers;
 
     public SimpleHttpResponse(int code, byte[] byteBody) {
-        this(code, byteBody, null, null);
+        this(code, byteBody, null, Map.of());
     }
 
     public SimpleHttpResponse(int code, String stringBody) {
-        this(code, null, stringBody, null);
+        this(code, null, stringBody, Map.of());
     }
 
-    public SimpleHttpResponse(int code, String stringBody, Map<String, Header> headers) {
+    public SimpleHttpResponse(int code, String stringBody, Map<String, List<Header>> headers) {
         this(code, null, stringBody, headers);
     }
 
     public SimpleHttpResponse(int code) {
-        this(code, null, null, null);
+        this(code, null, null, Map.of());
     }
 
-    public SimpleHttpResponse(int code, Map<String, Header> headers) {
+    public SimpleHttpResponse(int code, Map<String, List<Header>> headers) {
         this(code, null, null, headers);
     }
 

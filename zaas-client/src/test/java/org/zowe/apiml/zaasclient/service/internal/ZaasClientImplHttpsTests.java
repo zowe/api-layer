@@ -188,8 +188,23 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
-    void testLoginWithCredentials_ValidUserName_ValidPassword() throws ZaasClientException, IOException {
+    void testLoginWithCredentials_ValidUserName_ValidPassword() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
+
+        String token = tokenService.login(VALID_USER, VALID_PASSWORD);
+        assertNotNull(token, "null Token obtained");
+        assertNotEquals(EMPTY_STRING, token, "Empty Token obtained");
+        assertEquals("token", token, "Token Mismatch");
+    }
+
+    @Test
+    void testLoginWithCredentials_ValidUserName_ValidPassword_multipleResponseCookieHeaders() throws ZaasClientException {
+        var response = prepareResponse(HttpStatus.SC_NO_CONTENT, false);
+        var tokenCookieHeader = mock(Header.class);
+        Header[] headers = new Header[]{header, tokenCookieHeader};
+        when(response.getHeaders(HttpHeaders.SET_COOKIE)).thenReturn(headers);
+        when(header.getValue()).thenReturn("someCookie=cookieValue");
+        when(tokenCookieHeader.getValue()).thenReturn("apimlAuthenticationToken=token");
 
         String token = tokenService.login(VALID_USER, VALID_PASSWORD);
         assertNotNull(token, "null Token obtained");
@@ -335,7 +350,7 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
-    void givenValidToken_whenLogout_thenSuccess() throws ZaasClientException, IOException {
+    void givenValidToken_whenLogout_thenSuccess() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
         String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
         assertDoesNotThrow(() -> tokenService.logout(token));
