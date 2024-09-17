@@ -180,7 +180,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
@@ -224,7 +224,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
@@ -304,7 +304,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CloudGatewayCentralRegistry-${{ env.JOB_ID }}
@@ -352,7 +352,7 @@ jobs:
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
@@ -535,7 +535,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsZosmfPH34201-${{ env.JOB_ID }}
@@ -587,7 +587,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
@@ -640,7 +640,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint-${{ env.JOB_ID }}
@@ -696,7 +696,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
@@ -759,7 +759,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
@@ -827,7 +827,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
@@ -907,7 +907,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}
@@ -1002,7 +1002,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: LbHaTests-${{ env.JOB_ID }}
@@ -1072,7 +1072,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
@@ -1142,7 +1142,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsGatewayChaoticHA-${{ env.JOB_ID }}
@@ -1216,7 +1216,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsDiscoverableClientChaoticHA-${{ env.JOB_ID }}
@@ -1297,7 +1297,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
@@ -1459,13 +1459,13 @@ jobs:
                     cd metrics-service-ui/frontend
                     npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   name: Upload screenshots Metrics service
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: failure()
                 with:
                     name: cypress-snapshots
@@ -1508,7 +1508,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}
