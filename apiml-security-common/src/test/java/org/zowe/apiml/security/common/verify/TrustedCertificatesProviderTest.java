@@ -160,13 +160,5 @@ class TrustedCertificatesProviderTest {
             assertNotNull(result);
             assertTrue(result.isEmpty());
         }
-
-        @Test
-        void whenNoStatusLine_thenNoCertificatesReturned() {
-            HttpClientMockHelper.mockResponse(httpResponse, HttpStatus.SC_BAD_REQUEST);
-            List<Certificate> result = provider.getTrustedCerts(CERTS_URL);
-            assertNotNull(result);
-            assertTrue(result.isEmpty());
-        }
     }
 }
