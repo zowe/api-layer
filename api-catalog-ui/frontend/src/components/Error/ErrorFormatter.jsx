@@ -39,15 +39,40 @@ function formaHtmlError(message, color) {
     );
 }
 
+function handleValidError(error) {
+    let message = error.error;
+    let color;
+    const extractedAjaxError = extractAjaxError(error.error);
+    if (extractedAjaxError) {
+        const {msg, clr} = extractedAjaxError;
+        return formaHtmlError(msg, clr);
+    }
+    if (error.key !== null && error.key !== undefined) {
+        message = `${error.key} : ${error.text}`;
+        switch (error.messageType.levelStr) {
+            case 'ERROR':
+                color = colorDanger;
+                break;
+            case 'WARNING':
+                color = colorWarning;
+                break;
+            default:
+                color = colorDanger;
+        }
+    }
+    return formaHtmlError(message, color);
+}
+
 const formatError = (error) => {
-    let message = 'Could not determine error';
-    let color = colorDanger;
+    const message = 'Could not determine error';
 
     if (error === null || error === undefined) {
-        return formaHtmlError(message, color);
+        return formaHtmlError(message, colorDanger);
     }
 
-    handleValidError(error, message, color)
+    if (error.id !== undefined && error.timestamp !== undefined) {
+        return handleValidError(error, colorDanger);
+    }
 
     if (error.name === 'AjaxError') {
         const extractedAjaxError = extractAjaxError(error);
@@ -61,33 +86,7 @@ const formatError = (error) => {
         return formaHtmlError(error.message, colorDanger);
     }
 
-    return formaHtmlError(message, color);
+    return formaHtmlError(message, colorDanger);
 };
-
-function handleValidError(error, message, color) {
-    if (error.id !== undefined && error.timestamp !== undefined) {
-        message = error.error;
-        color = colorDanger;
-        const extractedAjaxError = extractAjaxError(error.error);
-        if (extractedAjaxError) {
-            const {msg, clr} = extractedAjaxError;
-            return formaHtmlError(msg, clr);
-        }
-        if (error.key !== null && error.key !== undefined) {
-            message = `${error.key} : ${error.text}`;
-            switch (error.messageType.levelStr) {
-                case 'ERROR':
-                    color = colorDanger;
-                    break;
-                case 'WARNING':
-                    color = colorWarning;
-                    break;
-                default:
-                    color = colorDanger;
-            }
-        }
-        return formaHtmlError(message, color);
-    }
-}
 
 export default formatError;
