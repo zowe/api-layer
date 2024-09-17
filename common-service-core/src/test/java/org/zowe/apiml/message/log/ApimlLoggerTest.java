@@ -20,8 +20,7 @@ import org.slf4j.Marker;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.message.template.MessageTemplate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -102,6 +101,16 @@ class ApimlLoggerTest {
 
             verify(logger, times(1)).error(marker, "ZWEAM102E Internal error: Invalid message key " +
                 "'null' provided. No default message found. Please contact support of further assistance.", new Object[0]);
+        }
+
+        @Test
+        void when_nullMessageArgument_doNotThrowRuntimeException() {
+            assertDoesNotThrow(() -> apimlLogger.log(null));
+        }
+
+        @Test
+        void when_nullArguments_doNotThrowRuntimeException() {
+            assertDoesNotThrow(() -> apimlLogger.log((MessageType) null, null));
         }
     }
 

@@ -54,19 +54,16 @@ export class Mapper {
     }
 
     createSafCommands(identities: IIdentity[]): string[] {
-        let commandProcessor;
+
         switch (this.esm.toLowerCase()) {
             case "racf": {
-                commandProcessor = new RacfCommands(this.registry, identities, this.response);
-                break;
+                return new RacfCommands(this.registry, identities, this.response).getCommands();
             }
             case "tss": {
-                commandProcessor = new TssCommands(this.registry, identities, this.response);
-                break;
+                return  new TssCommands(this.registry, identities, this.response).getCommands();
             }
             case "acf2": {
-                commandProcessor = new Acf2Commands(this.registry, identities, this.response);
-                break;
+                return new Acf2Commands(this.registry, identities, this.response).getCommands();
             }
             default: {
                 this.response.data.setExitCode(Constants.FATAL_CODE);
@@ -75,9 +72,5 @@ export class Mapper {
                 throw new ImperativeError({msg});
             }
         }
-
-        return commandProcessor ? commandProcessor.getCommands() : [];
     }
-
-
 }

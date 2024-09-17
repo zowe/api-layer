@@ -15,7 +15,9 @@ import org.zowe.apiml.message.storage.MessageTemplateStorage;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.message.template.MessageTemplates;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +53,12 @@ public abstract class AbstractMessageService implements MessageService {
 
         try {
             return Message.of(key, messageTemplate, parameters);
-        } catch (IllegalFormatConversionException | MissingFormatArgumentException exception) {
-            log.debug("Internal error: Invalid message format was used", exception);
+        } catch (IllegalArgumentException exception) {
+            if (log.isDebugEnabled()) {
+                log.debug("Internal error: Invalid message format was used", exception);
+            } else {
+                log.warn("Internal error: Invalid message format was used for key: {}, enable debug for stack trace: {}", key, exception.getMessage());
+            }
             messageTemplate = validateMessageTemplate(Message.INVALID_MESSAGE_TEXT_FORMAT);
             return Message.of(key, messageTemplate, parameters);
         }
@@ -107,7 +113,7 @@ public abstract class AbstractMessageService implements MessageService {
             .map(Map.Entry::getKey)
             .collect(Collectors.joining(","));
 
-        if (!existedMessageTemplates.equals("")) {
+        if (!existedMessageTemplates.isEmpty()) {
             String exceptionMessage = String.format("Message template with number [%s] already exists", existedMessageTemplates);
             throw new DuplicateMessageException(exceptionMessage);
         }
