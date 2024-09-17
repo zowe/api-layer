@@ -55,7 +55,7 @@ public class OpenApiV2Validator extends AbstractSwaggerValidator {
         HashMap<String, Set<String>> result = new HashMap<>();
         for (HttpMethod httpMethod : getMethod(value)) {
             Map<String, Response> responseMap = value.getOperationMap().get(convertSpringHttpToSwagger(httpMethod)).getResponses();
-            if (  responseMap != null && !responseMap.isEmpty()) {
+            if (responseMap != null && !responseMap.isEmpty()) {
                 result.put(httpMethod.name(), responseMap.keySet());
             }
         }
