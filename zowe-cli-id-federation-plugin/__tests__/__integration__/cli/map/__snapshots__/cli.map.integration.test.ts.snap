@@ -38,11 +38,6 @@ Use "zowe idf map --help" to view command description, usage, and options.
 
 exports[`id-federation map command integration tests should fail when options are not passed 2`] = `""`;
 
-exports[`id-federation map command integration tests should print the successful creation message from old school profile and other sources 1`] = `
-"'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
-"
-`;
-
 exports[`id-federation map command integration tests should print the successful creation message with passed args for ACF2 1`] = `
 "'idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.
 "
