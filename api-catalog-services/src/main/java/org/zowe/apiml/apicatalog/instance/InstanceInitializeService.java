@@ -60,8 +60,8 @@ public class InstanceInitializeService {
      * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the discovery
      */
     @Retryable(
-        value = {RetryException.class},
-        exclude = CannotRegisterServiceException.class,
+        retryFor = {RetryException.class},
+        noRetryFor = CannotRegisterServiceException.class,
         maxAttempts = 5,
         backoff = @Backoff(delayExpression = "#{${apiml.service-registry.serviceFetchDelayInMillis}}"))
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
