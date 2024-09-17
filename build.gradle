@@ -30,6 +30,7 @@ buildscript {
         classpath libs.gradle.release
         classpath libs.gradle.licencer
         classpath libs.gradle.jib.plugin
+        classpath libs.apache.compress
     }
 }
 
