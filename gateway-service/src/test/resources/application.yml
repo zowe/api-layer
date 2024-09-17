@@ -48,6 +48,7 @@ logging:
         org.springframework.cloud.gateway: DEBUG
         reactor.netty: DEBUG
         org.springframework.security: DEBUG
+        org.springframework.beans: WARN
 
 
 management:
