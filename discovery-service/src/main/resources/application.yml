@@ -18,6 +18,7 @@ logging:
         org.eclipse.jetty: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
     #    com.netflix.eureka.resources: WARN
 
 apiml:
