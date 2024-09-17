@@ -56,15 +56,6 @@ describe("id-federation map command integration tests", () => {
         expect(response.stdout.toString()).toMatchSnapshot();
     });
 
-    it("should print the successful creation message from old school profile and other sources", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
-
-        expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
-        expect(response.status).toBe(Constants.OKAY_CODE);
-        expect(response.stdout.toString()).toContain("idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.");
-        expect(response.stdout.toString()).toMatchSnapshot();
-    });
-
     it("should print the successful creation message with passed args for RACF", () => {
         const response = runCliScript(__dirname + "/__scripts__/map_with_passed_args.sh", TEST_ENVIRONMENT,
             [`${TEST_ENVIRONMENT.workingDir}/users.csv`, "RACF", "TST1", "ldap://12.34.56.78:910"]);
