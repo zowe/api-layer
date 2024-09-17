@@ -15,7 +15,7 @@
             <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
         </else>
     </if>
-    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
