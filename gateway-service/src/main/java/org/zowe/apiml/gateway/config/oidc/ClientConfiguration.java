@@ -64,7 +64,7 @@ public class ClientConfiguration {
         update(id, REGISTRATION_ENV_TYPE, "clientSecret", registration::setClientSecret);
         update(id, REGISTRATION_ENV_TYPE, "redirectUri", registration::setRedirectUri);
 
-        String scope = getSystemEnv(id, "registration", "scope");
+        String scope = getSystemEnv(id, REGISTRATION_ENV_TYPE, "scope");
         if (scope != null) {
             registration.setScope(Arrays.asList(scope.split("[,]")));
         }
