@@ -9,6 +9,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
@@ -160,6 +161,7 @@ logging:
         ROOT: DEBUG
         org.zowe.apiml: DEBUG
         org.springframework: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO

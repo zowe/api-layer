@@ -130,6 +130,7 @@ logging:
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
         org.springframework.beans: WARN
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
         javax.net.ssl: ERROR
@@ -154,6 +155,7 @@ logging:
     level:
         org.zowe.apiml: DEBUG
         org.springframework.cloud.gateway: DEBUG
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: DEBUG
         org.springframework.web.reactive: DEBUG
         org.springframework.web.reactive.socket: DEBUG

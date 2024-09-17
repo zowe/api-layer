@@ -16,6 +16,7 @@ logging:
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
 
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -214,6 +215,7 @@ logging:
         ROOT: INFO
         org.zowe.apiml: DEBUG
         org.springframework: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: DEBUG
