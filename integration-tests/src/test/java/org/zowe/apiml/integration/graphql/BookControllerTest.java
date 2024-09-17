@@ -82,7 +82,7 @@ public class BookControllerTest {
             .entityList(Book.class)
             .get();
 
-        assertTrue(books.isEmpty());
+        assertFalse(books.isEmpty());
     }
 
     @Test
