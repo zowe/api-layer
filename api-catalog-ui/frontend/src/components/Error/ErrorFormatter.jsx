@@ -41,7 +41,7 @@ function formaHtmlError(message, color) {
 
 function handleValidError(error) {
     let message = error.error;
-    let color;
+    let color = colorDanger;
     const extractedAjaxError = extractAjaxError(error.error);
     if (extractedAjaxError) {
         const {msg, clr} = extractedAjaxError;
