@@ -51,7 +51,6 @@ public class BasicAuthProvider extends AbstractAuthProviderFilter<ClientResponse
             });
     }
 
-    //TODO validate generics
     protected WebClient.RequestHeadersSpec<WebClient.RequestBodySpec> createRequest(ServiceInstance instance, String headerValue) {
         return webClient.post()
             .uri(getEndpointUrl(instance))
