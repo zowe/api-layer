@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import {Typography} from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import htmr from 'htmr';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 const colorDanger = '#de1b1b';
 const colorWarning = '#ad5f00';
@@ -31,7 +31,7 @@ function extractAjaxError(error) {
     return null;
 }
 
-function formaHtmlError(message, color) {
+function formatHtmlError(message, color) {
     return (
         <Typography key={uuidv4()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
             {htmr(message)}
@@ -44,8 +44,8 @@ function handleValidError(error) {
     let color = colorDanger;
     const extractedAjaxError = extractAjaxError(error.error);
     if (extractedAjaxError) {
-        const {msg, clr} = extractedAjaxError;
-        return formaHtmlError(msg, clr);
+        const { msg, clr } = extractedAjaxError;
+        return formatHtmlError(msg, clr);
     }
     if (error.key !== null && error.key !== undefined) {
         message = `${error.key} : ${error.text}`;
@@ -60,33 +60,33 @@ function handleValidError(error) {
                 color = colorDanger;
         }
     }
-    return formaHtmlError(message, color);
+    return formatHtmlError(message, color);
 }
 
 const formatError = (error) => {
     const message = 'Could not determine error';
 
     if (error === null || error === undefined) {
-        return formaHtmlError(message, colorDanger);
+        return formatHtmlError(message, colorDanger);
     }
 
     if (error.id !== undefined && error.timestamp !== undefined) {
-        return handleValidError(error, colorDanger);
+        return handleValidError(error);
     }
 
     if (error.name === 'AjaxError') {
         const extractedAjaxError = extractAjaxError(error);
         if (extractedAjaxError) {
             const { msg, clr } = extractedAjaxError;
-            return formaHtmlError(msg, clr);
+            return formatHtmlError(msg, clr);
         }
     }
 
     if (error.message !== undefined) {
-        return formaHtmlError(error.message, colorDanger);
+        return formatHtmlError(error.message, colorDanger);
     }
 
-    return formaHtmlError(message, colorDanger);
+    return formatHtmlError(message, colorDanger);
 };
 
 export default formatError;
