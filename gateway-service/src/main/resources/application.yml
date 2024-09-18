@@ -135,6 +135,7 @@ logging:
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
         javax.net.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
 management:
     endpoint:
@@ -165,7 +166,6 @@ logging:
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
         org.apache.tomcat.util.net: DEBUG
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         javax.net.ssl: INFO
 
 ---

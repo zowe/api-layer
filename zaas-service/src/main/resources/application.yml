@@ -218,6 +218,7 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN

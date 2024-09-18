@@ -209,6 +209,7 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         com.netflix: INFO
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG

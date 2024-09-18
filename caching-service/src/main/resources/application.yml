@@ -171,6 +171,7 @@ logging:
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         org.springframework.security.web: INFO
         javax.net.ssl: INFO
 
@@ -195,3 +196,11 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.tomcat.util.net: DEBUG
