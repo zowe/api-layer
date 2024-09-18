@@ -77,9 +77,9 @@ public class AuthEndpointConfig {
 
     private WebClient.RequestBodySpec getWebclient(ServerRequest serverRequest, String path) {
         var sslInfo = serverRequest.exchange().getRequest().getSslInfo();
-        var webClient = sslInfo == null ? this.webClient : this.webClientClientCert;
+        var client = sslInfo == null ? this.webClient : this.webClientClientCert;
 
-        var request = webClient
+        var request = client
             .method(serverRequest.method())
             .uri("lb://zaas/zaas" + path)
             .headers(headers -> headers.addAll(serverRequest.headers().asHttpHeaders()))
