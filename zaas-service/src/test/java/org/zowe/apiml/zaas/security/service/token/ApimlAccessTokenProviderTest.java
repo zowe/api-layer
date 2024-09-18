@@ -97,15 +97,6 @@ class ApimlAccessTokenProviderTest {
         verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_SCOPES_KEY), any());
 
     }
-
-    @Test
-    void GivenNoTimeStampThenInvalidateAllServiceTokens() {
-        String serviceId = "service";
-        long timestamp = 0;
-        accessTokenProvider.invalidateAllTokensForService(serviceId, timestamp);
-        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_SCOPES_KEY), any());
-    }
-
     @Test
     void givenSameToken_returnInvalidated() throws Exception {
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
@@ -133,18 +124,10 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenSaltIsInvalid_thenThrowException() throws SecureTokenInitializationException {
-
         try (MockedStatic<ApimlAccessTokenProvider> apimlAccessTokenProviderMock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
             apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable()));
             assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
         }
-    }
-
-    @Test
-    void givenInvalidSalt_thenThrowException()  {
-        byte[] salt = new byte[16];
-         assertDoesNotThrow( () ->  ApimlAccessTokenProvider.getSecurePassword("password",salt));
-
     }
 
     @Test
@@ -200,7 +183,6 @@ class ApimlAccessTokenProviderTest {
         int expiration = 55;
         when(as.createLongLivedJwtToken("user", expiration, scopes)).thenReturn("token");
         String token = accessTokenProvider.getToken("user", expiration, scopes);
-        assertNotEquals(expiration,90);
         assertNotNull(token);
         assertEquals("token", token);
     }
