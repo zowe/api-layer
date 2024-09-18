@@ -146,17 +146,17 @@ public class ExampleService {
     public void generateExamples(String serviceId, String apiDoc) {
         try {
             SwaggerParseResult parseResult = new OpenAPIParser().readContents(apiDoc, null, null);
-
-            OpenAPI swagger = parseResult.getOpenAPI();
-            Paths paths = swagger.getPaths();
-
+            OpenAPI swagger = parseResult != null ? parseResult.getOpenAPI() : null;
+            Paths paths = swagger != null ? swagger.getPaths() : null ;
+            if (paths != null) {
             for (Map.Entry<String, PathItem> pathItemEntry : paths.entrySet()) {
                 for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
                     generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
-                }
+                    }
+                 }
             }
         } catch (Exception e) {
-            log.warn("Cannot generate example from API doc file {}", apiDoc, e);
+            log.error("Error generating example from API doc file {}", apiDoc, e);
         }
     }
 
