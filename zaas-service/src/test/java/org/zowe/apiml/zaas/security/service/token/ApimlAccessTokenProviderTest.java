@@ -124,9 +124,11 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenSaltIsInvalid_thenThrowException() throws SecureTokenInitializationException {
+
         try (MockedStatic<ApimlAccessTokenProvider> apimlAccessTokenProviderMock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
-            apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable()));
-            assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
+            apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable("mock exception")));
+            SecureTokenInitializationException exception = assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
+            assertEquals("mock exception",exception.getCause().getMessage());
         }
     }
 
@@ -194,7 +196,7 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenNoTimestamp_thenUserSystemTime() {
+    void givenNoTimestamp_thenUserSystemTimeToInvalidateAllTokensForUser() {
         String userId = "user";
         accessTokenProvider.invalidateAllTokensForUser(userId, 0);
         verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
