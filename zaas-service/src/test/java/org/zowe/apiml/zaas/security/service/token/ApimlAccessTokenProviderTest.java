@@ -28,7 +28,6 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Stream;
 
