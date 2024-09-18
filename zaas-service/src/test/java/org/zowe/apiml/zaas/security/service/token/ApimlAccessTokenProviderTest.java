@@ -193,6 +193,13 @@ class ApimlAccessTokenProviderTest {
         assertTrue(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, "gateway"));
     }
 
+    @Test
+    void givenNoTimestamp_thenUserSystemTime() {
+        String userId = "user";
+        accessTokenProvider.invalidateAllTokensForUser(userId, 0);
+        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+    }
+
     static Stream<String> invalidScopes() {
         return Stream.of("invalidService", "", null);
     }
