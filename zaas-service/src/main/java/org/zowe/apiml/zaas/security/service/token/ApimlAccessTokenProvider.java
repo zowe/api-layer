@@ -200,9 +200,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             SecureRandom.getInstanceStrong().nextBytes(salt);
             return salt;
         } catch (NoSuchAlgorithmException e) {
-            log.error("Could not generate salt", e);
+            throw new SecureTokenInitializationException(e);
         }
-        return salt;
     }
 
     public static String getSecurePassword(String password, byte[] salt) {
