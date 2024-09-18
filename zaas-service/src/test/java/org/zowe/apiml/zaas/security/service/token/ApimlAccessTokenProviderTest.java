@@ -20,12 +20,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -119,6 +122,16 @@ class ApimlAccessTokenProviderTest {
         doNothing().when(cachingServiceClient).create(any());
         byte[] salt = accessTokenProvider.getSalt();
         assertNotNull(salt);
+    }
+
+    @Test
+    void givenNominalCase_thenReturnSaltSuccessfully() throws CachingServiceClientException {
+
+        try (MockedStatic<ApimlAccessTokenProvider> mock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
+            byte[] salt = new byte[16];
+            mock.when(ApimlAccessTokenProvider::generateSalt).thenReturn(salt);
+            assertNotNull(ApimlAccessTokenProvider.generateSalt());
+        }
     }
 
     @Test
