@@ -196,7 +196,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             SecureRandom.getInstanceStrong().nextBytes(salt);
             return salt;
         } catch (NoSuchAlgorithmException e) {
-            log.error("Could not generate hash", e);
+            log.error("Could not generate salt", e);
         }
         return salt;
     }
