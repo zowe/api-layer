@@ -128,7 +128,7 @@ class ApimlAccessTokenProviderTest {
 
         try (MockedStatic<ApimlAccessTokenProvider> apimlAccessTokenProviderMock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
             apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable("cause")));
-            assertThrows(SecureTokenInitializationException.class, ()->  ApimlAccessTokenProvider.generateSalt());
+            assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
         }
     }
 
@@ -163,7 +163,6 @@ class ApimlAccessTokenProviderTest {
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
-
     @Test
     void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");
@@ -183,8 +182,10 @@ class ApimlAccessTokenProviderTest {
         Set<String> scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
-        when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
-        String token = accessTokenProvider.getToken("user", 55, scopes);
+        int expiration = 55;
+        when(as.createLongLivedJwtToken("user", expiration, scopes)).thenReturn("token");
+        String token = accessTokenProvider.getToken("user", expiration, scopes);
+        assertNotEquals(expiration,90);
         assertNotNull(token);
         assertEquals("token", token);
     }
