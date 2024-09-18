@@ -10,14 +10,13 @@
 
 package org.zowe.apiml.apicatalog.util;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.when;
@@ -81,10 +80,8 @@ public class ContainerServiceMockUtil {
                                              int limit) {
         List<InstanceInfo> generatedInstances = Stream.iterate(index, i -> i + 1)
             .limit(limit)
-            .map(mIndex -> {
-                return getInstance(mIndex, serviceId);
-            }).collect(Collectors.toList());
-
+            .map(mIndex -> getInstance(mIndex, serviceId))
+            .toList();
 
         addApiService(serviceId, containerServiceState.getServices(), services);
         addInstancesToApplications(

@@ -51,7 +51,7 @@ public class RequestUtils {
 
         return getAllHeaders().stream()
             .filter(h -> h.getName().equalsIgnoreCase(needle))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public void setHeader(Header newHeader) {
@@ -65,14 +65,14 @@ public class RequestUtils {
     public void removeHeader(String needle) {
         List<Header> newHeaderList = getAllHeaders().stream()
             .filter(h -> !h.getName().equalsIgnoreCase(needle))
-            .collect(Collectors.toList());
+            .toList();
         request.setHeaders(newHeaderList.toArray(new Header[] {}));
     }
 
     public List<HttpCookie> getAllCookies() {
         List<HttpCookie> cookieList = new ArrayList<>();
         List<Header> cookieHeaders = getAllHeaders().stream()
-            .filter(h -> h.getName().equalsIgnoreCase(HttpHeaders.COOKIE)).collect(Collectors.toList());
+            .filter(h -> h.getName().equalsIgnoreCase(HttpHeaders.COOKIE)).toList();
 
         cookieHeaders.forEach(h -> cookieList.addAll(getAllCookiesFromHeader(h)));
         return cookieList;
@@ -94,7 +94,7 @@ public class RequestUtils {
     }
 
     public List<HttpCookie> getCookie(String needle) {
-        return getAllCookies().stream().filter(c -> c.getName().equalsIgnoreCase(needle)).collect(Collectors.toList());
+        return getAllCookies().stream().filter(c -> c.getName().equalsIgnoreCase(needle)).toList();
     }
 
     public void setCookie(HttpCookie cookie) {
@@ -124,7 +124,7 @@ public class RequestUtils {
             List<HttpCookie> cookieList = getAllCookiesFromHeader(header);
             cookieList = cookieList.stream()
                 .filter(c -> !c.getName().equalsIgnoreCase(cookie))
-                .collect(Collectors.toList());
+                .toList();
             if (cookieList.isEmpty()) {
                 removeHeader(HttpHeaders.COOKIE);
             } else {

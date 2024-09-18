@@ -98,12 +98,14 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetInstanceInfo_whenResponseHasEmptyBody() {
+        HttpClientMockHelper.mockResponse(response, "");
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }
 
     @Test
     void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
+        HttpClientMockHelper.mockResponse(response, "UNPARSABLE_JSON");
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }

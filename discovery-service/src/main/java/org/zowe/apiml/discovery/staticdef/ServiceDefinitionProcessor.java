@@ -19,6 +19,8 @@ import com.netflix.appinfo.LeaseInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.auth.Authentication;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -26,8 +28,6 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
 
@@ -40,7 +40,6 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -87,7 +86,7 @@ public class ServiceDefinitionProcessor {
                 }
                 return isDir;
             })
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**

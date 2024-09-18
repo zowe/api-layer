@@ -13,9 +13,9 @@ package org.zowe.apiml.gateway.service;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.gateway.service.model.ApimlInfo;
 import org.zowe.apiml.gateway.service.model.CentralServiceInfo;
-import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.services.ServiceInfo;
 
 import java.util.*;
@@ -37,7 +37,7 @@ public class CentralApimlInfoMapper {
         List<CentralServiceInfo> services = Optional.ofNullable(gatewayServices).orElse(Collections.emptyList()).stream()
             .filter(Objects::nonNull)
             .map(this::mapServices)
-            .collect(Collectors.toList());
+            .toList();
 
         return ApimlInfo.builder()
             .apimlId(apimlId)

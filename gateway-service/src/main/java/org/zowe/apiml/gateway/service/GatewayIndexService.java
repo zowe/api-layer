@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.service;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,7 +29,6 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -130,7 +130,7 @@ public class GatewayIndexService {
                 .filter(Objects::nonNull)
                 .filter(serviceInfo -> apiId == null || hasSameApiId(serviceInfo, apiId))
                 .filter(serviceInfo -> serviceId == null || hasSameServiceId(serviceInfo, serviceId))
-                .collect(Collectors.toList());
+                .toList();
         }
         return Collections.emptyList();
     }

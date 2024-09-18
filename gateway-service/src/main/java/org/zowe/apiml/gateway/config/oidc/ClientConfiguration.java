@@ -19,12 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,6 +39,10 @@ public class ClientConfiguration {
         "^" + SYSTEM_ENV_PREFIX + "(registration|provider)_([^_]+)_.*$"
     );
 
+    public static final String REGISTRATION_ENV_TYPE = "registration";
+    public static final String PROVIDER_ENV_TYPE = "provider";
+
+
     private Map<String, Registration> registration = new HashMap<>();
     private Map<String, Provider> provider = new HashMap<>();
 
@@ -61,22 +60,22 @@ public class ClientConfiguration {
     }
 
     private void update(String id, Registration registration) {
-        update(id, "registration", "clientId", registration::setClientId);
-        update(id, "registration", "clientSecret", registration::setClientSecret);
-        update(id, "registration", "redirectUri", registration::setRedirectUri);
+        update(id, REGISTRATION_ENV_TYPE, "clientId", registration::setClientId);
+        update(id, REGISTRATION_ENV_TYPE, "clientSecret", registration::setClientSecret);
+        update(id, REGISTRATION_ENV_TYPE, "redirectUri", registration::setRedirectUri);
 
-        String scope = getSystemEnv(id, "registration", "scope");
+        String scope = getSystemEnv(id, REGISTRATION_ENV_TYPE, "scope");
         if (scope != null) {
             registration.setScope(Arrays.asList(scope.split("[,]")));
         }
     }
 
     private void update(String id, Provider provider) {
-        update(id, "provider", "authorizationUri", provider::setAuthorizationUri);
-        update(id, "provider", "tokenUri", provider::setTokenUri);
-        update(id, "provider", "userInfoUri", provider::setUserInfoUri);
-        update(id, "provider", "userNameAttribute", provider::setUserNameAttribute);
-        update(id, "provider", "jwkSetUri", provider::setJwkSetUri);
+        update(id, PROVIDER_ENV_TYPE, "authorizationUri", provider::setAuthorizationUri);
+        update(id, PROVIDER_ENV_TYPE, "tokenUri", provider::setTokenUri);
+        update(id, PROVIDER_ENV_TYPE, "userInfoUri", provider::setUserInfoUri);
+        update(id, PROVIDER_ENV_TYPE, "userNameAttribute", provider::setUserNameAttribute);
+        update(id, PROVIDER_ENV_TYPE, "jwkSetUri", provider::setJwkSetUri);
     }
 
     private Set<String> getRegistrationsIdsFromSystemEnv() {
