@@ -76,7 +76,7 @@ public abstract class AbstractMessageService implements MessageService {
         return parameters.stream()
             .filter(Objects::nonNull)
             .map(ob -> createMessage(key, ob))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**

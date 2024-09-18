@@ -70,7 +70,7 @@ public class CacheUtils {
             Set<Object> keysToRemove = StreamSupport.stream(spliterator, true)
                     // if the key matches the predicate then evict the record or
                     // if the key is not compositeKey (unknown for evict) evict record (as failover)
-                    .filter(e -> !(e.getKey() instanceof  CompositeKey) || keyPredicate.test((CompositeKey) e.getKey()))
+                .filter(e -> !(e.getKey() instanceof CompositeKey key) || keyPredicate.test(key))
                     .map(javax.cache.Cache.Entry::getKey)
                     .collect(Collectors.toSet());
             ((javax.cache.Cache<Object, Object>) nativeCache).removeAll(keysToRemove);
@@ -96,7 +96,7 @@ public class CacheUtils {
         final Object nativeCache = cache.getNativeCache();
         if (nativeCache instanceof javax.cache.Cache) {
             Spliterator<javax.cache.Cache.Entry<Object, T>> spliterator = ((javax.cache.Cache<Object, T>) nativeCache).spliterator();
-            return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).collect(Collectors.toList());
+            return StreamSupport.stream(spliterator, true).map(javax.cache.Cache.Entry::getValue).toList();
         } else if (nativeCache instanceof NoOpCache) {
             return Collections.emptyList();
         } else {

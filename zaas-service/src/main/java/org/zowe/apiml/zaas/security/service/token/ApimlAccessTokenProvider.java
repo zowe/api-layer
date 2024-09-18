@@ -16,12 +16,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.zaas.cache.CachingServiceClient;
-import org.zowe.apiml.zaas.cache.CachingServiceClientException;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.zaas.cache.CachingServiceClient;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +84,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
         String hashedToken = getHash(token);
         String hashedUserId = getHash(parsedToken.getUserId());
-        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).collect(Collectors.toList());
+        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).toList();
 
         Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
         if (cacheMap != null && !cacheMap.isEmpty()) {
@@ -93,11 +92,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             Map<String, String> invalidUsers = cacheMap.get(INVALID_USERS_KEY);
             Map<String, String> invalidScopes = cacheMap.get(INVALID_SCOPES_KEY);
             Optional<Boolean> isInvalidated = checkInvalidToken(invalidTokens, hashedToken);
-            if (!isInvalidated.isPresent()) {
+            if (isInvalidated.isEmpty()) {
                 isInvalidated = checkRule(invalidUsers, hashedUserId, parsedToken);
             }
             for (String hashedServiceId : hashedServiceIds) {
-                if (!isInvalidated.isPresent()) {
+                if (isInvalidated.isEmpty()) {
                     isInvalidated = checkRule(invalidScopes, hashedServiceId, parsedToken);
                 } else {
                     break;
