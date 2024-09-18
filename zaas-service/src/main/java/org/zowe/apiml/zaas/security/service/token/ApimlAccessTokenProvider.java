@@ -195,7 +195,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         try {
             SecureRandom.getInstanceStrong().nextBytes(salt);
             return salt;
-        } catch (NoSuchAlgorithmException e) {  //NOSONAR
+        } catch (NoSuchAlgorithmException e) {
             throw new SecureTokenInitializationException(e);
         }
     }

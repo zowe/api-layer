@@ -99,6 +99,14 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
+    void GivenNoTimeStampThenInvalidateAllServiceTokens() {
+        String serviceId = "service";
+        long timestamp = 0;
+        accessTokenProvider.invalidateAllTokensForService(serviceId, timestamp);
+        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_SCOPES_KEY), any());
+    }
+
+    @Test
     void givenSameToken_returnInvalidated() throws Exception {
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
