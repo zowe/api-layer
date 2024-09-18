@@ -124,12 +124,19 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenSaltIsInvalid_thenThrowException() throws RuntimeException {
+    void givenSaltIsInvalid_thenThrowException() throws SecureTokenInitializationException {
 
         try (MockedStatic<ApimlAccessTokenProvider> apimlAccessTokenProviderMock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
-            apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable("cause")));
+            apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable()));
             assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
         }
+    }
+
+    @Test
+    void givenInvalidSalt_thenThrowException()  {
+        byte[] salt = new byte[16];
+         assertDoesNotThrow( () ->  ApimlAccessTokenProvider.getSecurePassword("password",salt));
+
     }
 
     @Test

@@ -115,7 +115,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             try {
                 AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
                 return Optional.of(c != null);
-            } catch (JsonProcessingException e) {  //NOSONAR
+            } catch (JsonProcessingException e) {
                 log.error("Not able to parse invalidToken json value.", e);
             }
         }
@@ -132,7 +132,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 if (result) {
                     return Optional.of(true);
                 }
-            } catch (NumberFormatException e) { //NOSONAR
+            } catch (NumberFormatException e) {
                 log.error("Not able to convert timestamp value to number.", e);
             }
         }
@@ -165,9 +165,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public String getToken(String username, int expirationTime, Set<String> scopes) {
         int expiration = Math.min(expirationTime, 90);
-        if (expiration <= 0) {
-            expiration = 90;
-        }
         return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
     }
 
