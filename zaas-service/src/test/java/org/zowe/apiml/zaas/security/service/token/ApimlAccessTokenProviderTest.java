@@ -28,6 +28,8 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -127,9 +129,24 @@ class ApimlAccessTokenProviderTest {
     void givenNominalCase_thenReturnSaltSuccessfully() throws CachingServiceClientException {
 
         try (MockedStatic<ApimlAccessTokenProvider> mock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
-            byte[] salt = new byte[16];
-            mock.when(ApimlAccessTokenProvider::generateSalt).thenReturn(salt);
-            assertNotNull(ApimlAccessTokenProvider.generateSalt());
+            byte[] expectedSalt = new byte[24];
+            mock.when(ApimlAccessTokenProvider::generateSalt).thenReturn(expectedSalt);
+
+            byte[] actualSalt = ApimlAccessTokenProvider.generateSalt();
+            assertNotNull(actualSalt);
+            assertEquals(expectedSalt.length, actualSalt.length);
+        }
+    }
+    @Test
+    void givenInvalidCase_thenReturnsUnInitializedSalt()  {
+
+        try (MockedStatic<SecureRandom> mockedSecureRandom = Mockito.mockStatic(SecureRandom.class)) {
+            mockedSecureRandom.when(SecureRandom::getInstanceStrong).thenThrow(new NoSuchAlgorithmException());
+
+            byte[] salt = ApimlAccessTokenProvider.generateSalt();
+           assertDoesNotThrow( () -> ApimlAccessTokenProvider.generateSalt());
+           assertNotNull(salt);
+           assertEquals(16,salt.length);
         }
     }
 
