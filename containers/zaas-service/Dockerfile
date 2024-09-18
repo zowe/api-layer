@@ -36,5 +36,5 @@ COPY --chown=zowe:zowe component/LICENSE /licenses
 
 ##################################
 # start command
-EXPOSE 7563
+EXPOSE 7558
 ENTRYPOINT [ "bin/start.sh" ]
