@@ -22,7 +22,7 @@
             <SSL_KEY_EXCHANGE keystore_name="${server.ssl.keyStore}"
                               keystore_type="${server.ssl.keyStoreType}"
                               keystore_password="${server.ssl.keyStorePassword}"
-                              secret_key_algorithm="RSA"
+                              secret_key_algorithm="AES"
                               port="${jgroups.keyExchange.port}"
             />
             <!-- Configures ASYM_ENCRYPT -->
