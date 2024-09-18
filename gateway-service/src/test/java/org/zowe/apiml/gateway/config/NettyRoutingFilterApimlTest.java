@@ -82,10 +82,10 @@ class NettyRoutingFilterApimlTest {
 
             NettyRoutingFilterApiml nettyRoutingFilterApiml;
             private final Route ROUTE_NO_TIMEOUT = Route.async()
-                .id("1").uri("http://localhost/").predicate(serverWebExchange -> true)
+                    .id("1").uri("http://localhost/").predicate(__ -> true)
                 .build();
             private final Route ROUTE_TIMEOUT = Route.async()
-                .id("2").uri("http://localhost/").predicate(serverWebExchange -> true).metadata(CONNECT_TIMEOUT_ATTR, "100")
+                    .id("2").uri("http://localhost/").predicate(__ -> true).metadata(CONNECT_TIMEOUT_ATTR, "100")
                 .build();
             MockServerWebExchange serverWebExchange;
 
