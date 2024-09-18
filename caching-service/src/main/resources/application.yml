@@ -37,6 +37,7 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         javax.net.ssl: ERROR
 
@@ -170,6 +171,7 @@ logging:
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         org.springframework.security.web: INFO
         javax.net.ssl: INFO
 
@@ -194,3 +196,11 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.tomcat.util.net: DEBUG

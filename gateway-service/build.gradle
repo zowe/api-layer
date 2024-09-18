@@ -78,6 +78,7 @@ dependencies {
     implementation libs.jjwt.jackson
     implementation libs.nimbus.jose.jwt
     implementation libs.bcpkix
+    implementation libs.caffeine
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
