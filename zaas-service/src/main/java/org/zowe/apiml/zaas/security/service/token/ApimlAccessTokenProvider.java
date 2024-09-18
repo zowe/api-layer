@@ -115,8 +115,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             try {
                 AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
                 return Optional.of(c != null);
-            } catch (JsonProcessingException e) {  // NOSONAR
-                log.error("Not able to parse invalidToken json value.", e);  // NOSONAR
+            } catch (JsonProcessingException e) {
+                log.error("Not able to parse invalidToken json value.", e);
             }
         }
         return Optional.empty();
@@ -132,8 +132,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 if (result) {
                     return Optional.of(true);
                 }
-            } catch (NumberFormatException e) {  // NOSONAR
-                log.error("Not able to convert timestamp value to number.", e);  // NOSONAR
+            } catch (NumberFormatException e) {
+                log.error("Not able to convert timestamp value to number.", e);
             }
         }
         return Optional.empty();
@@ -195,7 +195,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         try {
             SecureRandom.getInstanceStrong().nextBytes(salt);
             return salt;
-        } catch (NoSuchAlgorithmException e) {  // NOSONAR
+        } catch (NoSuchAlgorithmException e) {
             throw new SecureTokenInitializationException(e);
         }
     }
