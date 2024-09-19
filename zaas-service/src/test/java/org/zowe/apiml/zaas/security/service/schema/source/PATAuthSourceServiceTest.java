@@ -55,7 +55,7 @@ class PATAuthSourceServiceTest {
 
     @Test
     void returnPATSourceMapper() {
-        assertTrue(patAuthSourceService.getMapper().apply("token") instanceof PATAuthSource);
+        assertInstanceOf(PATAuthSource.class, patAuthSourceService.getMapper().apply("token"));
     }
 
     @Nested

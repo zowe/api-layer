@@ -65,7 +65,7 @@ class JwtAuthSourceServiceTest {
 
         verify(authenticationService, times(1)).getJwtTokenFromRequest(request);
         Assertions.assertTrue(authSource.isPresent());
-        Assertions.assertTrue(authSource.get() instanceof JwtAuthSource);
+        Assertions.assertInstanceOf(JwtAuthSource.class, authSource.get());
         Assertions.assertEquals(token, authSource.get().getRawSource());
     }
 
@@ -78,7 +78,7 @@ class JwtAuthSourceServiceTest {
 
         verify(authenticationService, times(1)).getJwtTokenFromRequest(request);
         Assertions.assertTrue(authSource.isPresent());
-        Assertions.assertTrue(authSource.get() instanceof JwtAuthSource);
+        Assertions.assertInstanceOf(JwtAuthSource.class, authSource.get());
         Assertions.assertEquals(token, authSource.get().getRawSource());
     }
 

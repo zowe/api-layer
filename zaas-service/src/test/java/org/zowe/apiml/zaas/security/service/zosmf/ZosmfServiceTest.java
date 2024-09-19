@@ -947,7 +947,7 @@ class ZosmfServiceTest {
         void givenZoweAuthSourceWithoutLtpa_thenNewJwtTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.ZOWE);
 
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>() {{
                 put(JWT, ZOSMF_JWT_TOKEN);
             }};
             when(authenticationService.getLtpaToken(ZOWE_JWT_TOKEN)).thenReturn(null);
@@ -963,7 +963,7 @@ class ZosmfServiceTest {
         void givenOtherAuthSourceAndZosmfProducesJwt_thenNewJwtTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
 
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>() {{
                 put(LTPA, LTPA_TOKEN);
                 put(JWT, ZOSMF_JWT_TOKEN);
             }};
@@ -979,7 +979,7 @@ class ZosmfServiceTest {
         void givenOtherAuthSourceAndZosmfProducesOnlyLtpa_thenNewLtpaTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
 
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>() {{
                 put(LTPA, LTPA_TOKEN);
             }};
             when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
