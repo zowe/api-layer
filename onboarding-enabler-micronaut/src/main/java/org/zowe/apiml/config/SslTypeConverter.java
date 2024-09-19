@@ -27,8 +27,11 @@ import java.util.Optional;
 @Singleton
 public class SslTypeConverter implements TypeConverter<LinkedHashMap<?, ?>, Ssl> {
 
-    @Inject
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
+
+    SslTypeConverter(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Override
     public Optional<Ssl> convert(LinkedHashMap<?, ?> object, Class<Ssl> targetType, ConversionContext context) {
