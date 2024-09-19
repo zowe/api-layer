@@ -142,7 +142,7 @@ export default class ServiceTab extends Component {
         if (!apis || typeof apis !== 'object') {
             return null;
         }
-        const apiKey = Object.keys(apis).find((key) => apis[key] && apis[key].graphqlUrl);
+        const apiKey = Object.keys(apis).find((key) => apis[key]?.graphqlUrl);
         return apiKey ? apis[apiKey].graphqlUrl : null;
     };
 
