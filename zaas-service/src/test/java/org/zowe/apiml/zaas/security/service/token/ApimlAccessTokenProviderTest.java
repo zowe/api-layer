@@ -19,12 +19,17 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -47,7 +52,7 @@ class ApimlAccessTokenProviderTest {
     QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issued, new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
 
     @BeforeEach
-    void setup() throws CachingServiceClientException {
+    void setup() throws CachingServiceClientException,SecureTokenInitializationException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
@@ -122,6 +127,37 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
+    void givenSaltIsInvalid_thenThrowException() throws RuntimeException {
+
+        try (MockedStatic<ApimlAccessTokenProvider> apimlAccessTokenProviderMock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
+            apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable("cause")));
+            assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
+        }
+    }
+
+    @Test
+    void givenNominalCase_thenReturnSaltSuccessfully() throws CachingServiceClientException {
+
+        try (MockedStatic<ApimlAccessTokenProvider> mock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
+            byte[] expectedSalt = new byte[24];
+            mock.when(ApimlAccessTokenProvider::generateSalt).thenReturn(expectedSalt);
+
+            byte[] actualSalt = ApimlAccessTokenProvider.generateSalt();
+            assertNotNull(actualSalt);
+            assertEquals(expectedSalt.length, actualSalt.length);
+        }
+    }
+    @Test
+    void given_whenSecureRandomThrowsNoSuchAlgorithmException_thenThrowSecureTokenInitializationException()  {
+
+        try (MockedStatic<SecureRandom> mockedSecureRandom = Mockito.mockStatic(SecureRandom.class)) {
+            mockedSecureRandom.when(SecureRandom::getInstanceStrong).thenThrow(new NoSuchAlgorithmException());
+
+            assertThrows(SecureTokenInitializationException.class, () -> ApimlAccessTokenProvider.generateSalt());
+        }
+    }
+
+    @Test
     void givenDifferentToken_returnNotInvalidated() throws Exception {
         String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
         when(as.parseJwtWithSignature(differentToken)).thenReturn(queryResponseWithoutScopes);
@@ -152,7 +188,6 @@ class ApimlAccessTokenProviderTest {
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
-
     @Test
     void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");
@@ -182,6 +217,13 @@ class ApimlAccessTokenProviderTest {
     void givenScopedToken_whenScopeIsListed_thenReturnValid() {
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
         assertTrue(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, "gateway"));
+    }
+
+    @Test
+    void givenNoTimestamp_thenUserSystemTimeToInvalidateAllTokensForUser() {
+        String userId = "user";
+        accessTokenProvider.invalidateAllTokensForUser(userId, 0);
+        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
     }
 
     static Stream<String> invalidScopes() {
