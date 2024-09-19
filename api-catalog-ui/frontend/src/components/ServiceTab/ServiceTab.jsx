@@ -7,8 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import {Button, Link, MenuItem, Select, Tooltip, Typography} from '@material-ui/core';
-import {Component} from 'react';
+import { Button, Link, MenuItem, Select, Tooltip, Typography } from '@material-ui/core';
+import { Component } from 'react';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
