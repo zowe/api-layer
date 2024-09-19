@@ -127,7 +127,7 @@ class GatewaySecurityServiceTest {
         class WhenDoQuery {
 
             @Test
-            void givenValidAuth_thenSuccessfulResponse() {
+            void givenValidAuth_thenSuccessfulResponse() throws IOException {
                 Date issued = new Date();
                 Date exp = new Date(System.currentTimeMillis() + 10000);
 
