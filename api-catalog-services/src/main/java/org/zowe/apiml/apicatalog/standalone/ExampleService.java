@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -146,22 +147,25 @@ public class ExampleService {
      */
     public void generateExamples(String serviceId, String apiDoc) {
 
+        try {
             SwaggerParseResult parseResult = new OpenAPIParser().readContents(apiDoc, null, null);
             OpenAPI swagger = parseResult != null ? parseResult.getOpenAPI() : null;
             Paths paths = swagger != null ? swagger.getPaths() : null;
-            try {
-                if (paths != null) {
-                    for (Map.Entry<String, PathItem> pathItemEntry : paths.entrySet()) {
-                        for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
-                            generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
-                        }
+            if (paths != null) {
+                for (Map.Entry<String, PathItem> pathItemEntry : paths.entrySet()) {
+                    for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
+                        generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
                     }
                 }
-            } catch (NullPointerException e) {
-                log.warn("Cannot generate example from API doc file {}", apiDoc, e);
+            } else {
+                throw new ApiDocTransformationException("Exception parsing null apiDoc " + apiDoc +
+                    " paths is null: '" + paths + "'.");
             }
+        } catch (Exception e) {
+            log.warn("Cannot generate example from API doc file {}", apiDoc, e);
+            throw e;
+        }
     }
-
     /**
      * To find a prepared example for specific endpoint defined by request method and URL path. If no example is found
      * it returns the default one (empty JSON object).
