@@ -145,20 +145,21 @@ public class ExampleService {
      * @param apiDoc path of file with API doc to parse
      */
     public void generateExamples(String serviceId, String apiDoc) {
-        try {
+
             SwaggerParseResult parseResult = new OpenAPIParser().readContents(apiDoc, null, null);
             OpenAPI swagger = parseResult != null ? parseResult.getOpenAPI() : null;
-            Paths paths = swagger != null ? swagger.getPaths() : null ;
-            if (paths != null) {
-            for (Map.Entry<String, PathItem> pathItemEntry : paths.entrySet()) {
-                for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
-                    generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
+            Paths paths = swagger != null ? swagger.getPaths() : null;
+            try {
+                if (paths != null) {
+                    for (Map.Entry<String, PathItem> pathItemEntry : paths.entrySet()) {
+                        for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
+                            generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
+                        }
                     }
                 }
+            } catch (NullPointerException e) {
+                log.warn("Cannot generate example from API doc file {}", apiDoc, e);
             }
-        } catch (Exception e) {
-         log.warn("Cannot generate example from API doc file {}", apiDoc, e);
-        }
     }
 
     /**
