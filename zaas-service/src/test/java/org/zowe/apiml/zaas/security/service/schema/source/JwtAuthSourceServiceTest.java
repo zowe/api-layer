@@ -105,9 +105,9 @@ class JwtAuthSourceServiceTest {
 
     @Test
     void givenInvalidAuthSource_thenAuthSourceIsInvalid() {
-        TokenAuthentication tokenAuthentication = new TokenAuthentication("user");
-        tokenAuthentication.setAuthenticated(false);
-        when(authenticationService.validateJwtToken(anyString())).thenReturn(tokenAuthentication);
+        TokenAuthentication tokenAuth = new TokenAuthentication("user");
+        tokenAuth.setAuthenticated(false);
+        when(authenticationService.validateJwtToken(anyString())).thenReturn(tokenAuth);
 
         Assertions.assertFalse(serviceUnderTest.isValid(jwtAuthSource));
         verify(authenticationService, times(1)).validateJwtToken(token);
