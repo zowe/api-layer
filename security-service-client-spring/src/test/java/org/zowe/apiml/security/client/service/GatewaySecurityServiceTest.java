@@ -160,7 +160,6 @@ class GatewaySecurityServiceTest {
             void setup() {
                 uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
                     gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
-                //when(response.getCode()).thenReturn(HttpStatus.UNAUTHORIZED.value());
             }
 
             @Nested
