@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SafResourceAccessControllerTest {
 
     private MockMvc mockMvc;
-    private SafResourceAccessVerifying safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
+    private final SafResourceAccessVerifying safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
     MessageService messageService = new YamlMessageService("/zaas-messages.yml");
 
     private final String validRequestBody =
