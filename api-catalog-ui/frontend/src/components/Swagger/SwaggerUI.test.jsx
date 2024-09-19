@@ -254,13 +254,15 @@ describe('>>> Swagger component tests', () => {
             endpoint: '/test',
             language: 'java',
         };
-        const container = document.createElement('div');
-        document.body.appendChild(container);
 
-        await act(async () =>
-            createRoot(container).render(<SwaggerUI selectedService={service1} selectedVersion="0" />, container)
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service1} selectedVersion="0" />
+            </div>
         );
-        expect(container).not.toBeNull();
+        const swaggerDiv = wrapper.find('#swaggerContainer');
+
+        expect(swaggerDiv).toBeDefined();
     });
 
     it('should not create element if api portal disabled and element does not exist', () => {
