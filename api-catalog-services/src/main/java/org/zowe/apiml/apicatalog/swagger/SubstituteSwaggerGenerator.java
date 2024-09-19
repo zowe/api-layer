@@ -30,7 +30,7 @@ public class SubstituteSwaggerGenerator {
 
     public SubstituteSwaggerGenerator() {
         ve.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
-        ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+        ve.setProperty("resource.loader.classpath.class", ClasspathResourceLoader.class.getName());
         ve.init();
     }
 
