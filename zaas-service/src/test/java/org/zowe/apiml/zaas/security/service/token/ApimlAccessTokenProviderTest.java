@@ -22,11 +22,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.zowe.apiml.models.AccessTokenContainer;
+import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.models.AccessTokenContainer;
-import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -34,9 +34,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class ApimlAccessTokenProviderTest {
@@ -47,9 +45,9 @@ class ApimlAccessTokenProviderTest {
 
     private static String SCOPED_TOKEN;
     private static String TOKEN_WITHOUT_SCOPES;
-    Date issued = new Date(System.currentTimeMillis() - 100000L);
-    QueryResponse queryResponseTokenWithScopes = new QueryResponse(null, "user", issued, new Date(), "issuer", Arrays.asList("gateway", "discovery"), QueryResponse.Source.ZOWE_PAT);
-    QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issued, new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
+    Date issuedDate = new Date(System.currentTimeMillis() - 100000L);
+    QueryResponse queryResponseTokenWithScopes = new QueryResponse(null, "user", issuedDate, new Date(), "issuer", Arrays.asList("gateway", "discovery"), QueryResponse.Source.ZOWE_PAT);
+    QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issuedDate, new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
 
     @BeforeEach
     void setup() throws CachingServiceClientException,SecureTokenInitializationException {
@@ -188,6 +186,7 @@ class ApimlAccessTokenProviderTest {
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
+
     @Test
     void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");

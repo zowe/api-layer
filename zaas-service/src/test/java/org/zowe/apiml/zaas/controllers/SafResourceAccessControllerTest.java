@@ -36,20 +36,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SafResourceAccessControllerTest {
 
     private MockMvc mockMvc;
-    private SafResourceAccessVerifying safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
+    private final SafResourceAccessVerifying safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
     MessageService messageService = new YamlMessageService("/zaas-messages.yml");
 
-    private final String validRequestBody = "{\n" +
-        "\t\"resourceClass\": \"ZOWE\",\n" +
-        "\t\"resourceName\": \"APIML.SERVICES\",\n" +
-        "\t\"accessLevel\": \"READ\"\n" +
-        "}";
+    private final String validRequestBody =
+        """
+                {
+                    "resourceClass": "ZOWE",
+                    "resourceName": "APIML.SERVICES",
+                    "accessLevel": "READ"
+                }
+            """;
 
-    private final String invalidRequestBody = "{\n" +
-        "\t\"resourceClass\": \"ZOWE\",\n" +
-        "\t\"resourceName\": \"APIML.SERVICES\",\n" +
-        "\t\"accessLevel\": \"WIPE\"\n" +
-        "}";
+    private final String invalidRequestBody =
+        """
+                {
+                    "resourceClass": "ZOWE",
+                    "resourceClass": "ZOWE"
+                    "resourceName": "APIML.SERVICES"
+                    "accessLevel": "WIPE"
+                }
+            """;
 
     @BeforeEach
     void setUp() {

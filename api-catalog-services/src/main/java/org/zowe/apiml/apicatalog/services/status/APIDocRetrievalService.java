@@ -399,7 +399,7 @@ public class APIDocRetrievalService {
      * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
      * introduced. It will be removed when all services will be using the new configuration style.
      */
-    @Deprecated
+    @Deprecated(forRemoval = false)
     private String createApiDocUrlFromRouting(InstanceInfo instanceInfo, RoutedServices routes) {
         String scheme;
         int port;

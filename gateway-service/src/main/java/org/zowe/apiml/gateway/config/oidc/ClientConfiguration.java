@@ -66,7 +66,7 @@ public class ClientConfiguration {
 
         String scope = getSystemEnv(id, REGISTRATION_ENV_TYPE, "scope");
         if (scope != null) {
-            registration.setScope(Arrays.asList(scope.split("[,]")));
+            registration.setScope(Arrays.asList(scope.split(",")));
         }
     }
 

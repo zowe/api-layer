@@ -10,20 +10,20 @@
 
 package org.zowe.apiml.zaas.security.refresh;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CookieUtil;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
@@ -55,7 +55,6 @@ public class SuccessfulRefreshHandler implements AuthenticationSuccessHandler {
     private void setCookie(String token, HttpServletResponse response) {
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
         String cookieHeader = new CookieUtil.CookieHeaderBuilder(cp.getCookieName(), token)
-            .comment(cp.getCookieComment())
             .path(cp.getCookiePath())
             .sameSite(cp.getCookieSameSite().getValue())
             .maxAge(cp.getCookieMaxAge())
