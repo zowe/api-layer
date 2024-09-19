@@ -162,7 +162,7 @@ class CachingServiceClientTest {
             when(response.getBody()).thenReturn(responseBody);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
             Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
-            assertNull(parsedResponseBody);
+            assertTrue(parsedResponseBody.isEmpty());
         }
 
         @Test
@@ -176,7 +176,7 @@ class CachingServiceClientTest {
             when(response.getBody()).thenReturn(null);
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
             Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
-            assertNull(parsedResponseBody);
+            assertTrue(parsedResponseBody.isEmpty());
         }
     }
 
