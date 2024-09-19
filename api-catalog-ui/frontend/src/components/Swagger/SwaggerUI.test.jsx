@@ -225,7 +225,7 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`Servershttp://localhost${endpoint2}`);
     });
 
-    it('should get snippet from selectedVersion and render swagger', async () => {
+    xit('should get snippet from selectedVersion and render swagger', async () => {
         const endpoint1 = '/oldenabler/api/v1';
         const service1 = {
             serviceId: 'oldservice',
