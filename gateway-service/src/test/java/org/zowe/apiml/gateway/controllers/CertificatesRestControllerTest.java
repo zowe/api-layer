@@ -87,9 +87,6 @@ class CertificatesRestControllerTest {
     @MockBean
     private CertificateChainService mockCertificateChainService;
 
-    @MockBean
-    private MessageService messageService;
-
     @Nested
     class WhenNoCertificate {
         @BeforeEach

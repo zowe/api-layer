@@ -91,7 +91,7 @@ class CertificateChainServiceTest {
             -----END CERTIFICATE-----
             """;
 
-    private Certificate[] certificates = new Certificate[2];
+    private final Certificate[] certificates = new Certificate[2];
 
     @Nested
     class GivenValidCertificateChain {

@@ -46,7 +46,7 @@ public class BookControllerTest {
     @BeforeAll
     static void setUpTester() {
         String baseUrl = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v3/graphql").toString();
-        SslContext sslContext = null;
+        SslContext sslContext;
         try {
             sslContext = SslContextBuilder
                 .forClient()
@@ -95,13 +95,13 @@ public class BookControllerTest {
         }
         """;
 
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(document)
                 .execute()
                 .path("getAllBooks")
                 .entityList(Book.class)
-                .get();
-        });
+                .get()
+        );
     }
 
     @Test
@@ -175,9 +175,7 @@ public class BookControllerTest {
             .execute()
             .path("getBookById")
             .entity(Book.class)
-            .satisfies(book -> {
-                assertEquals(addedBookId, book.bookId);
-            });
+            .satisfies(book -> assertEquals(addedBookId, book.bookId));
     }
 
     @Test
@@ -212,13 +210,13 @@ public class BookControllerTest {
         }
         """, expectedBook.pageCount, expectedBook.authorId );
 
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(addBookDocument)
                 .execute()
                 .path("addBook")
                 .entity(Book.class)
-                .get();
-        });
+                .get()
+        );
     }
 
     @Test
@@ -273,13 +271,13 @@ public class BookControllerTest {
         }
         """, bookToUpdateBook.bookId, bookToUpdateBook.name, bookToUpdateBook.pageCount, bookToUpdateBook.authorId);
 
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(updateBookDocument)
                 .execute()
                 .path("updateBook")
                 .entity(Book.class)
-                .get();
-        });
+                .get()
+        );
     }
 
     @Test
@@ -350,13 +348,13 @@ public class BookControllerTest {
         }
         """, unknownId);
 
-        assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(deleteBookDocument)
                 .execute()
                 .path("deleteBook")
                 .entity(Book.class)
-                .get();
-        });
+                .get()
+        );
     }
 
     @Data

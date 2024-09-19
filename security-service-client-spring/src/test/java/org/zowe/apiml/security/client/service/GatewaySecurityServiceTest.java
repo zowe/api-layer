@@ -67,7 +67,7 @@ class GatewaySecurityServiceTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private GatewaySecurityService securityService;
     private String cookie;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
 
     @BeforeEach
@@ -127,7 +127,7 @@ class GatewaySecurityServiceTest {
         class WhenDoQuery {
 
             @Test
-            void givenValidAuth_thenSuccessfulResponse() throws IOException {
+            void givenValidAuth_thenSuccessfulResponse() {
                 Date issued = new Date();
                 Date exp = new Date(System.currentTimeMillis() + 10000);
 
@@ -139,7 +139,7 @@ class GatewaySecurityServiceTest {
             }
 
             @Test
-            void givenGatewayUnauthorized_thenThrowException() throws IOException {
+            void givenGatewayUnauthorized_thenThrowException() {
                 String responseBody = MESSAGE_KEY_STRING + "org.zowe.apiml.security.query.invalidToken\"";
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, responseBody);
                 Exception exception = assertThrows(TokenNotValidException.class, () -> securityService.query("token"));
@@ -166,7 +166,7 @@ class GatewaySecurityServiceTest {
             class ThenHandleAuthGeneralError {
 
                 @Test
-                void givenInvalidMessageKey() throws IOException {
+                void givenInvalidMessageKey() {
                     String errorMessage = MESSAGE_KEY_STRING + "badKey\"";
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, errorMessage);
                     assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
@@ -174,14 +174,14 @@ class GatewaySecurityServiceTest {
                 }
 
                 @Test
-                void givenGatewayUnauthorized_thenThrowException() throws IOException {
+                void givenGatewayUnauthorized_thenThrowException() {
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, "message");
                     Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                     assertEquals("Invalid Credentials", exception.getMessage());
                 }
 
                 @Test
-                void givenValidMessageKey_thenHandleErrorTypeForThatMessageKey() throws IOException {
+                void givenValidMessageKey_thenHandleErrorTypeForThatMessageKey() {
                     String errorMessage = MESSAGE_KEY_STRING + "org.zowe.apiml.security.login.invalidCredentials\"";
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, errorMessage);
                     assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));

@@ -13,7 +13,6 @@ package org.zowe.apiml.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.convert.ConversionContext;
 import io.micronaut.core.convert.TypeConverter;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.zowe.apiml.eurekaservice.client.config.Ssl;
 
