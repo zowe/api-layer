@@ -39,18 +39,19 @@ jobs:
             - name: Set name
               run: git config user.name "Zowe Robot"
 
-            - name: Release to NPM automatic
-              run: |
-                  cd onboarding-enabler-nodejs
-                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-                  echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-                  npm version ${{ github.event.inputs.release_version }}
-                  npm publish --access public
-                  git add package.json
-                  git add package-lock.json
-                  git commit -m "[skip ci] Update version"
-                  git push
-                  cd ..
+#            - name: Release to NPM automatic
+#              shell: bash
+#              run: |
+#                  cd onboarding-enabler-nodejs
+#                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+#                  echo "registry=$DIST_REGISTRY" >> ~/.npmrc
+#                  npm version ${{ github.event.inputs.release_version }}
+#                  npm publish --access public
+#                  git add package.json
+#                  git add package-lock.json
+#                  git commit -m "[skip ci] Update version"
+#                  git push
+#                  cd ..
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
