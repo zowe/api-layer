@@ -28,8 +28,7 @@ class CertificatesRestControllerTest {
 
     private static final String SINGLE_CERTIFICATE =
         """
-
-            "-----BEGIN CERTIFICATE-----
+            -----BEGIN CERTIFICATE-----
             MIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJDTjEL
             MAkGA1UECBMCUE4xCzAJBgNVBAcTAkNOMQswCQYDVQQKEwJPTjELMAkGA1UECxMC
             VU4xFDASBgNVBAMTC0hlcm9uZyBZYW5nMB4XDTA1MDcxNTIxMTk0N1oXDTA1MDgx
