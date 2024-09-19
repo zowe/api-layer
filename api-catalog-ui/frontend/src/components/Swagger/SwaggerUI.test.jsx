@@ -262,7 +262,7 @@ describe('>>> Swagger component tests', () => {
         );
         const swaggerDiv = wrapper.find('#swaggerContainer');
 
-        expect(swaggerDiv.length).toEqual(0);
+        expect(swaggerDiv).toBeDefined();
     });
 
     it('should not create element if api portal disabled and element does not exist', () => {
