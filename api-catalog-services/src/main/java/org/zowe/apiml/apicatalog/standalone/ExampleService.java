@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -153,10 +154,10 @@ public class ExampleService {
                 for (Map.Entry<PathItem.HttpMethod, Operation> operationEntry : pathItemEntry.getValue().readOperationsMap().entrySet()) {
                     generateExample(serviceId, swagger, operationEntry.getKey().name(), operationEntry.getValue(), pathItemEntry.getKey());
                     }
-                 }
+                }
             }
         } catch (Exception e) {
-            log.warn("Cannot generate example from API doc file {}", apiDoc, e);
+         log.warn("Cannot generate example from API doc file {}", apiDoc, e);
         }
     }
 

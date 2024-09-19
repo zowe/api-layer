@@ -52,7 +52,7 @@ class ApimlAccessTokenProviderTest {
     QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issued, new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
 
     @BeforeEach
-    void setup() throws CachingServiceClientException {
+    void setup() throws CachingServiceClientException,SecureTokenInitializationException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
         when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
@@ -127,6 +127,15 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
+    void givenSaltIsInvalid_thenThrowException() throws RuntimeException {
+
+        try (MockedStatic<ApimlAccessTokenProvider> apimlAccessTokenProviderMock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
+            apimlAccessTokenProviderMock.when(() -> ApimlAccessTokenProvider.generateSalt()).thenThrow(new SecureTokenInitializationException(new Throwable("cause")));
+            assertThrows(SecureTokenInitializationException.class, () ->  ApimlAccessTokenProvider.generateSalt());
+        }
+    }
+
+    @Test
     void givenNominalCase_thenReturnSaltSuccessfully() throws CachingServiceClientException {
 
         try (MockedStatic<ApimlAccessTokenProvider> mock = Mockito.mockStatic(ApimlAccessTokenProvider.class)) {
@@ -139,15 +148,12 @@ class ApimlAccessTokenProviderTest {
         }
     }
     @Test
-    void givenInvalidCase_thenReturnsUnInitializedSalt()  {
+    void given_whenSecureRandomThrowsNoSuchAlgorithmException_thenThrowSecureTokenInitializationException()  {
 
         try (MockedStatic<SecureRandom> mockedSecureRandom = Mockito.mockStatic(SecureRandom.class)) {
             mockedSecureRandom.when(SecureRandom::getInstanceStrong).thenThrow(new NoSuchAlgorithmException());
 
-            byte[] salt = ApimlAccessTokenProvider.generateSalt();
-           assertDoesNotThrow( () -> ApimlAccessTokenProvider.generateSalt());
-           assertNotNull(salt);
-           assertEquals(16,salt.length);
+            assertThrows(SecureTokenInitializationException.class, () -> ApimlAccessTokenProvider.generateSalt());
         }
     }
 
@@ -182,7 +188,6 @@ class ApimlAccessTokenProviderTest {
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
-
     @Test
     void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");
@@ -213,6 +218,13 @@ class ApimlAccessTokenProviderTest {
     void givenScopedToken_whenScopeIsListed_thenReturnValid() {
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
         assertTrue(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, "gateway"));
+    }
+
+    @Test
+    void givenNoTimestamp_thenUserSystemTimeToInvalidateAllTokensForUser() {
+        String userId = "user";
+        accessTokenProvider.invalidateAllTokensForUser(userId, 0);
+        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
     }
 
     static Stream<String> invalidScopes() {

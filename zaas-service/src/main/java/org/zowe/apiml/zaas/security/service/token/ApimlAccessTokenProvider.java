@@ -149,7 +149,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return getSecurePassword(token, getSalt());
     }
 
-    private String initializeSalt() throws CachingServiceClientException {
+    private String initializeSalt() throws CachingServiceClientException,SecureTokenInitializationException {
         String localSalt;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
@@ -196,9 +196,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             SecureRandom.getInstanceStrong().nextBytes(salt);
             return salt;
         } catch (NoSuchAlgorithmException e) {
-            log.error("Could not generate salt", e);
+            throw new SecureTokenInitializationException(e);
         }
-        return salt;
     }
 
     public static String getSecurePassword(String password, byte[] salt) {
