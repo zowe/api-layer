@@ -4,7 +4,7 @@
     "private": true,
     "homepage": ".",
     "dependencies": {
-        "@material-ui/core": "4.12.3",
+        "@mui/material": "5.0.0",
         "@material-ui/icons": "4.11.2",
         "@wojtekmaj/enzyme-adapter-react-17": "0.6.7",
         "axios": "1.6.8",
