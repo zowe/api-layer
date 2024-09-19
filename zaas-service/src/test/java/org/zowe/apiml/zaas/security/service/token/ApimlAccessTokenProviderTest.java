@@ -207,9 +207,8 @@ class ApimlAccessTokenProviderTest {
         Set<String> scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
-        int expiration = 55;
-        when(as.createLongLivedJwtToken("user", expiration, scopes)).thenReturn("token");
-        String token = accessTokenProvider.getToken("user", expiration, scopes);
+        when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
+        String token = accessTokenProvider.getToken("user", 55, scopes);
         assertNotNull(token);
         assertEquals("token", token);
     }

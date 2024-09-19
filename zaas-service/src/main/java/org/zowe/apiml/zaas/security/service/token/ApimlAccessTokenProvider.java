@@ -165,6 +165,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     public String getToken(String username, int expirationTime, Set<String> scopes) {
         int expiration = Math.min(expirationTime, 90);
+        if (expiration <= 0) {
+            expiration = 90;
+        }
         return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
     }
 

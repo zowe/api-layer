@@ -163,7 +163,6 @@ public class ExampleService {
             }
         } catch (Exception e) {
             log.warn("Cannot generate example from API doc file {}", apiDoc, e);
-            throw e;
         }
     }
     /**
