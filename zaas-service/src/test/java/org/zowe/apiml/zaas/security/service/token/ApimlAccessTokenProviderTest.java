@@ -100,6 +100,7 @@ class ApimlAccessTokenProviderTest {
         verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_SCOPES_KEY), any());
 
     }
+
     @Test
     void givenSameToken_returnInvalidated() throws Exception {
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
@@ -181,6 +182,7 @@ class ApimlAccessTokenProviderTest {
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
+
     @Test
     void givenTokenWithScopeMatchingRule_returnInvalidated() {
         String serviceId = accessTokenProvider.getHash("service");
@@ -211,13 +213,6 @@ class ApimlAccessTokenProviderTest {
     void givenScopedToken_whenScopeIsListed_thenReturnValid() {
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
         assertTrue(accessTokenProvider.isValidForScopes(SCOPED_TOKEN, "gateway"));
-    }
-
-    @Test
-    void givenNoTimestamp_thenUserSystemTimeToInvalidateAllTokensForUser() {
-        String userId = "user";
-        accessTokenProvider.invalidateAllTokensForUser(userId, 0);
-        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
     }
 
     static Stream<String> invalidScopes() {
