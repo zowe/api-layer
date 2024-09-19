@@ -11,8 +11,8 @@ dependencyResolutionManagement {
             version('springCloudCommons', '4.1.4')
             version('springCloudCB', '3.1.2')
             version('springCloudGateway', '4.1.5')
-            version('springFramework', '6.1.12')
-            version('springRetry', '2.0.8')
+            version('springFramework', '6.1.13')
+            version('springRetry', '2.0.9')
 
             version('zosUtils', '2.0.5')
             version('awaitility', '4.2.2')
@@ -20,7 +20,7 @@ dependencyResolutionManagement {
             version('caffeine', '3.1.8')
             version('commonsLang3', '3.17.0')
             version('commonsText', '1.12.0')
-            version('commonsIo', '2.16.1')
+            version('commonsIo', '2.17.0')
             version('ehCache', '3.10.8')
             version('eureka', '2.0.3')
             version('netflixServo', '0.13.2')
@@ -61,7 +61,7 @@ dependencyResolutionManagement {
             version('lombok', '1.18.34')
             version('netty', '4.1.113.Final')
             version('nettyReactor', '1.1.22')
-            version('nimbusJoseJwt', '9.41')
+            version('nimbusJoseJwt', '9.41.1')
             version('openApiDiff', '2.0.1')
             version('picocli', '4.7.6')
 
@@ -96,7 +96,7 @@ dependencyResolutionManagement {
             version('checkstyle', '10.17.0')
             version('jacoco', '0.8.11')
             version('gradle', '8.6')
-            version('commonsCompress', '1.25.0')
+            version('commonsCompress', '1.27.1')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
