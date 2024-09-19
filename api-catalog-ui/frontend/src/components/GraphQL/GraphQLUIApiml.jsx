@@ -78,7 +78,7 @@ export default function GraphQLUIApiml(props) {
             try {
                 const introspectionQuery = getIntrospectionQuery();
                 const result = await fetcher({ query: introspectionQuery });
-                if (result && result.data) {
+                if (result?.data) {
                     const clientSchema = buildClientSchema(result.data);
                     setSchema(clientSchema);
                 } else {

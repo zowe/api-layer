@@ -20,7 +20,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicHeader;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,7 @@ public abstract class ExternalMapper {
 
     private final String mapperUrl;
     private final String mapperUser;
-    @Autowired
+
     @Qualifier("secureHttpClientWithoutKeystore")
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
     private final TokenCreationService tokenCreationService;

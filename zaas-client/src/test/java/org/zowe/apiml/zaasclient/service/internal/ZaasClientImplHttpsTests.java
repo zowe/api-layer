@@ -191,10 +191,10 @@ class ZaasClientImplHttpsTests {
     void testLoginWithCredentials_ValidUserName_ValidPassword() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
 
-        String token = tokenService.login(VALID_USER, VALID_PASSWORD);
-        assertNotNull(token, "null Token obtained");
-        assertNotEquals(EMPTY_STRING, token, "Empty Token obtained");
-        assertEquals("token", token, "Token Mismatch");
+        String authToken = tokenService.login(VALID_USER, VALID_PASSWORD);
+        assertNotNull(authToken, "null Token obtained");
+        assertNotEquals(EMPTY_STRING, authToken, "Empty Token obtained");
+        assertEquals("token", authToken, "Token Mismatch");
     }
 
     @Test
@@ -206,10 +206,10 @@ class ZaasClientImplHttpsTests {
         when(header.getValue()).thenReturn("someCookie=cookieValue");
         when(tokenCookieHeader.getValue()).thenReturn("apimlAuthenticationToken=token");
 
-        String token = tokenService.login(VALID_USER, VALID_PASSWORD);
-        assertNotNull(token, "null Token obtained");
-        assertNotEquals(EMPTY_STRING, token, "Empty Token obtained");
-        assertEquals("token", token, "Token Mismatch");
+        String authToken = tokenService.login(VALID_USER, VALID_PASSWORD);
+        assertNotNull(authToken, "null Token obtained");
+        assertNotEquals(EMPTY_STRING, authToken, "Empty Token obtained");
+        assertEquals("token", authToken, "Token Mismatch");
     }
 
     private static Stream<Arguments> provideInvalidUsernamePassword() {
@@ -255,10 +255,10 @@ class ZaasClientImplHttpsTests {
     @Test
     void testLoginWithAuthHeader_ValidUserName_ValidPassword() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
-        String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
-        assertNotNull(token, "null Token obtained");
-        assertNotEquals(EMPTY_STRING, token, "Empty Token obtained");
-        assertEquals("token", token, "Token Mismatch");
+        String authToken = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+        assertNotNull(authToken, "null Token obtained");
+        assertNotEquals(EMPTY_STRING, authToken, "Empty Token obtained");
+        assertEquals("token", authToken, "Token Mismatch");
     }
 
     private static Stream<Arguments> provideInvalidAuthHeaders() {
@@ -352,8 +352,8 @@ class ZaasClientImplHttpsTests {
     @Test
     void givenValidToken_whenLogout_thenSuccess() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
-        String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
-        assertDoesNotThrow(() -> tokenService.logout(token));
+        String authToken = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+        assertDoesNotThrow(() -> tokenService.logout(authToken));
     }
 
     @Test
@@ -368,9 +368,9 @@ class ZaasClientImplHttpsTests {
     @Test
     void givenValidTokenInBearer_whenLogout_thenSuccess() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
-        String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
-        token = "Bearer " + token;
-        String finalToken = token;
+        String authToken = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+        authToken = "Bearer " + authToken;
+        String finalToken = authToken;
         assertDoesNotThrow(() -> tokenService.logout(finalToken));
     }
 

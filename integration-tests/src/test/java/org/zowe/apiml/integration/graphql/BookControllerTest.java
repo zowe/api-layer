@@ -46,7 +46,7 @@ public class BookControllerTest {
     @BeforeAll
     static void setUpTester() {
         String baseUrl = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v3/graphql").toString();
-        SslContext sslContext = null;
+        SslContext sslContext;
         try {
             sslContext = SslContextBuilder
                 .forClient()
@@ -66,7 +66,7 @@ public class BookControllerTest {
     }
 
     @Test
-    public void whenGetAllBooks_thenReturnAllBooks() throws SSLException {
+    public void whenGetAllBooks_thenReturnAllBooks() {
         String document = """
         query {
             getAllBooks {
@@ -86,7 +86,7 @@ public class BookControllerTest {
     }
 
     @Test
-    public void whenGetAllBooksWithWrongSchema_thenReturnException() throws SSLException {
+    public void whenGetAllBooksWithWrongSchema_thenReturnException() {
         String document = """
         query {
             getAllBooks {
@@ -95,18 +95,17 @@ public class BookControllerTest {
         }
         """;
 
-        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(document)
                 .execute()
                 .path("getAllBooks")
                 .entityList(Book.class)
-                .get();
-        });
-        assertNotNull(thrown);
+                .get()
+        );
     }
 
     @Test
-    public void whenAddBook_thenReturnAddedBook() throws SSLException {
+    public void whenAddBook_thenReturnAddedBook() {
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -148,7 +147,7 @@ public class BookControllerTest {
     }
 
     @Test
-    public void whenGetBookById_thenReturnMatchingBook() throws SSLException {
+    public void whenGetBookById_thenReturnMatchingBook() {
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -176,13 +175,11 @@ public class BookControllerTest {
             .execute()
             .path("getBookById")
             .entity(Book.class)
-            .satisfies(book -> {
-                assertEquals(addedBookId, book.bookId);
-            });
+            .satisfies(book -> assertEquals(addedBookId, book.bookId));
     }
 
     @Test
-    public void whenGetBookByIdWithWrongId_thenBookNotFound() throws SSLException {
+    public void whenGetBookByIdWithWrongId_thenBookNotFound() {
         String id = "UnexistingId";
         String getBookByIdDocument = String.format("""
         query {
@@ -201,7 +198,7 @@ public class BookControllerTest {
     }
 
     @Test
-    public void whenAddBookWithNullParameter_thenReturnException() throws SSLException {
+    public void whenAddBookWithNullParameter_thenReturnException() {
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -213,18 +210,17 @@ public class BookControllerTest {
         }
         """, expectedBook.pageCount, expectedBook.authorId );
 
-        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(addBookDocument)
                 .execute()
                 .path("addBook")
                 .entity(Book.class)
-                .get();
-        });
-        assertNotNull(thrown);
+                .get()
+        );
     }
 
     @Test
-    public void whenUpdateBook_thenReturnUpdatedBook() throws SSLException {
+    public void whenUpdateBook_thenReturnUpdatedBook() {
         Book expectedBook = setUpBook();
         String addBookDocument = String.format("""
          mutation {
@@ -262,7 +258,7 @@ public class BookControllerTest {
     }
 
     @Test
-    public void whenUpdateUnknownBook_thenReturnException() throws SSLException {
+    public void whenUpdateUnknownBook_thenReturnException() {
         Book bookToUpdateBook = setUpBook();
         bookToUpdateBook.bookId = "unknown-id";
         String updateBookDocument = String.format("""
@@ -275,18 +271,17 @@ public class BookControllerTest {
         }
         """, bookToUpdateBook.bookId, bookToUpdateBook.name, bookToUpdateBook.pageCount, bookToUpdateBook.authorId);
 
-        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(updateBookDocument)
                 .execute()
                 .path("updateBook")
                 .entity(Book.class)
-                .get();
-        });
-        assertNotNull(thrown);
+                .get()
+        );
     }
 
     @Test
-    public void whenDeleteBook_thenReturnDeletedBook() throws SSLException {
+    public void whenDeleteBook_thenReturnDeletedBook() {
         // add book which will be later deleted
         Book bookToDelete = setUpBook();
         String addBookDocument = String.format("""
@@ -341,7 +336,7 @@ public class BookControllerTest {
     }
 
     @Test
-    public void whenDeleteUnknownBook_thenReturnException() throws SSLException {
+    public void whenDeleteUnknownBook_thenReturnException() {
         String unknownId = "unknown-id";
         String deleteBookDocument = String.format("""
          mutation {
@@ -353,14 +348,13 @@ public class BookControllerTest {
         }
         """, unknownId);
 
-        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+        assertThrows(AssertionError.class, () ->
             tester.document(deleteBookDocument)
                 .execute()
                 .path("deleteBook")
                 .entity(Book.class)
-                .get();
-        });
-        assertNotNull(thrown);
+                .get()
+        );
     }
 
     @Data

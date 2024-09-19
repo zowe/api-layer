@@ -59,10 +59,12 @@ class NativeMapperTest {
         public MockUserMapper() {
         }
 
+        @Override
         public CertificateResponse getUserIDForCertificate(byte[] var1) {
             return new CertificateResponse(MF_USER, 0, 0, 0);
         }
 
+        @Override
         public MapperResponse getUserIDForDN(String var1, String var2) {
             return new MapperResponse(MF_USER, 0, 0, 0, 0);
         }

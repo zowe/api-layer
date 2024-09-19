@@ -10,9 +10,13 @@
 
 package org.zowe.apiml.apicatalog.standalone;
 
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +24,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -27,13 +32,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 class ExampleServiceTest {
 
@@ -67,10 +72,27 @@ class ExampleServiceTest {
         }
 
         @Test
-        void generateExampleDoesNotThrowException() {
-             assertDoesNotThrow( () -> exampleService.generateExamples("testService", " "));
+        void generateExampleDoesNotThrowException() throws IOException {
+
+            String apiDoc = IOUtils.toString(
+                new ClassPathResource("standalone/services/apiDocs/service2_zowe v2.0.0.json").getURL(),
+                Charset.forName("UTF-8")
+            );
+             assertDoesNotThrow( () -> exampleService.generateExamples("testService", apiDoc));
         }
 
+        @Test
+        void generateExampleThrowsExceptionWhenPathIsNull()  {
+
+            OpenAPIParser openAPIParser = Mockito.mock(OpenAPIParser.class);
+            SwaggerParseResult swaggerParseResult = Mockito.mock(SwaggerParseResult.class);
+            OpenAPI openAPI = Mockito.mock(OpenAPI.class);
+
+            Mockito.when(openAPIParser.readContents(any(),any(),any())).thenReturn(swaggerParseResult);
+            Mockito.when(swaggerParseResult.getOpenAPI()).thenReturn(openAPI);
+            Mockito.when(openAPI.getPaths()).thenReturn(null);
+            assertDoesNotThrow( () -> exampleService.generateExamples("testService", null));
+        }
         @Test
         void nonExistingGetExample() {
             ExampleService.Example example = exampleService.getExample("GET", "/unkwnown");

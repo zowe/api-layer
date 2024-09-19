@@ -79,7 +79,7 @@ public class GatewayExceptionHandler {
             return serverWebExchange.getResponse().writeWith(Flux.just(buffer));
         } catch (JsonProcessingException e) {
             apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
-            throw new RuntimeException(e);
+            return Mono.error(e);
         }
     }
 

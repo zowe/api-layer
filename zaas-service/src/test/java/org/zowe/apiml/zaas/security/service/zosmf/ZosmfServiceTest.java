@@ -16,7 +16,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
@@ -26,35 +25,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
+import org.springframework.web.client.*;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -62,6 +45,10 @@ import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
 
 import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
@@ -69,23 +56,12 @@ import java.net.ConnectException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -304,12 +280,11 @@ class ZosmfServiceTest {
             @BeforeEach
             void setUp() {
                 this.zosmfService = getZosmfServiceSpy();
+                when(authentication.getCredentials()).thenReturn(loginRequest);
             }
 
             @Test
             void thenChangePasswordWithSuccess() {
-                Authentication authentication = mock(UsernamePasswordAuthenticationToken.class);
-
                 ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", null, HttpStatus.OK);
                 doReturn(responseEntity).when(zosmfService).issueChangePasswordRequest(any(), any(), any());
                 ResponseEntity<?> response = zosmfService.changePassword(authentication);
@@ -322,8 +297,6 @@ class ZosmfServiceTest {
 
                 @Test
                 void thenChangePasswordWithClientError() {
-                    when(authentication.getCredentials()).thenReturn(loginRequest);
-
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
                         HttpMethod.PUT,
                         new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
@@ -335,8 +308,6 @@ class ZosmfServiceTest {
 
                 @Test
                 void thenChangePasswordWithUnsupportedZosmf() {
-                    when(authentication.getCredentials()).thenReturn(loginRequest);
-
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
                         HttpMethod.PUT,
                         new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
@@ -351,8 +322,6 @@ class ZosmfServiceTest {
             class WhenServerError {
                 @Test
                 void thenChangePasswordWithServerError() {
-                    when(authentication.getCredentials()).thenReturn(loginRequest);
-
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
                         HttpMethod.PUT,
                         new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
@@ -364,8 +333,6 @@ class ZosmfServiceTest {
 
                 @Test
                 void thenChangePasswordWithZosmfInternalError() {
-                    when(authentication.getCredentials()).thenReturn(loginRequest);
-
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
                         HttpMethod.PUT,
                         new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
@@ -377,8 +344,6 @@ class ZosmfServiceTest {
 
                 @Test
                 void thenChangePasswordWithZosmfValidationError() {
-                    when(authentication.getCredentials()).thenReturn(loginRequest);
-
                     when(restTemplate.exchange("http://zosmf:1433/zosmf/services/authenticate",
                         HttpMethod.PUT,
                         new HttpEntity<>(new ChangePasswordRequest(loginRequest), requiredHeaders),
@@ -704,18 +669,21 @@ class ZosmfServiceTest {
 
     @Nested
     class WhenReadTokenFromCookie {
-        private static final String ZOSMF_PUBLIC_KEY_JSON = "{\n" +
-            "    \"keys\": [\n" +
-            "        {\n" +
-            "            \"kty\": \"RSA\",\n" +
-            "            \"e\": \"AQAB\",\n" +
-            "            \"use\": \"sig\",\n" +
-            "            \"kid\": \"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg\",\n" +
-            "            \"alg\": \"RS256\",\n" +
-            "            \"n\": \"wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q\"\n" +
-            "        }\n" +
-            "    ]\n" +
-            "}";
+        private static final String ZOSMF_PUBLIC_KEY_JSON =
+            """
+                  {
+                    "keys": [
+                      {
+                        "kty": "RSA",
+                        "e": "AQAB",
+                        "use": "sig",
+                        "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                        "alg": "RS256",
+                        "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
+                      }
+                    ]
+                  }
+                """;
 
         @Test
         void thenSuccess() throws JSONException, ParseException {
@@ -979,7 +947,7 @@ class ZosmfServiceTest {
         void givenZoweAuthSourceWithoutLtpa_thenNewJwtTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.ZOWE);
 
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>() {{
                 put(JWT, ZOSMF_JWT_TOKEN);
             }};
             when(authenticationService.getLtpaToken(ZOWE_JWT_TOKEN)).thenReturn(null);
@@ -995,7 +963,7 @@ class ZosmfServiceTest {
         void givenOtherAuthSourceAndZosmfProducesJwt_thenNewJwtTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
 
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>() {{
                 put(LTPA, LTPA_TOKEN);
                 put(JWT, ZOSMF_JWT_TOKEN);
             }};
@@ -1011,7 +979,7 @@ class ZosmfServiceTest {
         void givenOtherAuthSourceAndZosmfProducesOnlyLtpa_thenNewLtpaTokenIsReturned() throws ServiceNotFoundException {
             AuthSource.Parsed authParsedSource = new ParsedTokenAuthSource(USER, new Date(), new Date(), AuthSource.Origin.OIDC);
 
-            Map<ZosmfService.TokenType, String> tokens = new HashMap<ZosmfService.TokenType, String>() {{
+            Map<ZosmfService.TokenType, String> tokens = new HashMap<>() {{
                 put(LTPA, LTPA_TOKEN);
             }};
             when(tokenCreationService.createZosmfTokensWithoutCredentials(USER)).thenReturn(tokens);
