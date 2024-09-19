@@ -16,9 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -28,7 +27,7 @@ import org.zowe.apiml.zaas.error.ErrorUtils;
 /**
  * Not found endpoint controller
  */
-@Controller
+@RestController
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ApimlErrorController {
@@ -48,7 +47,6 @@ public class NotFoundErrorController implements ApimlErrorController {
      * @return Http response entity
      */
     @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
-    @ResponseBody
     public ResponseEntity<ApiMessageView> notFound400HttpResponse(HttpServletRequest request) {
         Message message = messageService.createMessage("org.zowe.apiml.common.endPointNotFound",
             ErrorUtils.getForwardUri(request));

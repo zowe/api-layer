@@ -17,9 +17,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -34,7 +33,7 @@ import java.util.List;
 /**
  * Handles errors in REST API processing.
  */
-@Controller
+@RestController
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
 public class InternalServerErrorController implements ApimlErrorController {
@@ -64,7 +63,6 @@ public class InternalServerErrorController implements ApimlErrorController {
      */
     @SuppressWarnings("squid:S3752")
     @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
-    @ResponseBody
     public ResponseEntity<ApiMessageView> error(HttpServletRequest request) {
         final Throwable exc = (Throwable) request.getAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION);
 
