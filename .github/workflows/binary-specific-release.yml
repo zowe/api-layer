@@ -45,7 +45,7 @@ jobs:
                   cd onboarding-enabler-nodejs
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-                  npm version ${{ github.event.inputs.release_version }}
+                  npm version ${{ github.event.inputs.release_version }} --allow-same-version
                   npm publish --access public
                   git add package.json
                   git add package-lock.json
@@ -63,7 +63,7 @@ jobs:
               run: |
                   ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.new_version }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
                   released_version=$(cat gradle.properties | grep "version=" | sed "s/version=//g")
-                  sed -i 's/REACT_APP_ZOWE_BUILD_INFO=/REACT_APP_ZOWE_BUILD_INFO=${released_version}/g' api-catalog-ui/frontend/.env
+                  sed -i "/REACT_APP_ZOWE_BUILD_INFO=/c\REACT_APP_ZOWE_BUILD_INFO=${released_version}" api-catalog-ui/frontend/.env
                   git add api-catalog-ui/frontend/.env
                   git commit -m "[skip ci] Update version"
                   git push
