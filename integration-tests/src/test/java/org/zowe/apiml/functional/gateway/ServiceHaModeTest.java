@@ -178,17 +178,17 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#retryableHttpMethods")
             void verifyThatGatewayRetriesGet(Method method) {
-                routeAndVerifyRetries(service1.getGatewayUrls(), method, 2);
+                routeAndVerifyRetries(service1.getGatewayUrls(), method);
             }
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#nonRetryableHttpMethods")
             void verifyThatGatewayNotRetriesPost(Method method) {
-                routeAndVerifyRetries(service1.getGatewayUrls(), method, 1);
+                routeAndVerifyRetries(service1.getGatewayUrls(), method);
             }
 
             // TODO This method used to verify how many retries happened based on an optional response header with debug information
-            private void routeAndVerifyRetries(List<String> gatewayUrls, Method method, int maximumRetries) {
+            private void routeAndVerifyRetries(List<String> gatewayUrls, Method method) {
                 for (String gatewayUrl : gatewayUrls) {
                     IntStream.rangeClosed(0, 1).forEach(x -> {
 
