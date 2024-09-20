@@ -96,7 +96,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 service2 = new VirtualService("testHaModeService1", ports.get(1));
 
                 service1.start();
-                service2.start().waitForGatewayRegistration(2, TIMEOUT);
+                service2.start().waitForGatewayRegistration(TIMEOUT);
 
                 service2.zombie();
             }
@@ -158,7 +158,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 service2.addHttpStatusCodeServlet(HttpStatus.SC_SERVICE_UNAVAILABLE);
 
                 service1.start();
-                service2.start().waitForGatewayRegistration(2, TIMEOUT);
+                service2.start().waitForGatewayRegistration(TIMEOUT);
             }
 
             @AfterAll

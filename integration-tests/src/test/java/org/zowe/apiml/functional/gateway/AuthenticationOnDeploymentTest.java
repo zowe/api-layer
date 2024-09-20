@@ -81,7 +81,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
             service1
                 .addVerifyServlet()
                 .start()
-                .waitForGatewayRegistration(1, TIMEOUT);
+                .waitForGatewayRegistration(TIMEOUT);
 
 
             // on each gateway make a call to service
@@ -102,7 +102,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
                 .addVerifyServlet()
                 .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "ZOWEAPPL"))
                 .start()
-                .waitForGatewayRegistration(2, TIMEOUT);
+                .waitForGatewayRegistration(TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service
             service1.getGatewayVerifyUrls().forEach(x -> given()
@@ -167,7 +167,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
             serviceList.forEach(s -> {
                 try {
-                    s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+                    s.addVerifyServlet().start().waitForGatewayRegistration(TIMEOUT);
                 } catch (IOException | LifecycleException | JSONException e) {
                     e.printStackTrace();
                 }
@@ -181,7 +181,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
                 }
             });
 //            register service with the same name
-            service4.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+            service4.addVerifyServlet().start().waitForGatewayRegistration(TIMEOUT);
             // on each gateway make a call to service
             service4.getGatewayVerifyUrls().forEach(x ->
                 given()
