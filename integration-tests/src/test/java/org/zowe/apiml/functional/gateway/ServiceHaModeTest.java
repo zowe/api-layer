@@ -134,7 +134,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                             assertEquals(HttpStatus.SC_OK, response.getStatusCode());
                             break;
                         } catch (RuntimeException | AssertionError e) {
-                            if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
+                            if (System.currentTimeMillis() - time0 > timeoutSec * 1000L) throw e;
                             await().timeout(1, TimeUnit.SECONDS);
                         }
                     }

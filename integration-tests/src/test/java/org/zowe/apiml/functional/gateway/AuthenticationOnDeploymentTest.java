@@ -75,7 +75,7 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
 
         try (
             final VirtualService service1 = new VirtualService("testService", ports.get(0));
-            final VirtualService service2 = new VirtualService("testService", ports.get(1));
+            final VirtualService service2 = new VirtualService("testService", ports.get(1))
         ) {
             // start first instance - without passTickets
             service1
@@ -109,12 +109,12 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
                 .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
                 .when().get(x + "/test")
                 .then().statusCode(is(SC_OK)));
-            service2.getGatewayVerifyUrls().forEach(x -> {
+            service2.getGatewayVerifyUrls().forEach(x ->
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
                     .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
+                    .then().statusCode(is(SC_OK))
+            );
 
             // verify if each gateway sent request to service (one with and one without passTicket)
             service1.getGatewayVerifyUrls().forEach(gw -> {
@@ -134,19 +134,19 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
                 .stop();
 
             // check second service, all called second one with passTicket, same url like service1 (removed)
-            service1.getGatewayVerifyUrls().forEach(x -> {
+            service1.getGatewayVerifyUrls().forEach(x ->
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
                     .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
-            service1.getGatewayVerifyUrls().forEach(gw -> {
+                    .then().statusCode(is(SC_OK))
+            );
+            service1.getGatewayVerifyUrls().forEach(gw ->
                 verifier.existAndClean(service2, x -> {
                     assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                     assertEquals("/verify/test", x.getRequestURI());
                     return true;
-                });
-            });
+                })
+            );
         }
 
     }

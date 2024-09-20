@@ -330,7 +330,7 @@ public class VirtualService implements AutoCloseable {
                     }
                     break;
                 } catch (RuntimeException | AssertionError e) {
-                    if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
+                    if (System.currentTimeMillis() - time0 > timeoutSec * 1000L) throw e;
 
                     await().timeout(1, TimeUnit.SECONDS);
                     slept = true;
@@ -635,7 +635,7 @@ public class VirtualService implements AutoCloseable {
                 await().timeout(100, TimeUnit.MILLISECONDS);
                 if (instanceId == null) continue;
 
-                if (lastCall + 1000 * heartbeatInterval < System.currentTimeMillis()) {
+                if (lastCall + 1000L * heartbeatInterval < System.currentTimeMillis()) {
                     lastCall = System.currentTimeMillis();
                     sendHeartBeat();
                 }
@@ -678,7 +678,7 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Servlet answer on /application/instance Http method and instanceId. This is base part of method to verify registration on
-     * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
+     * gateways, see {@link #waitForGatewayRegistration(int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
     @NoArgsConstructor
     public class InstanceServlet extends HttpServlet {
