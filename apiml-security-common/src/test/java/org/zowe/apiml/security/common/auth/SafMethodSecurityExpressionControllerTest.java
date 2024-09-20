@@ -29,6 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -146,9 +147,9 @@ class SafMethodSecurityExpressionControllerTest {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             return http
-                    .authorizeRequests(requests -> requests.anyRequest().authenticated())
-                    .apply(new CustomSecurityFilters())
-                    .and().build();
+                    .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+                    .with(new CustomSecurityFilters(), Customizer.withDefaults())
+                    .build();
         }
 
         @Bean
