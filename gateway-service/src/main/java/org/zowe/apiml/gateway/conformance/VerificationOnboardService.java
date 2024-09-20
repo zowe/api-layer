@@ -13,28 +13,15 @@ package org.zowe.apiml.gateway.conformance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
-import org.zowe.apiml.product.constants.CoreService;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
@@ -102,54 +89,24 @@ public class VerificationOnboardService {
      * Checks if endpoints can be called and return documented responses
      *
      * @param endpoints                 endpoints to check
-     * @param passedAuthenticationToken Token used to call endpoints that support SSO
      * @return List of problems
      */
-    public List<String> testEndpointsByCalling(Set<Endpoint> endpoints, String passedAuthenticationToken) {
-        ArrayList<String> result = new ArrayList<>(checkEndpointsNoSSO(endpoints));
-        try {
-            result.addAll(checkEndpointsWithSSO(endpoints, passedAuthenticationToken));
-        } catch (ValidationException e) {
-            result.add(e.getMessage());
-        }
-
-        return result;
+    public List<String> testEndpointsByCalling(Set<Endpoint> endpoints) {
+        return checkEndpoints(endpoints);
     }
 
-    private List<String> checkEndpointsWithSSO(Set<Endpoint> endpoints, String passedAuthenticationToken) {
+    private List<String> checkEndpoints(Set<Endpoint> endpoints) {
         ArrayList<String> result = new ArrayList<>();
-
-        String ssoCookie = getAuthenticationCookie(passedAuthenticationToken);
-
-        HttpHeaders headersSSO = new HttpHeaders();
-        headersSSO.setContentType(MediaType.APPLICATION_JSON);
-        headersSSO.add("Cookie", "apimlAuthenticationToken=" + ssoCookie);
-        HttpEntity<String> requestSSO = new HttpEntity<>(headersSSO);
 
         for (Endpoint endpoint : endpoints) {
             for (HttpMethod method : endpoint.getHttpMethods()) {
-                checkEndpoint(endpoint, result, method, requestSSO, true);
+                checkEndpoint(endpoint, result, method);
             }
         }
         return result;
     }
 
-    private List<String> checkEndpointsNoSSO(Set<Endpoint> endpoints) {
-        ArrayList<String> result = new ArrayList<>();
-
-        HttpHeaders headersNoSSO = new HttpHeaders();
-        headersNoSSO.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestNoSSO = new HttpEntity<>(headersNoSSO);
-
-        for (Endpoint endpoint : endpoints) {
-            for (HttpMethod method : endpoint.getHttpMethods()) {
-                checkEndpoint(endpoint, result, method, requestNoSSO, false);
-            }
-        }
-        return result;
-    }
-
-    private void checkEndpoint(Endpoint endpoint, ArrayList<String> result, HttpMethod method, HttpEntity<String> request, boolean attemptWithSSO) {
+    private void checkEndpoint(Endpoint endpoint, ArrayList<String> result, HttpMethod method) {
         if (method == HttpMethod.DELETE) {
             return;
         }
@@ -159,14 +116,16 @@ public class VerificationOnboardService {
         // Example: transforms https://localhost:10010/discoverableclient/api/v1/pets/{id} to https://localhost:10010/discoverableclient/api/v1/pets/dummy
         String url = urlFromSwagger.replaceAll("\\{[^{}]*}", "dummy");
 
-        ResponseEntity<String> responseWithSSO = getResponse(request, method, url);
-        result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method, attemptWithSSO));
+        ResponseEntity<String> responseWithSSO = getResponse(method, url);
+        result.addAll(fromResponseReturnFoundProblems(responseWithSSO, endpoint, method));
     }
 
-    private ResponseEntity<String> getResponse(HttpEntity<String> request, HttpMethod method, String url) {
+    private ResponseEntity<String> getResponse(HttpMethod method, String url) {
         ResponseEntity<String> response;
         try {
-            response = restTemplate.exchange(url, method, request, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            response = restTemplate.exchange(url, method, new HttpEntity<>(headers), String.class);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             response = ResponseEntity.status(e.getStatusCode())
                 .headers(e.getResponseHeaders())
@@ -177,7 +136,7 @@ public class VerificationOnboardService {
         return response;
     }
 
-    private List<String> fromResponseReturnFoundProblems(ResponseEntity<String> response, Endpoint currentEndpoint, HttpMethod method, boolean attemptWithSSO) {
+    private List<String> fromResponseReturnFoundProblems(ResponseEntity<String> response, Endpoint currentEndpoint, HttpMethod method) {
         ArrayList<String> result = new ArrayList<>();
 
         String responseBody = response.getBody();
@@ -186,8 +145,8 @@ public class VerificationOnboardService {
             result.add("Documented endpoint at " + currentEndpoint.getUrl() + " could not be located, attempting to call it through gateway gives the ZWEAM104E error");
         }
 
-        if (attemptWithSSO && responseBody != null && (response.getStatusCode() == HttpStatus.FORBIDDEN || response.getStatusCode() == HttpStatus.UNAUTHORIZED)) {
-            result.add(method + " request to documented endpoint at " + currentEndpoint.getUrl() + " responded with status code " + response.getStatusCode().value() + ", despite being called with the SSO authorization");
+        if (responseBody != null && (response.getStatusCode() == HttpStatus.FORBIDDEN || response.getStatusCode() == HttpStatus.UNAUTHORIZED)) {
+            result.add(method + " request to documented endpoint at " + currentEndpoint.getUrl() + " responded with status code " + response.getStatusCode().value());
         }
 
         if (!currentEndpoint.isResponseCodeForMethodDocumented(String.valueOf(response.getStatusCode().value()), method)) {
@@ -199,33 +158,6 @@ public class VerificationOnboardService {
 
     public static List<String> getProblemsWithEndpointUrls(AbstractSwaggerValidator swaggerParser) {
         return swaggerParser.getProblemsWithEndpointUrls();
-    }
-
-    private String getAuthenticationCookie(String passedAuthenticationToken) {
-        String errorMsg = "Error retrieving ZAAS connection details";
-        // FIXME This keeps the current behaviour
-        if (passedAuthenticationToken.equals("dummy")) {
-            URI uri = discoveryClient.getServices().stream()
-                .filter(service -> CoreService.ZAAS.getServiceId().equalsIgnoreCase(service))
-                .flatMap(service -> discoveryClient.getInstances(service).stream())
-                .findFirst()
-                .map(ServiceInstance::getUri)
-                .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY));
-
-            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
-            try {
-                restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
-            } catch (HttpClientErrorException.Conflict e) {
-                throw new ValidationException(e.getResponseBodyAsString(), ValidateAPIController.NON_CONFORMANT_KEY);
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error getting authentication support", e);
-                }
-                throw new ValidationException("Error validating the authentication support", ValidateAPIController.NO_METADATA_KEY);
-            }
-
-        }
-        return passedAuthenticationToken;
     }
 
     public static boolean supportsSSO(Map<String, String> metadata) {

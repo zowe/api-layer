@@ -102,8 +102,7 @@ public class ValidateAPIController {
                 }
         ))
     })
-    public ResponseEntity<String> checkConformance(@Parameter(in = ParameterIn.PATH, required = true, description = "Service ID of the service to check") @PathVariable String serviceId,
-                                                   @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+    public ResponseEntity<String> checkConformance(@Parameter(in = ParameterIn.PATH, required = true, description = "Service ID of the service to check") @PathVariable String serviceId) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
@@ -121,7 +120,7 @@ public class ValidateAPIController {
             checkMetadataCanBeRetrieved(metadata);
             Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
-            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl, authenticationToken);
+            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl);
         } catch (ValidationException e) {
             switch (e.getKey()) {
                 case WRONG_SERVICE_ID_KEY:
@@ -142,7 +141,7 @@ public class ValidateAPIController {
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
     }
 
-    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
+    private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl) throws ValidationException {
         if (swaggerUrl.isEmpty()) {
             throw new ValidationException("Could not find Swagger Url", NON_CONFORMANT_KEY);
         }
@@ -160,7 +159,7 @@ public class ValidateAPIController {
 
         Set<Endpoint> allEndpoints = swaggerParser.getAllEndpoints();
         if (!allEndpoints.isEmpty())
-            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(allEndpoints, token));
+            foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, verificationOnboardService.testEndpointsByCalling(allEndpoints));
 
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, VerificationOnboardService.getProblemsWithEndpointUrls(swaggerParser));
     }
@@ -206,11 +205,11 @@ public class ValidateAPIController {
                 }
             ))
     })
-    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }
-        return checkConformance(serviceId, authenticationToken);
+        return checkConformance(serviceId);
     }
 
     /**
