@@ -12,8 +12,8 @@ package org.zowe.apiml.security.common.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.hc.client5.http.utils.Base64;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -162,7 +162,7 @@ class SafMethodSecurityExpressionControllerTest {
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
             @Override
-            public void configure(HttpSecurity http) throws Exception {
+            public void configure(HttpSecurity http) {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
 
                 http.addFilterBefore(new BasicContentFilter(
