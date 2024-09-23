@@ -75,6 +75,7 @@ class VerificationOnboardServiceTest {
         assertEquals("returned", verificationOnboardService.getSwagger("mock"));
     }
 
+
     @Nested
     class GivenMetadata {
         @Test
@@ -123,7 +124,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, null);
             assertTrue(result.get(0).contains("could not be located, attempting to call it through gateway gives the ZWEAM104E"));
         }
 
@@ -141,9 +142,10 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, null);
 
-            assertTrue(result.isEmpty());
+            assertEquals(1, result.size());
+            assertTrue(result.get(0).contains("token is not available"));
         }
 
         @Test
@@ -160,9 +162,10 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, null);
 
-            assertTrue(result.isEmpty());
+            assertEquals(1, result.size());
+            assertTrue(result.get(0).contains("token is not available"));
         }
 
         @Test
@@ -180,7 +183,7 @@ class VerificationOnboardServiceTest {
             Endpoint endpoint = new Endpoint(url, "testservice", methods, responses);
             HashSet<Endpoint> endpoints = new HashSet<>();
             endpoints.add(endpoint);
-            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints);
+            List<String> result = verificationOnboardService.testEndpointsByCalling(endpoints, null);
             assertTrue(result.get(0).contains("returns undocumented"));
         }
 
