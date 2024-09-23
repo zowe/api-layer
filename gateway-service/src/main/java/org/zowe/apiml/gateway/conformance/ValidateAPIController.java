@@ -27,11 +27,13 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -103,7 +105,7 @@ public class ValidateAPIController {
         ))
     })
     public ResponseEntity<String> checkConformance(@Parameter(in = ParameterIn.PATH, required = true, description = "Service ID of the service to check") @PathVariable String serviceId,
-                                                   @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+                                                   Authentication authentication) {
         ConformanceProblemsContainer foundNonConformanceIssues = new ConformanceProblemsContainer(serviceId);
         foundNonConformanceIssues.add(CONFORMANCE_PROBLEMS, validateServiceIdFormat(serviceId));
         if (!foundNonConformanceIssues.isEmpty())
@@ -121,7 +123,7 @@ public class ValidateAPIController {
             checkMetadataCanBeRetrieved(metadata);
             Optional<String> swaggerUrl = verificationOnboardService.findSwaggerUrl(metadata);
 
-            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl, authenticationToken);
+            validateSwaggerDocument(serviceId, foundNonConformanceIssues, metadata, swaggerUrl, getToken(authentication));
         } catch (ValidationException e) {
             switch (e.getKey()) {
                 case WRONG_SERVICE_ID_KEY:
@@ -140,6 +142,13 @@ public class ValidateAPIController {
             return generateBadRequestResponseEntity(NON_CONFORMANT_KEY, foundNonConformanceIssues);
 
         return new ResponseEntity<>("{\"message\":\"Service " + serviceId + " fulfills all checked conformance criteria\"}", HttpStatus.OK);
+    }
+
+    private String getToken(Authentication authentication) {
+        if (authentication instanceof TokenAuthentication tokenAuthentication) {
+            return tokenAuthentication.getCredentials();
+        }
+        return null;
     }
 
     private void validateSwaggerDocument(String serviceId, ConformanceProblemsContainer foundNonConformanceIssues, Map<String, String> metadata, Optional<String> swaggerUrl, String token) throws ValidationException {
@@ -206,11 +215,11 @@ public class ValidateAPIController {
                 }
             ))
     })
-    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, @Parameter(hidden = true) @CookieValue(value = "apimlAuthenticationToken", defaultValue = "dummy") String authenticationToken) {
+    public ResponseEntity<String> checkValidateLegacy(@RequestBody String serviceId, Authentication authentication) {
         if (serviceId.startsWith("serviceID")) {
             serviceId = serviceId.replace("serviceID=", "");
         }
-        return checkConformance(serviceId, authenticationToken);
+        return checkConformance(serviceId, authentication);
     }
 
     /**
