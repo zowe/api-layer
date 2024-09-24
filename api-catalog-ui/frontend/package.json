@@ -60,7 +60,8 @@
         "swagger-ui-react": {
             "react": "$react",
             "react": "$react-dom",
-            "react-redux": "^5.1.1"
+            "react-redux": "^5.1.1",
+            "axios": "1.7.4"
         },
         "@babel/traverse": "7.24.7"
     },
