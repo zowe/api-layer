@@ -29,6 +29,9 @@ task packageCommonLib(type: Zip) {
 
     into('bin/') {
         from "${project.rootDir}/build/libs/api-layer-lite-lib-all" + ".jar"
+        from "../config/local/logback" + ".xml"
+        from "../config/local/logback_gateway" + ".xml"
+        from "../config/local/logback_cachingService" + ".xml"
     }
 }
 

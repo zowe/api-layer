@@ -219,6 +219,11 @@ fi
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 # -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
+LOGBACK="-Dlogging.config=${ZWE_zowe_runtimeDirectory}/components/apiml-common-lib/bin/logback.xml"
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
+
 if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
@@ -238,6 +243,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
+    ${LOGBACK} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
