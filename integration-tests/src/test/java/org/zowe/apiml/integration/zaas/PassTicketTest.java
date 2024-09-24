@@ -109,7 +109,7 @@ class PassTicketTest implements TestWithStartedInstances {
         }
 
         @Test
-        void givenValidAccessToken() {
+        void givenValidPersonalAccessToken() {
             String serviceId = "gateway";
             String pat = personalAccessToken(Collections.singleton(serviceId));
 

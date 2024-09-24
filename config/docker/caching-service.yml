@@ -2,6 +2,7 @@ apiml:
     service:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         hostname: caching-service
+    banner: console
 
 server:
     ssl:

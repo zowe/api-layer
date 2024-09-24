@@ -1,3 +1,5 @@
+apiml:
+    banner: console
 jgroups:
     bind:
         port: 7098

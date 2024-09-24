@@ -52,15 +52,15 @@ describe('>>> User actions tests', () => {
 
         userService.login = jest.fn().mockResolvedValue('token');
 
-        const pushSpy = jest.spyOn(history, 'push');
+        const replaceSpy = jest.spyOn(history, 'replace');
 
         await userActions.login(credentials)(dispatch);
 
         expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
 
-        expect(pushSpy).toHaveBeenCalledWith('/dashboard');
+        expect(replaceSpy).toHaveBeenCalledWith('/dashboard');
 
-        pushSpy.mockRestore();
+        replaceSpy.mockRestore();
     });
 
     it('should logout', async () => {
