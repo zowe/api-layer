@@ -50,7 +50,7 @@ function App({ history }) {
                                         exact
                                         path={dashboardPath}
                                         render={(props, state) => (
-                                            <BigShield>
+                                            <BigShield history={history}>
                                                 <AsyncDashboardContainer {...props} {...state} />
                                             </BigShield>
                                         )}

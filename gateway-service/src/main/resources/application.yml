@@ -62,6 +62,8 @@ spring:
                 registration:
                     okta:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
+    main:
+        banner-mode: ${apiml.banner:"off"}
 
 springdoc:
     api-docs:
@@ -127,6 +129,10 @@ logging:
     level:
         ROOT: INFO
         com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
@@ -134,6 +140,8 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        io.netty.resolver.dns: WARN
         javax.net.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
