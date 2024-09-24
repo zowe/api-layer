@@ -43,7 +43,10 @@ function login(credentials) {
                 const dashBoardPath = '/dashboard';
                 dispatch(success(token, showUpdatePassSuccess));
                 if (history.location.pathname !== dashBoardPath) {
-                    window.location.href = dashBoardPath;
+                    history.replace(dashBoardPath);
+                    window.location.reload();
+                } else {
+                    history.push(dashBoardPath);
                 }
             },
             (error) => {
