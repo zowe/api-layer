@@ -97,9 +97,6 @@ dependencies {
     implementation libraries.spring_security_core
     implementation libraries.spring_security_crypto
 
-    implementation libraries.bootstrap
-    implementation libraries.jquery
-
     implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
