@@ -117,6 +117,7 @@ spring:
     output.ansi.enabled: always
     main:
         allow-circular-references: true
+        banner-mode: ${apiml.banner:"off"}
 
 springdoc:
     pathsToMatch: /api/v1/**
