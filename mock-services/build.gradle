@@ -93,9 +93,6 @@ dependencies {
     implementation libraries.spring_webmvc
     implementation libraries.spring_websocket
 
-    implementation libraries.bootstrap
-    implementation libraries.jquery
-
     implementation libraries.gson
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
