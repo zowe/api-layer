@@ -11,7 +11,6 @@
 import userConstants from '../constants/user-constants';
 import { userActions } from './user-actions';
 import { userService } from '../services';
-import history from '../helpers/history';
 
 describe('>>> User actions tests', () => {
     const credentials = { username: 'user', password: 'password' };
