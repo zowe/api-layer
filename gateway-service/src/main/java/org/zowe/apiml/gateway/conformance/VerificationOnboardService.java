@@ -13,28 +13,15 @@ package org.zowe.apiml.gateway.conformance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
-import org.zowe.apiml.product.constants.CoreService;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Service class that offers methods for checking onboarding information and also checks availability metadata from
@@ -107,11 +94,7 @@ public class VerificationOnboardService {
      */
     public List<String> testEndpointsByCalling(Set<Endpoint> endpoints, String passedAuthenticationToken) {
         ArrayList<String> result = new ArrayList<>(checkEndpointsNoSSO(endpoints));
-        try {
-            result.addAll(checkEndpointsWithSSO(endpoints, passedAuthenticationToken));
-        } catch (ValidationException e) {
-            result.add(e.getMessage());
-        }
+        result.addAll(checkEndpointsWithSSO(endpoints, passedAuthenticationToken));
 
         return result;
     }
@@ -119,11 +102,15 @@ public class VerificationOnboardService {
     private List<String> checkEndpointsWithSSO(Set<Endpoint> endpoints, String passedAuthenticationToken) {
         ArrayList<String> result = new ArrayList<>();
 
-        String ssoCookie = getAuthenticationCookie(passedAuthenticationToken);
+        if (passedAuthenticationToken == null) {
+            result.add("Authentication token is not available, serviceId '%s' endpoints SSO check skipped.".formatted(
+                endpoints.stream().findAny().map(Endpoint::getServiceId).orElse("unknown")));
+            return result;
+        }
 
         HttpHeaders headersSSO = new HttpHeaders();
         headersSSO.setContentType(MediaType.APPLICATION_JSON);
-        headersSSO.add("Cookie", "apimlAuthenticationToken=" + ssoCookie);
+        headersSSO.add("Cookie", "apimlAuthenticationToken=" + passedAuthenticationToken);
         HttpEntity<String> requestSSO = new HttpEntity<>(headersSSO);
 
         for (Endpoint endpoint : endpoints) {
@@ -199,33 +186,6 @@ public class VerificationOnboardService {
 
     public static List<String> getProblemsWithEndpointUrls(AbstractSwaggerValidator swaggerParser) {
         return swaggerParser.getProblemsWithEndpointUrls();
-    }
-
-    private String getAuthenticationCookie(String passedAuthenticationToken) {
-        String errorMsg = "Error retrieving ZAAS connection details";
-        // FIXME This keeps the current behaviour
-        if (passedAuthenticationToken.equals("dummy")) {
-            URI uri = discoveryClient.getServices().stream()
-                .filter(service -> CoreService.ZAAS.getServiceId().equalsIgnoreCase(service))
-                .flatMap(service -> discoveryClient.getInstances(service).stream())
-                .findFirst()
-                .map(ServiceInstance::getUri)
-                .orElseThrow(() -> new ValidationException(errorMsg, ValidateAPIController.NO_METADATA_KEY));
-
-            String zaasAuthValidateUri = String.format("%s://%s:%d%s", uri.getScheme() == null ? "https" : uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath() + "/zaas/validate/auth");
-            try {
-                restTemplate.exchange(zaasAuthValidateUri, HttpMethod.GET, null, String.class);
-            } catch (HttpClientErrorException.Conflict e) {
-                throw new ValidationException(e.getResponseBodyAsString(), ValidateAPIController.NON_CONFORMANT_KEY);
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error getting authentication support", e);
-                }
-                throw new ValidationException("Error validating the authentication support", ValidateAPIController.NO_METADATA_KEY);
-            }
-
-        }
-        return passedAuthenticationToken;
     }
 
     public static boolean supportsSSO(Map<String, String> metadata) {

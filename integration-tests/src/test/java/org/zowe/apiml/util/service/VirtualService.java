@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.service;
 
+import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import jakarta.servlet.Servlet;
@@ -271,36 +272,26 @@ public class VirtualService implements AutoCloseable {
      * The check means make serviceCount calls. There is a preposition that load balancer is based on cyclic queue and
      * if it will call multiple times (same to count of instances of same service), it should call all instances.
      *
-     * @param instanceCount Assumed count of instances of the same service at the moment
      * @param timeoutSec    Timeout in secs to break waiting
      */
-    public VirtualService waitForGatewayRegistration(int instanceCount, int timeoutSec) {
+    public VirtualService waitForGatewayRegistration(int timeoutSec) {
         final long time0 = System.currentTimeMillis();
         boolean slept = false;
+
         for (String gatewayUrl : getGatewayUrls()) {
             String url = gatewayUrl + "/application/instance";
 
-            // count of calls (to make instanceCount times until sleep)
-            int testCounter = 0;
             while (true) {
                 try {
                     final ResponseBody<?> responseBody = given().when()
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header(new Header("X-InstanceId", instanceId))
                         .get(url)
                         .body();
-                    // FIXME it seems the routing is not deterministic, the first time it's only one instance, the second time it's not guaranteeing that it's the same one replying.
-                    // A possible fix would be to use deterministic routing once implemented.
                     assertEquals(HttpMethod.GET + " " + instanceId, responseBody.print());
                     break;
                 } catch (RuntimeException | AssertionError e) {
-                    testCounter++;
-                    // less calls than instance counts, continue without waiting
-                    if (testCounter < instanceCount) continue;
-
-                    // instance should be called, but didn't, wait for a while and then try call again (instanceCount times)
-                    testCounter = 0;
-
-                    if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
+                    if (System.currentTimeMillis() - time0 > timeoutSec * 1000L) throw e;
 
                     await().timeout(1, TimeUnit.SECONDS);
                     slept = true;
@@ -339,7 +330,7 @@ public class VirtualService implements AutoCloseable {
                     }
                     break;
                 } catch (RuntimeException | AssertionError e) {
-                    if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
+                    if (System.currentTimeMillis() - time0 > timeoutSec * 1000L) throw e;
 
                     await().timeout(1, TimeUnit.SECONDS);
                     slept = true;
@@ -644,7 +635,7 @@ public class VirtualService implements AutoCloseable {
                 await().timeout(100, TimeUnit.MILLISECONDS);
                 if (instanceId == null) continue;
 
-                if (lastCall + 1000 * heartbeatInterval < System.currentTimeMillis()) {
+                if (lastCall + 1000L * heartbeatInterval < System.currentTimeMillis()) {
                     lastCall = System.currentTimeMillis();
                     sendHeartBeat();
                 }
@@ -687,7 +678,7 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Servlet answer on /application/instance Http method and instanceId. This is base part of method to verify registration on
-     * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
+     * gateways, see {@link #waitForGatewayRegistration(int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
     @NoArgsConstructor
     public class InstanceServlet extends HttpServlet {
