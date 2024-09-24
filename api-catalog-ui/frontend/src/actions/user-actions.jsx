@@ -40,8 +40,11 @@ function login(credentials) {
                 if (credentials.newPassword) {
                     showUpdatePassSuccess = true;
                 }
+                const dashBoardPath = '/dashboard';
                 dispatch(success(token, showUpdatePassSuccess));
-                history.push('/dashboard');
+                if (history.location.pathname !== dashBoardPath) {
+                    window.location.href = dashBoardPath;
+                }
             },
             (error) => {
                 if (error.messageNumber === 'ZWEAT413E') {
