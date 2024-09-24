@@ -96,7 +96,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 service2 = new VirtualService("testHaModeService1", ports.get(1));
 
                 service1.start();
-                service2.start().waitForGatewayRegistration(2, TIMEOUT);
+                service2.start().waitForGatewayRegistration(TIMEOUT);
 
                 service2.zombie();
             }
@@ -134,7 +134,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                             assertEquals(HttpStatus.SC_OK, response.getStatusCode());
                             break;
                         } catch (RuntimeException | AssertionError e) {
-                            if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
+                            if (System.currentTimeMillis() - time0 > timeoutSec * 1000L) throw e;
                             await().timeout(1, TimeUnit.SECONDS);
                         }
                     }
@@ -158,7 +158,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 service2.addHttpStatusCodeServlet(HttpStatus.SC_SERVICE_UNAVAILABLE);
 
                 service1.start();
-                service2.start().waitForGatewayRegistration(2, TIMEOUT);
+                service2.start().waitForGatewayRegistration(TIMEOUT);
             }
 
             @AfterAll
@@ -178,17 +178,17 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#retryableHttpMethods")
             void verifyThatGatewayRetriesGet(Method method) {
-                routeAndVerifyRetries(service1.getGatewayUrls(), method, 2);
+                routeAndVerifyRetries(service1.getGatewayUrls(), method);
             }
 
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.functional.gateway.ServiceHaModeTest#nonRetryableHttpMethods")
             void verifyThatGatewayNotRetriesPost(Method method) {
-                routeAndVerifyRetries(service1.getGatewayUrls(), method, 1);
+                routeAndVerifyRetries(service1.getGatewayUrls(), method);
             }
 
             // TODO This method used to verify how many retries happened based on an optional response header with debug information
-            private void routeAndVerifyRetries(List<String> gatewayUrls, Method method, int maximumRetries) {
+            private void routeAndVerifyRetries(List<String> gatewayUrls, Method method) {
                 for (String gatewayUrl : gatewayUrls) {
                     IntStream.rangeClosed(0, 1).forEach(x -> {
 
