@@ -195,7 +195,7 @@ dependencyResolutionManagement {
             library('rest_assured_json_path', 'io.rest-assured', 'json-path').versionRef('restAssured')
             library('rest_assured_xml_path', 'io.rest-assured', 'xml-path').versionRef('restAssured')
             library('rest_assured_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('restAssured')
-            library('rhino', 'org.mozilla', 'rhino').versionRef('rhino')
+            library('rhino', 'org.mozilla', 'rhino').versionRef('rhino') // Added to force minimum transitive version
             library('spring_test', 'org.springframework', 'spring-test').versionRef('springFramework')
             library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')
             library('spring_doc_webflux', 'org.springdoc', 'springdoc-openapi-starter-webflux-api').versionRef('springDoc')
