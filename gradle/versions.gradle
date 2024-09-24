@@ -15,6 +15,7 @@ dependencyResolutionManagement {
             version('springRetry', '2.0.9')
 
             version('zosUtils', '2.0.5')
+            version('aws', '1.12.772')
             version('awaitility', '4.2.2')
             version('bouncyCastle', '1.78.1')
             version('caffeine', '3.1.8')
@@ -67,6 +68,7 @@ dependencyResolutionManagement {
 
             version('reactor', '3.6.10')
             version('restAssured', '5.5.0')
+            version('rhino', '1.7.15')
             version('springDoc', '2.6.0')
             version('swaggerInflector', '2.0.12')
             version('swagger2Parser', '1.0.71')
@@ -135,6 +137,7 @@ dependencyResolutionManagement {
 
             library('apache_velocity', 'org.apache.velocity', 'velocity-engine-core').versionRef('velocity')
             library('awaitility', 'org.awaitility', 'awaitility').versionRef('awaitility')
+            library('aws_bom', 'com.amazonaws', 'aws-java-sdk-bom').versionRef('aws')
             library('bcprov', 'org.bouncycastle', 'bcprov-jdk18on').versionRef('bouncyCastle')
             library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk18on').versionRef('bouncyCastle')
             library('caffeine', 'com.github.ben-manes.caffeine', 'caffeine').versionRef('caffeine')
@@ -192,6 +195,7 @@ dependencyResolutionManagement {
             library('rest_assured_json_path', 'io.rest-assured', 'json-path').versionRef('restAssured')
             library('rest_assured_xml_path', 'io.rest-assured', 'xml-path').versionRef('restAssured')
             library('rest_assured_web_test_client', 'io.rest-assured', 'spring-web-test-client').versionRef('restAssured')
+            library('rhino', 'org.mozilla', 'rhino').versionRef('rhino')
             library('spring_test', 'org.springframework', 'spring-test').versionRef('springFramework')
             library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')
             library('spring_doc_webflux', 'org.springdoc', 'springdoc-openapi-starter-webflux-api').versionRef('springDoc')
