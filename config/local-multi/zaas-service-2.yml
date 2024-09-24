@@ -1,3 +1,4 @@
+logging.config: config/local/logback_gateway.xml
 spring.profiles.include: diag
 apiml:
   service:

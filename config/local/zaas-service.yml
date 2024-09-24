@@ -1,4 +1,5 @@
 spring.profiles.include: diag, debug
+logging.config: config/local/logback_gateway.xml
 apiml:
     service:
         hostname: localhost

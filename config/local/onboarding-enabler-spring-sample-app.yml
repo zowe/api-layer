@@ -1,3 +1,4 @@
+logging.config: config/local/logback_onboardingEnablerMicronautSample.xml
 apiml:
     service:
         serviceId: enablerv1sampleapp

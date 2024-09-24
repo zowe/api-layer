@@ -1,4 +1,5 @@
 spring.profiles.include: diag
+logging.config: config/local/logback.xml
 
 eureka:
     client:

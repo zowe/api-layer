@@ -1,4 +1,5 @@
 spring.profiles.active: diag
+logging.config: config/local/logback.xml
 
 apiml:
     health.protected: true

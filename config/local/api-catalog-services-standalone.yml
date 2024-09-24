@@ -1,4 +1,5 @@
 spring.profiles.include: diag,standalone
+logging.config: config/local/logback.xml
 
 logging:
     level:

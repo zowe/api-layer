@@ -1,3 +1,4 @@
+logging.config: config/local/logback_discoverableClient.xml
 spring:
     profiles:
         include: diag

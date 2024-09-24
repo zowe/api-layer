@@ -1,3 +1,4 @@
+logging.config: config/local/logback_cachingService.xml
 jgroups:
     bind:
         port: 7099

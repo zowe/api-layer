@@ -1,3 +1,4 @@
+logging.config: config/local/logback_gateway.xml
 apiml:
     health.protected: true
     gateway.registry.enabled: true
