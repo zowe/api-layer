@@ -140,6 +140,8 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        io.netty.resolver.dns: WARN
         javax.net.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
