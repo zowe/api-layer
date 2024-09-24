@@ -12,6 +12,7 @@ caching:
 apiml:
     service:
         port: 10022
+    banner: console
 spring:
     profiles:
         include: dev
