@@ -3,18 +3,17 @@ ext {
     springCloudVersion = '2.2.10.RELEASE'
     springCloudCommonsVersion = '2.2.9.RELEASE'
     springCloudLoadBalancerVersion = '2.2.9.RELEASE'
-    springCloudVersion3 = '3.1.8'
-    springSecurityVersion = '5.8.13'
-    springFrameworkVersion = '5.3.37'
+    springCloudVersion3 = '3.1.9'
+    springSecurityVersion = '5.8.14'
+    springFrameworkVersion = '5.3.39'
     springRetryVersion = '1.2.5.RELEASE'
     springWebTestClientVersion = '4.4.0'
 
     attlsVersion = '1.21.3'
-    awaitilityVersion = '4.2.1'
-    awsSdkVersion = '1.12.750'
+    awaitilityVersion = '4.2.2'
+    awsSdkVersion = '1.12.772'
     bouncyCastleVersion = '1.78.1'
-    bootstrapVersion = '4.3.1'
-    commonsCodecVersion = '1.17.0'
+    commonsCodecVersion = '1.17.1'
     commonsLang3Version = '3.14.0'
     commonsTextVersion = '1.12.0'
     commonsIoVersion = '2.16.1'
@@ -29,16 +28,16 @@ ext {
     httpCoreVersion = '4.4.16'
     infinispanVersion = '13.0.22.Final'
     istackVersion = '3.0.12'
-    jacksonCoreVersion = '2.17.1'
-    jacksonDatabindVersion = '2.17.1'
-    jacksonDataformatYamlVersion = '2.17.1'
+    jacksonCoreVersion = '2.17.2'
+    jacksonDatabindVersion = '2.17.2'
+    jacksonDataformatYamlVersion = '2.17.2'
     janinoVersion = "3.1.12"
     javaxAnnotationVersion = '1.3.2'
     javaxInjectVersion = '1'
     javaxServletApiVersion = '4.0.1'
     jaxbApiVersion = '2.3.1'
     jerseyVersion = '2.43'
-    jettyWebSocketClientVersion = '9.4.54.v20240208'
+    jettyWebSocketClientVersion = '9.4.56.v20240826'
     jettisonVersion = '1.5.4'
     jjwtVersion = '0.11.5'
     jjwtFullVersion = '0.9.1'
@@ -53,10 +52,10 @@ ext {
     jqueryVersion = '3.6.4'
     lettuceVersion = '6.3.2.RELEASE'
     logbackVersion = '1.2.13'
-    lombokVersion = '1.18.32'
+    lombokVersion = '1.18.34'
     mockitoCoreVersion = '4.9.0'
     netflixServoVersion = '0.13.2'
-    nettyVersion = '4.1.111.Final'
+    nettyVersion = '4.1.113.Final'
     nimbusJoseJwtVersion = '9.40'
     openApiDiffVersion = '2.0.1'
     reactorTestVersion = '3.5.18'
@@ -67,11 +66,11 @@ ext {
     springFoxVersion = '2.9.2'
     springDocVersion = '1.6.15'
     spring4Version = '4.3.30.RELEASE' // Used within PJE in tests
-    swagger3CoreVersion = '2.2.22'
+    swagger3CoreVersion = '2.2.23'
     swagger3ParserVersion = '2.1.22'
     swaggerCoreVersion = '1.6.14'
     thymeleafVersion = '3.1.2.RELEASE'
-    tomcatVersion = '9.0.90'
+    tomcatVersion = '9.0.95'
     velocityVersion = '2.3'
     woodstoxVersion = '6.7.0'
     xstreamVersion = '1.4.20'
@@ -137,7 +136,6 @@ ext {
         aws_sdk_core                       : "com.amazonaws:aws-java-sdk-core:${awsSdkVersion}",
         bcprov                             : "org.bouncycastle:bcprov-jdk18on:${bouncyCastleVersion}",
         bcpkix                             : "org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}",
-        bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
         commons_io                         : "commons-io:commons-io:${commonsIoVersion}",
         eh_cache                           : "org.ehcache:ehcache:${ehCacheVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaVersion}",
@@ -253,7 +251,7 @@ ext {
 
         // transitive dependencies minimal version
         jakson_datatype_jdk8               : "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonCoreVersion}",
-        archaius_core                      : "com.netflix.archaius:archaius-core:0.7.7",
+        archaius_core                      : "com.netflix.archaius:archaius-core:0.7.12",
         hystrix_core                       : "com.netflix.hystrix:hystrix-core:1.5.18",
         netflix_commons_util               : "com.netflix.netflix-commons:netflix-commons-util:0.3.0",
         jersey_client                      : "com.sun.jersey:jersey-client:1.19.4",
@@ -265,8 +263,8 @@ ext {
         swagger_models                     : "io.swagger.core.v3:swagger-models:${swagger3CoreVersion}",
         swagger_parser_core                : "io.swagger.parser.v3:swagger-parser-core:${swagger3ParserVersion}",
         swagger3_parser_base               : "io.swagger.parser.v3:swagger-parser:${swagger3ParserVersion}",
-        swagger_parser                     : "io.swagger:swagger-parser:1.0.67",
-        swagger_compat_spec_parser         : "io.swagger:swagger-compat-spec-parser:1.0.67",
+        swagger_parser                     : "io.swagger:swagger-parser:1.0.71",
+        swagger_compat_spec_parser         : "io.swagger:swagger-compat-spec-parser:1.0.71",
         swagger_integration                : "io.swagger.core.v3:swagger-integration:${swagger3CoreVersion}",
         swagger_jaxrs2                     : "io.swagger.core.v3:swagger-jaxrs2:${swagger3CoreVersion}",
         jakarta_activation_api             : "jakarta.activation:jakarta.activation-api:1.2.2",
@@ -274,7 +272,7 @@ ext {
         joda_time                          : "joda-time:joda-time:2.10.5",
         byte_buddy                         : "net.bytebuddy:byte-buddy:1.12.9",
         byte_buddy_agent                   : "net.bytebuddy:byte-buddy-agent:1.12.9",
-        stax2_api                          : "org.codehaus.woodstox:stax2-api:4.2.1",
+        stax2_api                          : "org.codehaus.woodstox:stax2-api:4.2.2",
         hamcrest                           : "org.hamcrest:hamcrest:2.2",
         aopalliance_repackaged             : "org.glassfish.hk2.external:aopalliance-repackaged:3.0.3",
         osgi_resource_locator              : "org.glassfish.hk2:osgi-resource-locator:2.4.0",
