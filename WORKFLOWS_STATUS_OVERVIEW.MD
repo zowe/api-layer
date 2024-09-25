@@ -1,6 +1,11 @@
-# Pipeline status
+# Workflows status Overview
 
 ## v3.x.x
+
+### Sonar
+
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=coverage&branch=v3.x.x)](https://sonarcloud.io/summary/new_code?id=zowe_api-layer)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status&branch=v3.x.x)](https://sonarcloud.io/summary/new_code?id=zowe_api-layer)
 
 ### Scheduled
 
@@ -20,13 +25,12 @@
 
 ### Sonar
 
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=coverage)](https://sonarcloud.io/summary/new_code?id=zowe_api-layer)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=zowe_api-layer)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=coverage&branch=v2.x.x)](https://sonarcloud.io/summary/new_code?id=zowe_api-layer)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status&branch=v2.x.x)](https://sonarcloud.io/summary/new_code?id=zowe_api-layer)
 
 ### Scheduled
 
 [![Automated binary release](https://github.com/zowe/api-layer/actions/workflows/automated-release.yml/badge.svg?branch=v2.x.x&event=schedule)](https://github.com/zowe/api-layer/actions/workflows/automated-release.yml)
-[![Renovate](https://github.com/zowe/api-layer/actions/workflows/renovate-bot.yml/badge.svg?branch=v2.x.x&event=schedule)](https://github.com/zowe/api-layer/actions/workflows/renovate-bot.yml)
 
 ### On PR merge
 
