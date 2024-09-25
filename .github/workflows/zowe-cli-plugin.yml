@@ -47,7 +47,7 @@ jobs:
                   npm run build
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
 
-            - uses: zowe-actions/octorelease@master
+            - uses: zowe-actions/octorelease@v1
               with:
                 working-dir: zowe-cli-id-federation-plugin
               env:
