@@ -144,6 +144,7 @@ logging:
         io.netty.resolver.dns: WARN
         javax.net.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
+    config: classpath:logback-gateway.xml
 
 management:
     endpoint:
