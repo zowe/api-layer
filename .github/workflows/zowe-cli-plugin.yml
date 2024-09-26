@@ -12,6 +12,7 @@ jobs:
         if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
         timeout-minutes: 40
+        permissions: write-all
 
         steps:
             - name: Checkout
