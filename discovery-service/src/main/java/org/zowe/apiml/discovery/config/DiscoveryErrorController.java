@@ -27,7 +27,7 @@ import java.util.Map;
 
 @Primary
 @Controller
-@RequestMapping(value = "${server.error.path:${error.path:/error}}") // NOSONAR - No security risk, the controller cleans body for specified endpoint patterns
+@RequestMapping(value = "${server.error.path:${error.path:/error}}")
 public class DiscoveryErrorController extends BasicErrorController {
 
     public DiscoveryErrorController(ErrorAttributes errorAttributes, ServerProperties serverProperties, List<ErrorViewResolver> errorViewResolvers) {
@@ -35,7 +35,7 @@ public class DiscoveryErrorController extends BasicErrorController {
     }
 
     @Override
-    @RequestMapping
+    @RequestMapping // NOSONAR - No security risk, the controller cleans body for specified endpoint patterns
     public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
         HttpStatus status = getStatus(request);
         String originalUrl = String.valueOf(request.getAttribute("jakarta.servlet.error.request_uri"));
