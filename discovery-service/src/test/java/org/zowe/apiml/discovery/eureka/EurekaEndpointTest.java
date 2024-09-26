@@ -11,8 +11,12 @@
 package org.zowe.apiml.discovery.eureka;
 
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,6 +28,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @ActiveProfiles("https")
+@TestInstance(Lifecycle.PER_CLASS)
 public class EurekaEndpointTest extends DiscoveryFunctionalTest {
 
     @Value("${server.ssl.keyPassword}")
@@ -37,6 +42,16 @@ public class EurekaEndpointTest extends DiscoveryFunctionalTest {
     void setup() throws Exception {
         SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
         SslContext.prepareSslAuthentication(configurer);
+    }
+
+    @BeforeAll
+    void init() {
+        SslContext.reset();
+    }
+
+    @AfterAll
+    void tearDown() {
+        SslContext.reset();
     }
 
     @Override
