@@ -40,6 +40,18 @@ public class SslContext {
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
     private static AtomicReference<SslContextConfigurer> configurer = new AtomicReference<>();
 
+    public synchronized static void reset() {
+        clientCertValid = null;
+        clientCertApiml = null;
+        clientCertUser = null;
+        clientCertUnknownUser = null;
+        apimlRootCert = null;
+        selfSignedUntrusted = null;
+        tlsWithoutCert = null;
+        configurer.set(null);
+        isInitialized.set(false);
+    }
+
     public synchronized static void prepareSslAuthentication(SslContextConfigurer providedConfigurer) throws Exception {
 
         if (configurer.get() != null && !configurer.get().equals(providedConfigurer)) {
