@@ -176,7 +176,7 @@ logging:
         org.ehcache: INFO
         org.apache.tomcat.util.net: DEBUG
         org.springframework.security.web: INFO
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 spring.config.activate.on-profile: dev
 
