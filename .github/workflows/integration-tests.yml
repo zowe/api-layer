@@ -1574,12 +1574,13 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: |
+                    printenv | grep -vi user | grep -vi token | grep -v pass | grep -vi host | grep -v url
                     export JAVA_HOME=$JAVA_HOME_8_${{ runner.arch }}
                     echo Execute Code coverage task using Java 8: JAVA_HOME = $JAVA_HOME
-                    ./gradlew --info coverage -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results"
+                    ./gradlew --info coverage -Dresults="containercitests/results,citestswithinfinispan/results,containercitestszosmfrsu2012/results,ContainerCITestsWithRedisReplica/results,ContainerCITestsWithRedisSentinel/results,containercitestsinternalport/results,cloudgatewayproxy/results,citestswebsocketchaoticha/results,cloudgatewayservicerouting/results,containercitestszaas/results" -Dsonar.verbose=true
                     export JAVA_HOME=$JAVA_HOME_17_${{ runner.arch }}
                     echo Execute Sonar scanner using Java 17: JAVA_HOME = $JAVA_HOME
-                    ./gradlew --info sonar -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    ./gradlew --info sonar -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Dsonar.verbose=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
