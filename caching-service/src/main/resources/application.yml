@@ -161,6 +161,7 @@ management:
 logging:
     level:
         ROOT: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
         org.zowe.apiml: DEBUG
         org.zowe.apiml.enable: DEBUG
         org.zowe.apiml.caching: DEBUG
@@ -169,9 +170,9 @@ logging:
         org.apache.http: DEBUG
         com.netflix: INFO
         org.hibernate: INFO
+        org.jgroups.protocols: ERROR
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
         org.apache.tomcat.util.net: DEBUG
         org.springframework.security.web: INFO
         javax.net.ssl: INFO
@@ -205,3 +206,4 @@ logging:
     level:
         ROOT: INFO
         org.apache.tomcat.util.net: DEBUG
+        org.jgroups: DEBUG
