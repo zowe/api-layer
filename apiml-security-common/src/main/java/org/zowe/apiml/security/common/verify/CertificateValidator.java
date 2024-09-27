@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,8 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Service to verify if given certificate chain can be trusted.
@@ -60,7 +63,7 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
-        List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
+        List<Certificate> trustedCerts = StringUtils.isBlank(proxyCertificatesEndpoint) ? emptyList() : trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
