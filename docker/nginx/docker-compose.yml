@@ -1,10 +1,13 @@
-version: '3'
+x-common-settings: &default-settings
+    cap_drop:
+        - NET_RAW
 
 services:
     reverse:
         container_name: reverse
         hostname: reverse
         image: nginx
+        <<: *default-settings
         ports:
             - 10000:10000
             - 10001:10001
@@ -14,4 +17,4 @@ services:
             - ./conf:/etc/nginx
             - ../../keystore:/etc/ssl/private
         extra_hosts:
-            host.docker.internal: host-gateway
+            - "host.docker.internal: host-gateway"

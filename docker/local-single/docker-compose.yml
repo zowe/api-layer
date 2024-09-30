@@ -1,40 +1,51 @@
-version: "3.3"
+x-common-settings: &default-settings
+    cap_drop:
+        - NET_RAW
+
 services:
     zaas-service:
         image: ghcr.io/zowe/zaas-service:latest
+        <<: *default-settings
         ports:
             - "10023:10023"
     api-catalog-services:
         image: ghcr.io/zowe/api-catalog-services:latest
+        <<: *default-settings
         volumes:
             - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10014:10014"
     api-catalog-services-2:
         image: ghcr.io/zowe/api-catalog-services-standalone:latest
+        <<: *default-settings
         volumes:
             - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10015:10015"
     caching-service:
         image: ghcr.io/zowe/caching-service:latest
+        <<: *default-settings
         ports:
             - "10016:10016"
     discoverable-client:
         image: ghcr.io/zowe/discoverable-client:latest
+        <<: *default-settings
         ports:
             - "10012:10012"
     discovery-service:
         image: ghcr.io/zowe/discovery-service:latest
+        <<: *default-settings
         volumes:
             - ../../config/docker/api-defs-shared:/api-defs
         ports:
             - "10011:10011"
     gateway-service:
         image: ghcr.io/zowe/gateway-service:latest
+        <<: *default-settings
         ports:
             - "10010:10010"
     mock-services:
         image: ghcr.io/zowe/mock-services:latest
+        <<: *default-settings
         ports:
             - "10013:10013"
