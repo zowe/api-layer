@@ -269,6 +269,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dserver.ssl.trustStoreType="${truststore_type}" \
   -Dserver.ssl.trustStorePassword="${truststore_pass}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Djava.net.preferIPv4Stack=true \
   -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
   -Djava.library.path=${LIBPATH} \
   -jar "${JAR_FILE}" &
