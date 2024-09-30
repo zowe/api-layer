@@ -213,7 +213,7 @@ logging:
         com.netflix: INFO
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 ---
 spring.config.activate.on-profile: diag
