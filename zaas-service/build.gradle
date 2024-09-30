@@ -70,6 +70,7 @@ dependencies {
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind
+    implementation libs.jaxbApi
     implementation libs.spring.cloud.commons
     implementation libs.jjwt
     implementation libs.nimbus.jose.jwt
@@ -86,7 +87,9 @@ dependencies {
     implementation libs.spring.webmvc
     implementation libs.spring.webflux
 
-    implementation libs.eh.cache
+    implementation(libs.eh.cache) {
+        exclude group: "jakarta.xml.bind", module: "jakarta.xml.bind-api"
+    }
 
     implementation libs.bundles.jaxb
 

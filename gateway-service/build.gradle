@@ -82,7 +82,6 @@ dependencies {
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
-    implementation libs.jaxbApi
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc

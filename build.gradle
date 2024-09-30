@@ -93,6 +93,12 @@ allprojects {
         }
     }
 
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module('org.glassfish.jaxb:jaxb-runtime')).using(module('com.sun.xml.bind:jaxb-core:${libs.versions.jaxbImpl.get()}'))
+        }
+    }
+
 }
 
 configure(subprojects.findAll {it.name != 'platform'}) {
