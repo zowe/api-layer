@@ -55,6 +55,7 @@ spring:
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+        web-application-type: servlet
     profiles.group:
         dev: debug, diag
 

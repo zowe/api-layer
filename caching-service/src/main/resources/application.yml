@@ -119,6 +119,7 @@ spring:
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
+        web-application-type: servlet
 
 springdoc:
     pathsToMatch: /api/v1/**

@@ -64,6 +64,7 @@ spring:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
     main:
         banner-mode: ${apiml.banner:"off"}
+        web-application-type: reactive
 
 springdoc:
     api-docs:
