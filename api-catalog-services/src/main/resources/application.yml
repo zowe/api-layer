@@ -7,6 +7,7 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
+        gateway.mvc.enabled: false
     mvc:
         throw-exception-if-no-handler-found: true
     output:

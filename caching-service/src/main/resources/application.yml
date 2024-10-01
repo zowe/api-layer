@@ -110,6 +110,7 @@ spring:
     cloud:
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
+        gateway.mvc.enabled: false
     application:
         name: Caching service
     mvc:

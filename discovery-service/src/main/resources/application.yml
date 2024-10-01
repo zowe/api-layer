@@ -49,6 +49,7 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
+        gateway.mvc.enabled: false
     output:
         ansi:
             enabled: detect
