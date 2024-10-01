@@ -44,8 +44,15 @@ dependencyResolutionManagement {
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
-            version('jaxbApi', '4.0.2')
-            version('jaxbImpl', '4.0.5')
+            version('jaxbApi') {
+                strictly '[2.3.3,3.0.0['
+                prefer '2.3.3'
+            }
+            version('jaxbImpl') {
+                strictly '[2.3.9,3.0.0['
+                prefer '2.3.9'
+            }
+            version('jbossLogging', '3.6.0.Final')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.56.v20240826')
             version('jettison', '1.5.4')
