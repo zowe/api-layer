@@ -156,7 +156,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         HttpsFactory factory = new HttpsFactory(httpsConfig);
 
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
-            config.getDiscoveryServiceUrls().get(0), config.getServiceId()).build();
+            config.getDiscoveryServiceUrls().get(0), config.getServiceId(), config.isAttlsEnabled()).build();
 
         AbstractDiscoveryClientOptionalArgs<?> args = new DiscoveryClient.DiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
