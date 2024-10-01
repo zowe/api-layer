@@ -62,8 +62,6 @@ The following tools are required to build and develop the API Mediation Layer:
    npm run api-layer
    ```
 
-Alternatively, to use Docker to run the API ML, consult the [Docker README](docker/README.md).
-
 ## Security
 
 By default, the API Mediation Layer for local development uses mock zOSMF as the authentication provider. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password
