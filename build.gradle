@@ -97,6 +97,22 @@ allprojects {
 
 }
 
+configure(subprojects.findAll { it.name in [
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'caching-service',
+    'discovery-service',
+    'gateway-service',
+    'zaas-service'
+]}) {
+
+    configurations.all {
+        // it has been replaced by spring-jcl
+        exclude group: "commons-logging", module: "commons-logging"
+    }
+
+}
+
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
