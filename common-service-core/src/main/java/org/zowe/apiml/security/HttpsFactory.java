@@ -237,7 +237,7 @@ public class HttpsFactory {
         }
     }
 
-    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId, boolean isAttlsEnabled) {
+    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId, boolean attlsEnabled) {
         EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
         builder.withClientName(serviceId);
         builder.withMaxTotalConnections(10);
@@ -248,7 +248,7 @@ public class HttpsFactory {
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
-                if (!isAttlsEnabled) {
+                if (!attlsEnabled) {
                     apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
             }
         } else {
