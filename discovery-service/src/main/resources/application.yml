@@ -49,12 +49,16 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
+        gateway:
+            mvc.enabled: false
+            enabled: false
     output:
         ansi:
             enabled: detect
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+        web-application-type: servlet
     profiles.group:
         dev: debug, diag
 

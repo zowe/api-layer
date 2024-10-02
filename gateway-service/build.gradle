@@ -18,6 +18,7 @@ normalization {
 }
 
 apply plugin: 'org.springframework.boot'
+apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
@@ -82,7 +83,7 @@ dependencies {
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
-    implementation libs.jaxbApi
+    implementation libs.bundles.jaxb
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc

@@ -84,12 +84,19 @@
 
 if [ -n "${LAUNCH_COMPONENT}" ]
 then
-    JAR_FILE="${LAUNCH_COMPONENT}/gateway-service.jar"
+    JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 else
-    JAR_FILE="$(pwd)/bin/gateway-service.jar"
+    JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
+
+if [ -z "${CMMN_LB}" ]
+then
+    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+else
+    COMMON_LIB=${CMMN_LB}
+fi
 
 if [ -z "${LIBRARY_PATH}" ]
 then
@@ -122,6 +129,22 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
+if [ "$(uname)" = "OS/390" ]
+then
+    QUICK_START=-Xquickstart
+    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+else
+    GATEWAY_LOADER_PATH=${COMMON_LIB}
+fi
+
+# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
+then
+    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS},${GATEWAY_LOADER_PATH}
+fi
+
+echo "Setting loader path: "${GATEWAY_LOADER_PATH}
+
 ATTLS_ENABLED="false"
 # ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
 if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
@@ -148,15 +171,6 @@ else
     externalProtocol="http"
 fi
 
-GATEWAY_LOADER_PATH=""
-# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
-if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
-then
-    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS}
-fi
-
-echo "Setting loader path: "${GATEWAY_LOADER_PATH}
-
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -166,6 +180,11 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
+
+if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
+then
+    LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
+fi
 
 ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
         --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
@@ -319,6 +338,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -jar ${JAR_FILE} &
