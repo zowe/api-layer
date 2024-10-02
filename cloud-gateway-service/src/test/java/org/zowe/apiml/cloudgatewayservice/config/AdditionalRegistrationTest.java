@@ -37,6 +37,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -83,7 +84,7 @@ public class AdditionalRegistrationTest {
         public void setUp() {
             configSpy = Mockito.spy(connectionsConfig);
             lenient().doReturn(httpsFactory).when(configSpy).factory();
-            lenient().when(httpsFactory.createEurekaJerseyClientBuilder(any(), any())).thenReturn(mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class));
+            lenient().when(httpsFactory.createEurekaJerseyClientBuilder(any(), any(), anyBoolean())).thenReturn(mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class));
 
             lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
         }

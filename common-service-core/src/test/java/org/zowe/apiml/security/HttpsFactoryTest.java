@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 class HttpsFactoryTest {
     private static final String EUREKA_URL_NO_SCHEME = "://localhost:10011/eureka/";
     private static final String TEST_SERVICE_ID = "service1";
+    private static final boolean ATTLS = false;
     private static final String INCORRECT_PARAMETER_VALUE = "WRONG";
 
     private HttpsConfig.HttpsConfigBuilder httpsConfigBuilder;
@@ -136,7 +137,7 @@ class HttpsFactoryTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         EurekaJerseyClientImpl.EurekaJerseyClientBuilder clientBuilder =
-            httpsFactory.createEurekaJerseyClientBuilder("https" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
+            httpsFactory.createEurekaJerseyClientBuilder("https" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID, ATTLS);
         assertNotNull(clientBuilder);
     }
 
@@ -145,7 +146,7 @@ class HttpsFactoryTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         EurekaJerseyClientImpl.EurekaJerseyClientBuilder clientBuilder =
-            httpsFactory.createEurekaJerseyClientBuilder("http" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
+            httpsFactory.createEurekaJerseyClientBuilder("http" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID, ATTLS);
         assertNotNull(clientBuilder);
     }
 }

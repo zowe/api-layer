@@ -123,6 +123,9 @@ public class ConnectionsConfig {
     @Value("${spring.application.name}")
     private String serviceId;
 
+    @Value("${server.attls.enabled:false}")
+    private boolean attlsEnabled;
+
     @Value("${server.ssl.trustStoreRequired:false}")
     private boolean trustStoreRequired;
 
@@ -234,7 +237,7 @@ public class ConnectionsConfig {
 
     @Bean("primaryApimlEurekaJerseyClient")
     EurekaJerseyClient getEurekaJerseyClient() {
-        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, attlsEnabled).build();
     }
 
     @Bean(destroyMethod = "shutdown")
@@ -292,7 +295,7 @@ public class ConnectionsConfig {
         BeanUtils.copyProperties(config, configBean);
         configBean.setServiceUrl(urls);
 
-        EurekaJerseyClient jerseyClient = factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+        EurekaJerseyClient jerseyClient = factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, attlsEnabled).build();
         MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(jerseyClient);
 
