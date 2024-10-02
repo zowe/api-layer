@@ -137,6 +137,14 @@ else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
+# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
+if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
+then
+    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS},${GATEWAY_LOADER_PATH}
+fi
+
+echo "Setting loader path: "${GATEWAY_LOADER_PATH}
+
 ATTLS_ENABLED="false"
 # ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
 if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
@@ -162,14 +170,6 @@ if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "t
 else
     externalProtocol="http"
 fi
-
-# Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
-if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]
-then
-    GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS}
-fi
-
-echo "Setting loader path: "${GATEWAY_LOADER_PATH}
 
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
