@@ -10,10 +10,12 @@
 
 package org.zowe.apiml.gateway.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.gateway.filters.InMemoryRateLimiterFilterFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +63,11 @@ public class RoutingConfig {
         retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
         retryFilter.addArg("series", "");
         filters.add(retryFilter);
+
+        FilterDefinition rateLimiterFilter = new FilterDefinition();
+        rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
+        filters.add(rateLimiterFilter);
+
 
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();

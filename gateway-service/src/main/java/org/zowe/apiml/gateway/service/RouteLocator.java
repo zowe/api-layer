@@ -47,7 +47,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.ENABLE_URL_ENCOD
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 @Service
-public class RouteLocator implements RouteDefinitionLocator {
+public class
+RouteLocator implements RouteDefinitionLocator {
 
     private static final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
