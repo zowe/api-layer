@@ -68,14 +68,10 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.HttpClientSecurityUtils;
 import reactor.netty.tcp.SslProvider;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 import java.security.KeyStore;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
@@ -181,21 +177,31 @@ public class ConnectionsConfig {
     @Bean
     public NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
         // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
+
+
+        return new NettyRoutingFilterApiml(httpClientNoCert(httpClient), httpClientClientCert(httpClient), headersFiltersProvider, properties);
+    }
+
+    public HttpClient httpClientNoCert(HttpClient httpClient) {
         SslContext justTruststore = sslContext(false);
-        SslContext withKeystore = sslContext(true);
 
         var builderJustTruststore = SslProvider.builder().sslContext(justTruststore);
-        var builderWithKeystore = SslProvider.builder().sslContext(withKeystore);
         if (!nonStrictVerifySslCertificatesOfServices) {
             builderJustTruststore.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        }
+
+        return httpClient.secure(builderJustTruststore.build());
+    }
+
+    public HttpClient httpClientClientCert(HttpClient httpClient) {
+        SslContext withKeystore = sslContext(true);
+
+        var builderWithKeystore = SslProvider.builder().sslContext(withKeystore);
+        if (!nonStrictVerifySslCertificatesOfServices) {
             builderWithKeystore.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
         }
 
-        // construct http clients with different SSL configuration - with / without client certs
-        var httpClientNoCert = httpClient.secure(builderJustTruststore.build());
-        var httpClientClientCert = httpClient.secure(builderWithKeystore.build());
-
-        return new NettyRoutingFilterApiml(httpClientNoCert, httpClientClientCert, headersFiltersProvider, properties);
+        return httpClient.secure(builderWithKeystore.build());
     }
 
     /**
@@ -360,13 +366,12 @@ public class ConnectionsConfig {
     @Bean
     @Primary
     public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClientNoCert(httpClient))).build();
     }
 
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
-        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClientClientCert(httpClient))).build();
     }
 
     @Bean
