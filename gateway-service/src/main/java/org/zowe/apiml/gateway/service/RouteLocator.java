@@ -39,7 +39,8 @@ import java.util.stream.Stream;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @Service
-public class RouteLocator implements RouteDefinitionLocator {
+public class
+RouteLocator implements RouteDefinitionLocator {
 
     private static final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 

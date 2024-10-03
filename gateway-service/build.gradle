@@ -65,6 +65,7 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':apiml-security-common')
 
+    implementation group: 'com.bucket4j', name: 'bucket4j-core', version: '8.7.0'
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.circuit.breaker
     implementation libs.spring.cloud.starter.eureka.client
