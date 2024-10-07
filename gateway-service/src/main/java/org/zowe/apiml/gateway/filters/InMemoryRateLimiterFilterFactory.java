@@ -6,13 +6,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
 public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFactory<InMemoryRateLimiterFilterFactory.Config> {
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
     private final InMemoryRateLimiter rateLimiter;
     private final KeyResolver keyResolver;
     @Value(value = "${apiml.routing.servicesToLimitRequestRate}")
@@ -30,12 +37,21 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
             String requestPath = exchange.getRequest().getPath().elements().get(1).value();
             if (serviceIds.contains(requestPath)) {
                 return keyResolver.resolve(exchange).flatMap(key -> {
+                    if (key == null) {
+                        return chain.filter(exchange);
+                    }
                     return rateLimiter.isAllowed(config.getRouteId(), key).flatMap(response -> {
                         if (response.isAllowed()) {
                             return chain.filter(exchange);
                         } else {
+                            apimlLog.log("org.zowe.apiml.gateway.connectionsLimitApproached", "Connections limit exceeded for service '{}'", requestPath);
                             exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-                            return exchange.getResponse().setComplete();
+                            exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_HTML);
+                            String errorHtml = "<html><body><h1>429 Too Many Requests</h1>" +
+                                "<p>The connection limit for the service '" + requestPath + "' has been exceeded. Please try again later.</p>" +
+                                "</body></html>";
+                            byte[] bytes = errorHtml.getBytes(StandardCharsets.UTF_8);
+                            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(bytes)));
                         }
                     });
                 });

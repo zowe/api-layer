@@ -17,14 +17,11 @@ public class KeyResolver implements org.springframework.cloud.gateway.filter.rat
 
     @Override
     public Mono<String> resolve(org.springframework.web.server.ServerWebExchange exchange) {
-        String cookieValue = exchange.getRequest().getCookies().getOrDefault(cookieName, Collections.emptyList())
+        return Mono.justOrEmpty(exchange.getRequest().getCookies().getOrDefault(cookieName, Collections.emptyList())
             .stream()
             .findFirst()
             .map(HttpCookie::getValue)
-            .orElse("defaultKey");
-//            .orElse(Mono.error(new IllegalStateException("Missing required cookie: " + cookieName)));
-
-
-        return Mono.just(cookieValue);
+            .orElse(null)
+        );
     }
 }

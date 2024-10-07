@@ -2,8 +2,7 @@ package org.zowe.apiml.gateway.filters;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
-import jdk.jfr.Category;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -16,10 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryRateLimiter implements RateLimiter<Object> {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
-    private final int capacity = 20;
-    private final int tokens = 20;
-    private final Duration refillDuration = Duration.ofSeconds(120);
+    @Value("${apiml.gateway.rateLimiterCapacity:3}")
+    private int capacity;
 
+    @Value("${apiml.gateway.rateLimiterTokens:3}")
+    private int tokens;
+    @Value("${apiml.gateway.rateLimiterRefillDuration:1}")
+    private Long refillDuration;
 
     @Override
     public Mono<Response> isAllowed(String routeId, String id) {
@@ -32,7 +34,7 @@ public class InMemoryRateLimiter implements RateLimiter<Object> {
     }
 
     private Bucket newBucket(String id) {
-        Bandwidth limit = Bandwidth.classic(capacity, Refill.greedy(tokens, refillDuration));
+        Bandwidth limit = Bandwidth.builder().capacity(capacity).refillGreedy(tokens, Duration.ofMinutes(refillDuration)).build();
         return Bucket.builder().addLimit(limit).build();
     }
 
