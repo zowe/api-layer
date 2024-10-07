@@ -141,7 +141,8 @@
         "lodash": "4.17.21",
         "semver": "7.6.3",
         "@babel/traverse": "7.24.7",
-        "dompurify": "3.1.6"
+        "dompurify": "3.1.6",
+        "serve-static": "1.16.0"
     },
     "engines": {
         "npm": "=9.3.1",
