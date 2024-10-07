@@ -95,6 +95,12 @@ allprojects {
         }
     }
 
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
+        }
+    }
+
 }
 
 configure(subprojects.findAll { it.name in [
