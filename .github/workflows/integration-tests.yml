@@ -1380,7 +1380,7 @@ jobs:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
             -   name: Cache NPM and Cypress 📦
-                uses: actions/cache@v2
+                uses: actions/cache@v4
                 with:
                     path: |
                         ~/.cache/Cypress
