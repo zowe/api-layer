@@ -83,7 +83,7 @@ dependencyResolutionManagement {
             version('swagger3Parser', '2.1.22')
             version('thymeleaf', '3.1.2.RELEASE')
             version('velocity', '2.4')
-            version('woodstoxCore', '6.7.0')
+            version('woodstoxCore', '7.0.0')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
                 strictly '[1.4.20,2.0['
