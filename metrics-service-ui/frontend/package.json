@@ -71,7 +71,8 @@
         "resolve-url-loader": "5.0.0",
         "follow-redirects": "1.15.8",
         "webpack-dev-middleware": "5.3.4",
-        "@babel/traverse": "7.24.7"
+        "@babel/traverse": "7.24.7",
+        "serve-static": "1.16.0"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
