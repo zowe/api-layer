@@ -34,10 +34,12 @@ buildscript {
     }
 }
 
-import java.util.regex.Matcher
+
+import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
-import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
+
+import java.util.regex.Matcher
 
 //noinspection GroovyAssignabilityCheck
 group 'org.zowe.apiml'
@@ -91,6 +93,28 @@ allprojects {
             downloadJavadoc = true
             downloadSources = true
         }
+    }
+
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
+        }
+    }
+
+}
+
+configure(subprojects.findAll { it.name in [
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'caching-service',
+    'discovery-service',
+    'gateway-service',
+    'zaas-service'
+]}) {
+
+    configurations.all {
+        // it has been replaced by spring-jcl
+        exclude group: "commons-logging", module: "commons-logging"
     }
 
 }

@@ -19,7 +19,6 @@
 [![Verify that all services can register](https://github.com/zowe/api-layer/actions/workflows/service-registration.yml/badge.svg?branch=v3.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/service-registration.yml)
 [![Binary snapshot release](https://github.com/zowe/api-layer/actions/workflows/binary-snapshot-release.yml/badge.svg?branch=v3.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/binary-snapshot-release.yml)
 [![Image snapshot release](https://github.com/zowe/api-layer/actions/workflows/image-snapshot-release.yml/badge.svg?branch=v3.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/image-snapshot-release.yml)
-[![zowe-cli-plugin-deployment](https://github.com/zowe/api-layer/actions/workflows/zowe-cli-plugin.yml/badge.svg?branch=v3.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/zowe-cli-plugin.yml)
 
 ## v2.x.x
 
@@ -38,5 +37,4 @@
 [![Verify that all services can register](https://github.com/zowe/api-layer/actions/workflows/service-registration.yml/badge.svg?branch=v2.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/service-registration.yml)
 [![Binary snapshot release](https://github.com/zowe/api-layer/actions/workflows/binary-snapshot-release.yml/badge.svg?branch=v2.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/binary-snapshot-release.yml)
 [![Image snapshot release](https://github.com/zowe/api-layer/actions/workflows/image-snapshot-release.yml/badge.svg?branch=v2.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/image-snapshot-release.yml)
-[![zowe-cli-plugin-deployment](https://github.com/zowe/api-layer/actions/workflows/zowe-cli-plugin.yml/badge.svg?branch=v2.x.x&event=push)](https://github.com/zowe/api-layer/actions/workflows/zowe-cli-plugin.yml)
 

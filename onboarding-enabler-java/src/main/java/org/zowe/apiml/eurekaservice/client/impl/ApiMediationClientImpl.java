@@ -159,6 +159,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         AbstractDiscoveryClientOptionalArgs<?> args = new Jersey3DiscoveryClientOptionalArgs();
         args.setSSLContext(factory.getSslContext());
+        args.setHostnameVerifier(factory.getHostnameVerifier());
         TransportClientFactories<?> transportClientFactories = Jersey3TransportClientFactories.getInstance();
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
         return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, transportClientFactories, args);

@@ -49,12 +49,16 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
+        gateway:
+            mvc.enabled: false
+            enabled: false
     output:
         ansi:
             enabled: detect
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+        web-application-type: servlet
     profiles.group:
         dev: debug, diag
 
@@ -169,7 +173,7 @@ logging:
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 ---
 spring.config.activate.on-profile: diag
