@@ -16,11 +16,11 @@ dependencyResolutionManagement {
 
             version('glassfishHk2', '3.1.1')
             version('zosUtils', '2.0.5')
-            version('aws', '1.12.772')
+            version('aws', '1.12.773')
             version('awaitility', '4.2.2')
             version('bouncyCastle', '1.78.1')
             version('caffeine', '3.1.8')
-            version('checkerQual', '3.43.0')
+            version('checkerQual', '3.48.0')
             version('commonsLang3', '3.17.0')
             version('commonsLogging', '1.3.4')
             version('commonsText', '1.12.0')
@@ -28,7 +28,7 @@ dependencyResolutionManagement {
             version('ehCache', '3.10.8')
             version('eureka', '2.0.3')
             version('netflixServo', '0.13.2')
-            version('googleErrorprone', '2.32.0')
+            version('googleErrorprone', '2.33.0')
             version('gradleGitProperties', '2.4.2') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('guava', '33.3.1-jre')
@@ -36,10 +36,10 @@ dependencyResolutionManagement {
             version('hamcrest', '2.2')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.4')
-            version('infinispan', '15.0.8.Final')
-            version('jacksonCore', '2.17.2')
-            version('jacksonDatabind', '2.17.2')
-            version('jacksonDataformatYaml', '2.17.2')
+            version('infinispan', '15.0.10.Final')
+            version('jacksonCore', '2.18.0')
+            version('jacksonDatabind', '2.18.0')
+            version('jacksonDataformatYaml', '2.18.0')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.0')
             version('jakartaInject', '2.0.1')
@@ -53,24 +53,24 @@ dependencyResolutionManagement {
                 strictly '[2.3.9,3.0.0['
                 prefer '2.3.9'
             }
-            version('jbossLogging', '3.6.0.Final')
+            version('jbossLogging', '3.6.1.Final')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.56.v20240826')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.12.6')
-            version('jodaTime', '2.12.7')
+            version('jodaTime', '2.13.0')
             version('jsonPath', '2.9.0')
             version('jsonSmart', '2.5.1')
-            version('junitJupiter', '5.11.0')
-            version('junitPlatform', '1.11.0')
+            version('junitJupiter', '5.11.2')
+            version('junitPlatform', '1.11.2')
             version('lettuce', '6.4.0.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
-            version('log4j', '2.24.0')
+            version('log4j', '2.24.1')
             version('lombok', '1.18.34')
-            version('netty', '4.1.113.Final')
+            version('netty', '4.1.114.Final')
             version('nettyReactor', '1.1.22')
-            version('nimbusJoseJwt', '9.41.1')
+            version('nimbusJoseJwt', '9.41.2')
             version('openApiDiff', '2.0.1')
             version('picocli', '4.7.6')
 
@@ -90,7 +90,7 @@ dependencyResolutionManagement {
                 prefer '1.4.20'
             }
             version('jgit', '6.10.0.202406032230-r')
-            version('gradleNode', '7.0.2')
+            version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '5.1.0.4882')
             version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
@@ -100,8 +100,8 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.6.1')
-            version('micronaut', '4.6.5')
-            version('micronautPlugin', '4.4.2')
+            version('micronaut', '4.6.6')
+            version('micronautPlugin', '4.4.3')
             version('shadow', '8.1.1')
             version('checkstyle', '10.17.0')
             version('jacoco', '0.8.11')
@@ -255,7 +255,7 @@ dependencyResolutionManagement {
 
             // Pure Java dependencies - do not use in Spring unless really necessary
             version('logback', '1.5.8')
-            version('mockitoCore', '5.13.0')
+            version('mockitoCore', '5.14.1')
             version('mockitoInline', '5.2.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
