@@ -18,7 +18,7 @@
         "express": "4.21.1"
     },
     "overrides": {
-        "tough-cookie": "4.1.4"
+        "tough-cookie": "5.0.0"
     },
     "engines": {
         "npm": "=10.7.0",
