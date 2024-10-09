@@ -22,7 +22,6 @@ import { springSpecificCategories } from './wizard_spring_categories';
 import { staticSpecificCategories } from './wizard_static_categories';
 import { nodeSpecificCategories } from './wizard_node_categories';
 import { micronautSpecificCategories } from './wizard_micronaut_categories';
-// eslint-disable-next-line import/prefer-default-export
 export const categoryData = [
     ...baseCategories,
     ...springSpecificCategories,

@@ -1,14 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`id-federation map command integration tests should fail when arguments are not valid 1`] = `
-"Command Error:
+"Unable to perform this operation due to the following problem.
 Unknown argument: invalidarg
 Command failed due to improper syntax
 Did you mean: plugins validate?
 
 Command entered: "idf invalidarg"
 Use "zowe idf --help" to view groups, commands, and options.
-Error Details:
+
+Response From Service
+Error: Unknown argument: invalidarg
+
+Diagnostic Information
 Unknown argument: invalidarg
 "
 `;

@@ -12,7 +12,6 @@ import { defaultMicronaut, defaultNode, defaultPJE, defaultSpring } from './wiza
 /**
  * Define which categories each enabler needs. Properties indentation and multiple can be used here as well.(override)
  */
-// eslint-disable-next-line import/prefer-default-export
 export const enablerData = [
     {
         text: 'Plain Java Enabler',
