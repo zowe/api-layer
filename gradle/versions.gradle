@@ -28,7 +28,6 @@ dependencyResolutionManagement {
             version('awaitility', '4.2.2')
             version('awsJavaSdk', '1.12.770')
             version('bouncyCastle', '1.78.1')
-            version('bootstrap', '4.3.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
             version('commonsCodec', '1.17.1')
@@ -239,7 +238,6 @@ dependencyResolutionManagement {
             library('awaitility', 'org.awaitility', 'awaitility').versionRef('awaitility')
             library('bcprov', 'org.bouncycastle', 'bcprov-jdk18on').versionRef('bouncyCastle')
             library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk18on').versionRef('bouncyCastle')
-            library('bootstrap', 'org.webjars', 'bootstrap').versionRef('bootstrap')
             library('caffeine', 'com.github.ben-manes.caffeine', 'caffeine').versionRef('caffeine')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
