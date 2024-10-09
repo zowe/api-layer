@@ -9,7 +9,6 @@
  */
 import { wizRegex } from './wizard_regex_restrictions';
 
-// eslint-disable-next-line import/prefer-default-export
 export const baseCategories = [
     {
         text: 'Basic info',

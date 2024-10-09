@@ -54,9 +54,9 @@ export default [{
         "no-multiple-empty-lines": "warn",
         "no-trailing-spaces": "warn",
         "@typescript-eslint/ban-types": "off",
-        "@typescript-eslint/comma-dangle": ["warn", "only-multiline"],
+        "comma-dangle": ["warn", "only-multiline"],
         "@typescript-eslint/explicit-module-boundary-types": "off",
-        "@typescript-eslint/indent": ["warn", 4],
+        "indent": ["warn", 4],
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-inferrable-types": "off",
 
@@ -68,7 +68,7 @@ export default [{
 
         "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/no-var-requires": "off",
-        "@typescript-eslint/semi": "warn",
+        "semi": "warn",
         "unused-imports/no-unused-imports": "warn",
 
         "unused-imports/no-unused-vars": ["warn", {

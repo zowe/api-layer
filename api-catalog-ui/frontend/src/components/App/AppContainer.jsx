@@ -8,6 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { withRouter } from 'react-router-dom';
-import App from './App'; // eslint-disable-line import/no-cycle
+import App from './App';
 
 export default withRouter(App);
