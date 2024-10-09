@@ -55,7 +55,7 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.1.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '9.4.56.v20240826')
+            version('jettyWebSocketClient', '12.0.14')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.12.6')
