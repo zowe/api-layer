@@ -51,7 +51,7 @@
         "undici": "6.19.8",
         "url": "0.11.4",
         "util": "0.12.5",
-        "uuid": "9.0.1"
+        "uuid": "10.0.0"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
@@ -129,18 +129,18 @@
         "react-error-overlay": "6.0.11",
         "react-scripts": "5.0.1",
         "redux-mock-store": "1.5.4",
-        "rimraf": "3.0.2",
+        "rimraf": "6.0.1",
         "source-map-explorer": "2.5.3",
         "start-server-and-test": "2.0.8",
         "tmpl": "1.0.5",
-        "yaml": "1.10.2"
+        "yaml": "2.5.1"
     },
     "overrides": {
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",
         "got": "14.4.2",
         "react-error-overlay": "6.0.11",
-        "tough-cookie": "4.1.4",
+        "tough-cookie": "5.0.0",
         "@braintree/sanitize-url": "6.0.4",
         "resolve-url-loader": "5.0.0",
         "lodash": "4.17.21",
@@ -148,8 +148,8 @@
         "@babel/traverse": "7.25.7"
     },
     "engines": {
-        "npm": "=9.9.3",
-        "node": "=18.20.4"
+        "npm": "=10.7.0",
+        "node": "=20.14.0"
     },
     "browserslist": [
         ">0.2%",

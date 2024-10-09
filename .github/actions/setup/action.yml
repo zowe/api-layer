@@ -18,7 +18,7 @@ runs:
         -   name: Set up Node
             uses: actions/setup-node@v4
             with:
-                node-version: '18'
+                node-version: '20'
         -   run: npm install -g npm@9.3.1
             shell: bash
         -   name: Grant execute permission for gradlew
