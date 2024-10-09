@@ -30,7 +30,6 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             version('googleErrorprone', '2.33.0')
             version('gradleGitProperties', '2.4.2') // Used in classpath dependencies
-            version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('guava', '33.3.1-jre')
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
@@ -83,11 +82,6 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.2.RELEASE')
             version('velocity', '2.4')
             version('woodstoxCore', '7.0.0')
-            version('xstream') {
-                // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
-                strictly '[1.4.20,2.0['
-                prefer '1.4.20'
-            }
             version('jgit', '7.0.0.202409031743-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '5.1.0.4882')
@@ -220,7 +214,6 @@ dependencyResolutionManagement {
             library('swagger_inflector', 'io.swagger', 'swagger-inflector').versionRef('swaggerInflector')
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
-            library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').versionRef('springBootGraphQl')
 
