@@ -48,7 +48,6 @@ export function extendFilter(phrase, taggedOps, system) {
 /**
  * Custom Plugin which extends the SwaggerUI filter functionality to filter APIs by tag, summary and description
  */
-// eslint-disable-next-line import/prefer-default-export
 export const AdvancedFilterPlugin = function (system) {
     return {
         fn: {

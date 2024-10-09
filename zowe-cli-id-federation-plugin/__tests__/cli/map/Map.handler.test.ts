@@ -12,7 +12,7 @@ import {ResponseMock} from "../../__src__/ResponseMock";
 import {Constants} from "../../../src/api/Constants";
 import {expect, jest, describe, it} from '@jest/globals';
 // Require the handler and create a new instance
-const handlerReq = require("../../../src/cli/map/Map.handler");
+import * as handlerReq from "../../../src/cli/map/Map.handler";
 
 describe("map handler unit tests", () => {
 
@@ -27,6 +27,11 @@ describe("map handler unit tests", () => {
         try {
             // Invoke the handler with a full set of mocked arguments and response functions
             await handler.process({
+                definition: undefined,
+                fullDefinition: undefined,
+                positionals: [],
+                profiles: undefined,
+                stdin: undefined,
                 arguments: {
                     $0: "fake",
                     _: ["fake"],
@@ -35,10 +40,12 @@ describe("map handler unit tests", () => {
                     registry: "ldap://host:1234"
                 },
                 response: {
+                    // @ts-expect-error to suppress the eslint
                     console: {
-                        log: jest.fn((logArgs) => {
+                        log: jest.fn((logArgs: string | Buffer) => {
                             logMessage += " " + logArgs;
-                        })
+                            return ""; // Ensure the mock returns a string
+                        }) as unknown as (message: string | Buffer, ...values: any[]) => string
                     }
                 }
             });
@@ -51,12 +58,13 @@ describe("map handler unit tests", () => {
     });
 
     it("throw an error when file does not exist", async () => {
-        const handlerReq = require("../../../src/cli/map/Map.handler");
+        // const handlerReq = require("../../../src/cli/map/Map.handler");
         const handler = new handlerReq.default();
 
         let error;
         const response = new ResponseMock();
         try {
+            // @ts-expect-error to suppress the eslint
             await handler.process({
                 arguments: {
                     $0: "fake",

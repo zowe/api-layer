@@ -31,7 +31,6 @@ export default class InstanceInfo extends Component {
                 <div className="apiInfo-item">
                     <Tooltip key={selectedService.baseUrl} title="The instance URL for this service" placement="bottom">
                         <Typography>
-                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                             <label htmlFor="instanceUrl">Instance URL:</label>
                             {!hideServiceInfo && <span id="instanceUrl">{selectedService.baseUrl}</span>}
                         </Typography>
@@ -40,7 +39,6 @@ export default class InstanceInfo extends Component {
                 <div className="apiInfo-item">
                     <Tooltip title="API IDs of the APIs that are provided by this service" placement="bottom">
                         <Typography>
-                            {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                             <label htmlFor="apiid">API ID:</label>
                             <span id="appid">{apiId}</span>
                         </Typography>

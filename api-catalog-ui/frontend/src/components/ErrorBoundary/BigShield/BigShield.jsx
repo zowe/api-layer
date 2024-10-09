@@ -99,7 +99,6 @@ export default class BigShield extends Component {
 
                             <div className="wrap-collabsible">
                                 <input id="collapsible" className="toggle" type="checkbox" />
-                                {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                 <label htmlFor="collapsible" className="lbl-toggle">
                                     Display the error stack
                                 </label>
@@ -117,7 +116,6 @@ export default class BigShield extends Component {
                             <br />
                             <div className="wrap-collabsible2">
                                 <input id="collapsible2" className="toggle2" type="checkbox" />
-                                {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                 <label htmlFor="collapsible2" className="lbl-toggle2">
                                     Display the component stack
                                 </label>
