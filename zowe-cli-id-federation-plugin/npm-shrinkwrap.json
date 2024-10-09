@@ -13,7 +13,7 @@
       },
       "devDependencies": {
         "@types/jest": "29.5.13",
-        "@types/node": "18.19.55",
+        "@types/node": "20.10.0",
         "@typescript-eslint/eslint-plugin": "5.62.0",
         "@typescript-eslint/parser": "5.62.0",
         "@zowe/cli": "7.29.3",
@@ -2444,11 +2444,10 @@
       }
     },
     "node_modules/@types/node": {
-      "version": "18.19.55",
-      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/@types/node/-/node-18.19.55.tgz",
-      "integrity": "sha512-zzw5Vw52205Zr/nmErSEkN5FLqXPuKX/k5d1D7RKHATGqU7y6YfX9QxZraUzUrFGqH6XzOzG196BC35ltJC4Cw==",
+      "version": "20.10.0",
+      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/@types/node/-/node-20.10.0.tgz",
+      "integrity": "sha512-D0WfRmU9TQ8I9PFx9Yc+EBHw+vSpIub4IDvQivcp26PtPrdMGAq5SDcpXEo/epqa/DXotVpekHiLNTg3iaKXBQ==",
       "dev": true,
-      "license": "MIT",
       "dependencies": {
         "undici-types": "~5.26.4"
       }
