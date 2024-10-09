@@ -89,7 +89,7 @@ dependencyResolutionManagement {
                 strictly '[1.4.20,2.0['
                 prefer '1.4.20'
             }
-            version('jgit', '6.10.0.202406032230-r')
+            version('jgit', '7.0.0.202409031743-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '5.1.0.4882')
             version('gradleRelease', '3.0.2')
