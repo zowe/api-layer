@@ -30,10 +30,8 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             version('googleErrorprone', '2.33.0')
             version('gradleGitProperties', '2.4.2') // Used in classpath dependencies
-            version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('guava', '33.3.1-jre')
-            // version('hamcrest', '1.3')
-            version('hamcrest', '2.2')
+            version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.4')
             version('infinispan', '15.0.10.Final')
@@ -55,7 +53,7 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.1.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '9.4.56.v20240826')
+            version('jettyWebSocketClient', '12.0.14')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.12.6')
@@ -84,18 +82,12 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.2.RELEASE')
             version('velocity', '2.4')
             version('woodstoxCore', '7.0.0')
-            version('xstream') {
-                // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
-                strictly '[1.4.20,2.0['
-                prefer '1.4.20'
-            }
-            version('jgit', '6.10.0.202406032230-r')
+            version('jgit', '7.0.0.202409031743-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '5.1.0.4882')
             version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.2.1')
-            version('taskTree', '2.1.1')
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
@@ -222,7 +214,6 @@ dependencyResolutionManagement {
             library('swagger_inflector', 'io.swagger', 'swagger-inflector').versionRef('swaggerInflector')
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
-            library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').versionRef('springBootGraphQl')
 
@@ -244,7 +235,6 @@ dependencyResolutionManagement {
 
             plugin('gradle_git_properties', 'com.gorylenko.gradle-git-properties').versionRef('gradleGitProperties')
             plugin('gradle_node', 'com.github.node-gradle.node').versionRef('gradleNode')
-            plugin('task_tree', 'com.dorongold.task-tree').versionRef('taskTree')
             plugin('test_logger', 'com.adarshr.test-logger').versionRef('testLogger')
             plugin('micronaut_minimal_application', 'io.micronaut.minimal.application').versionRef('micronautPlugin')
             plugin('micronaut_docker', 'io.micronaut.docker').versionRef('micronautPlugin')

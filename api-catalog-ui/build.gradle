@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.gradle.node)
-    alias(libs.plugins.task.tree)
 }
 
 node {

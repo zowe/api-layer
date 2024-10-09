@@ -19,7 +19,7 @@ runs:
             uses: actions/setup-node@v4
             with:
                 node-version: '20'
-        -   run: npm install -g npm@9.3.1
+        -   run: npm install -g npm@10.7.0
             shell: bash
         -   name: Grant execute permission for gradlew
             run: chmod +x gradlew
