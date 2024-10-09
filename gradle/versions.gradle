@@ -254,7 +254,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.8')
+            version('logback', '1.5.9')
             version('mockitoCore', '5.14.1')
             version('mockitoInline', '5.2.0')
 
