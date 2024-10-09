@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('guava', '33.3.1-jre')
             // version('hamcrest', '1.3')
-            version('hamcrest', '2.2')
+            version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.4')
             version('infinispan', '15.0.10.Final')
