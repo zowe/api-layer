@@ -37,7 +37,7 @@
         "ts-jest": "29.2.5",
         "ts-node": "10.9.2",
         "typedoc": "0.26.8",
-        "typescript": "5.6.2"
+        "typescript": "5.6.3"
       },
       "peerDependencies": {
         "@zowe/imperative": "5.27.1"
@@ -1988,17 +1988,6 @@
       "optional": true,
       "engines": {
         "node": ">=14"
-      }
-    },
-    "node_modules/@popperjs/core": {
-      "version": "2.11.8",
-      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/@popperjs/core/-/core-2.11.8.tgz",
-      "integrity": "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==",
-      "dev": true,
-      "peer": true,
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/popperjs"
       }
     },
     "node_modules/@shikijs/core": {
@@ -12336,10 +12325,11 @@
       }
     },
     "node_modules/typescript": {
-      "version": "5.6.2",
-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.6.2.tgz",
-      "integrity": "sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw==",
+      "version": "5.6.3",
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.6.3.tgz",
+      "integrity": "sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==",
       "dev": true,
+      "license": "Apache-2.0",
       "bin": {
         "tsc": "bin/tsc",
         "tsserver": "bin/tsserver"

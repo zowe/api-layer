@@ -48,7 +48,7 @@
         "sass": "1.79.4",
         "stream": "0.0.3",
         "swagger-ui-react": "5.17.14",
-        "undici": "6.19.8",
+        "undici": "6.20.0",
         "url": "0.11.4",
         "util": "0.12.5",
         "uuid": "10.0.0"
@@ -138,7 +138,7 @@
     "overrides": {
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",
-        "got": "14.4.2",
+        "got": "14.4.3",
         "react-error-overlay": "6.0.11",
         "tough-cookie": "5.0.0",
         "@braintree/sanitize-url": "6.0.4",
@@ -148,8 +148,8 @@
         "@babel/traverse": "7.25.7"
     },
     "engines": {
-        "npm": "=10.7.0",
-        "node": "=20.14.0"
+        "npm": "=10.9.0",
+        "node": "=20.18.0"
     },
     "browserslist": [
         ">0.2%",
