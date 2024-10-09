@@ -13,6 +13,7 @@ import {ProfileConstants} from "./api/ProfileConstants";
 
 const config: IImperativeConfig = {
     commandModuleGlobs: ["**/cli/*/*.definition!(.d).*s"],
+    // @ts-expect-error to disable ESLINT
     pluginHealthCheck: __dirname + "/healthCheck.Handler",
     pluginSummary: "Zowe CLI Identity Federation plug-in",
     pluginAliases: ["idf"],

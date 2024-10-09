@@ -17,6 +17,7 @@ describe("imperative config", () => {
     // Removed snapshot due to pluginHealthCheck path varies from machine to machine.
     it("config should match expected values", () => {
         expect(config.name).toBe("id-federation");
+        // @ts-expect-error to disable ESLINT
         expect(config.pluginHealthCheck).toContain("healthCheck.Handler");
         expect(config.pluginSummary).toBe("Zowe CLI Identity Federation plug-in");
         expect(config.productDisplayName).toBe("Zowe CLI Identity Federation Plug-in");
