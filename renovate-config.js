@@ -38,6 +38,7 @@ module.exports = {
     printConfig: true,
     labels: ['dependencies'],
     dependencyDashboardLabels: ['dependencies'],
+    ignoreDeps: ['history','jsdom','react-router-dom','@mui/icons-material','@mui/material','@material-ui/core','@material-ui/icons'],
     commitMessagePrefix: 'chore: ',
     prHourlyLimit: 0, // removes rate limit for PR creation per hour
     npmrc: 'legacy-peer-deps=true\nregistry=https://zowe.jfrog.io/artifactory/api/npm/npm-org/', //for updating lock-files
