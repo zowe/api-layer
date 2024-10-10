@@ -84,6 +84,10 @@
   "peerDependencies": {
     "@zowe/imperative": "8.1.0"
   },
+    "engines": {
+        "npm": "=10.9.0",
+        "node": "=20.18.0"
+    },
   "jest": {
     "modulePathIgnorePatterns": [
       "__tests__/__snapshots__/"
