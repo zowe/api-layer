@@ -167,7 +167,7 @@ messages:
       type: ERROR
       text: "Invalid body provided in request to create personal access token"
       reason: "The request body is not valid"
-      action: "Use a valid body in the request. Format of a message: {validity: int , scopes: [string]}."
+      action: "Use a valid body in the request. Format of a message: `{validity: int , scopes: [string]}`."
 
     # Personal access token messages
 
@@ -183,7 +183,7 @@ messages:
       number: ZWEAT608
       type: ERROR
       text: "Error mapping between distributed and mainframe identity. Reason: %s %s"
-      reason: "Unexpected error occurred when mapping between distributed and mainframe identity "
+      reason: "Unexpected error occurred when mapping between distributed and mainframe identity"
       action: "Contact Broadcom support."
 
     - key: org.zowe.apiml.security.common.OIDCMappingFailed

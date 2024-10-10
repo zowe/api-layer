@@ -100,7 +100,7 @@ messages:
       - The Gateway was not found. The Transform service cannot perform the request. Wait for the Gateway to be discovered.\n
       - The URI is not valid. Ensure the service is providing a valid URL.\n
       - Not able to select a route for the URL of the specific service. The original URL is used. If necessary, check the routing metadata of the service.\n
-      - The path of the service URL is not valid. Ensure the service is providing the correct path.\n"
+      - The path of the service URL is not valid. Ensure the service is providing the correct path."
 
     - key: org.zowe.apiml.apicatalog.serviceNotFound
       number: ZWEAC706
@@ -124,7 +124,7 @@ messages:
       action: "Refer to the specific printed message. Possible causes include:\n
       - The URI is not valid. Ensure the service is providing a valid URL.\n
       - Not able to select a route for the URL of the specific service. The original URL is used. If necessary, check the routing metadata of the service.\n
-      - The path of the service URL is not valid. Ensure the service is providing the correct path.\n"
+      - The path of the service URL is not valid. Ensure the service is providing the correct path."
 
     - key: org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed
       number: ZWEAC709

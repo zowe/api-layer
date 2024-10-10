@@ -29,7 +29,7 @@ jobs:
               run: |
                   git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/docs-site.git
                   cd docs-site
-                  git checkout v3-doc-branch
+                  git checkout master
                   cd ../docs/docgen/
                   java -jar Docgen-1.0.jar ./config.yml
                   cp ../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md original-codes.md
