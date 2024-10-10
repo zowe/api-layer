@@ -62,6 +62,6 @@
     },
     "homepage": "https://github.com/zowe/api-layer#readme",
     "devDependencies": {
-        "concurrently": "6.5.1"
+        "concurrently": "9.0.1"
     }
 }

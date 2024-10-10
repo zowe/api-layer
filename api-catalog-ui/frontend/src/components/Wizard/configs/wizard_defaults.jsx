@@ -11,7 +11,6 @@
  * Define default values for different enablers
  */
 
-// eslint-disable-next-line import/prefer-default-export
 export const defaultPJE = {
     SSL: { protocol: { value: 'TLSv1.2', hide: true } },
 };

@@ -6,7 +6,7 @@ exports[`id-federation map command integration tests should print the successful
 `;
 
 exports[`id-federation map command integration tests should return command error in case of csv config not found 1`] = `
-"Command Error:
+"Unable to perform this operation due to the following problem.
 The input CSV file does not exist.
 "
 `;
@@ -17,7 +17,7 @@ exports[`id-federation map command integration tests should return command error
 "The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
 The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.
 The mainframe user ID 'mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.
-Command Error:
+Unable to perform this operation due to the following problem.
 Error when trying to create the identity mapping.
 "
 `;
@@ -37,7 +37,7 @@ exports[`id-federation map command integration tests should return command error
 `;
 
 exports[`id-federation map command integration tests should return command error in case of invalid format csv config 1`] = `
-"Command Error:
+"Unable to perform this operation due to the following problem.
 Invalid CSV format: Invalid Record Length: columns length is 3, got 1 on line 1
 "
 `;

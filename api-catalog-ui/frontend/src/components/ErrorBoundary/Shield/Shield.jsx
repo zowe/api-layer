@@ -36,7 +36,6 @@ export default class Shield extends Component {
                 <div style={{ width: '40%' }}>
                     <h4 style={{ color: '#de1b1b' }}>{title}</h4>
                     <input id="collapsible" className="toggle" type="checkbox" />
-                    {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                     <label htmlFor="collapsible" className="lbl-toggle">
                         Display the error stack
                     </label>

@@ -13,7 +13,6 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore } from 'redux';
 import { createEpicMiddleware } from 'redux-observable';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ajax } from 'rxjs/ajax';
 import logger from 'redux-logger';
 import * as log from 'loglevel';

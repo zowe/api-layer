@@ -9,15 +9,15 @@
  */
 
 import {expect, describe, it} from '@jest/globals';
-
+import * as config from "../src/imperative";
 describe("imperative config", () => {
 
     // Will fail if imperative config object is changed. This is a sanity/protection check to ensure that any
     // changes to the configuration document are intended.
     // Removed snapshot due to pluginHealthCheck path varies from machine to machine.
     it("config should match expected values", () => {
-        const config = require("../src/imperative");
         expect(config.name).toBe("id-federation");
+        // @ts-expect-error to disable ESLINT
         expect(config.pluginHealthCheck).toContain("healthCheck.Handler");
         expect(config.pluginSummary).toBe("Zowe CLI Identity Federation plug-in");
         expect(config.productDisplayName).toBe("Zowe CLI Identity Federation Plug-in");
