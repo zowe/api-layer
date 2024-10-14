@@ -92,7 +92,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.6.1')
-            version('micronaut', '4.6.6')
+            version('micronaut', '4.7.0')
             version('micronautPlugin', '4.4.3')
             version('shadow', '8.1.1')
             version('checkstyle', '10.17.0')
