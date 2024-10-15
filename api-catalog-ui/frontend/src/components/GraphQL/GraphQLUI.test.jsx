@@ -85,15 +85,6 @@ describe('>>> GraphQL component tests', () => {
         });
     }
 
-    // function mockFetcherError() {
-    //     global.fetch = jest.fn();
-    //     jest.mock('graphql/utilities', () => ({
-    //         ...jest.requireActual('graphql/utilities'),
-    //         buildClientSchema: jest.fn((data) => data),
-    //     }));
-    //     global.fetch.mockRejectedValueOnce(new Error('Network Error'));
-    // }
-
     it('should render the GraphiQL container', async () => {
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
         expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
