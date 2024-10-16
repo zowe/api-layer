@@ -52,11 +52,11 @@
     "@eslint/js": "9.12.0",
     "@types/jest": "29.5.13",
     "@types/node": "20.16.11",
-    "@typescript-eslint/eslint-plugin": "8.8.1",
-    "@typescript-eslint/parser": "8.8.1",
-    "@zowe/cli": "8.1.1",
-    "@zowe/cli-test-utils": "8.1.1",
-    "@zowe/imperative": "8.1.0",
+    "@typescript-eslint/eslint-plugin": "8.9.0",
+    "@typescript-eslint/parser": "8.9.0",
+    "@zowe/cli": "8.2.0",
+    "@zowe/cli-test-utils": "8.2.0",
+    "@zowe/imperative": "8.2.0",
     "copyfiles": "2.4.1",
     "env-cmd": "10.1.0",
     "eslint": "9.12.0",
@@ -75,14 +75,14 @@
     "madge": "8.0.0",
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
-    "typedoc": "0.26.8",
+    "typedoc": "0.26.9",
     "typescript": "5.6.3"
   },
   "overrides": {
     "@babel/traverse": "7.25.7"
   },
   "peerDependencies": {
-    "@zowe/imperative": "8.1.0"
+    "@zowe/imperative": "8.2.0"
   },
     "engines": {
         "npm": "=10.9.0",

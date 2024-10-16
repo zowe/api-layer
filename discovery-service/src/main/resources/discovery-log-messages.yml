@@ -51,7 +51,7 @@ messages:
       text: "Unable to process static API definition data: '%s' - '%s'"
       reason: "A problem occurred while parsing a static API definition file."
       action: "Review the mentioned static API definition file for errors.\n
-      Refer to the specific log message to determine the exact cause of the problem:\n
+      Refer to the specific log message to determine the exact cause of the problem:\n\n
       - ServiceId is not defined in the file '%s'. The instance will not be created. Make sure to specify the ServiceId.\n
       - The `instanceBaseUrls` parameter of %s is not defined. The instance will not be created. Make sure to specify the `InstanceBaseUrl` property.\n
       - The API Catalog UI tile ID %s is invalid. The service %s will not have an API Catalog UI tile. Specify the correct catalog title ID.\n
