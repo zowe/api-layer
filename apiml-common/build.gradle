@@ -5,7 +5,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.eureka.client.v3
+    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.boot.starter.web
     implementation libs.spring.web
     implementation libs.spring.webmvc
