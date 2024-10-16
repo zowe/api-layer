@@ -70,7 +70,7 @@ dependencies {
     implementation libs.netty.reactor.core
     implementation libs.netty.reactor.http
 
-    implementation libs.spring.eureka.client.v3
+    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.boot.starter.security
 
     implementation libs.jackson.databind

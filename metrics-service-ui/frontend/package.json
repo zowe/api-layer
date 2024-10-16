@@ -7,7 +7,7 @@
         "@material-ui/core": "4.12.4",
         "@material-ui/icons": "4.11.3",
         "@wojtekmaj/enzyme-adapter-react-17": "0.6.7",
-        "axios": "1.7.4",
+        "axios": "1.7.7",
         "history": "4.10.1",
         "lodash": "4.17.21",
         "loglevel": "1.7.1",
@@ -69,10 +69,10 @@
         "got": "12.1.0",
         "tough-cookie": "4.1.4",
         "resolve-url-loader": "5.0.0",
-        "follow-redirects": "1.15.8",
+        "follow-redirects": "1.15.9",
         "webpack-dev-middleware": "5.3.4",
         "@babel/traverse": "7.24.7",
-        "serve-static": "1.16.0",
+        "serve-static": "1.16.2",
         "body-parser": "1.20.3"
     },
     "scripts": {
