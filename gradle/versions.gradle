@@ -67,12 +67,12 @@ dependencyResolutionManagement {
             version('log4j', '2.24.1')
             version('lombok', '1.18.34')
             version('netty', '4.1.114.Final')
-            version('nettyReactor', '1.1.22')
+            version('nettyReactor', '1.1.23')
             version('nimbusJoseJwt', '9.41.2')
             version('openApiDiff', '2.0.1')
             version('picocli', '4.7.6')
 
-            version('reactor', '3.6.10')
+            version('reactor', '3.6.11')
             version('restAssured', '5.5.0')
             version('rhino', '1.7.15')
             version('springDoc', '2.6.0')
@@ -244,8 +244,8 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.10')
-            version('mockitoCore', '5.14.1')
+            version('logback', '1.5.11')
+            version('mockitoCore', '5.14.2')
             version('mockitoInline', '5.2.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
