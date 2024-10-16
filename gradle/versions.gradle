@@ -7,8 +7,8 @@ dependencyResolutionManagement {
 
             version('springBoot', '2.7.18')
             version('springCloud', '2.2.10.RELEASE')
-            version('springCloudCommons', '3.1.8')
-            version('springCloudVersion3', '3.1.8')
+            version('springCloudCommons', '3.1.9')
+            version('springCloudVersion3', '3.1.9')
             version('springCloudCB', '2.1.8')
             version('springCloudGateway', '3.1.9')
             version('springSecurity') {
@@ -26,7 +26,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.5')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.770')
+            version('awsJavaSdk', '1.12.773')
             version('bouncyCastle', '1.78.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
@@ -40,7 +40,7 @@ dependencyResolutionManagement {
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
-            version('githubClassgraph', '4.8.175')
+            version('githubClassgraph', '4.8.177')
             version('gradleGitProperties', '2.2.4') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.11.0')
@@ -98,11 +98,11 @@ dependencyResolutionManagement {
             }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.112.Final')
-            version('nettyReactor', '1.1.22')
+            version('netty', '4.1.114.Final')
+            version('nettyReactor', '1.1.23')
             version('nimbusJoseJwt', '9.40')
             version('openApiDiff', '2.0.1')
-            version('ow2asm', '9.7')
+            version('ow2asm', '9.7.1')
             version('picocli', '4.7.6')
 
             // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
@@ -123,13 +123,13 @@ dependencyResolutionManagement {
                 strictly '[1.6.15, 1.7.0['
                 prefer '1.6.15'
             }
-            version('swagger3Core', '2.2.23')
+            version('swagger3Core', '2.2.25')
             version('swagger3Parser', '2.1.22')
             version('swaggerCore', '1.6.14')
             version('swaggerInflector', '2.0.12')
-            version('swaggerJaxrs2', '2.2.23')
+            version('swaggerJaxrs2', '2.2.25')
             version('thymeleaf', '3.1.2.RELEASE')
-            version('tomcat', '9.0.93')
+            version('tomcat', '9.0.96')
             version('velocity', '2.4')
             version('woodstoxCore', '6.7.0')
             version('woodstoxStax2', '4.2.2')
