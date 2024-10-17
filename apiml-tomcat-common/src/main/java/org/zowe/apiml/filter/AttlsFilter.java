@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.filter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
@@ -28,30 +29,45 @@ import java.security.cert.X509Certificate;
 /**
  * This filter will add X509 certificate from InboundAttls
  */
+@Slf4j
 public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        byte[] rawCertificate = null;
+
         try {
-            byte[] certificate = InboundAttls.getCertificate();
-            if (certificate != null && certificate.length > 0) {
-                populateRequestWithCertificate(request, certificate);
-            }
+            rawCertificate = InboundAttls.getCertificate();
         } catch (Exception e) {
-            logger.error("Not possible to get certificate from AT-TLS context", e);
-            AttlsErrorHandler.handleError(response, "Exception reading certificate");
+            log.error("Not possible to get rawCertificate from AT-TLS context", e);
+            AttlsErrorHandler.handleError(response, "Exception reading rawCertificate");
         }
+
+        if (rawCertificate != null && rawCertificate.length > 0) {
+            log.debug("Certificate length: {}", rawCertificate.length);
+            try {
+                populateRequestWithCertificate(request, rawCertificate);
+            } catch (CertificateException ce) {
+                log.error("Cannot process rawCertificate: {}\n{}", ce.getMessage(), convert(rawCertificate));
+                AttlsErrorHandler.handleError(response, "Exception reading rawCertificate");
+            }
+        }
+
         filterChain.doFilter(request, response);
     }
 
-    public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {
+    private String convert(byte[] rawCertificate) {
         StringBuilder sb = new StringBuilder();
         sb.append("-----BEGIN CERTIFICATE-----\n");
         sb.append(Base64.encodeBase64String(rawCertificate));
         sb.append("\n-----END CERTIFICATE-----");
+        return sb.toString();
+    }
+
+    public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {
         X509Certificate certificate = (X509Certificate) CertificateFactory
             .getInstance("X509")
-            .generateCertificate(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8)));
+            .generateCertificate(new ByteArrayInputStream(convert(rawCertificate).getBytes(StandardCharsets.UTF_8)));
         X509Certificate[] certificates = new X509Certificate[1];
         certificates[0] = certificate;
         request.setAttribute("javax.servlet.request.X509Certificate", certificates);
