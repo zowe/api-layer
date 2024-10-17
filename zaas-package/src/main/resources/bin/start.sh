@@ -70,6 +70,7 @@
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_network_server_tls_attls
+# - ZWE_zowe_network_client_tls_attls
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
@@ -147,10 +148,15 @@ fi
 echo "Setting loader path: "${ZAAS_LOADER_PATH}
 
 ATTLS_ENABLED="false"
-# ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
-if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
+ATTLS_CLIENT_ENABLED="false"
+
+if [ "${ZWE_zowe_network_server_tls_attls}" = "true" ]; then
   ATTLS_ENABLED="true"
 fi
+if [ "${ZWE_zowe_network_client_tls_attls}" = "true" ]; then
+  ATTLS_CLIENT_ENABLED="true"
+fi
+
 if [ "${ATTLS_ENABLED}" = "true" ]; then
   ZWE_configs_server_ssl_enabled="false"
   if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
@@ -159,10 +165,11 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
   ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
 fi
 
-# Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
+internalProtocol="https"
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+    internalProtocol=http
 fi
 
 if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
@@ -323,16 +330,16 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-5}} \
     -Dapiml.security.useInternalMapper=${ZWE_configs_apiml_security_useInternalMapper:-${ZWE_components_gateway_apiml_security_useInternalMapper:-true}} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-false}} \
-    -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-${ZWE_components_gateway_apiml_security_x509_externalMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/x509/map"}} \
+    -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-${ZWE_components_gateway_apiml_security_x509_externalMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/x509/map"}} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_components_gateway_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \
     -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-true}}} \
-    -Dapiml.security.x509.certificatesUrl=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates"}} \
+    -Dapiml.security.x509.certificatesUrl=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates"}} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-${ZWE_components_gateway_apiml_security_authorization_provider:-}} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-${ZWE_components_gateway_apiml_security_authorization_endpoint_enabled:-false}} \
-    -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"}} \
+    -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"}} \
     -Dapiml.security.saf.provider=${ZWE_configs_apiml_security_saf_provider:-${ZWE_components_gateway_apiml_security_saf_provider:-"rest"}} \
-    -Dapiml.security.saf.urls.authenticate=${ZWE_configs_apiml_security_saf_urls_authenticate:-${ZWE_components_gateway_apiml_security_saf_urls_authenticate:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/authenticate"}} \
-    -Dapiml.security.saf.urls.verify=${ZWE_configs_apiml_security_saf_urls_verify:-${ZWE_components_gateway_apiml_security_saf_urls_verify:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
+    -Dapiml.security.saf.urls.authenticate=${ZWE_configs_apiml_security_saf_urls_authenticate:-${ZWE_components_gateway_apiml_security_saf_urls_authenticate:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/authenticate"}} \
+    -Dapiml.security.saf.urls.verify=${ZWE_configs_apiml_security_saf_urls_verify:-${ZWE_components_gateway_apiml_security_saf_urls_verify:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE}} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-${ZWE_components_gateway_apiml_security_authorization_resourceNamePrefix:-APIML.}} \
     -Dapiml.security.zosmf.applid=${ZWE_configs_apiml_security_zosmf_applid:-${ZWE_components_gateway_apiml_security_zosmf_applid:-IZUDFLT}} \
@@ -340,7 +347,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-${ZWE_components_gateway_apiml_security_oidc_clientId:-}} \
     -Dapiml.security.oidc.clientSecret=${ZWE_configs_apiml_security_oidc_clientSecret:-${ZWE_components_gateway_apiml_security_oidc_clientSecret:-}} \
     -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-${ZWE_components_gateway_apiml_security_oidc_registry:-}} \
-    -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
+    -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_components_gateway_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \
     -Dapiml.security.oidc.jwks.uri=${ZWE_configs_apiml_security_oidc_jwks_uri:-${ZWE_components_gateway_apiml_security_oidc_jwks_uri:-}} \
     -Dapiml.security.oidc.jwks.refreshInternalHours=${ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours:-${ZWE_components_gateway_apiml_security_oidc_jwks_refreshInternalHours:-1}} \

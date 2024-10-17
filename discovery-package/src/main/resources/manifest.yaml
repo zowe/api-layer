@@ -21,6 +21,7 @@ build:
 commands:
   start: bin/start.sh
   validate: bin/validate.sh
+  configure: bin/configure.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
   # tag all files
