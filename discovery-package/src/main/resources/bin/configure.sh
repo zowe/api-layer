@@ -33,9 +33,8 @@ if [ "$ZWE_zowe_network_client_tls_attls" = "true" ]; then
     ZOSMF_SCHEME=http
 fi
 
-chtag -tc ISO8859-1 $SOURCE_FILE
-
 if [ -e "$SOURCE_FILE" ]; then
+    chtag -tc ISO8859-1 $SOURCE_FILE
     sed -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE > $DEST_FILE
     iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE > $SOURCE_FILE
     chtag -tc ISO8859-1 $SOURCE_FILE
