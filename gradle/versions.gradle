@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.5')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.773')
+            version('awsJavaSdk', '1.12.774')
             version('bouncyCastle', '1.78.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
