@@ -16,7 +16,7 @@ dependencyResolutionManagement {
 
             version('glassfishHk2', '3.1.1')
             version('zosUtils', '2.0.5')
-            version('aws', '1.12.773')
+            version('aws', '1.12.774')
             version('awaitility', '4.2.2')
             version('bouncyCastle', '1.78.1')
             version('caffeine', '3.1.8')
