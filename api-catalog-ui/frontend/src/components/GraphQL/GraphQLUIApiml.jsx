@@ -19,7 +19,7 @@ import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
  * @param {string} graphqlUrl - The GraphQL endpoint URL.
  * @returns {string} The full URL for the GraphQL endpoint.
  */
-function getUrl(graphqlUrl) {
+export function getUrl(graphqlUrl) {
     const location = `${window.location.protocol}//${window.location.host}`;
     const urlForPathName = new URL(graphqlUrl);
     const pathName = urlForPathName.pathname;
