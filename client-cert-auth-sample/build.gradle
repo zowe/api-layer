@@ -11,9 +11,6 @@ repositories {
 
 dependencies {
     implementation libs.http.client5
-    implementation libs.http
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 test {
