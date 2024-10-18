@@ -135,7 +135,8 @@
         "source-map-explorer": "2.5.3",
         "start-server-and-test": "2.0.8",
         "tmpl": "1.0.5",
-        "yaml": "2.6.0"
+        "yaml": "2.6.0",
+        "undici": "6.19.8"
     },
     "overrides": {
         "nth-check": "2.1.1",
