@@ -145,7 +145,7 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
   ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
 fi
 
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_CLIENT_ENABLED" = "true" ]; then
     externalProtocol="https"
 else
     externalProtocol="http"
@@ -153,7 +153,7 @@ fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "$ATTLS_ENABLED" = "true" -o "$ATTLS_CLIENT_ENABLED" = "true" ]; then # Keep current 2.18 behaviour, change in v3
+if [ "$ATTLS_ENABLED" = "true" -o "$ATTLS_CLIENT_ENABLED" = "true" ]; then # Keep current 2.18 behaviour, changed in v3
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
