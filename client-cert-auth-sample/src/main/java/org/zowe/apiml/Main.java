@@ -44,15 +44,15 @@ public class Main {
             // Create new keystore
             var newKeyStore = KeyStore.getInstance("PKCS12");
             newKeyStore.load(null);
-            newKeyStore.setKeyEntry(PRIVATE_KEY_ALIAS, key, CLIENT_CERT_PASSWORD.toCharArray(), new Certificate[]{ cert }); // Create an entry with private key + signed certificate
+            newKeyStore.setKeyEntry(PRIVATE_KEY_ALIAS, key, CLIENT_CERT_PASSWORD.toCharArray(), new Certificate[]{cert}); // Create an entry with private key + signed certificate
 
             // Create SSL context with the client certificate
-            var sslContext = new SSLContextBuilder().loadTrustMaterial((chain,type)->true)
+            var sslContext = new SSLContextBuilder().loadTrustMaterial((chain, type) -> true)
                 .loadKeyMaterial(newKeyStore, CLIENT_CERT_PASSWORD.toCharArray()).build();
             var sslsf = new DefaultClientTlsStrategy(sslContext);
 
 
-            var connectionManager = BasicHttpClientConnectionManager.create((s)->sslsf);
+            var connectionManager = BasicHttpClientConnectionManager.create((s) -> sslsf);
 
             var clientBuilder = HttpClientBuilder.create().setConnectionManager(connectionManager);
 
