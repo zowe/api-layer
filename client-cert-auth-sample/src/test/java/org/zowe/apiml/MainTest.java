@@ -42,9 +42,6 @@ class MainTest {
         tm.init(ts);
 
         sslContext.init(km.getKeyManagers(), tm.getTrustManagers(), null);
-        sslContext.getDefaultSSLParameters().setNeedClientAuth(true);
-        sslContext.getDefaultSSLParameters().setWantClientAuth(true);
-
 
         var httpsConfigurator = new TestHttpsConfigurator(sslContext);
         httpServer.setHttpsConfigurator(httpsConfigurator);
