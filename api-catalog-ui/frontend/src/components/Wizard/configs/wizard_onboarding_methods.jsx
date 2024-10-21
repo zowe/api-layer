@@ -129,6 +129,13 @@ export const enablerData = [
         defaults: defaultNode,
     },
     {
+        text: 'Python Enabler',
+        categories: [
+            { name: 'PythonBasics', indentation: 'instance', nav: 'Basics' },
+            { name: 'PythonMetadata', indentation: 'instance/metadata', nav: 'Instance metadata' },
+        ],
+    },
+    {
         text: 'Static Onboarding',
         categories: [
             { name: 'Basic info', nav: 'Basics', inArr: true },
