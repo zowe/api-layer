@@ -22,10 +22,13 @@ import { springSpecificCategories } from './wizard_spring_categories';
 import { staticSpecificCategories } from './wizard_static_categories';
 import { nodeSpecificCategories } from './wizard_node_categories';
 import { micronautSpecificCategories } from './wizard_micronaut_categories';
+import { pythonSpecificCategories } from './wizard_python_categories';
+
 export const categoryData = [
     ...baseCategories,
     ...springSpecificCategories,
     ...staticSpecificCategories,
     ...nodeSpecificCategories,
     ...micronautSpecificCategories,
+    ...pythonSpecificCategories,
 ];
