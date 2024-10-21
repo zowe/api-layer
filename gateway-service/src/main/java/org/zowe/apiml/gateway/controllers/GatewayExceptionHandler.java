@@ -70,8 +70,12 @@ public class GatewayExceptionHandler {
         var serverCodecConfigurer = ServerCodecConfigurer.create();
 
         var serverWebExchange = new DefaultServerWebExchange(exchange.getRequest(), exchange.getResponse(), sessionManager, serverCodecConfigurer, localeContextResolver);
-        serverWebExchange.getResponse().setRawStatusCode(responseCode);
-        serverWebExchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
+        try {
+            serverWebExchange.getResponse().setRawStatusCode(responseCode);
+            serverWebExchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
+        } catch (UnsupportedOperationException e) {
+            log.debug("Cannot update response", e);
+        }
 
         Message message = messageService.createMessage(messageCode, args);
         try {
