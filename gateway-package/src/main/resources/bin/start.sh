@@ -190,7 +190,6 @@ if [ "${ATTLS_CLIENT_ENABLED}" = "true" -o "${ATTLS_ENABLED}" = "true" ]; then
 fi
 
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
-    export ZWE_zOSMF_scheme="http"
     internalProtocol=http
 fi
 
