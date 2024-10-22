@@ -49,6 +49,9 @@ eureka:
 spring:
     cloud:
         gateway:
+            x-forwarded:
+                prefix-append: false
+                prefix-enabled: true
             filter:
                 secure-headers:
                     disable: content-security-policy,permitted-cross-domain-policies,download-options
