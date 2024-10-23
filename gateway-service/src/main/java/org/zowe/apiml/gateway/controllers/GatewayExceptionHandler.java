@@ -140,7 +140,7 @@ public class GatewayExceptionHandler {
 
     @ExceptionHandler(SSLException.class)
     public Mono<Void> handleSslException(ServerWebExchange exchange, SSLException ex) {
-        log.debug("SSL exception on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        log.debug("SSL exception on " + exchange.getRequest().getURI(), ex);
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.tlsError", exchange.getRequest().getURI(), ex.getMessage());
     }
 
