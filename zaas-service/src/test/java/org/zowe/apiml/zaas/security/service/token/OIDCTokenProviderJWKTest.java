@@ -59,8 +59,6 @@ class OIDCTokenProviderJWKTest {
         oidcTokenProviderJwk = new OIDCTokenProviderJWK(new DefaultClock());
         ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwkRefreshInterval", 1);
         ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
-        oidcTokenProviderJwk.clientId = "client_id";
-        oidcTokenProviderJwk.clientSecret = "client_secret";
     }
 
     @Nested
@@ -161,26 +159,6 @@ class OIDCTokenProviderJWKTest {
         @Test
         void whenTokenIsEmpty_thenReturnInvalid() {
             assertFalse(oidcTokenProviderJwk.isValid(""));
-        }
-    }
-
-    @Nested
-    class GivenInvalidConfiguration {
-
-        @ParameterizedTest
-        @NullSource
-        @EmptySource
-        void whenInvalidClientId_thenReturnInvalid(String id) {
-            oidcTokenProviderJwk.clientId = id;
-            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
-        }
-
-        @ParameterizedTest
-        @NullSource
-        @EmptySource
-        void whenInvalidClientSecret_thenReturnInvalid(String secret) {
-            oidcTokenProviderJwk.clientSecret = secret;
-            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
         }
     }
 
