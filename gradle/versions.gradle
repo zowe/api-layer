@@ -87,7 +87,7 @@ dependencyResolutionManagement {
             version('sonarGradlePlugin', '5.1.0.4882')
             version('gradleRelease', '3.0.2')
             version('gradleLicencer', '0.6.1')
-            version('gradleJibPlugin', '3.2.1')
+            version('gradleJibPlugin', '3.4.3')
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
