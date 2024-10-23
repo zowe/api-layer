@@ -58,12 +58,6 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
     @Value("${apiml.security.oidc.registry:}")
     String registry;
 
-    @Value("${apiml.security.oidc.clientId:}")
-    String clientId;
-
-    @Value("${apiml.security.oidc.clientSecret:}")
-    String clientSecret;
-
     @Value("${apiml.security.oidc.jwks.uri}")
     private String jwksUri;
 

@@ -364,6 +364,57 @@
                                                                     }
                                                                 }
                                                             ]
+                                                        },
+                                                        "oidc": {
+                                                            "type": "object",
+                                                            "description": "OIDC configuration.",
+                                                            "properties": {
+                                                                "enabled": {
+                                                                    "type": "boolean",
+                                                                    "description": "Enable authentication with OIDC token.",
+                                                                    "default": false
+                                                                },
+                                                                "registry": {
+                                                                    "type": "string",
+                                                                    "description": "Registry name."
+                                                                },
+                                                                "jwks": {
+                                                                    "type": "object",
+                                                                    "description": "JWKS configuration",
+                                                                    "properties": {
+                                                                        "uri": {
+                                                                            "type": "string",
+                                                                            "description": "JWK set URL for OIDC token validation."
+                                                                        },
+                                                                        "refreshInternalHours": {
+                                                                            "type": "integer",
+                                                                            "description": "How often are JWKs renewed.",
+                                                                            "default": 1
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "userInfo": {
+                                                                    "type": "object",
+                                                                    "description": "OIDC user info endpoint configuration",
+                                                                    "properties": {
+                                                                        "uri": {
+                                                                            "type": "string",
+                                                                            "description": "OIDC user info endpoint URL."
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "validationType": {
+                                                                    "type": "string",
+                                                                    "description": "How OIDC token is validated.",
+                                                                    "enum": ["JWK","endpoint"],
+                                                                    "default": "JWK"
+                                                                }
+                                                            }
+                                                        },
+                                                        "allowtokenrefresh": {
+                                                            "type": "boolean",
+                                                            "description": "Allow JWT to refresh.",
+                                                            "default": false
                                                         }
                                                     }
                                                 },
