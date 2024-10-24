@@ -9,8 +9,38 @@
  */
 export const pythonSpecificCategories = [
     {
-        text: 'PythonBasics',
+        text: 'SSL for Python',
         content: {
+            certificate: {
+                value: '',
+                question: 'Certificate:',
+                tooltip: 'Example: ssl/localhost.keystore.cer',
+            },
+            keyStore: {
+                value: '',
+                question: 'The keystore file used to store the private key (keyring: set to SAF keyring location):',
+                tooltip: 'Example: ssl/localhost.keystore.key',
+            },
+            caFile: {
+                value: '',
+                question: 'Certificate Authority file:',
+                tooltip: 'Example: ssl/localhost.pem',
+            },
+            keyPassword: {
+                value: '',
+                question: 'The password associated with the private key:',
+                type: 'password',
+                tooltip: 'password',
+            },
+        },
+    },
+    {
+        text: 'Eureka',
+        content: {
+            ssl: {
+                value: false,
+                question: 'Turn SSL on for Eureka',
+            },
             host: {
                 value: '',
                 question: 'The host to be used:',
@@ -21,30 +51,112 @@ export const pythonSpecificCategories = [
                 question: 'The IP address to be used:',
                 tooltip: 'Example: 127.0.0.1',
             },
+            port: {
+                value: '',
+                question: 'The port to be used:',
+                tooltip: 'Example: 10011',
+            },
+            servicePath: {
+                value: '',
+                question: 'The service path:',
+                tooltip: 'Example: /eureka/apps/',
+            },
+            maxRetries: {
+                value: '',
+                question: 'The maximum number of retries:',
+                hide: true,
+                tooltip: 'Number of retries before failing. Example: 30',
+            },
+            requestRetryDelay: {
+                value: '',
+                question: 'The request retry delay:',
+                hide: true,
+                tooltip: 'Milliseconds to wait between retries. Example: 1000',
+            },
+            registryFetchInterval: {
+                value: '',
+                question: 'The interval for registry interval:',
+                hide: true,
+                tooltip:
+                    'How often does Eureka client pull the service list from Eureka server. The default is 30 seconds. Example: 5',
+            },
+        },
+    },
+    {
+        text: 'Instance',
+        content: {
+            app: {
+                value: '',
+                question: 'App ID:',
+                tooltip: 'Example: hwexpress',
+            },
+            vipAddress: {
+                value: '',
+                question: 'Virtual IP address:',
+                tooltip: 'Example: hwexpress',
+            },
+            instanceId: {
+                value: '',
+                question: 'Instance ID:',
+                tooltip: 'Example: localhost:hwexpress:10020',
+            },
             homePageUrl: {
                 value: '',
-                question: 'The homepage:',
-                tooltip: 'Example: https://localhost:10019/',
+                question: 'The URL of the home page:',
+                tooltip: 'Example: https://localhost:10020/',
             },
             statusPageUrl: {
                 value: '',
                 question: 'The status page:',
                 tooltip: 'Example: /application/info',
             },
+            healthCheckUrl: {
+                value: '',
+                question: 'The health check page:',
+                tooltip: 'Example: /application/health',
+            },
+            hostname: {
+                value: '',
+                question: 'Host name:',
+                tooltip: 'Example: localhost',
+            },
+            ipAddr: {
+                value: '',
+                question: 'IP address:',
+                tooltip: 'Example: 127.0.0.1',
+            },
+            secureVipAddress: {
+                value: '',
+                question: 'Secure virtual IP address:',
+                tooltip: 'Example: hwexpress',
+            },
             port: {
                 value: '',
-                question: 'The port to be used:',
-                tooltip: 'Example: 10011',
+                question: 'Port:',
+                tooltip: 'Example: 10018',
+            },
+            nonSecurePortEnabled: {
+                value: false,
+                question: 'Enable?',
+            },
+            securePort: {
+                value: '',
+                question: 'Security port:',
+                tooltip: 'Example: 10018',
+            },
+            securePortEnabled: {
+                value: true,
+                question: 'Enable?',
             },
         },
     },
     {
-        text: 'PythonMetadata',
+        text: 'Metadata',
         content: {
             'apiml.catalog.tile.id': {
                 value: '',
                 question: 'Tile ID for the API ML catalog:',
-                tooltip: 'Example: samplepythonservice',
+                tooltip: 'Example: pythonservice',
             },
             'apiml.catalog.tile.title': {
                 value: '',
@@ -69,12 +181,22 @@ export const pythonSpecificCategories = [
             'apiml.routes.api_v1.serviceUrl': {
                 value: '',
                 question: 'API service URL:',
-                tooltip: 'Example: /api/v1',
+                tooltip: 'Example: /pythonservice',
             },
-            'apiml.service.id': {
+            'apiml.apiInfo.0.apiId': {
                 value: '',
-                question: 'Service Id:',
-                tooltip: 'Example: python_enabler',
+                question: 'A unique identifier to the API in the API ML:',
+                tooltip: 'Example: zowe.apiml.pythonservice',
+            },
+            'apiml.apiInfo.0.gatewayUrl': {
+                value: '',
+                question: 'The base path at the API Gateway where the API is available:',
+                tooltip: 'Example: api/v1',
+            },
+            'apiml.apiInfo.0.swaggerUrl': {
+                value: '',
+                question: 'The base path at the API Gateway where the API is available:',
+                tooltip: 'Example: https://localhost:10018/apidoc',
             },
             'apiml.service.title': {
                 value: '',
@@ -84,18 +206,7 @@ export const pythonSpecificCategories = [
             'apiml.service.description': {
                 value: '',
                 question: 'Service description:',
-                tooltip:
-                    'Example: The Proxy Server is an HTTP HTTPS, and Websocket server built upon python and ExpressJS.',
-            },
-            'apiml.apiInfo.0.swaggerUrl': {
-                value: '',
-                question: 'The base path at the API Gateway where the API is available:',
-                tooltip: 'Example: https://localhost:10020/ swagger.json',
-            },
-            'apiml.apiInfo.0.apiId': {
-                value: '',
-                question: 'A unique identifier to the API in the API ML:',
-                tooltip: 'Example: zowe.apiml.hwexpress',
+                tooltip: 'Sample API services to demonstrate Python Onboarding Enabler',
             },
             'apiml.apiInfo.0.version': {
                 value: '',
