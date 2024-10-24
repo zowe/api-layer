@@ -1,4 +1,12 @@
-import os
+"""
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+"""
 import yaml
 import logging
 
@@ -20,17 +28,6 @@ class ConfigLoader:
         try:
             with open(self.config_file, 'r') as f:
                 config = yaml.safe_load(f) or {}
-
-            # Make sure 'instance' exists in the configuration
-            config['instance'] = config.get('instance', {})
-
-            # Override with environment variables if available, ensuring the correct structure
-            config['instance']['host'] = os.getenv('INSTANCE_HOST', config['instance'].get('host'))
-
-            config['instance']['ipAddress'] = os.getenv('INSTANCE_IP', config['instance'].get('ipAddress'))
-            config['instance']['homePageUrl'] = os.getenv('HOMEPAGE_URL', config['instance'].get('homePageUrl'))
-            config['instance']['statusPageUrl'] = os.getenv('STATUS_PAGE_URL', config['instance'].get('statusPageUrl'))
-
             return config
         except FileNotFoundError:
             logger.error("Configuration file not found.")
