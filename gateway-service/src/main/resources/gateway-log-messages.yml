@@ -118,3 +118,10 @@ messages:
       text: "Cannot receive information about services on API Gateway with apimlId '%s' because: %s"
       reason: "Cannot connect to the Gateway service."
       action: "Make sure that the external Gateway service is running and the truststore of the both Gateways contain the corresponding certificate."
+
+    - key: org.zowe.apiml.gateway.connectionsLimitApproached
+      number: ZWESG429
+      type: ERROR
+      text: "Request was denied access."
+      reason: "Connections limit exceeded."
+      action: "Wait for the number of active connections to decrease before retrying your request."

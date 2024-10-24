@@ -85,6 +85,7 @@ apiml:
     routing:
         instanceIdHeader: false
         ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
+        servicesToLimitRequestRate: discoverableclient
     service:
         apimlId: apiml1
         corsEnabled: true
