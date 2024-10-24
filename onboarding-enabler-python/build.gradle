@@ -1,0 +1,17 @@
+task createVenv(type: Exec) {
+    commandLine 'python', '-m', 'venv', 'venv'
+}
+
+task installDependencies(type: Exec) {
+    dependsOn createVenv
+    commandLine './venv/bin/pip', 'install', '-r', 'requirements.txt'
+}
+
+task buildPython(type: Exec) {
+    dependsOn installDependencies
+    commandLine './venv/bin/python', 'setup.py', 'sdist'
+}
+
+jar {
+    enabled false
+}
