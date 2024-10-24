@@ -49,9 +49,15 @@ ssl_context.load_cert_chain(
 
 @app.route("/registerInfo", methods=['GET'])
 def register_python_enabler():
-    """Endpoint to manually register the service."""
+    """Test Endpoint to manually register the service."""
     enabler.register()
     return jsonify({"message": "Registered with Python eureka client to Discovery service"})
+
+@app.route("/unregisterInfo", methods=['GET'])
+def unregister_python_enabler():
+    """Test Endpoint to manually unregister the service."""
+    enabler.unregister()
+    return jsonify({"message": "Unregistered Python eureka client from Discovery service"})
 
 
 @app.route("/hello", methods=['GET'])
@@ -70,13 +76,6 @@ def getSwagger():
             mimetype='application/json'
         )
         return response
-
-@app.route("/unregisterInfo", methods=['GET'])
-def unregister_python_enabler():
-    """Endpoint to manually unregister the service."""
-    enabler.unregister()
-    return jsonify({"message": "Unregistered Python eureka client from Discovery service"})
-
 
 # investigate how to get /python_enabler_service/application/info link on discovery service
 # localhost:10018/python_enabler_service/application/info works if routed correctly on line 71, but link doesn't appear in discovery service.
