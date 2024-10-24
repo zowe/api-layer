@@ -20,6 +20,8 @@ instance:
   hostName: 'localhost'
   ipAddr: '127.0.0.1'
   secureVipAddress: pythonservice
+  statusPageUrl: /application/info
+  healthCheckUrl: /application/health
   port: 10018
   nonSecurePortEnabled': false
   securePort: 10018

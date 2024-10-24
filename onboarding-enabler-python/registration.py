@@ -108,6 +108,8 @@ class PythonEnabler:
                     instance_secure_port=int(secure_instance_port) if secure_instance_port else None,
                     secure_vip_addr=instance_config.get("secureVipAddress"),
                     home_page_url=instance_config.get('homePageUrl'),
+                    status_page_url=instance_config.get("statusPageUrl"),
+                    health_check_url=instance_config.get("healthCheckUrl"),
                     metadata=instance_config.get('metadata', {}),
                 )
                 logger.info("Service registered successfully.")
