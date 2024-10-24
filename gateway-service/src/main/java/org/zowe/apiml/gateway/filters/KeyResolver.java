@@ -27,11 +27,11 @@ public class KeyResolver implements org.springframework.cloud.gateway.filter.rat
 
     @Override
     public Mono<String> resolve(org.springframework.web.server.ServerWebExchange exchange) {
-        return Mono.justOrEmpty(exchange.getRequest().getCookies().getOrDefault(cookieName, Collections.emptyList())
+        return Mono.just(exchange.getRequest().getCookies().getOrDefault(cookieName, Collections.emptyList())
             .stream()
             .findFirst()
             .map(HttpCookie::getValue)
-            .orElse(null)
+            .orElse("")
         );
     }
 }
