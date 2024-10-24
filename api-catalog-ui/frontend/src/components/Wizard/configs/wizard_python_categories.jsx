@@ -88,22 +88,22 @@ export const pythonSpecificCategories = [
             app: {
                 value: '',
                 question: 'App ID:',
-                tooltip: 'Example: hwexpress',
+                tooltip: 'Example: pythonservice',
             },
             vipAddress: {
                 value: '',
                 question: 'Virtual IP address:',
-                tooltip: 'Example: hwexpress',
+                tooltip: 'Example: pythonservice',
             },
             instanceId: {
                 value: '',
                 question: 'Instance ID:',
-                tooltip: 'Example: localhost:hwexpress:10020',
+                tooltip: 'Example: localhost:pythonservice:10018',
             },
             homePageUrl: {
                 value: '',
                 question: 'The URL of the home page:',
-                tooltip: 'Example: https://localhost:10020/',
+                tooltip: 'Example: https://localhost:10018/',
             },
             statusPageUrl: {
                 value: '',
@@ -128,7 +128,7 @@ export const pythonSpecificCategories = [
             secureVipAddress: {
                 value: '',
                 question: 'Secure virtual IP address:',
-                tooltip: 'Example: hwexpress',
+                tooltip: 'Example: pythonservice',
             },
             port: {
                 value: '',
