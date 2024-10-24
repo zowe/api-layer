@@ -66,7 +66,6 @@ public class RoutingConfig {
         rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
         filters.add(rateLimiterFilter);
 
-
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
             removeHeaders.setName("RemoveRequestHeader");
