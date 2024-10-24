@@ -25,15 +25,6 @@ logging.basicConfig(level=logging.INFO)
 eurekalogger.set_level("DEBUG")
 
 
-def unregister():
-    """Unregister the service from the Discovery Service."""
-    try:
-        ec.stop()
-        logger.info("Service unregistered successfully.")
-    except Exception as e:
-        logger.error(f"Error during un-registration: {e}")
-
-
 class PythonEnabler:
     logger.info("Python Onboarding Enabler initialized")
 
@@ -116,3 +107,10 @@ class PythonEnabler:
             except Exception as e:
                 logger.error(f"Error during registration: {e}")
 
+    def unregister(self):
+        """Unregister the service from the Discovery Service."""
+        try:
+            ec.stop()
+            logger.info("Service unregistered successfully.")
+        except Exception as e:
+            logger.error(f"Error during un-registration: {e}")
