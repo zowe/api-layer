@@ -1,10 +1,9 @@
-
 {
-    "swagger": "2.0",
+    "openapi": "3.0.1",
     "info": {
-        "description": "Sample API showing how to use an Express application in the API Mediation Layer ecosystem",
+        "description": "Sample API showing how to use a FastAPI application in the API Mediation Layer ecosystem",
         "version": "1.0.0",
-        "title": "Helloworld in Express"
+        "title": "Hello World in FastAPI"
     },
     "tags": [
         {
@@ -16,9 +15,6 @@
             }
         }
     ],
-    "schemes": [
-        "https"
-    ],
     "paths": {
         "/hello": {
             "get": {
@@ -26,29 +22,32 @@
                     "hello"
                 ],
                 "summary": "Retrieve a Hello world greeting",
-                "description": "A **\"Hello, World!\" program** is a [computer program](https://en.wikipedia.org/wiki/Computer_program) that outputs or displays \"Hello, World!\" to a user. Being a very simple program in most [programming languages](https://en.wikipedia.org/wiki/Programming_language), it is often used to illustrate the basic [syntax](https://en.wikipedia.org/wiki/Syntax) of a programming language for a working program, and as such is often the very first program people write",
-                "operationId": "hello",
-                "produces": [
-                    "application/json"
-                ],
+                "description": "A **\"Hello, World!\" program** is a [computer program](https://en.wikipedia.org/wiki/Computer_program) that outputs or displays \"Hello, World!\" to a user. Being a very simple program in most [programming languages](https://en.wikipedia.org/wiki/Programming_language), it is often used to illustrate the basic [syntax](https://en.wikipedia.org/wiki/Syntax) of a programming language for a working program, and as such is often the very first program people write.",
+                "operationId": "getHello",
                 "responses": {
                     "200": {
                         "description": "successful operation",
-                        "schema": {
-                            "$ref": "#/definitions/Greeting"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Greeting"
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     },
-    "definitions": {
-        "Greeting": {
-            "type": "object",
-            "properties": {
-                "greeting": {
-                    "type": "string",
-                    "example": "Hello world!"
+    "components": {
+        "schemas": {
+            "Greeting": {
+                "type": "object",
+                "properties": {
+                    "greeting": {
+                        "type": "string",
+                        "example": "Hello world!"
+                    }
                 }
             }
         }

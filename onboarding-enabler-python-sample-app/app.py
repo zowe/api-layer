@@ -93,6 +93,16 @@ def getApplicationInfo():
     )
     return response
 
+@app.route("/application/health", methods=['GET'])
+def getApplicationHealth():
+    data = {"status": "UP"}
+    response = app.response_class(
+        response=json.dumps(data),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
 if __name__ == "__main__":
     # Load SSL configuration
     ssl_context = (
