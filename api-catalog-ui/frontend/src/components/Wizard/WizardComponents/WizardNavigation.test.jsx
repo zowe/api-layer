@@ -31,7 +31,7 @@ jest.mock(
         }
 );
 describe('>>> Wizard navigation tests', () => {
-    it('should handle category change', () => {
+    it('should handle category change', async () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const validateInput = jest.fn();
@@ -46,11 +46,11 @@ describe('>>> Wizard navigation tests', () => {
                 validateInput={validateInput}
             />
         );
-        userEvent.click(screen.getByRole('tab'));
+        await userEvent.click(screen.getByRole('tab'));
         expect(changeWizardCategory).toHaveBeenCalled();
         expect(validateInput).toHaveBeenCalled();
     });
-    it('should validate all tabs on YAML tab click', () => {
+    it('should validate all tabs on YAML tab click', async () => {
         const next = jest.fn();
         const changeWizardCategory = jest.fn();
         const validateInput = jest.fn();
@@ -88,9 +88,9 @@ describe('>>> Wizard navigation tests', () => {
                 assertAuthorization={jest.fn()}
             />
         );
-        userEvent.click(screen.getByRole('tab', { name: 'Nav #1' }));
-        userEvent.click(screen.getByRole('tab', { name: 'Nav #2' }));
-        userEvent.click(screen.getByRole('tab', { name: 'YAML result' }));
+        await userEvent.click(screen.getByRole('tab', { name: 'Nav #1' }));
+        await userEvent.click(screen.getByRole('tab', { name: 'Nav #2' }));
+        await userEvent.click(screen.getByRole('tab', { name: 'YAML result' }));
         expect(validateInput).toHaveBeenCalledTimes(5);
     });
     it('should not validate upon accessing something else', () => {

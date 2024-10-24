@@ -42,8 +42,8 @@ export default class ServicesNavigationBar extends Component {
 
     handlePopstate = () => {
         const { services, storeCurrentTileId } = this.props;
-        const url = window.location.href;
-        if (url?.includes('/service')) {
+        const url = window.location.href ?? '';
+        if (url.includes('/service')) {
             const parts = url.split('/');
             const serviceId = parts[parts.length - 1];
             const correctTile = services.find((tile) =>

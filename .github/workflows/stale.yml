@@ -11,7 +11,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           # General rules applied to both, issues and pull requests (PRs)
           start-date: "2022-07-30T00:00:00Z"
@@ -26,7 +26,7 @@ jobs:
             This issue has been automatically marked as stale because it has not had
             recent activity. It will be closed if no further activity occurs.
           close-issue-message: >
-            This issue has been automatically closed due to lack of activity. If you disagree, please comment on reason 
+            This issue has been automatically closed due to lack of activity. If you disagree, please comment on reason
             why and reopen the issue
 
           # Rules applied to PRs
@@ -35,5 +35,5 @@ jobs:
             This pull request has been automatically marked as stale because it has not had
             recent activity. It will be closed if no further activity occurs.
           close-pr-message: >
-            This pull request has been automatically closed due to lack of activity. If you disagree, please comment on 
+            This pull request has been automatically closed due to lack of activity. If you disagree, please comment on
             reason why and reopen pull request

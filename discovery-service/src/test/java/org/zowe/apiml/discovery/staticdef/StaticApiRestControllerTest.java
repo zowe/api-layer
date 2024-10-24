@@ -20,10 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,7 +52,6 @@ class StaticApiRestControllerTest {
 
     @Test
     void listDefinitions() throws Exception {
-        String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
 
         when(registrationService.getStaticInstances()).thenReturn(instancesInfo);

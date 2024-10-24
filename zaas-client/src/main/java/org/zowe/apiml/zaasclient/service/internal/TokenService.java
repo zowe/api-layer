@@ -10,11 +10,10 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Operations related to the tokens. Mainly JWT token.

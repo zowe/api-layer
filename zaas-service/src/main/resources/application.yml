@@ -1,4 +1,5 @@
 logging:
+    config: classpath:logback-zaas.xml
     level:
         ROOT: INFO
         org.zowe.apiml: INFO
@@ -16,6 +17,7 @@ logging:
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
 
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -99,6 +101,9 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
+        gateway:
+            mvc.enabled: false
+            enabled: false
     mvc:
         throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
         log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
@@ -110,6 +115,7 @@ spring:
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+        web-application-type: servlet
 
 springdoc:
     writer-with-order-by-keys: true
@@ -214,8 +220,10 @@ logging:
         ROOT: INFO
         org.zowe.apiml: DEBUG
         org.springframework: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
@@ -223,7 +231,7 @@ logging:
         org.ehcache: DEBUG
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 ---
 spring.config.activate.on-profile: diag

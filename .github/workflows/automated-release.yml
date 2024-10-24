@@ -23,7 +23,7 @@ jobs:
         timeout-minutes: 40
 
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -43,11 +43,12 @@ jobs:
               run: git config user.name "Zowe Robot"
 
             - name: Release to NPM automatic
+              shell: bash
               run: |
                   cd onboarding-enabler-nodejs
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   echo "registry=$DIST_REGISTRY" >> ~/.npmrc
-                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
+                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} --allow-same-version
                   npm publish --access public
                   git add package.json
                   git add package-lock.json
@@ -62,7 +63,14 @@ jobs:
                   DIST_REGISTRY: https://registry.npmjs.org/
 
             - name: Release with Gradle automatic
-              run: ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME
+              shell: bash
+              run: |
+                  ./gradlew release -x test -x checkstyleTest -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                  released_version=$(cat gradle.properties | grep "version=" | sed "s/version=//g")
+                  sed -i "/REACT_APP_ZOWE_BUILD_INFO=/c\REACT_APP_ZOWE_BUILD_INFO=${released_version}" api-catalog-ui/frontend/.env
+                  git add api-catalog-ui/frontend/.env
+                  git commit -m "[skip ci] Update version"
+                  git push
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -82,5 +90,6 @@ jobs:
                         caching-service/build/reports/**
                         api-catalog-services/build/reports/**
                         zaas-service/build/reports/**
+                        /home/runner/.npm/logs/**
 
             - uses: ./.github/actions/teardown

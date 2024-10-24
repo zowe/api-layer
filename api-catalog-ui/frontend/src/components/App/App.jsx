@@ -16,7 +16,7 @@ import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
-import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
+import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
 
 function App({ history }) {
     const isLoading = true;
@@ -50,7 +50,7 @@ function App({ history }) {
                                         exact
                                         path={dashboardPath}
                                         render={(props, state) => (
-                                            <BigShield>
+                                            <BigShield history={history}>
                                                 <AsyncDashboardContainer {...props} {...state} />
                                             </BigShield>
                                         )}

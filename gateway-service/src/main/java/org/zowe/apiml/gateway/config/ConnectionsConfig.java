@@ -173,39 +173,41 @@ public class ConnectionsConfig {
     }
 
     /**
+     * @param httpClient             default http client
+     * @param headersFiltersProvider header filter for spring gateway router
+     * @param properties             client HTTP properties
+     * @return instance of NettyRoutingFilterApiml
+     */
+    @Bean
+    public NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+        return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, true), headersFiltersProvider, properties);
+    }
+
+    public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
+        var sslContextBuilder = SslProvider.builder().sslContext(getSslContext(useClientCert));
+        if (!nonStrictVerifySslCertificatesOfServices) {
+            sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        }
+        return httpClient.secure(sslContextBuilder.build());
+    }
+
+    /**
      * This bean processor is used to override bean routingFilter defined at
      * org.springframework.cloud.gateway.config.GatewayAutoConfiguration.NettyConfiguration#routingFilter(HttpClient, ObjectProvider, HttpClientProperties)
      * <p>
      * There is no simple way how to override this specific bean, but bean processing could handle that.
      *
-     * @param httpClient             default http client
-     * @param headersFiltersProvider header filter for spring gateway router
-     * @param properties             client HTTP properties
      * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
      */
     @Bean
-    public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-        // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
-        SslContext justTruststore = sslContext(false);
-        SslContext withKeystore = sslContext(true);
-
-        var builderJustTruststore = SslProvider.builder().sslContext(justTruststore);
-        var builderWithKeystore = SslProvider.builder().sslContext(withKeystore);
-        if (!nonStrictVerifySslCertificatesOfServices) {
-            builderJustTruststore.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
-            builderWithKeystore.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
-        }
-
-        // construct http clients with different SSL configuration - with / without client certs
-        var httpClientNoCert = httpClient.secure(builderJustTruststore.build());
-        var httpClientClientCert = httpClient.secure(builderWithKeystore.build());
+    public static BeanPostProcessor routingFilterHandler(ApplicationContext context) {
         return new BeanPostProcessor() {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
                 if ("routingFilter".equals(beanName)) {
                     log.debug("Updating routing bean {}", NettyRoutingFilterApiml.class);
                     // once is creating original bean by autoconfiguration replace it with custom implementation
-                    return new NettyRoutingFilterApiml(httpClientNoCert, httpClientClientCert, headersFiltersProvider, properties);
+                    return context.getBean(NettyRoutingFilterApiml.class);
                 }
                 // do not touch any other bean
                 return bean;
@@ -216,7 +218,7 @@ public class ConnectionsConfig {
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
      */
-    SslContext sslContext(boolean setKeystore) {
+    SslContext getSslContext(boolean setKeystore) {
         try {
             SslContextBuilder builder = SslContextBuilder.forClient();
 
@@ -339,7 +341,7 @@ public class ConnectionsConfig {
         ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
         HttpClientSslConfigurer sslConfigurer
     ) {
-        SslContext sslContext = sslContext(false);
+        SslContext sslContext = getSslContext(false);
         return new HttpClientFactory(properties, serverProperties, sslConfigurer, customizers) {
             @Override
             protected HttpClient createInstance() {
@@ -351,13 +353,12 @@ public class ConnectionsConfig {
     @Bean
     @Primary
     public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false))).build();
     }
 
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
-        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true))).build();
     }
 
     @Bean

@@ -18,7 +18,6 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.zowe.apiml.config.AdditionalRegistrationParser.DISCOVERYSERVICEURLS_PATTERN;
 
@@ -30,8 +29,8 @@ public class AdditionalRegistrationCondition implements Condition {
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         String dcUrls = context.getEnvironment().getProperty("apiml.service.additionalRegistration[0].discoveryServiceUrls");
         List<String> additionalKeys = ((StandardEnvironment) context.getEnvironment()).getSystemEnvironment()
-            .entrySet().stream().map(e -> e.getKey().toUpperCase()).filter(key -> DISCOVERYSERVICEURLS_PATTERN.matcher(key).matches())
-            .collect(Collectors.toList());
+            .keySet().stream().map(String::toUpperCase).filter(key -> DISCOVERYSERVICEURLS_PATTERN.matcher(key).matches())
+            .toList();
         boolean isAdditionalRegistrationsDetected = dcUrls != null || !additionalKeys.isEmpty();
         log.debug("isAdditionalRegistrationsDetected: {}", isAdditionalRegistrationsDetected);
         return isAdditionalRegistrationsDetected;

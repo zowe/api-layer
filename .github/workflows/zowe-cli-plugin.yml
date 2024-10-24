@@ -1,28 +1,24 @@
 name: zowe-cli-plugin-deployment
 
 on:
-    push:
-        branches: [ v2.x.x, v3.x.x ]
-    pull_request:
-        branches: [ v2.x.x, v3.x.x ]
     workflow_dispatch:
 
 jobs:
     release:
-        if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
         timeout-minutes: 40
+        permissions: write-all
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
                   persist-credentials: false
                   ref: ${{ github.ref }}
 
             - name: Use Node.js LTS
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: 'lts/*'
 
@@ -47,7 +43,7 @@ jobs:
                   npm run build
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
 
-            - uses: zowe-actions/octorelease@master
+            - uses: zowe-actions/octorelease@v1
               with:
                 working-dir: zowe-cli-id-federation-plugin
               env:

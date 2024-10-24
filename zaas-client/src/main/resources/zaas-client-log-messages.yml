@@ -10,7 +10,7 @@ messages:
       type: ERROR
       text: "Token is expired for URL"
       reason: "The application using the token kept it for longer than the expiration time"
-      action: "When this error occurs it is necessary to get a new JWT token. "
+      action: "When this error occurs it is necessary to get a new JWT token."
 
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INVALID_AUTHENTICATION
       number: ZWEAS120
@@ -38,7 +38,7 @@ messages:
       type: ERROR
       text: "An exception occurred while trying to get the token"
       reason: "General exception. There are more pieces of information in the message"
-      action: "Log the message from the exception and then handle the exception based on the information provided there. "
+      action: "Log the message from the exception and then handle the exception based on the information provided there."
 
     # HTTP,Protocol messages
     # 400-499

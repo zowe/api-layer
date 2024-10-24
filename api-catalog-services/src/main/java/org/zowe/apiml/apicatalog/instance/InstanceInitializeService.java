@@ -10,15 +10,6 @@
 
 package org.zowe.apiml.apicatalog.instance;
 
-import org.zowe.apiml.apicatalog.model.APIContainer;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -29,6 +20,15 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
+import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.product.registry.CannotRegisterServiceException;
 
 import java.util.Collection;
 import java.util.List;
@@ -60,8 +60,8 @@ public class InstanceInitializeService {
      * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the discovery
      */
     @Retryable(
-        value = {RetryException.class},
-        exclude = CannotRegisterServiceException.class,
+        retryFor = {RetryException.class},
+        noRetryFor = CannotRegisterServiceException.class,
         maxAttempts = 5,
         backoff = @Backoff(delayExpression = "#{${apiml.service-registry.serviceFetchDelayInMillis}}"))
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
@@ -102,7 +102,7 @@ public class InstanceInitializeService {
         List<Application> listApplication = discoveryApplications.getRegisteredApplications()
             .stream()
             .filter(application -> !application.getInstances().isEmpty())
-            .collect(Collectors.toList());
+            .toList();
 
         // Return an empty string if no services are found after filtering
         if (listApplication.isEmpty()) {

@@ -86,7 +86,7 @@ public class ApplicationRegistry {
     public List<InstanceInfo> getInstances() {
         return instanceIdToService.values().stream()
             .map(MockService::getInstanceInfo)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public List<ServiceInstance> getServiceInstance(String serviceId) {

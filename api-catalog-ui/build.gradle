@@ -1,8 +1,5 @@
-import java.util.stream.Collectors
-
 plugins {
     alias(libs.plugins.gradle.node)
-    alias(libs.plugins.task.tree)
 }
 
 node {
@@ -94,7 +91,7 @@ task npmBuild(type: NpmTask) {
     inputs.files(fileTree('frontend').matching {
         include '**/.env*'
     }).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file('frontend/.eslintrc.js').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/eslint.config.mjs').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')

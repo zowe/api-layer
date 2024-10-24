@@ -210,16 +210,12 @@ public class SecurityUtils {
      */
     public static KeyStore loadKeyStore(String type, String path, char[] password) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         KeyStore ks = KeyStore.getInstance(type);
-        InputStream inputStream;
-        if (SecurityUtils.isKeyring(path)) {
-            inputStream = new URL(path).openStream();
-        } else {
-            inputStream = new FileInputStream(path);
+        try (InputStream inputStream = SecurityUtils.isKeyring(path) ?
+            new URL(path).openStream() : new FileInputStream(path)) {
+            ks.load(inputStream, password);
+            return ks;
         }
-        ks.load(inputStream, password);
-        return ks;
     }
-
     /**
      * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
      *

@@ -61,8 +61,9 @@ dependencies {
 
     implementation libs.apache.commons.lang3
     implementation libs.jackson.dataformat.yaml
+    implementation libs.caffeine
 
-    testImplementation(testFixtures(project(":integration-tests")))
+    testImplementation(testFixtures(project(":apiml-common")))
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.rest.assured

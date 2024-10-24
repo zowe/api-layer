@@ -1,9 +1,6 @@
 # API Mediation Layer
 
-[Build Status](https://github.com/zowe/api-layer/actions)
-
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=coverage)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
+[Workflows status overview](WORKFLOWS_STATUS_OVERVIEW.MD)
 
 The API Mediation Layer (API ML) provides a single point of access for mainframe service REST APIs. The API ML offers enterprise, cloud-like features such as high-availability, scalability, dynamic API discovery, consistent security, a single sign-on experience, and documentation. The API ML consists of three components: the Gateway, the Discovery Service, and the API Catalog. The API ML facilitates secure communication across loosely coupled microservices through the API Gateway. The Discovery Service enables you to determine the location and status of service instances running inside the API ML ecosystem. The API Catalog provides a user-friendly, easy-to-use interface to view all discovered services, their associated APIs, and Swagger documentation.
 
@@ -64,8 +61,6 @@ The following tools are required to build and develop the API Mediation Layer:
   ```sh
    npm run api-layer
    ```
-
-Alternatively, to use Docker to run the API ML, consult the [Docker README](docker/README.md).
 
 ## Security
 

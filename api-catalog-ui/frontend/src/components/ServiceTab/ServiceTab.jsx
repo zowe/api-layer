@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Link, Typography, Tooltip, MenuItem, Select, Button } from '@material-ui/core';
+import { Button, Link, MenuItem, Select, Tooltip, Typography } from '@material-ui/core';
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -142,7 +142,7 @@ export default class ServiceTab extends Component {
         if (!apis || typeof apis !== 'object') {
             return null;
         }
-        const apiKey = Object.keys(apis).find((key) => apis[key] && apis[key].graphqlUrl);
+        const apiKey = Object.keys(apis).find((key) => apis[key]?.graphqlUrl);
         return apiKey ? apis[apiKey].graphqlUrl : null;
     };
 
@@ -215,7 +215,6 @@ export default class ServiceTab extends Component {
                                     placement="bottom"
                                 >
                                     <Typography data-testid="base-path" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                         <label htmlFor="apiBasePath">API Base Path:</label>
                                         <span id="apiBasePath">{basePath}</span>
                                     </Typography>
@@ -226,7 +225,6 @@ export default class ServiceTab extends Component {
                                     placement="bottom"
                                 >
                                     <Typography data-testid="service-id" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                         <label htmlFor="serviceId">Service ID:</label>
                                         <span id="serviceId">{selectedService.serviceId}</span>
                                     </Typography>
@@ -237,7 +235,6 @@ export default class ServiceTab extends Component {
                                     placement="bottom"
                                 >
                                     <Typography data-testid="sso" variant="subtitle2">
-                                        {/* eslint-disable-next-line jsx-a11y/label-has-for */}
                                         <label htmlFor="sso">SSO:</label>
                                         <span id="sso">{sso}</span>
                                     </Typography>

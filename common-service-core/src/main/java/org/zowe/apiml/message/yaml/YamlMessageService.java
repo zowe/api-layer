@@ -55,7 +55,7 @@ public class YamlMessageService extends AbstractMessageService {
             Yaml yaml = new Yaml();
             MessageTemplates messageTemplates = yaml.loadAs(in, MessageTemplates.class);
             super.addMessageTemplates(messageTemplates);
-        } catch (YAMLException | IOException e) {
+        } catch (YAMLException | IOException | IllegalArgumentException e) {
             throw new MessageLoadException("There is problem with reading application messages file: " + messagesFilePath, e);
         }
     }

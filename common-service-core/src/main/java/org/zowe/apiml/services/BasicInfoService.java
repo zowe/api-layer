@@ -21,11 +21,7 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 
-import java.util.AbstractMap;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -33,11 +29,7 @@ import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 import static org.zowe.apiml.services.ServiceInfo.ApiInfoExtended;
-import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
-import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
-import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
-import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
-import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
+import static org.zowe.apiml.services.ServiceInfoUtils.*;
 
 /**
  * Similar to {@link org.zowe.apiml.gateway.services.ServicesInfoService} service which does not depend on gateway-service components.
@@ -136,7 +128,7 @@ public class BasicInfoService {
                 .map(instanceInfo -> eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata()))
                 .filter(a -> !a.isEmpty())
                 .distinct()
-                .collect(Collectors.toList());
+            .toList();
     }
 
     private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {

@@ -17,7 +17,9 @@ import com.netflix.discovery.shared.Applications;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ import org.zowe.apiml.apicatalog.util.ApplicationsWrapper;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
+import org.zowe.apiml.util.HttpClientMockHelper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,15 +61,16 @@ class InstanceRetrievalServiceTest {
     private DiscoveryConfigProperties discoveryConfigProperties;
 
     @Mock
-    CloseableHttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
+    @Mock
     private CloseableHttpResponse response;
 
     @BeforeEach
-    void setup() throws IOException {
-        response = mock(CloseableHttpResponse.class);
-        when(response.getCode()).thenReturn(HttpStatus.SC_OK);
-        when(httpClient.execute(any())).thenReturn(response);
+    void setup() {
+        HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
+        HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK);
+
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, httpClient);
     }
 
@@ -75,7 +79,7 @@ class InstanceRetrievalServiceTest {
         when(response.getCode()).thenReturn(HttpStatus.SC_FORBIDDEN).thenReturn(HttpStatus.SC_OK);
 
         instanceRetrievalService.getAllInstancesFromDiscovery(false);
-        verify(httpClient, times(2)).execute(any());
+        verify(httpClient, times(2)).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
     }
 
     @Test
@@ -94,12 +98,14 @@ class InstanceRetrievalServiceTest {
 
     @Test
     void testGetInstanceInfo_whenResponseHasEmptyBody() {
+        HttpClientMockHelper.mockResponse(response, "");
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }
 
     @Test
     void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
+        HttpClientMockHelper.mockResponse(response, "UNPARSABLE_JSON");
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }
@@ -137,7 +143,7 @@ class InstanceRetrievalServiceTest {
     }
 
     @Test
-    void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() throws IOException {
+    void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() {
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
     }

@@ -19,7 +19,7 @@ import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
  * @param {string} graphqlUrl - The GraphQL endpoint URL.
  * @returns {string} The full URL for the GraphQL endpoint.
  */
-function getUrl(graphqlUrl) {
+export function getUrl(graphqlUrl) {
     const location = `${window.location.protocol}//${window.location.host}`;
     const urlForPathName = new URL(graphqlUrl);
     const pathName = urlForPathName.pathname;
@@ -78,7 +78,7 @@ export default function GraphQLUIApiml(props) {
             try {
                 const introspectionQuery = getIntrospectionQuery();
                 const result = await fetcher({ query: introspectionQuery });
-                if (result && result.data) {
+                if (result?.data) {
                     const clientSchema = buildClientSchema(result.data);
                     setSchema(clientSchema);
                 } else {

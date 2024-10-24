@@ -49,7 +49,6 @@ public final class ApimlLogger {
         return new ApimlLogger(clazz, messageService);
     }
 
-
     /**
      * Method which returns ApimlLogger with null {@link MessageService}.
      * It is used for unit test environment.
@@ -74,6 +73,7 @@ public final class ApimlLogger {
             ObjectUtil.requireNotNull(parameters, "parameters can't be null");
 
             if (messageService == null) {
+                logger.warn(marker, "Logger is not properly initialized, unable to log custom error messages with key '{}' and arguments {}", key, parameters);
                 return null;
             }
             message = messageService.createMessage(key, parameters);
@@ -88,8 +88,13 @@ public final class ApimlLogger {
      * @param message the message
      */
     public void log(Message message) {
-        ObjectUtil.requireNotNull(message, "message can't be null");
-        ObjectUtil.requireNotNull(message.getMessageTemplate(), "message template can't be null");
+        try {
+            ObjectUtil.requireNotNull(message, "message can't be null");
+            ObjectUtil.requireNotNull(message.getMessageTemplate(), "message template can't be null");
+        } catch (IllegalArgumentException e) {
+            logInvalidArguments(e, message);
+            return;
+        }
 
         log(message.getMessageTemplate().getType(), message.mapToLogMessage());
     }
@@ -104,9 +109,14 @@ public final class ApimlLogger {
      */
     @SuppressWarnings("squid:S2629")
     public void log(MessageType messageType, String text, Object... arguments) {
-        ObjectUtil.requireNotNull(messageType, "messageType can't be null");
-        ObjectUtil.requireNotNull(text, "text can't be null");
-        ObjectUtil.requireNotNull(arguments, "arguments can't be null");
+        try {
+            ObjectUtil.requireNotNull(messageType, "messageType can't be null");
+            ObjectUtil.requireNotNull(text, "text can't be null");
+            ObjectUtil.requireNotNull(arguments, "arguments can't be null");
+        } catch (IllegalArgumentException e) {
+            logInvalidArguments(e, messageType, text, arguments);
+            return;
+        }
 
         switch (messageType) {
             case TRACE:
@@ -130,4 +140,13 @@ public final class ApimlLogger {
                 break;
         }
     }
+
+    private void logInvalidArguments(IllegalArgumentException e, Object... arguments) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(marker, "Invalid log message cannot be logged: {}", arguments, e);
+        } else {
+            logger.warn(marker, "Invalid log message cannot be logged: {}, enable debug for stack trace: {}", arguments, e.getMessage());
+        }
+    }
+
 }

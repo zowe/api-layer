@@ -30,7 +30,7 @@ export const wrapSelectors = {
 
 export function getSnippetContent(req, target, codeSnippet) {
     // get extended info about request
-    const { spec, oasPathMethod } = req.toJS();
+    const { spec, oasPathMethod } = req?.toJS?.() ?? {};
     const { path, method } = oasPathMethod;
     // Include query parameters in the path for comparison
     const query = req?.get('query');

@@ -106,7 +106,7 @@ public class CachingServiceClient {
                 if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
                     return response.getBody();
                 }
-                return null;
+                return Map.of();
             } else {
                 throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by response from caching service is null or has no body");
             }

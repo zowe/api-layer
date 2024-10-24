@@ -55,7 +55,7 @@ class PATAuthSourceServiceTest {
 
     @Test
     void returnPATSourceMapper() {
-        assertTrue(patAuthSourceService.getMapper().apply("token") instanceof PATAuthSource);
+        assertInstanceOf(PATAuthSource.class, patAuthSourceService.getMapper().apply("token"));
     }
 
     @Nested
@@ -115,7 +115,6 @@ class PATAuthSourceServiceTest {
         @Test
         void whenExceptionIsThrown_thenReturnTokenInvalid() {
             String serviceId = "service3";
-            //when(context.get(SERVICE_ID_KEY)).thenReturn(serviceId);
             when(tokenProvider.isValidForScopes(TOKEN, serviceId)).thenThrow(new RuntimeException());
             PATAuthSource authSource = new PATAuthSource(TOKEN);
 

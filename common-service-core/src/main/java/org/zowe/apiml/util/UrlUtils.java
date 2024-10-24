@@ -40,9 +40,8 @@ public class UrlUtils {
         if (url != null) {
             return url.replaceAll("\\W", "-");
         } else {
-            SecureRandom random = new SecureRandom();
             byte[] bytes = new byte[20];
-            random.nextBytes(bytes);
+            new SecureRandom().nextBytes(bytes);
             return Arrays.toString(bytes);
         }
     }

@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -44,14 +43,14 @@ public class StaticWebFingerProvider implements WebFingerProvider {
         List<WebFingerProperties.WebFingerConfig> clientConfig =
             webFingerProperties.getWebFinger().stream().filter(webFingerConfig ->
                     webFingerConfig.getClientId().equalsIgnoreCase(clientId))
-                .collect(Collectors.toList());
+                .toList();
 
         // update the response with stored configuration if any
         if (!clientConfig.isEmpty()) {
             List<WebFingerResponse.Link> links =
                 clientConfig.stream().map(webFingerConfig ->
                         new WebFingerResponse.Link(webFingerConfig.getWellKnown()))
-                    .collect(Collectors.toList());
+                    .toList();
             response.setLinks(links);
         }
         return response;

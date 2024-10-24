@@ -63,6 +63,12 @@ class CookieUtilTest {
             Stream<HttpCookie> httpCookieStream = CookieUtil.readCookies(header);
             assertTrue(httpCookieStream.toList().isEmpty());
         }
+
+        @Test
+        void givenInvalidCookie_thenReturnEmptyList() {
+            assertTrue(CookieUtil.parseCookieSuppress("invalid").isEmpty());
+        }
+
     }
 
     @Nested

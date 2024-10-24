@@ -10,10 +10,9 @@
 
 package org.zowe.apiml.zaasclient.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Get JWT tokens, PaasTickets and details about the Tokens.
@@ -34,7 +33,7 @@ public interface ZaasClient {
      *
      * @deprecated recommended to switch to {@link #login(String, char[], char[])} to handle cleaning up of passwords in memory
      */
-    @Deprecated
+    @Deprecated(forRemoval = false)
     String login(String userId, String password, String newPassword) throws ZaasClientException;
 
     /**
@@ -48,7 +47,7 @@ public interface ZaasClient {
      *
      * @deprecated recommended to switch to {@link #login(String, char[])} to handle cleaning up of passwords in memory
      */
-    @Deprecated
+    @Deprecated(forRemoval = false)
     String login(String userId, String password) throws ZaasClientException;
 
     /**

@@ -98,17 +98,17 @@ class SuccessfulQueryHandlerTest {
             authenticationService,
             tokenCreationService,
             new ArrayList<>());
-        AuthenticationService authenticationService = new AuthenticationService(
+        AuthenticationService authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             eurekaClient, restTemplate, cacheManager, new CacheUtils()
         );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
 
-        jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
+        jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         ObjectMapper mapper = new ObjectMapper();
-        successfulQueryHandler = new SuccessfulQueryHandler(mapper, authenticationService);
+        successfulQueryHandler = new SuccessfulQueryHandler(mapper, authService);
     }
 
     @Test

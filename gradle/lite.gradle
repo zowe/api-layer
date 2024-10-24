@@ -54,6 +54,7 @@ task liteLibJarAll(type: Jar) {
 }
 
 liteLibJarAll.dependsOn(":zaas-service:build")
+liteLibJarAll.dependsOn(":gateway-service:build")
 liteLibJarAll.dependsOn(":discovery-service:build")
 liteLibJarAll.dependsOn(":api-catalog-services:build")
 

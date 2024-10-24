@@ -39,6 +39,7 @@ eureka:
     client:
         fetchRegistry: true
         registerWithEureka: true
+        instanceInfoReplicationIntervalSeconds: 1
         region: default
         serviceUrl:
             defaultZone: ${apiml.service.discoveryServiceUrls}
@@ -61,6 +62,9 @@ spring:
                 registration:
                     okta:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
+    main:
+        banner-mode: ${apiml.banner:"off"}
+        web-application-type: reactive
 
 springdoc:
     api-docs:
@@ -124,15 +128,25 @@ server:
 logbackServiceName: ZWEAGW1
 
 logging:
+    config: classpath:logback-gateway.xml
     level:
         ROOT: INFO
         com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
+        org.springframework.beans: WARN
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        io.netty.resolver.dns: WARN
         javax.net.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
 management:
     endpoint:
@@ -154,6 +168,7 @@ logging:
     level:
         org.zowe.apiml: DEBUG
         org.springframework.cloud.gateway: DEBUG
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: DEBUG
         org.springframework.web.reactive: DEBUG
         org.springframework.web.reactive.socket: DEBUG
@@ -162,7 +177,7 @@ logging:
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
         org.apache.tomcat.util.net: DEBUG
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 ---
 spring.config.activate.on-profile: attls

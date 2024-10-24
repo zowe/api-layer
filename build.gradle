@@ -30,13 +30,16 @@ buildscript {
         classpath libs.gradle.release
         classpath libs.gradle.licencer
         classpath libs.gradle.jib.plugin
+        classpath libs.apache.compress
     }
 }
 
-import java.util.regex.Matcher
+
+import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
-import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
+
+import java.util.regex.Matcher
 
 //noinspection GroovyAssignabilityCheck
 group 'org.zowe.apiml'
@@ -92,6 +95,28 @@ allprojects {
         }
     }
 
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
+        }
+    }
+
+}
+
+configure(subprojects.findAll { it.name in [
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'caching-service',
+    'discovery-service',
+    'gateway-service',
+    'zaas-service'
+]}) {
+
+    configurations.all {
+        // it has been replaced by spring-jcl
+        exclude group: "commons-logging", module: "commons-logging"
+    }
+
 }
 
 configure(subprojects.findAll {it.name != 'platform'}) {
@@ -107,6 +132,7 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED'
+        jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED'
@@ -134,12 +160,6 @@ subprojects {
 
     tasks.withType(Test) {
         maxParallelForks = 1
-    }
-}
-
-task updateCatalogVersion {
-    ant.replaceregexp(match:'REACT_APP_ZOWE_BUILD_INFO=(.*)', replace:'REACT_APP_ZOWE_BUILD_INFO=' + version, flags:'g', byline:true) {
-        fileset(dir: 'api-catalog-ui/frontend', includes: '.env')
     }
 }
 

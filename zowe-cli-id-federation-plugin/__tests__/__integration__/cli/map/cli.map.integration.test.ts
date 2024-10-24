@@ -10,7 +10,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import {ITestEnvironment, runCliScript, stripProfileDeprecationMessages, TestEnvironment} from "@zowe/cli-test-utils";
+import {ITestEnvironment, runCliScript, TestEnvironment} from "@zowe/cli-test-utils";
 import {ITestPropertiesSchema} from "../../../__src__/environment/doc/ITestPropertiesSchema";
 import {Constants} from "../../../../src/api/Constants";
 import {expect, describe, it, beforeAll, afterAll} from '@jest/globals';
@@ -53,15 +53,6 @@ describe("id-federation map command integration tests", () => {
 
         expect(response.status).toBe(Constants.ZOWE_ERROR_CODE);
         expect(response.stderr.toString()).toMatchSnapshot();
-        expect(response.stdout.toString()).toMatchSnapshot();
-    });
-
-    it("should print the successful creation message from old school profile and other sources", () => {
-        const response = runCliScript(__dirname + "/__scripts__/map_old_profiles.sh", TEST_ENVIRONMENT, [csv]);
-
-        expect(stripProfileDeprecationMessages(response.stderr)).toBe("");
-        expect(response.status).toBe(Constants.OKAY_CODE);
-        expect(response.stdout.toString()).toContain("idf_ACF2_TST1.jcl' was created. Review and submit this JCL on the system TST1.");
         expect(response.stdout.toString()).toMatchSnapshot();
     });
 

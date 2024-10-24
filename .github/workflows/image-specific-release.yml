@@ -11,14 +11,14 @@ jobs:
     build-services:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
             -   name: Build services
-                run: ./gradlew clean build -x test
+                run: ./gradlew clean build -x test -x npmTest
 
             -   uses: ./.github/actions/teardown
 

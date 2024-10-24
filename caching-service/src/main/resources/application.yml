@@ -30,6 +30,7 @@ logging:
         org.springdoc: WARN
         org.springframework: WARN
         org.springframework.boot: OFF
+        org.jgroups.protocols: ERROR
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
@@ -37,6 +38,7 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         javax.net.ssl: ERROR
 
@@ -108,6 +110,9 @@ spring:
     cloud:
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
+        gateway:
+            mvc.enabled: false
+            enabled: false
     application:
         name: Caching service
     mvc:
@@ -116,6 +121,8 @@ spring:
     output.ansi.enabled: always
     main:
         allow-circular-references: true
+        banner-mode: ${apiml.banner:"off"}
+        web-application-type: servlet
 
 springdoc:
     pathsToMatch: /api/v1/**
@@ -159,6 +166,7 @@ management:
 logging:
     level:
         ROOT: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
         org.zowe.apiml: DEBUG
         org.zowe.apiml.enable: DEBUG
         org.zowe.apiml.caching: DEBUG
@@ -167,11 +175,12 @@ logging:
         org.apache.http: DEBUG
         com.netflix: INFO
         org.hibernate: INFO
+        org.jgroups.protocols: ERROR
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         org.springframework.security.web: INFO
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 spring.config.activate.on-profile: dev
 
@@ -194,3 +203,12 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.tomcat.util.net: DEBUG
+        org.jgroups: DEBUG

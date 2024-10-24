@@ -10,7 +10,10 @@
 
 package org.zowe.apiml.extension;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.extension.ExtensionDefinition.ApimlServices;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -21,14 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-
-import org.zowe.apiml.extension.ExtensionDefinition.ApimlServices;
-
-import lombok.extern.slf4j.Slf4j;
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 @Slf4j
 public class ExtensionConfigReader {
@@ -46,7 +43,7 @@ public class ExtensionConfigReader {
             .filter(Objects::nonNull)
             .map(ApimlServices::getBasePackage)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList())
+            .toList()
             .toArray(new String[0]);
     }
 

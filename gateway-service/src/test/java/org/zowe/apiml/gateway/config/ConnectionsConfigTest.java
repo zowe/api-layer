@@ -66,6 +66,8 @@ class ConnectionsConfigTest {
 
         ApplicationContext context;
 
+        ConnectionsConfig noContextConnectionsConfig = new ConnectionsConfig(null);
+
         @BeforeEach
         void setup() {
             context = mock(ApplicationContext.class);
@@ -76,30 +78,28 @@ class ConnectionsConfigTest {
 
         @Test
         void whenKeyringHasWrongFormatAndMissingPasswords_thenFixIt() {
-            ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
-            ReflectionTestUtils.setField(connectionsConfig, "keyStorePath", "safkeyring:///userId/ringId1");
-            ReflectionTestUtils.setField(connectionsConfig, "trustStorePath", "safkeyring:////userId/ringId2");
-            ReflectionTestUtils.setField(connectionsConfig, "context", context);
-            connectionsConfig.updateConfigParameters();
+            ReflectionTestUtils.setField(noContextConnectionsConfig, "keyStorePath", "safkeyring:///userId/ringId1");
+            ReflectionTestUtils.setField(noContextConnectionsConfig, "trustStorePath", "safkeyring:////userId/ringId2");
+            ReflectionTestUtils.setField(noContextConnectionsConfig, "context", context);
+            noContextConnectionsConfig.updateConfigParameters();
 
-            assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePath")).isEqualTo("safkeyring://userId/ringId1");
-            assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePath")).isEqualTo("safkeyring://userId/ringId2");
-            assertThat((char[]) ReflectionTestUtils.getField(connectionsConfig, "keyStorePassword")).isEqualTo("password".toCharArray());
-            assertThat((char[]) ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword")).isEqualTo("password".toCharArray());
+            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePath")).isEqualTo("safkeyring://userId/ringId1");
+            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePath")).isEqualTo("safkeyring://userId/ringId2");
+            assertThat((char[]) ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isEqualTo("password".toCharArray());
+            assertThat((char[]) ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isEqualTo("password".toCharArray());
         }
 
         @Test
         void whenKeystore_thenDoNothing() {
-            ConnectionsConfig connectionsConfig = new ConnectionsConfig(null);
-            ReflectionTestUtils.setField(connectionsConfig, "keyStorePath", "/path1");
-            ReflectionTestUtils.setField(connectionsConfig, "trustStorePath", "/path2");
-            ReflectionTestUtils.setField(connectionsConfig, "context", context);
-            connectionsConfig.updateConfigParameters();
+            ReflectionTestUtils.setField(noContextConnectionsConfig, "keyStorePath", "/path1");
+            ReflectionTestUtils.setField(noContextConnectionsConfig, "trustStorePath", "/path2");
+            ReflectionTestUtils.setField(noContextConnectionsConfig, "context", context);
+            noContextConnectionsConfig.updateConfigParameters();
 
-            assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePath")).isEqualTo("/path1");
-            assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePath")).isEqualTo("/path2");
-            assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePassword")).isNull();
-            assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword")).isNull();
+            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePath")).isEqualTo("/path1");
+            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePath")).isEqualTo("/path2");
+            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isNull();
+            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isNull();
         }
     }
 }

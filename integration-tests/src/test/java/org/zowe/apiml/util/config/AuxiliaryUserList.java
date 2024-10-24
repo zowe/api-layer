@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Class is supposed to hold a value string with username,password pairs separated by ;
@@ -35,7 +34,7 @@ public class AuxiliaryUserList {
                 s.split(",")[2],
                 null)
             )
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public List<Credentials> getCredentials(String key) {
@@ -50,6 +49,6 @@ public class AuxiliaryUserList {
                 null)
             )
             .filter(credentials -> key.equals(credentials.getKey()))
-            .collect(Collectors.toList());
+            .toList();
     }
 }

@@ -42,9 +42,9 @@ public class RoutingConfig {
         }
 
         if (!allowEncodedSlashes) {
-            var allowEncodedSlashes = new FilterDefinition();
-            allowEncodedSlashes.setName("ForbidEncodedSlashesFilterFactory");
-            filters.add(allowEncodedSlashes);
+            var encodedSlashesFilter = new FilterDefinition();
+            encodedSlashesFilter.setName("ForbidEncodedSlashesFilterFactory");
+            filters.add(encodedSlashesFilter);
         }
 
         var secureHeaders = new FilterDefinition();

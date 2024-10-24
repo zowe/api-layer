@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Class that contains the content made by a given logger.
@@ -106,7 +105,7 @@ public class LogMessageTracker {
     public List<ILoggingEvent> search(Pattern regex) {
         return logAppender.list.stream()
             .filter(event -> regex.matcher(event.getFormattedMessage()).find())
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -116,7 +115,7 @@ public class LogMessageTracker {
     public List<ILoggingEvent> search(String content) {
         return logAppender.list.stream()
             .filter(event -> event.getFormattedMessage().contains(content))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -128,7 +127,7 @@ public class LogMessageTracker {
         return logAppender.list.stream()
             .filter(event -> regex.matcher(event.getFormattedMessage()).find()
                 && event.getLevel().equals(level))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -140,7 +139,7 @@ public class LogMessageTracker {
         return logAppender.list.stream()
             .filter(event -> event.getFormattedMessage().contains(content)
                 && event.getLevel().equals(level))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -164,6 +163,6 @@ public class LogMessageTracker {
     public List<ILoggingEvent> getAllLoggedEventsWithLevel(Level level) {
         return logAppender.list.stream()
             .filter(event -> event.getLevel().equals(level))
-            .collect(Collectors.toList());
+            .toList();
     }
 }

@@ -1,6 +1,7 @@
 name: "Flag the error message changes and label the PR"
 
 on:
+    workflow_dispatch:
     schedule:
         # * is a special character in YAML so you have to quote this string
         - cron:  '0 0 * * 5'
@@ -16,12 +17,12 @@ jobs:
 
         steps:
             - name: Set up Node
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: '18'
 
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   ref: ${{ github.head_ref }}
 
@@ -29,7 +30,7 @@ jobs:
               run: |
                   git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/docs-site.git
                   cd docs-site
-                  git checkout v3-doc-branch
+                  git checkout master
                   cd ../docs/docgen/
                   java -jar Docgen-1.0.jar ./config.yml
                   cp ../../docs-site/docs/troubleshoot/troubleshoot-apiml-error-codes.md original-codes.md
@@ -42,7 +43,7 @@ jobs:
 
 
             - name: Store results
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: ErrorMessage-${{ env.JOB_ID }}
                   path: |

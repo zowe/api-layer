@@ -11,8 +11,11 @@
 package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
@@ -20,38 +23,50 @@ import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class EurekaInstanceRegisteredListenerTest {
+
+    @Mock
+    private MetadataTranslationService metadataTranslationService;
+
+    @Mock
+    private MetadataDefaultsService metadataDefaultsService;
+
+    private EurekaInstanceRegisteredListener eurekaInstanceRegisteredListener;
+
+    private final Map<String, String> metadata = new HashMap<>();
+
+    @BeforeEach
+    void setUp() {
+        eurekaInstanceRegisteredListener = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService);
+        reset(metadataTranslationService, metadataDefaultsService);
+    }
 
     @Test
     void getServiceId() {
-        MetadataTranslationService metadataTranslationService = Mockito.mock(MetadataTranslationService.class);
-        MetadataDefaultsService metadataDefaultsService = Mockito.mock(MetadataDefaultsService.class);
-
-        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService);
+        var serviceId = "serviceName";
 
         doAnswer(
             x -> {
-                assertEquals("serviceName", x.getArgument(0));
+                assertEquals(serviceId, x.getArgument(0));
                 return null;
             }
         ).when(metadataDefaultsService).updateMetadata(anyString(), any());
 
-        final Map<String, String> metadata = new HashMap<>();
-
         InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        when(instanceInfo.getInstanceId()).thenReturn("1:serviceName:2");
+        when(instanceInfo.getInstanceId()).thenReturn("1:" + serviceId + ":2");
         EurekaInstanceRegisteredEvent event = mock(EurekaInstanceRegisteredEvent.class);
         when(event.getInstanceInfo()).thenReturn(instanceInfo);
 
-        eirl.listen(event);
+        eurekaInstanceRegisteredListener.listen(event);
 
-        verify(metadataTranslationService, times(1)).translateMetadata("serviceName", metadata);
-        verify(metadataDefaultsService, times(1)).updateMetadata("serviceName", metadata);
+        verifyListenerMetadataOperations(serviceId);
     }
 
     private EurekaInstanceRegisteredEvent createEvent(String instanceId) {
@@ -66,12 +81,21 @@ class EurekaInstanceRegisteredListenerTest {
 
     @Test
     void registeredInstanceListen() {
-        EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class));
 
-        listener.listen(createEvent("host:service:instance"));
-        listener.listen(createEvent("unknown format"));
+        assertDoesNotThrow(() -> eurekaInstanceRegisteredListener.listen(createEvent("host:service:instance")));
+        verifyListenerMetadataOperations("service");
 
-        listener.listen(createEvent("host:GATEWAY:instance"));
+        assertDoesNotThrow(() -> eurekaInstanceRegisteredListener.listen(createEvent("unknown format")));
+        verifyListenerMetadataOperations(null);
+
+        assertDoesNotThrow(() -> eurekaInstanceRegisteredListener.listen(createEvent("host:GATEWAY:instance")));
+        verifyListenerMetadataOperations("GATEWAY");
+
+    }
+
+    private void verifyListenerMetadataOperations(String serviceId) {
+        verify(metadataTranslationService, times(1)).translateMetadata(serviceId, metadata);
+        verify(metadataDefaultsService, times(1)).updateMetadata(serviceId, metadata);
     }
 
 }

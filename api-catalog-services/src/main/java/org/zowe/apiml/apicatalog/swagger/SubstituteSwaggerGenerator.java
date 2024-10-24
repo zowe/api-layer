@@ -29,8 +29,8 @@ public class SubstituteSwaggerGenerator {
     private final VelocityEngine ve = new VelocityEngine();
 
     public SubstituteSwaggerGenerator() {
-        ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+        ve.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
+        ve.setProperty("resource.loader.classpath.class", ClasspathResourceLoader.class.getName());
         ve.init();
     }
 

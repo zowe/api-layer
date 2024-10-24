@@ -18,7 +18,7 @@
                                     "properties": {
                                         "port": {
                                             "$ref": "#/$defs/port",
-                                            "default": 7563
+                                            "default": 7558
                                         },
                                         "debug": {
                                             "type": "boolean",

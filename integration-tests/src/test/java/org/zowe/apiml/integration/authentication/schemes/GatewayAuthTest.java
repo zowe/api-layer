@@ -161,6 +161,27 @@ public class GatewayAuthTest implements TestWithStartedInstances {
             assertEquals(200, response.getStatusCode());
         }
 
+        @ParameterizedTest(name = "givenInvalidCookies_thenCredentialsAreTransformedAndInvalidCookiesAreRemoved {0} [{index}]")
+        @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
+        void givenInvalidCookies_thenCredentialsAreTransformedAndInvalidCookiesAreRemoved(String title, String basePath, Consumer<Response> assertions) {
+            String gatewayToken = SecurityUtils.gatewayToken(
+                ConfigReader.environmentConfiguration().getCredentials().getUser(),
+                ConfigReader.environmentConfiguration().getCredentials().getPassword()
+            );
+
+            Response response = given()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken)
+                .header(HttpHeaders.COOKIE, "cookie1=1;personalAccessToken;LtpaToken2=ltpa;cookie2=2")
+                .when()
+                .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
+            assertions.accept(response);
+            assertEquals("1", response.jsonPath().getString("cookies.cookie1"));
+            assertEquals("2", response.jsonPath().getString("cookies.cookie2"));
+            assertNull(response.jsonPath().getString("cookies.LtpaToken2"));
+            assertNull(response.jsonPath().getString("cookies.personalAccessToken"));
+            assertEquals(200, response.getStatusCode());
+        }
+
     }
 
     @Nested

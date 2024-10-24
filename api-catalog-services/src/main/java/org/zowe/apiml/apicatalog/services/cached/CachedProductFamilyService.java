@@ -34,7 +34,6 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.stream.Collectors.toList;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
@@ -113,7 +112,7 @@ public class CachedProductFamilyService {
                         " was updated recently");
                 }
                 return isRecent;
-            }).collect(toList());
+            }).toList();
     }
 
     /**

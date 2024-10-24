@@ -31,7 +31,7 @@ function extractAjaxError(error) {
     return null;
 }
 
-function formaHtmlError(message, color) {
+function formatHtmlError(message, color) {
     return (
         <Typography key={uuidv4()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
             {htmr(message)}
@@ -39,48 +39,54 @@ function formaHtmlError(message, color) {
     );
 }
 
-const formatError = (error) => {
-    let message = 'Could not determine error';
+function handleValidError(error) {
+    let message = error.error;
     let color = colorDanger;
+    const extractedAjaxError = extractAjaxError(error.error);
+    if (extractedAjaxError) {
+        const { msg, clr } = extractedAjaxError;
+        return formatHtmlError(msg, clr);
+    }
+    if (error.key !== null && error.key !== undefined) {
+        message = `${error.key} : ${error.text}`;
+        switch (error.messageType.levelStr) {
+            case 'ERROR':
+                color = colorDanger;
+                break;
+            case 'WARNING':
+                color = colorWarning;
+                break;
+            default:
+                color = colorDanger;
+        }
+    }
+    return formatHtmlError(message, color);
+}
+
+const formatError = (error) => {
+    const message = 'Could not determine error';
 
     if (error === null || error === undefined) {
-        return formaHtmlError(message, color);
+        return formatHtmlError(message, colorDanger);
     }
 
     if (error.id !== undefined && error.timestamp !== undefined) {
-        message = error.error;
-        color = colorDanger;
-        const extractedAjaxError = extractAjaxError(error.error);
-        if (extractedAjaxError) {
-            const { msg, clr } = extractedAjaxError;
-            return formaHtmlError(msg, clr);
-        }
-        if (error.key !== null && error.key !== undefined) {
-            message = `${error.key} : ${error.text}`;
-            switch (error.messageType.levelStr) {
-                case 'ERROR':
-                    color = colorDanger;
-                    break;
-                case 'WARNING':
-                    color = colorWarning;
-                    break;
-                default:
-                    color = colorDanger;
-            }
-        }
-        return formaHtmlError(message, color);
+        return handleValidError(error);
     }
 
     if (error.name === 'AjaxError') {
-        const { msg, clr } = extractAjaxError(error);
-        return formaHtmlError(msg, clr);
+        const extractedAjaxError = extractAjaxError(error);
+        if (extractedAjaxError) {
+            const { msg, clr } = extractedAjaxError;
+            return formatHtmlError(msg, clr);
+        }
     }
 
     if (error.message !== undefined) {
-        return formaHtmlError(error.message, colorDanger);
+        return formatHtmlError(error.message, colorDanger);
     }
 
-    return formaHtmlError(message, color);
+    return formatHtmlError(message, colorDanger);
 };
 
 export default formatError;

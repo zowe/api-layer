@@ -11,5 +11,4 @@
 import { combineEpics } from 'redux-observable';
 import { fetchTilesPollingEpic, fetchTilesPollingEpic2 } from './fetch-tiles';
 
-// eslint-disable-next-line import/prefer-default-export
 export const rootEpic = combineEpics(fetchTilesPollingEpic, fetchTilesPollingEpic2);

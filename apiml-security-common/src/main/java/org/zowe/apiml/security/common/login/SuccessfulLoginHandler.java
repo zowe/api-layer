@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.security.common.login;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -18,9 +20,6 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CookieUtil;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Handles the successful login
@@ -59,7 +58,6 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
 
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
         String cookieHeader = new CookieUtil.CookieHeaderBuilder(cp.getCookieName(), token)
-            .comment(cp.getCookieComment())
             .path(cp.getCookiePath())
             .sameSite(cp.getCookieSameSite().getValue())
             .maxAge(cp.getCookieMaxAge())

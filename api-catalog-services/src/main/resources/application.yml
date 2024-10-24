@@ -7,6 +7,9 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
+        gateway:
+            mvc.enabled: false
+            enabled: false
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -15,6 +18,7 @@ spring:
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
+        web-application-type: servlet
     profiles.group:
             dev: debug, diag
 
@@ -33,12 +37,14 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.security.web: INFO
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.eclipse.jetty: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR
@@ -204,12 +210,14 @@ logging:
         ROOT: INFO
         org.zowe.apiml: DEBUG
         org.springframework: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         com.netflix: INFO
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: INFO
+        javax.net.ssl: ERROR
 
 ---
 spring.config.activate.on-profile: diag
