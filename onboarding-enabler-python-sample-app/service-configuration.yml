@@ -1,30 +1,30 @@
 # needs to be configured properly where yaml is parsed with pyyaml
 
 eureka:
-  ssl: false
+  ssl: true
   host: localhost
   ipAddress: 127.0.0.1
   port: 10011
-  servicePath: '/eureka/apps/'
+  servicePath: '/eureka'
   maxRetries: 30
   requestRetryDelay: 1000
   registryFetchInterval: 5
 
 
 instance:
-  app: hwexpress
-  vipAddress: hwexpress
-  instanceId: localhost:hwexpress:10020
-  homePageUrl: https://localhost:10020/
+  app: pythonservice
+  vipAddress: pythonservice
+  instanceId: localhost:pythonservice:10018
+  homePageUrl: https://localhost:10018/
   hostName: 'localhost'
   ipAddr: '127.0.0.1'
-  secureVipAddress: hwexpress
+  secureVipAddress: pythonservice
   port:
-    $: 10020
+    $: 10018
     '@enabled': false
   securePort:
-    $: 10020
-    '@enabled': "true"
+    $: 10018
+    '@enabled': true
 
   dataCenterInfo:
     '@class': com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo
@@ -35,13 +35,14 @@ instance:
     apiml.catalog.tile.description: 'Applications Hello'
     apiml.routes.api_v1.gatewayUrl: "api/v1"
     apiml.routes.api_v1.serviceUrl: "/api/v1"
-    apiml.apiInfo.0.apiId: org.zowe.hwexpress
+    apiml.apiInfo.0.apiId: org.zowe.pythonservice
     apiml.apiInfo.0.gatewayUrl: "api/v1"
-    apiml.apiInfo.0.swaggerUrl: https://localhost:10020/swagger.json
+    apiml.apiInfo.0.swaggerUrl: https://localhost:10018/swagger.json
     apiml.service.title: 'Zowe Sample Node Service'
     apiml.service.description: 'The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.'
 
 ssl:
+  enabled: true
   certificate: ../keystore/localhost/localhost.keystore.cer
   keystore: ../keystore/localhost/localhost.keystore.key
   caFile: ../keystore/localhost/localhost.pem
