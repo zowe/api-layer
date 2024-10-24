@@ -26,9 +26,6 @@ instance:
   healthCheckUrl: https://localhost:10018/pythonservice/application/health
   nonSecurePortEnabled': false
   securePortEnabled: true
-  dataCenterInfo:
-    '@class': com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo
-    name: MyOwn
   metadata:
     apiml.catalog.tile.id: 'cademoapps'
     apiml.catalog.tile.title: 'Sample Python Hello World'
@@ -43,7 +40,6 @@ instance:
     apiml.service.description: 'Sample API services to demonstrate Python Onboarding Enabler'
 
 ssl:
-  enabled: true
   certificate: ../keystore/localhost/localhost.keystore.cer
   keystore: ../keystore/localhost/localhost.keystore.key
   caFile: ../keystore/localhost/localhost.pem
