@@ -47,26 +47,26 @@ ssl_context.load_cert_chain(
 )
 
 
-@app.route("/registerInfo", methods=['GET'])
+@app.route("/pythonservice/registerInfo", methods=['GET'])
 def register_python_enabler():
     """Test Endpoint to manually register the service."""
     enabler.register()
     return jsonify({"message": "Registered with Python eureka client to Discovery service"})
 
-@app.route("/unregisterInfo", methods=['GET'])
+@app.route("/pythonservice/unregisterInfo", methods=['GET'])
 def unregister_python_enabler():
     """Test Endpoint to manually unregister the service."""
     enabler.unregister()
     return jsonify({"message": "Unregistered Python eureka client from Discovery service"})
 
 
-@app.route("/hello", methods=['GET'])
+@app.route("/pythonservice/hello", methods=['GET'])
 def hello():
     """Simple hello endpoint for testing."""
     return jsonify({"message": "Hello world in swagger"})
 
 
-@app.route("/apidoc", methods=['GET'])
+@app.route("/pythonservice/apidoc", methods=['GET'])
 def getSwagger():
     with open('pythonSwagger.json') as f:
         data = yaml.load(f, Loader=yaml.FullLoader)
@@ -80,7 +80,7 @@ def getSwagger():
 # investigate how to get /python_enabler_service/application/info link on discovery service
 # localhost:10018/python_enabler_service/application/info works if routed correctly on line 71, but link doesn't appear in discovery service.
 # Only localhost:10018/application/info appears in discovery service
-@app.route("/application/info", methods=['GET'])
+@app.route("/pythonservice/application/info", methods=['GET'])
 def getApplicationInfo():
     data = {"build": {"name": "python-service", "operatingSystem": "Mac OS X (11.6.7)", "time": 1660222556.497000000,
                       "machine": "Amandas-MacBook-Pro.local", "number": "n/a", "version": "2.3.3-SNAPSHOT", "by": "<userId>",
@@ -92,7 +92,7 @@ def getApplicationInfo():
     )
     return response
 
-@app.route("/application/health", methods=['GET'])
+@app.route("/pythonservice/application/health", methods=['GET'])
 def getApplicationHealth():
     data = {"status": "UP"}
     response = app.response_class(

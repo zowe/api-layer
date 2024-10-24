@@ -5,6 +5,12 @@
         "version": "1.0.0",
         "title": "Hello World in FastAPI"
     },
+    "servers": [
+        {
+            "url": "/pythonservice/api/v1",
+            "description": "Base URL for API version 1"
+        }
+    ],
     "tags": [
         {
             "name": "hello",

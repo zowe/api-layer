@@ -16,15 +16,15 @@ instance:
   scheme: https
   vipAddress: pythonservice
   instanceId: localhost:pythonservice:10018
-  homePageUrl: https://localhost:10018/
+  homePageUrl: https://localhost:10018/pythonservice
   hostName: 'localhost'
   ipAddr: '127.0.0.1'
-  secureVipAddress: pythonservice
-  statusPageUrl: /application/info
-  healthCheckUrl: /application/health
   port: 10018
-  nonSecurePortEnabled': false
   securePort: 10018
+  secureVipAddress: pythonservice
+  statusPageUrl: https://localhost:10018/pythonservice/application/info
+  healthCheckUrl: https://localhost:10018/pythonservice/application/health
+  nonSecurePortEnabled': false
   securePortEnabled: true
   dataCenterInfo:
     '@class': com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo
@@ -34,10 +34,11 @@ instance:
     apiml.catalog.tile.title: 'Sample Python Hello World'
     apiml.catalog.tile.description: 'Applications Hello'
     apiml.routes.api_v1.gatewayUrl: "api/v1"
-    apiml.routes.api_v1.serviceUrl: "/api/v1"
+    apiml.routes.api_v1.serviceUrl: "/pythonservice"
     apiml.apiInfo.0.apiId: org.zowe.pythonservice
     apiml.apiInfo.0.gatewayUrl: "api/v1"
-    apiml.apiInfo.0.swaggerUrl: https://localhost:10018/apidoc
+    apiml.apiInfo.0.swaggerUrl: https://localhost:10018/pythonservice/apidoc
+    apiml.apiInfo.0.version: 1.0.0
     apiml.service.title: 'Zowe Sample Python Service'
     apiml.service.description: 'Sample API services to demonstrate Python Onboarding Enabler'
 
