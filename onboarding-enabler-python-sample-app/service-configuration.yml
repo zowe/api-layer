@@ -13,19 +13,17 @@ eureka:
 
 instance:
   app: pythonservice
+  scheme: https
   vipAddress: pythonservice
   instanceId: localhost:pythonservice:10018
   homePageUrl: https://localhost:10018/
   hostName: 'localhost'
   ipAddr: '127.0.0.1'
   secureVipAddress: pythonservice
-  port:
-    $: 10018
-    '@enabled': false
-  securePort:
-    $: 10018
-    '@enabled': true
-
+  port: 10018
+  nonSecurePortEnabled': false
+  securePort: 10018
+  securePortEnabled: true
   dataCenterInfo:
     '@class': com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo
     name: MyOwn

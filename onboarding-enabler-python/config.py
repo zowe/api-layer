@@ -27,11 +27,6 @@ class ConfigLoader:
             # Override with environment variables if available, ensuring the correct structure
             config['instance']['host'] = os.getenv('INSTANCE_HOST', config['instance'].get('host'))
 
-            # Adjust how you access the port, assuming the structure uses a nested '$' key
-            port_value = config['instance'].get('port', {}).get('$', None)
-            if port_value is not None:
-                config['instance']['port'] = int(os.getenv('INSTANCE_PORT', port_value))
-
             config['instance']['ipAddress'] = os.getenv('INSTANCE_IP', config['instance'].get('ipAddress'))
             config['instance']['homePageUrl'] = os.getenv('HOMEPAGE_URL', config['instance'].get('homePageUrl'))
             config['instance']['statusPageUrl'] = os.getenv('STATUS_PAGE_URL', config['instance'].get('statusPageUrl'))

@@ -72,14 +72,17 @@ class PythonEnabler:
             try:
                 # Extract the instance port correctly, ensuring it's an integer
                 instance_port = instance_config.get('port')
-                if isinstance(instance_port, dict):
-                    instance_port = instance_port.get('$')
+                secure_instance_port = instance_config.get('securePort')
+                scheme = instance_config.get('scheme')
 
                 instance_host = instance_config.get('hostName')
                 instance_ip = instance_config.get('ipAddr')
 
-                if not instance_host or not instance_ip or not instance_port:
+                if scheme == 'https' and not instance_host or not instance_ip or not secure_instance_port:
                     raise ValueError("Instance configuration is incomplete.")
+                else :
+                    if not instance_host or not instance_ip or not instance_port:
+                        raise ValueError("Instance configuration is incomplete.")
 
                 logger.info(f"Registering with service URL: {self.discovery_service}")
 
@@ -88,16 +91,17 @@ class PythonEnabler:
                     eureka_protocol="https",
                     app_name=instance_config.get('app', 'python_enabler_service'),
                     instance_port=int(instance_port),
+                    instance_unsecure_port_enabled=instance_config.get('portEnabled'),
                     instance_host=instance_host,
                     instance_ip=instance_ip,
                     instance_id=instance_config.get("instanceId"),
                     vip_adr=instance_config.get("vipAddress"),
-                    instance_secure_port_enabled=True,
-                    instance_secure_port=10018,
+                    instance_secure_port_enabled=instance_config.get('securePortEnabled'),
+                    instance_secure_port=int(secure_instance_port),
                     secure_vip_addr=instance_config.get("secureVipAddress"),
                     home_page_url=instance_config.get('homePageUrl'),
                     metadata=instance_config.get('metadata', {}),
-                    data_center_name=instance_config.get('dataCenterInfo', {}),
+                    # data_center_name=instance_config.get('dataCenterInfo', {}),
                 )
                 logger.info("Service registered successfully with SSL.")
             except Exception as e:
