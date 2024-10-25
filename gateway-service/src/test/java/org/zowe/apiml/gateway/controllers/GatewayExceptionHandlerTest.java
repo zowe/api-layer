@@ -58,7 +58,7 @@ class GatewayExceptionHandlerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @ActiveProfiles("gatewayExceptionHandlerTest")
     @SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-    class AcceptanceTests extends AcceptanceTestWithMockServices {
+    class BasicResponseCodes extends AcceptanceTestWithMockServices {
 
         private static final AtomicReference<Exception> mockException = new AtomicReference<>();
 
@@ -121,8 +121,7 @@ class GatewayExceptionHandlerTest {
     }
 
     @Nested
-    @SpringBootTest
-    class Methods {
+    class Tls {
 
         private GatewayExceptionHandler gatewayExceptionHandler = spy(new GatewayExceptionHandler(null, null, null) {
             @Override
