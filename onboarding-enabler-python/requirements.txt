@@ -18,7 +18,7 @@ multidict==6.1.0
 propcache==0.2.0
 py_eureka_client==0.11.10
 pyctuator==0.11
-PyYAML==6.0
+PyYaml==6.0.2
 typing_extensions==4.12.2
 Werkzeug==3.0.4
 yarl==1.16.0

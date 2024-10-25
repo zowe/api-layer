@@ -42,7 +42,7 @@ class MyHttpClient(http_client.HttpClient):
         client_timeout = aiohttp.ClientTimeout(total=timeout) if timeout else None
 
         # Create an SSLContext using SSL material
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        ssl_context = ssl.create_default_context(cafile='../keystore/localhost/trusted_CAs.cer')
         ssl_context.load_cert_chain(
             certfile='../keystore/localhost/localhost.keystore.cer',
             keyfile='../keystore/localhost/localhost.keystore.key',
