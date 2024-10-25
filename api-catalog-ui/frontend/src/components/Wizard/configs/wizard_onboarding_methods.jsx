@@ -131,10 +131,10 @@ export const enablerData = [
     {
         text: 'Python Enabler',
         categories: [
-            { name: 'SSL for Python', indentation: 'ssl', nav: 'SSL' },
             { name: 'Eureka', indentation: 'eureka', nav: 'Basics' },
             { name: 'Instance', indentation: 'instance', nav: 'Instance' },
             { name: 'Metadata', indentation: 'instance/metadata', nav: 'Instance metadata' },
+            { name: 'SSL for Python', indentation: 'ssl', nav: 'SSL' },
         ],
         defaults: defaultPython,
     },
