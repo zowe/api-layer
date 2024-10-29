@@ -1,6 +1,7 @@
 name: "Flag the error message changes and label the PR"
 
 on:
+    workflow_dispatch:
     schedule:
         # * is a special character in YAML so you have to quote this string
         - cron:  '0 0 * * 5'

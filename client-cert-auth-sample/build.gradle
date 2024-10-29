@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.zowe.apiml'
+version = '3.0.39-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation libs.http.client5
+}
+
+test {
+    useJUnitPlatform()
+}

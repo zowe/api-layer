@@ -11,7 +11,7 @@ import { getIntrospectionQuery } from 'graphql/utilities';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GraphQLUI from './GraphQLUIApiml';
-
+import { getUrl } from './GraphQLUIApiml';
 const host = 'localhost:3000';
 const protocol = 'https:';
 const graphqlUrl = 'https://localhost:4000/discoverableclient/api/v3/graphql';
@@ -85,37 +85,21 @@ describe('>>> GraphQL component tests', () => {
         });
     }
 
-    // function mockFetcherError() {
-    //     global.fetch = jest.fn();
-    //     jest.mock('graphql/utilities', () => ({
-    //         ...jest.requireActual('graphql/utilities'),
-    //         buildClientSchema: jest.fn((data) => data),
-    //     }));
-    //     global.fetch.mockRejectedValueOnce(new Error('Network Error'));
-    // }
-
     it('should render the GraphiQL container', async () => {
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
         expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
     }, 10000);
 
     it('getUrl constructs the correct URL', async () => {
-        mockFetcher();
-        render(<GraphQLUI graphqlUrl={graphqlUrl} />);
-        await waitFor(() => expect(fetch).toHaveBeenCalled());
-
-        expect(fetch).toHaveBeenCalledWith(
-            `${protocol}//${host}/discoverableclient/api/v3/graphql`,
-            expect.objectContaining({
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: expect.any(String),
-                credentials: 'same-origin',
-            })
-        );
+        const originalLocation = window.location;
+        window.location = {
+            protocol: 'https:',
+            host: 'example.com',
+        };
+        const graphqlUrl = 'https://some-api.com/graphql';
+        const result = getUrl(graphqlUrl);
+        expect(result).toBe('https://example.com/graphql');
+        window.location = originalLocation;
     });
 
     it('Fetches and sets schema on mount', async () => {
