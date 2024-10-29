@@ -67,16 +67,19 @@ public final class ApimlLogger {
      * @param parameters for message
      */
     public Message log(String key, Object... parameters) {
-        ObjectUtil.requireNotNull(key, "key can't be null");
-        ObjectUtil.requireNotNull(parameters, "parameters can't be null");
+        Message message;
+        if (key == null) {
+            message = Message.invalidKeyMessage(null);
+        } else {
+            ObjectUtil.requireNotNull(parameters, "parameters can't be null");
 
-        if (messageService != null) {
-            Message message = messageService.createMessage(key, parameters);
-            log(message);
-            return message;
+            if (messageService == null) {
+                return null;
+            }
+            message = messageService.createMessage(key, parameters);
         }
-
-        return null;
+        log(message);
+        return message;
     }
 
     /**
@@ -94,9 +97,9 @@ public final class ApimlLogger {
     /**
      * Method which allows to log text in its level type.
      *
-     * @param messageType  type of the message
-     * @param text text for message
-     * @param arguments arguments for message text
+     * @param messageType type of the message
+     * @param text        text for message
+     * @param arguments   arguments for message text
      * @throws IllegalArgumentException when parameters are null
      */
     @SuppressWarnings("squid:S2629")

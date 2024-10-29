@@ -1,17 +1,13 @@
 name: zowe-cli-plugin-deployment
 
 on:
-    push:
-        branches: [ v2.x.x ]
-    pull_request:
-        branches: [ v2.x.x ]
     workflow_dispatch:
 
 jobs:
     release:
-        if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
         timeout-minutes: 40
+        permissions: write-all
 
         steps:
             - name: Checkout

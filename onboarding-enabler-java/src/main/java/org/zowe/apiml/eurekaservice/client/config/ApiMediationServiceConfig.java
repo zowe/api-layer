@@ -67,6 +67,10 @@ public class ApiMediationServiceConfig {
      *    XML Path: /instance/app
      */
     private String serviceId;
+    /**
+     * to verify if Attls is enabled for the service
+     */
+    private boolean attlsEnabled;
 
     /**
      * * **title** (XML Path: /instance/metadata/apiml.service.title)
