@@ -9,7 +9,13 @@ task installDependencies(type: Exec) {
 
 task buildPython(type: Exec) {
     dependsOn installDependencies
-    commandLine './venv/bin/python', 'setup.py', 'sdist'
+    commandLine './venv/bin/python', 'setup.py', 'bdist_wheel'
+}
+
+task runPython(type: Exec) {
+    dependsOn installDependencies
+    workingDir './onboarding-enabler-python-sample-app'
+    commandLine './venv/bin/python', 'app.py'
 }
 
 jar {

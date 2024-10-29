@@ -16,8 +16,8 @@ import py_eureka_client.logger as eurekalogger
 from py_eureka_client import eureka_client as ec
 
 # Dynamically import the config module
-config = importlib.import_module('onboarding-enabler-python.config')
-httpClient = importlib.import_module('onboarding-enabler-python.custom_http_client')
+config = importlib.import_module('onboarding-enabler-python.src.config')
+httpClient = importlib.import_module('onboarding-enabler-python.src.custom_http_client')
 ConfigLoader = getattr(config, 'ConfigLoader')
 
 logger = logging.getLogger(__name__)

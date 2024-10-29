@@ -22,7 +22,7 @@ sys.path.insert(0, parent_directory)
 
 # Define the path to the registration module file
 module_name = "registration"
-module_path = os.path.join(parent_directory, 'onboarding-enabler-python', 'registration.py')
+module_path = os.path.join(parent_directory, 'onboarding-enabler-python', 'src', 'registration.py')
 
 # Dynamically load the module
 spec = importlib.util.spec_from_file_location(module_name, module_path)
