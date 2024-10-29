@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
@@ -23,6 +24,7 @@ public class AcceptanceTestWithBasePath {
     @BeforeEach
     void setBasePath() {
         basePath = String.format("https://localhost:%d", port);
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
 

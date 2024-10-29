@@ -92,7 +92,6 @@ dependencies {
     implementation libs.tomcat.embed.core
     implementation libs.jackson.core
     implementation libs.jackson.databind
-    implementation libs.bootstrap
     implementation libs.jquery
 
     implementation libs.gson

@@ -13,6 +13,7 @@ package org.zowe.apiml.discovery.config;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
@@ -27,6 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
+
+import java.util.function.Supplier;
 
 /**
  * Configuration to rewrite default Eureka's implementation with custom one
@@ -55,10 +58,11 @@ public class EurekaConfig {
 
     @Bean
     @Primary
-    public PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry,
+    public PeerEurekaNodes peerEurekaNodes(Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder,
+                                           PeerAwareInstanceRegistry registry,
                                            ServerCodecs serverCodecs,
                                            ReplicationClientAdditionalFilters replicationClientAdditionalFilters, ApplicationInfoManager applicationInfoManager, EurekaServerConfig eurekaServerConfig, EurekaClientConfig eurekaClientConfig) {
-        return new RefreshablePeerEurekaNodes(registry, eurekaServerConfig,
+        return new RefreshablePeerEurekaNodes(eurekaJerseyClientBuilder, registry, eurekaServerConfig,
             eurekaClientConfig, serverCodecs, applicationInfoManager,
             replicationClientAdditionalFilters, maxPeerRetries);
     }

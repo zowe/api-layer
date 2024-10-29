@@ -34,6 +34,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -63,12 +66,13 @@ class ServerSentEventProxyHandlerTest {
     private final MessageService messageService = new YamlMessageService("/gateway-messages.yml");
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         mockHttpServletRequest = mock(HttpServletRequest.class);
         mockHttpServletResponse = mock(HttpServletResponse.class);
 
         mockDiscoveryClient = mock(DiscoveryClient.class);
         underTest = Mockito.spy(new ServerSentEventProxyHandler(mockDiscoveryClient, messageService));
+        underTest.initWebClient();
     }
 
     @Nested
