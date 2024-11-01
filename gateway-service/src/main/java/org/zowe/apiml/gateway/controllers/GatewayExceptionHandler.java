@@ -41,6 +41,8 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.net.ssl.SSLException;
+
 import static org.apache.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -70,8 +72,12 @@ public class GatewayExceptionHandler {
         var serverCodecConfigurer = ServerCodecConfigurer.create();
 
         var serverWebExchange = new DefaultServerWebExchange(exchange.getRequest(), exchange.getResponse(), sessionManager, serverCodecConfigurer, localeContextResolver);
-        serverWebExchange.getResponse().setRawStatusCode(responseCode);
-        serverWebExchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
+        try {
+            serverWebExchange.getResponse().setRawStatusCode(responseCode);
+            serverWebExchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
+        } catch (UnsupportedOperationException e) {
+            log.debug("Cannot update response", e);
+        }
 
         Message message = messageService.createMessage(messageCode, args);
         try {
@@ -134,6 +140,12 @@ public class GatewayExceptionHandler {
     public Mono<Void> handleHttpMediaTypeException(ServerWebExchange exchange, Exception ex) {
         log.debug("Invalid media type on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_UNSUPPORTED_MEDIA_TYPE, "org.zowe.apiml.common.unsupportedMediaType");
+    }
+
+    @ExceptionHandler(SSLException.class)
+    public Mono<Void> handleSslException(ServerWebExchange exchange, SSLException ex) {
+        log.debug("SSL exception on " + exchange.getRequest().getURI(), ex);
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.tlsError", exchange.getRequest().getURI(), ex.getMessage());
     }
 
     @ExceptionHandler({Exception.class})
