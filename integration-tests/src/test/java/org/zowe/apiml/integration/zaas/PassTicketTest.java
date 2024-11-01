@@ -181,7 +181,7 @@ class PassTicketTest {
         }
 
         @Test
-        void givenGetHTTPMethod_thenReturnNotAllowed() {
+        void givenIncorrectHTTPMethod_thenReturnNotAllowed() {
             String expectedMessage = "Authentication method 'GET' is not supported for URL '/zaas/scheme/ticket'";
 
             //@formatter:off
