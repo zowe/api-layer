@@ -39,7 +39,7 @@ class ZaasErrorControllerTest {
         ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertEquals("org.zowe.apiml.common.internalRequestError", response.getBody().getMessages().get(0).getMessageKey());
-        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(500, response.getStatusCode().value());
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains("Hello"));
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains("/uri"));
     }

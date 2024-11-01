@@ -96,12 +96,12 @@ class SafResourceAccessEndpointTest {
     }
 
     @Test
-    void givenUnsupportedResouceClass_whenVerify_thenEndpointImproprietyConfigureException() {
+    void givenUnsupportedResouceClass_whenVerify_thenendpointImproperlyConfigureException() {
         assertThrows(UnsupportedResourceClassException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, UNSUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
     @Test
-    void givenExceptionOnRestCall_whenVerifying_thenEndpointImproprietyConfigureException() {
+    void givenExceptionOnRestCall_whenVerifying_thenendpointImproperlyConfigureException() {
         doThrow(
             new RuntimeException()
         ).when(restTemplate).exchange(

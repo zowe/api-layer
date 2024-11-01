@@ -170,9 +170,9 @@ public class ZaasExceptionHandler {
     }
 
     @ExceptionHandler(EndpointImproperlyConfigureException.class)
-    public ResponseEntity<ApiMessageView> handleEndpointImproprietyConfigureException(EndpointImproperlyConfigureException improprietyConfigureException) {
+    public ResponseEntity<ApiMessageView> handleendpointImproperlyConfigureException(EndpointImproperlyConfigureException improprietyConfigureException) {
         log.debug("Endpoint is improperly configured", improprietyConfigureException);
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproprietyConfigure", improprietyConfigureException.getEndpoint()).mapToView();
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproperlyConfigure", improprietyConfigureException.getEndpoint()).mapToView();
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.APPLICATION_JSON)
