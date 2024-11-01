@@ -12,19 +12,19 @@ package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.Getter;
 
-public class EndpointImproprietyConfigureException extends RuntimeException {
+public class EndpointImproperlyConfigureException extends RuntimeException {
 
     private static final long serialVersionUID = -4582785501782402751L;
 
     @Getter
     private final String endpoint;
 
-    public EndpointImproprietyConfigureException(String message, String endpoint) {
+    public EndpointImproperlyConfigureException(String message, String endpoint) {
         super(message);
         this.endpoint = endpoint;
     }
 
-    public EndpointImproprietyConfigureException(String message, String endpoint, Throwable cause) {
+    public EndpointImproperlyConfigureException(String message, String endpoint, Throwable cause) {
         super(message, cause);
         this.endpoint = endpoint;
     }

@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.util.Assert;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -31,7 +30,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.security.common.auth.saf.EndpointImproprietyConfigureException;
+import org.zowe.apiml.security.common.auth.saf.EndpointImproperlyConfigureException;
 import org.zowe.apiml.security.common.auth.saf.UnsupportedResourceClassException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -50,8 +49,7 @@ import javax.net.ssl.SSLException;
 public class ZaasExceptionHandler {
 
     private static final String WWW_AUTHENTICATE = "WWW-Authenticate";
-    private static String WWW_AUTHENTICATE_FORMAT = "Basic realm=\"%s\"";
-    private static final String DEFAULT_REALM = "Realm";
+    private static final String BASIC_REALM = "Basic realm=\"Realm\"";
 
     private final MessageService messageService;
 
@@ -103,7 +101,7 @@ public class ZaasExceptionHandler {
     }
 
     @ExceptionHandler(value = {TokenNotValidException.class, AuthSchemeException.class})
-    public ResponseEntity<ApiMessageView> handleTokenNotValidException(RuntimeException ex) {
+    public ResponseEntity<ApiMessageView> handleTokenNotValidException() {
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.security.invalidToken").mapToView();
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
@@ -112,7 +110,7 @@ public class ZaasExceptionHandler {
     }
 
     @ExceptionHandler(value = {TokenExpireException.class})
-    public ResponseEntity<ApiMessageView> handleTokenExpiredException(TokenExpireException ex) {
+    public ResponseEntity<ApiMessageView> handleTokenExpiredException() {
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.security.expiredToken").mapToView();
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
@@ -120,19 +118,10 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    private static String createHeaderValue(String realm) {
-        Assert.notNull(realm, "realm cannot be null");
-        return String.format(WWW_AUTHENTICATE_FORMAT, realm);
-    }
-
-    public void setWwwAuthenticateResponse(HttpServletResponse response) {
-        response.addHeader(WWW_AUTHENTICATE, createHeaderValue(DEFAULT_REALM));
-    }
-
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiMessageView> handleAuthenticationException(HttpServletResponse response, AuthenticationException authenticationException) {
         log.debug("Unauthorized access", authenticationException);
-        setWwwAuthenticateResponse(response);
+        response.addHeader(WWW_AUTHENTICATE, BASIC_REALM);
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
@@ -191,9 +180,9 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    @ExceptionHandler(EndpointImproprietyConfigureException.class)
-    public ResponseEntity<ApiMessageView> handleEndpointImproprietyConfigureException(EndpointImproprietyConfigureException improprietyConfigureException) {
-        log.debug("Endpoint is impropriety configured", improprietyConfigureException);
+    @ExceptionHandler(EndpointImproperlyConfigureException.class)
+    public ResponseEntity<ApiMessageView> handleEndpointImproprietyConfigureException(EndpointImproperlyConfigureException improprietyConfigureException) {
+        log.debug("Endpoint is improperly configured", improprietyConfigureException);
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproprietyConfigure", improprietyConfigureException.getEndpoint()).mapToView();
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)

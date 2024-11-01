@@ -229,3 +229,8 @@ messages:
       text: "z/OSMF is not available or z/OSMF response does not contain any token. Reason: %s"
       reason: z/OSMF does not return JWT or LTPA tokens.
       action: Make sure z/OSMF is available to API ML or review your z/OSMF configuration.
+
+    - key: org.zowe.apiml.common.unsupportedMediaType
+      number: ZWEAO415
+      type: ERROR
+      text: "The media format of the requested data is not supported by the service, so the service has rejected the request."

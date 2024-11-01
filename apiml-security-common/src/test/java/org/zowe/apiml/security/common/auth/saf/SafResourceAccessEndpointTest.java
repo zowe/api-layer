@@ -82,7 +82,7 @@ class SafResourceAccessEndpointTest {
         ).when(restTemplate).exchange(
                 eq(TEST_URI_ARGS), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), eq(RESOURCE), eq(LEVEL)
         );
-        assertThrows(EndpointImproprietyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
+        assertThrows(EndpointImproperlyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
     @Test
@@ -107,7 +107,7 @@ class SafResourceAccessEndpointTest {
         ).when(restTemplate).exchange(
             anyString(), any(), any(), eq(SafResourceAccessEndpoint.Response.class), anyString(), anyString()
         );
-        assertThrows(EndpointImproprietyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
+        assertThrows(EndpointImproperlyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
 }
