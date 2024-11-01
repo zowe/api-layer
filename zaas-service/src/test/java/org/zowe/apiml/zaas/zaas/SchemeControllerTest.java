@@ -165,7 +165,7 @@ class SchemeControllerTest {
         }
 
         @Test
-        void givenIncorrectMediaType_whenRequestPassticket_thenBadRequest() throws Exception {
+        void givenIncorrectMediaType_whenRequestPassticket_thenUnsupportedMedia() throws Exception {
             ticketBody.put("applicationName", "");
 
             mockMvc.perform(post(PASSTICKET_URL)
@@ -175,6 +175,32 @@ class SchemeControllerTest {
                 .andExpect(status().is(SC_UNSUPPORTED_MEDIA_TYPE))
                 .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO415E"))
                 .andExpect(jsonPath("$.messages[0].messageContent", is("The media format of the requested data is not supported by the service, so the service has rejected the request.")));
+        }
+
+        @Test
+        void givenInvalidPath_whenRequestPassticket_thenNotFound() throws Exception {
+            ticketBody.put("applicationName", "");
+
+            mockMvc.perform(post("/unknown/url")
+                    .contentType(MediaType.TEXT_XML)
+                    .content(ticketBody.toString())
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
+                .andExpect(status().is(SC_NOT_FOUND))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO404E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The service can not find the requested resource.")));
+        }
+
+        @Test
+        void givenMissingRequestAttribute_whenRequestPassticket_thenInternalError() throws Exception {
+            ticketBody.put("applicationName", "");
+
+            mockMvc.perform(post(PASSTICKET_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ticketBody.toString().getBytes()))
+                .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO500E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID")));
+
         }
 
         @Test
