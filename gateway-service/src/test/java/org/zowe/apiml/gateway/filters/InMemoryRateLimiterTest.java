@@ -17,8 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InMemoryRateLimiterTest {
 
@@ -78,5 +77,15 @@ public class InMemoryRateLimiterTest {
         Mono<InMemoryRateLimiter.Response> responseMono2 = rateLimiter.isAllowed(routeId, clientId2);
         InMemoryRateLimiter.Response response2 = responseMono2.block();
         assertTrue(response2.isAllowed(), "First request for client2 should be allowed");
+    }
+
+    @Test
+    public void testNewConfig() {
+        InMemoryRateLimiter.Config config = rateLimiter.newConfig();
+
+        assertNotNull(config, "Config should not be null");
+        assertEquals(rateLimiter.capacity, config.getCapacity(), "Config capacity should match the rate limiter capacity");
+        assertEquals(rateLimiter.tokens, config.getTokens(), "Config tokens should match the rate limiter tokens");
+        assertEquals(rateLimiter.refillDuration, config.getRefillDuration(), "Config refill duration should match the rate limiter refill duration");
     }
 }
