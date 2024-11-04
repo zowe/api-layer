@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "/pythonservice/api/v1",
+            "url": "/pythonservice",
             "description": "Base URL for API version 1"
         }
     ],
