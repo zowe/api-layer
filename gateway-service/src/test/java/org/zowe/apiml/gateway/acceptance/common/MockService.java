@@ -13,7 +13,9 @@ package org.zowe.apiml.gateway.acceptance.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Joiner;
 import com.netflix.appinfo.InstanceInfo;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.*;
@@ -392,6 +394,12 @@ public class MockService implements AutoCloseable {
         private String contentType;
 
         /**
+         * Added response headers
+         */
+        @Builder.Default
+        private Headers headers = new Headers();
+
+        /**
          * Response body to answer
          */
         private String body;
@@ -421,9 +429,9 @@ public class MockService implements AutoCloseable {
                 }
 
                 if (assertions != null) {
-                    assertions.forEach(a -> {
+                    assertions.forEach(assertion -> {
                         try {
-                            a.accept(httpExchange);
+                            assertion.accept(httpExchange);
                         } catch (AssertionError afe) {
                             setAssertionError(afe);
                         }
@@ -431,6 +439,15 @@ public class MockService implements AutoCloseable {
                 }
 
                 byte[] bodyBytes = body == null ? null : body.getBytes(StandardCharsets.UTF_8);
+
+                log.debug("Request headers: " + Joiner.on(",").withKeyValueSeparator("=").join(httpExchange.getRequestHeaders()));
+                log.debug("Response headers: " + Joiner.on(",").withKeyValueSeparator("=").join(httpExchange.getResponseHeaders()));
+
+                for (Map.Entry<String, List<String>> headerEntry : headers.entrySet()) {
+                    for (String value : headerEntry.getValue()) {
+                        httpExchange.getResponseHeaders().add(headerEntry.getKey(), value);
+                    }
+                }
                 httpExchange.sendResponseHeaders(responseCode, bodyBytes == null ? 0 : bodyBytes.length);
 
                 if (bodyBytes != null) {
