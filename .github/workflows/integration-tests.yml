@@ -1487,8 +1487,8 @@ jobs:
                     path: GatewayProxy
             -   uses: actions/download-artifact@v4
                 with:
-                    name: CITestsZaas-${{ env.JOB_ID }}
-                    path: CITestsZaas
+                    name: ContainerCITestsZaas-${{ env.JOB_ID }}
+                    path: ContainerCITestsZaas
             -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
@@ -1500,7 +1500,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,CITestsZaas/results"
+                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
