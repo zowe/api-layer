@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -124,6 +125,17 @@ public class ZaasExceptionHandler {
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiMessageView> handleAccessDeniedException(HttpServletRequest request, AccessDeniedException accessDeniedException) {
+        log.debug("Unauthenticated access", accessDeniedException);
+        log.debug("URL: {}", request.getRequestURL());
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.forbidden", request.getRequestURI()).mapToView();
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
             .contentType(MediaType.APPLICATION_JSON)
             .body(messageView);
     }
