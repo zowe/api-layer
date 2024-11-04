@@ -27,11 +27,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Config> {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
-    @Value("${apiml.gateway.rateLimiterCapacity:20}")
+    @Value("${apiml.gateway.routing.rateLimiterCapacity:20}")
     int capacity;
-    @Value("${apiml.gateway.rateLimiterTokens:20}")
+    @Value("${apiml.gateway.routing.rateLimiterTokens:20}")
     int tokens;
-    @Value("${apiml.gateway.rateLimiterRefillDuration:1}")
+    @Value("${apiml.gateway.routing.rateLimiterRefillDuration:1}")
     Integer refillDuration;
 
     @Override
