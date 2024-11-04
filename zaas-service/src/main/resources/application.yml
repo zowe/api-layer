@@ -232,6 +232,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
         javax.net.ssl: ERROR
+        org.zowe.apiml.zaas.zaas: DEBUG
 
 ---
 spring.config.activate.on-profile: diag
