@@ -99,6 +99,7 @@ public class ZaasErrorController implements ErrorController {
             .orElse(SC_INTERNAL_SERVER_ERROR);
     }
 
+    @SuppressWarnings("squid:S3752")
     @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
     public ResponseEntity<ApiMessageView> error(HttpServletRequest request) {
         int status = getStatus(request);
