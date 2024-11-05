@@ -149,7 +149,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             .toList().toArray(new X509Certificate[0]);
     }
 
-    public String base64EncodePublicKey(X509Certificate cert) {
+    public static String base64EncodePublicKey(X509Certificate cert) {
         return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
     }
 

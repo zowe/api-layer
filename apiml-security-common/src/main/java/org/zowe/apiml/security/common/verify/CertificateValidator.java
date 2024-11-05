@@ -22,11 +22,11 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.base64EncodePublicKey;
 
 /**
  * Service to verify if given certificate chain can be trusted.
@@ -82,8 +82,10 @@ public class CertificateValidator {
      */
     public void updateAPIMLPublicKeyCertificates(X509Certificate[] certs) {
         for (X509Certificate cert : certs) {
-            String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
+            String publicKey = base64EncodePublicKey(cert);
             publicKeyCertificatesBase64.add(publicKey);
         }
     }
+
+
 }

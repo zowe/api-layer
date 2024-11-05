@@ -130,8 +130,8 @@ public class SecurityConfiguration {
 
         private CategorizeCertsFilter reversedCategorizeCertFilter() {
             CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
-            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
-            out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(out.base64EncodePublicKey(crt)));
+            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
+            out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
             return out;
         }
     }
