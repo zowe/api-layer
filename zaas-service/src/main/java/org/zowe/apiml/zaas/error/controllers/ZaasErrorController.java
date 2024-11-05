@@ -64,6 +64,11 @@ public class ZaasErrorController implements ErrorController {
         }
     }
 
+    private ApiMessageView getBodyByStatus(HttpServletRequest request, int status) {
+        var message = getMessageByStatus(request, status);
+        return message == null ? null : message.mapToView();
+    }
+
     /**
      * Not found endpoint controller
      * Creates response and logs the error
@@ -73,8 +78,7 @@ public class ZaasErrorController implements ErrorController {
      */
     @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
     public ResponseEntity<ApiMessageView> notFound404HttpResponse(HttpServletRequest request) {
-        Message message = getMessageByStatus(request, SC_NOT_FOUND);
-        return ResponseEntity.status(SC_NOT_FOUND).body(message.mapToView());
+        return ResponseEntity.status(SC_NOT_FOUND).body(getBodyByStatus(request, SC_NOT_FOUND));
     }
     /**
      * Error endpoint controller
@@ -86,8 +90,7 @@ public class ZaasErrorController implements ErrorController {
     @SuppressWarnings("squid:S3752")
     @RequestMapping(value = INTERNAL_ERROR_ENDPOINT, produces = "application/json")
     public ResponseEntity<ApiMessageView> internalError(HttpServletRequest request) {
-        Message message = getMessageByStatus(request, SC_INTERNAL_SERVER_ERROR);
-        return ResponseEntity.status(SC_INTERNAL_SERVER_ERROR).body(message.mapToView());
+        return ResponseEntity.status(SC_INTERNAL_SERVER_ERROR).body(getBodyByStatus(request, SC_INTERNAL_SERVER_ERROR));
     }
 
     private int getStatus(HttpServletRequest request) {
@@ -102,10 +105,7 @@ public class ZaasErrorController implements ErrorController {
         if (status == SC_NO_CONTENT) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-
-        Message message = getMessageByStatus(request, status);
-
-        return ResponseEntity.status(status).body(message.mapToView());
+        return ResponseEntity.status(status).body(getBodyByStatus(request, status));
     }
 
 }

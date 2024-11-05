@@ -21,6 +21,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.security.common.auth.saf.EndpointImproperlyConfigureException;
+import org.zowe.apiml.security.common.auth.saf.UnsupportedResourceClassException;
+
+import javax.net.ssl.SSLException;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -100,6 +104,33 @@ class ZaasExceptionHandlerTest {
             .body("messages[0].messageKey", is("org.zowe.apiml.security.forbidden"));
     }
 
+    @Test
+    void givenZosmfSslMisconfiguration_whenCallZaas_thenReturns500WithMessage() {
+        given().when()
+            .get("/test/sslException")
+        .then()
+            .statusCode(500)
+            .body("messages[0].messageKey", is("org.zowe.apiml.common.tlsError"));
+    }
+
+    @Test
+    void givenUnsupportedResourceClass_whenCallZaas_thenReturns500WithMessage() {
+        given().when()
+            .get("/test/unsupportedResourceClassException")
+        .then()
+            .statusCode(500)
+            .body("messages[0].messageKey", is("org.zowe.apiml.security.common.auth.saf.endpoint.nonZoweClass"));
+    }
+
+    @Test
+    void givenMisconfiguredEndpoint_whenCallZaas_thenReturns500WithMessage() {
+        given().when()
+            .get("/test/endpointImproperlyConfigureException")
+        .then()
+            .statusCode(500)
+            .body("messages[0].messageKey", is("org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproperlyConfigure"));
+    }
+
     @RestController
     @RequestMapping("/test")
     static class TestController {
@@ -107,6 +138,21 @@ class ZaasExceptionHandlerTest {
         @PreAuthorize("false")
         @GetMapping("/forbidden")
         public void forbidden() {
+        }
+
+        @GetMapping("/sslException")
+        public void sslException() throws SSLException {
+            throw new SSLException("Any SSL error during calling z/OSMF");
+        }
+
+        @GetMapping("/unsupportedResourceClassException")
+        public void unsupportedResourceClassException() {
+            throw new UnsupportedResourceClassException("unknownResourceClass", "non-ZOWE resource class");
+        }
+
+        @GetMapping("/endpointImproperlyConfigureException")
+        public void endpointImproperlyConfigureException() {
+            throw new EndpointImproperlyConfigureException("misconfigured", "endpoint");
         }
 
     }
