@@ -26,6 +26,12 @@ module.exports = {
             "matchUpdateTypes": ["major", "minor"],
             "dependencyDashboardApproval": true,
         },
+        // Disable the upgrade of springboot in v3.x.x
+        {
+            "matchBaseBranches": ["v3.x.x"],
+            "matchPackageNames": ["org.springframework.boot:**"],
+            "enabled": false
+        },
         {
             //for v3.x.x branch find all packages which are minor and patches,
             // slug them and make PR with name "all non-major dependencies"
@@ -50,7 +56,7 @@ module.exports = {
     printConfig: true,
     labels: ['dependencies'],
     dependencyDashboardLabels: ['dependencies'],
-    ignoreDeps: ['history', 'jsdom', 'react-router-dom', '@mui/icons-material', '@mui/material', '@material-ui/core', '@material-ui/icons'],
+    ignoreDeps: ['history', 'jsdom', 'react-router-dom', '@mui/icons-material', '@mui/material', '@material-ui/core', '@material-ui/icons', 'undici'],
     commitMessagePrefix: 'chore: ',
     prHourlyLimit: 0, // removes rate limit for PR creation per hour
     npmrc: 'legacy-peer-deps=true\nregistry=https://zowe.jfrog.io/artifactory/api/npm/npm-org/', //for updating lock-files
