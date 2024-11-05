@@ -60,7 +60,7 @@ public class ZaasErrorController implements ErrorController {
                     ExceptionUtils.getMessage(exc),
                     ExceptionUtils.getRootCauseMessage(exc));
             default:
-                return null;
+                return getMessageByStatus(request, SC_INTERNAL_SERVER_ERROR);
         }
     }
 
