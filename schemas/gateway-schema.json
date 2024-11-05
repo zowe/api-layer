@@ -202,8 +202,7 @@
                                                                 },
                                                                 "cookieNameForRateLimit":{
                                                                     "type": "string",
-                                                                    "description": "A cookie that will be used as a user identifier.",
-                                                                    "default": "apimlAuthenticationToken"
+                                                                    "description": "A cookie that will be used as a user identifier."
                                                                 }
                                                             }
                                                         },
