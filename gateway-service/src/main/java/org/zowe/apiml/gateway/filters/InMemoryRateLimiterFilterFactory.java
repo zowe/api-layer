@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.PathContainer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -55,31 +56,31 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            String requestPath = exchange.getRequest().getPath().elements().get(1).value();
-            if (serviceIds.contains(requestPath)) {
-                return keyResolver.resolve(exchange).flatMap(key -> {
-                    if (key.isEmpty()) {
-                        return chain.filter(exchange);
-                    }
-                    return rateLimiter.isAllowed(config.getRouteId(), key).flatMap(response -> {
-                        if (response.isAllowed()) {
-                            return chain.filter(exchange);
-                        } else {
-                            apimlLog.log("org.zowe.apiml.gateway.connectionsLimitApproached", "Connections limit exceeded for service '{}'", requestPath);
-                            exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-                            Message message = messageService.createMessage("org.zowe.apiml.gateway.connectionsLimitApproached", "Connections limit exceeded for service '{}'", requestPath);
-                            try {
-                                return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()))));
-                            } catch (JsonProcessingException e) {
-                                apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
-                                return Mono.error(e);
-                            }
-                        }
-                    });
-                });
-            } else {
+            List<PathContainer.Element> pathElements = exchange.getRequest().getPath().elements();
+            String requestPath = (!pathElements.isEmpty() && pathElements.size() > 1) ? pathElements.get(1).value() : null;
+            if (requestPath == null || !serviceIds.contains(requestPath)) {
                 return chain.filter(exchange);
             }
+            return keyResolver.resolve(exchange).flatMap(key -> {
+                if (key.isEmpty()) {
+                    return chain.filter(exchange);
+                }
+                return rateLimiter.isAllowed(config.getRouteId(), key).flatMap(response -> {
+                    if (response.isAllowed()) {
+                        return chain.filter(exchange);
+                    } else {
+                        apimlLog.log("org.zowe.apiml.gateway.connectionsLimitApproached", "Connections limit exceeded for service '{}'", requestPath);
+                        exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                        Message message = messageService.createMessage("org.zowe.apiml.gateway.connectionsLimitApproached", "Connections limit exceeded for service '{}'", requestPath);
+                        try {
+                            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()))));
+                        } catch (JsonProcessingException e) {
+                            apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                            return Mono.error(e);
+                        }
+                    }
+                });
+            });
         };
     }
 

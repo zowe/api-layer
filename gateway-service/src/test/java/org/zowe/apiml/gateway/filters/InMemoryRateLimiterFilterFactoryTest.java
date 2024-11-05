@@ -129,5 +129,18 @@ public class InMemoryRateLimiterFilterFactoryTest {
         verify(chain, times(1)).filter(exchange);
     }
 
+    @Test
+    public void apply_shouldAllowRequest_whenServiceIdEmpty() {
+        when(keyResolver.resolve(exchange)).thenReturn(Mono.just("testKey"));
+        request = MockServerHttpRequest.get("/").build();
+        exchange = MockServerWebExchange.from(request);
+        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+
+        StepVerifier.create(filterFactory.apply(config).filter(exchange, chain))
+            .expectComplete()
+            .verify();
+        verify(chain, times(1)).filter(exchange);
+    }
+
 }
 
