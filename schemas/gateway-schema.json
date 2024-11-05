@@ -199,10 +199,6 @@
                                                                         "type": "string",
                                                                         "description": "The name of the service."
                                                                     }
-                                                                },
-                                                                "cookieNameForRateLimit":{
-                                                                    "type": "string",
-                                                                    "description": "A cookie that will be used as a user identifier."
                                                                 }
                                                             }
                                                         },
