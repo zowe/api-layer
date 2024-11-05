@@ -63,7 +63,11 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
-        List<Certificate> trustedCerts = StringUtils.isBlank(proxyCertificatesEndpoint) ? emptyList() : trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
+        if(StringUtils.isBlank(proxyCertificatesEndpoint)) {
+            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrl");
+            return false;
+        }
+        List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
@@ -71,7 +75,7 @@ public class CertificateValidator {
                 return false;
             }
         }
-        log.debug("All certificates are trusted.");
+        log.debug("The whole certificate chain is trusted.");
         return true;
     }
 
