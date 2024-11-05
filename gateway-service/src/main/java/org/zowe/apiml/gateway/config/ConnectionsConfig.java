@@ -20,6 +20,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.resolver.DefaultAddressResolverGroup;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
@@ -345,7 +346,9 @@ public class ConnectionsConfig {
         return new HttpClientFactory(properties, serverProperties, sslConfigurer, customizers) {
             @Override
             protected HttpClient createInstance() {
-                return super.createInstance().secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
+                return super.createInstance()
+                    .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext))
+                    .resolver(DefaultAddressResolverGroup.INSTANCE);
             }
         };
     }
@@ -353,12 +356,16 @@ public class ConnectionsConfig {
     @Bean
     @Primary
     public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false))).build();
+        return WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
+            .build();
     }
 
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true))).build();
+        return WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
+            .build();
     }
 
     @Bean
