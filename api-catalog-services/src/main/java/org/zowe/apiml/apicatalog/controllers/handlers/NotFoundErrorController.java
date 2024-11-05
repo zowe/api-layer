@@ -27,10 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController {
 
-
-    private static final String PATH = "/not_found";    // NOSONAR
-
-
     @GetMapping(value = "/not_found")
     public String handleError(HttpServletRequest request) {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);

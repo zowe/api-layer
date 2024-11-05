@@ -37,7 +37,6 @@ import java.security.cert.CertificateEncodingException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
@@ -173,13 +172,10 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
     ) {
         return requestCreator.apply(serviceInstanceIterator.next())
-            .exchangeToMono(clientResp -> {
-                Supplier<Mono<AuthorizationResponse<R>>> authResponseSupplier = () -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<>(clientResp.headers(), b));
-                return switch (clientResp.statusCode().value()) {
-                    case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<R>(clientResp.headers(), null));
-                    case SC_OK -> authResponseSupplier.get();
-                    default -> serviceInstanceIterator.hasNext() ? requestWithHa(serviceInstanceIterator, requestCreator) : authResponseSupplier.get();
-                };
+            .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
+                case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
+                case SC_OK -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<>(clientResp.headers(), b));
+                default -> serviceInstanceIterator.hasNext() ? requestWithHa(serviceInstanceIterator, requestCreator) : Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
             });
     }
 

@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
@@ -270,6 +271,26 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .then()
                     .body("headers.custompassticketheader", Matchers.notNullValue())
                     .body("headers.customuserheader", Matchers.notNullValue())
+                    .statusCode(200);
+            }
+
+        }
+
+        @Nested
+        class PassticketMisconfiguration {
+
+            @ParameterizedTest
+            @ValueSource(strings = {
+                "/dcpassticketxbadappl/api/v1/request",
+                "/dcnopassticket/api/v1/request"
+            })
+            void givenJwt(String url) {
+                given()
+                    .cookie(COOKIE_NAME, jwt)
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(url))
+                .then()
+                    .body("headers.authorization", Matchers.nullValue())
                     .statusCode(200);
             }
 

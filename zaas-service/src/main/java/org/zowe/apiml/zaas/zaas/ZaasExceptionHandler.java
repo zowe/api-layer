@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.zaas;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
@@ -21,9 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -118,17 +117,6 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiMessageView> handleAuthenticationException(HttpServletResponse response, AuthenticationException authenticationException) {
-        log.debug("Unauthorized access", authenticationException);
-        response.addHeader(WWW_AUTHENTICATE, BASIC_REALM);
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
-        return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(messageView);
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiMessageView> handleAccessDeniedException(HttpServletRequest request, AccessDeniedException accessDeniedException) {
         log.debug("Unauthenticated access", accessDeniedException);
@@ -201,7 +189,7 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class})
     public ResponseEntity<ApiMessageView> handleInternalException(IllegalArgumentException exception) {
         log.debug("Client sent illegal arguments", exception);
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.badRequest").mapToView();
