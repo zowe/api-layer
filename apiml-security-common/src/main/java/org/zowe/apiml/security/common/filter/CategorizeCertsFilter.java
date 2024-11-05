@@ -74,7 +74,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                 // add the client certificate to the certs array
                 String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
                 log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
-                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, new X509Certificate[]{(X509Certificate) clientCert.get()});
+                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
             } else {
                 request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
                 request.setAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
