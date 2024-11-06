@@ -25,7 +25,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.emptyList;
 import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.base64EncodePublicKey;
 
 /**
@@ -63,7 +62,7 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
-        if(StringUtils.isBlank(proxyCertificatesEndpoint)) {
+        if (StringUtils.isBlank(proxyCertificatesEndpoint)) {
             log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrl");
             return false;
         }
