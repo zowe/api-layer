@@ -102,7 +102,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenNoInstanceOfZosmf_whenCallingAService_thenReturn503() {
+        void givenNoInstanceOfZaas_whenCallingAService_thenReturn503() {
             zaasZombie.stop();
             zaasError.stop();
             zaasOk.stop();
@@ -112,7 +112,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenInstanceOfZosmf_whenCallingAService_thenReturn200() throws IOException {
+        void givenInstanceOfZaas_whenCallingAService_thenReturn200() throws IOException {
             zaasZombie.stop();
             zaasError.stop();
             zaasOk.start();
@@ -122,7 +122,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenZombieAndOkInstanceOfZosmf_whenCallingAService_preventZombieOne() throws IOException {
+        void givenZombieAndOkInstanceOfZaas_whenCallingAService_preventZombieOne() throws IOException {
             zaasZombie.zombie();
             zaasError.stop();
             zaasOk.start();
@@ -135,7 +135,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenOnlyZaasZosmf_whenCallingAService_return503() {
+        void givenOnlyZaas_whenCallingAService_return503() {
             zaasZombie.zombie();
             zaasError.stop();
             zaasOk.stop();
@@ -145,7 +145,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenZombieAndErrorZosmf_whenCallingAService_return500() throws IOException {
+        void givenZombieAndErrorZaas_whenCallingAService_return500() throws IOException {
             zaasZombie.zombie();
             zaasError.start();
             zaasOk.stop();
@@ -155,7 +155,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenZombieFailingAndSuccessZosmf_whenCallingAService_return200() throws IOException {
+        void givenZombieFailingAndSuccessZaas_whenCallingAService_return200() throws IOException {
             zaasZombie.zombie();
             zaasError.start();
             zaasOk.start();
