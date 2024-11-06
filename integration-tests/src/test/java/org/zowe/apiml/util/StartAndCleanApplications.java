@@ -25,7 +25,7 @@ public class StartAndCleanApplications implements TestExecutionListener {
 
     @Override
     public void testPlanExecutionStarted(TestPlan testPlan) {
-        if (!fullApiMediationLayer.runsOffPlatform()) {
+        if (fullApiMediationLayer.startServices()) {
             log.info("Starting Full API Mediation Layer");
             fullApiMediationLayer.start();
         }

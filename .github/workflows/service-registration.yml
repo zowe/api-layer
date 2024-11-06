@@ -31,7 +31,7 @@ jobs:
                     ./gradlew clean build --info --scan
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --info --scan
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()

@@ -68,7 +68,7 @@ In this case you are using either Windows machine or want to start services your
 4. Run integration tests
 
    ```sh
-   ./gradlew runCITests -Denvironment.offPlatform=true
+   ./gradlew runCITests
    ```
 
 ## The services run elsewhere
@@ -82,8 +82,7 @@ In this case the services are running somewhere, and the integration tests verif
     ```sh
    ./gradlew runAllIntegrationTests \
         -Dcredentials.user=${MF_USERID} \
-        -Dcredentials.password=${MF_PASSWORD} \
-        -Denvironment.offPlatform=true
+        -Dcredentials.password=${MF_PASSWORD}
     ```
 
 ## Manual testing of Discovery Service in HTTP mode
