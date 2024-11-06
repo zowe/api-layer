@@ -10,18 +10,28 @@
 
 package org.zowe.apiml.gateway.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 import org.springframework.cloud.gateway.route.Route;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
+import org.zowe.apiml.gateway.acceptance.common.MockService;
+import org.zowe.apiml.ticket.TicketResponse;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
@@ -133,6 +143,74 @@ class NettyRoutingFilterApimlTest {
                 verify(httpClientWithCert).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100);
             }
 
+        }
+
+    }
+
+    @Nested
+    class UnavailableService extends AcceptanceTestWithMockServices {
+
+        @BeforeAll
+        void setUp() {
+            mockService("service").scope(MockService.Scope.CLASS).start().zombie();
+        }
+
+        @Test
+        void allInstancesAreUnavailable() {
+            given().when().get(basePath + "/service/api/v1/test")
+                .then()
+                .statusCode(Matchers.is(SC_SERVICE_UNAVAILABLE));
+        }
+
+        @RepeatedTest(5)
+        void someInstancesAreUnavailable() {
+            mockService("service").scope(MockService.Scope.TEST)
+                .addEndpoint("/service/test").responseCode(200)
+                .and().start();
+            given().when().get(basePath + "/service/api/v1/test")
+                .then()
+                .statusCode(Matchers.is(SC_OK));
+        }
+
+    }
+
+    @Nested
+    class UnavailableZaas extends AcceptanceTestWithMockServices {
+
+        private static final String USER = "user";
+        private static final String PASSTICKET = "password";
+        private static final String APPLID = "SRVTST";
+        private static final String BASIC_HEADER = "Basic dXNlcjpwYXNzd29yZA==";
+
+        @BeforeAll
+        void setUp() {
+            mockService("service").scope(MockService.Scope.CLASS).authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid(APPLID)
+                .addEndpoint("/service/test").responseCode(200)
+                .assertion(ha -> assertEquals(BASIC_HEADER, ha.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                .and().start();
+        }
+
+        @Test
+        void noZaasServiceIsRegistered() {
+            given().when().get(basePath + "/service/api/v1/test")
+                .then().statusCode(Matchers.is(SC_SERVICE_UNAVAILABLE));
+        }
+
+        @Test
+        void noZaasServiceAvailable() {
+            mockService("zaas").scope(MockService.Scope.TEST).start().zombie();
+            given().when().get(basePath + "/service/api/v1/test")
+                .then().statusCode(Matchers.is(SC_SERVICE_UNAVAILABLE));
+        }
+
+        @RepeatedTest(5)
+        void someZaasServiceIsUnavailable() throws JsonProcessingException {
+            mockService("zaas").scope(MockService.Scope.TEST).start().zombie();
+            mockService("zaas").scope(MockService.Scope.TEST)
+                .addEndpoint("/zaas/scheme/ticket").bodyJson(new TicketResponse(null, USER, APPLID, PASSTICKET))
+                .and().start();
+            given().when().get(basePath + "/service/api/v1/test")
+                .then().statusCode(Matchers.is(SC_OK));
         }
 
     }

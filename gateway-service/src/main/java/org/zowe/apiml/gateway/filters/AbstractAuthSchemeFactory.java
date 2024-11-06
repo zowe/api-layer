@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.filters;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -37,6 +38,7 @@ import java.security.cert.CertificateEncodingException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
@@ -111,6 +113,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  * private String token;
  * }
  */
+@Slf4j
 public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFactory.AbstractConfig, R, D> extends AbstractGatewayFilterFactory<T> {
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
@@ -171,12 +174,18 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         Iterator<ServiceInstance> serviceInstanceIterator,
         Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
     ) {
-        return requestCreator.apply(serviceInstanceIterator.next())
+        var zaasInstance = serviceInstanceIterator.next();
+        Supplier<Mono<AuthorizationResponse<R>>> callNext = () -> serviceInstanceIterator.hasNext() ?
+            requestWithHa(serviceInstanceIterator, requestCreator) : Mono.error(new ServiceNotAccessibleException("There are no instance of ZAAS available"));
+
+        return requestCreator.apply(zaasInstance)
             .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
                 case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
                 case SC_OK -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<>(clientResp.headers(), b));
-                default -> serviceInstanceIterator.hasNext() ? requestWithHa(serviceInstanceIterator, requestCreator) : Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
-            });
+                default -> callNext.get();
+            })
+            .doOnError(t -> log.debug("Error on calling ZAAS service instance {}: {}", zaasInstance.getInstanceId(), t.getMessage()))
+            .onErrorResume(e -> callNext.get());
     }
 
     protected Mono<Void> invoke(

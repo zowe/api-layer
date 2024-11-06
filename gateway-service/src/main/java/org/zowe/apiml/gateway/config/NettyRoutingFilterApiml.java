@@ -15,12 +15,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.NettyRoutingFilter;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
+import java.net.ConnectException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -81,4 +85,14 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
             .responseTimeout(Duration.ofMillis(requestTimeout));
     }
 
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        return super.filter(exchange, chain).onErrorResume(e -> {
+            if (e.getCause() instanceof ConnectException) {
+                var uri = exchange.getRequest().getURI();
+                return Mono.error(new ServiceNotAccessibleException(String.format("Service is not available at %s://%s:%d", uri.getScheme(), uri.getHost(), uri.getPort()), e));
+            }
+            return Mono.error(e);
+        });
+    }
 }
