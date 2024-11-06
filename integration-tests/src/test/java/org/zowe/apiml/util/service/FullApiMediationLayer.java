@@ -11,6 +11,7 @@
 package org.zowe.apiml.util.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -172,7 +173,7 @@ public class FullApiMediationLayer {
 
             cachingService.stop();
             zaasService.stop();
-            if (!attlsEnabled && !runsOffPlatform()) {
+            if (!attlsEnabled && startServices()) {
                 nodeJsSampleApp.destroy();
             }
         } catch (Exception e) {
@@ -180,9 +181,9 @@ public class FullApiMediationLayer {
         }
     }
 
-    public boolean runsOffPlatform() {
-        String offPlatform = System.getProperty("environment.offPlatform");
-        return offPlatform != null && !offPlatform.isEmpty() && Boolean.parseBoolean(offPlatform);
+    public boolean startServices() {
+        String startServices = System.getProperty("environment.startServices");
+        return StringUtils.isNotEmpty(startServices) && Boolean.parseBoolean(startServices);
     }
 
     public void waitUntilReady() {
