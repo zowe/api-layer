@@ -26,12 +26,6 @@ module.exports = {
             "matchUpdateTypes": ["major", "minor"],
             "dependencyDashboardApproval": true,
         },
-        // Disable the upgrade of springboot in v3.x.x
-        {
-            "matchBaseBranches": ["v3.x.x"],
-            "matchPackageNames": ["org.springframework.boot:**"],
-            "enabled": false
-        },
         {
             //for v3.x.x branch find all packages which are minor and patches,
             // slug them and make PR with name "all non-major dependencies"
