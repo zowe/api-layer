@@ -111,6 +111,7 @@ services:
                 serviceRelativeUrl: /api/v3 # relativePath that is added to baseUrl of an instance
         authentication:
             scheme: httpBasicPassTicket
+            applid: ZOWEAPPL
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient
                 gatewayUrl: api/v3

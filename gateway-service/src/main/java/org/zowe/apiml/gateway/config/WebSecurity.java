@@ -27,6 +27,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -53,6 +54,7 @@ import org.springframework.security.web.server.savedrequest.CookieServerRequestC
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
@@ -463,6 +465,26 @@ public class WebSecurity {
             return requestMono;
         }
 
+    }
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    WebFilter writeableHeaders() {
+        return (exchange, chain) -> {
+            HttpHeaders writeableHeaders = HttpHeaders.writableHttpHeaders(
+                exchange.getRequest().getHeaders());
+            ServerHttpRequestDecorator writeableRequest = new ServerHttpRequestDecorator(
+                exchange.getRequest()) {
+                @Override
+                public HttpHeaders getHeaders() {
+                    return writeableHeaders;
+                }
+            };
+            ServerWebExchange writeableExchange = exchange.mutate()
+                .request(writeableRequest)
+                .build();
+            return chain.filter(writeableExchange);
+        };
     }
 
 }
