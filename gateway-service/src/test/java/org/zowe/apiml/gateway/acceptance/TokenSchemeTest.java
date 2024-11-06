@@ -135,7 +135,7 @@ public abstract class TokenSchemeTest {
         }
 
         @Test
-        void givenOnlyZombieZosmf_whenCallingAService_return500() {
+        void givenOnlyZaasZosmf_whenCallingAService_return503() {
             zaasZombie.zombie();
             zaasError.stop();
             zaasOk.stop();
@@ -150,7 +150,7 @@ public abstract class TokenSchemeTest {
             zaasError.start();
             zaasOk.stop();
 
-            given().when().get(getServiceUrl()).then().statusCode(503);
+            given().when().get(getServiceUrl()).then().statusCode(500);
             assertEquals(0, service.getCounter());
         }
 

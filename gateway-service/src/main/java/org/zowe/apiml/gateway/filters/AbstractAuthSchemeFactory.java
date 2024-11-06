@@ -36,13 +36,12 @@ import reactor.core.publisher.Mono;
 import java.net.HttpCookie;
 import java.security.cert.CertificateEncodingException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
@@ -172,20 +171,35 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     private Mono<AuthorizationResponse<R>> requestWithHa(
         Iterator<ServiceInstance> serviceInstanceIterator,
-        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
+        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator,
+        AtomicReference<Optional<Exception>> mostCriticalException // to be accessible and updatable in all lambdas below
     ) {
+        // selected instance of ZAAS to invoke
         var zaasInstance = serviceInstanceIterator.next();
-        Supplier<Mono<AuthorizationResponse<R>>> callNext = () -> serviceInstanceIterator.hasNext() ?
-            requestWithHa(serviceInstanceIterator, requestCreator) : Mono.error(new ServiceNotAccessibleException("There are no instance of ZAAS available"));
+
+        // this lambda creates a chain of call over all instances. It also remembers the most critical exception to
+        // be thrown in case all instances fail
+        Function<Exception, Mono<AuthorizationResponse<R>>> callNext = exception -> {
+            // select the most critical exception to remember (ZaasInternalErrorException is more important one)
+            exception = mostCriticalException.get().filter(ZaasInternalErrorException.class::isInstance).orElse(exception);
+            mostCriticalException.set(Optional.of(exception));
+
+            if (serviceInstanceIterator.hasNext()) {
+                return requestWithHa(serviceInstanceIterator, requestCreator, mostCriticalException);
+            } else {
+                return Mono.error(exception);
+            }
+        };
 
         return requestCreator.apply(zaasInstance)
             .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
                 case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
                 case SC_OK -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<>(clientResp.headers(), b));
-                default -> callNext.get();
+                case SC_INTERNAL_SERVER_ERROR -> callNext.apply(new ZaasInternalErrorException(zaasInstance, "An internal exception occurred in ZAAS service. Check its configuration of instance " + zaasInstance.getInstanceId() + "."));
+                default -> callNext.apply(new ServiceNotAccessibleException("There are no instance of ZAAS available"));
             })
             .doOnError(t -> log.debug("Error on calling ZAAS service instance {}: {}", zaasInstance.getInstanceId(), t.getMessage()))
-            .onErrorResume(e -> callNext.get());
+            .onErrorResume(e -> callNext.apply(new ServiceNotAccessibleException("There are no instance of ZAAS available")));
     }
 
     protected Mono<Void> invoke(
@@ -198,7 +212,9 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             throw new ServiceNotAccessibleException("There are no instance of ZAAS available");
         }
 
-        return requestWithHa(i, requestCreator).switchIfEmpty(Mono.just(new AuthorizationResponse<>(null,null))).flatMap(responseProcessor);
+        return requestWithHa(i, requestCreator,  new AtomicReference<>(Optional.empty()))
+            .switchIfEmpty(Mono.just(new AuthorizationResponse<>(null,null)))
+            .flatMap(responseProcessor);
     }
 
     /**

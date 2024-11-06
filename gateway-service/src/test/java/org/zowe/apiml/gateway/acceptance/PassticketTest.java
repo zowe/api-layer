@@ -96,8 +96,29 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
         assertEquals(1, service.getEndpoint().getCounter());
     }
 
+    @Test
+    void whenZaasIsMisconfigured_thenReturnError() throws IOException {
+        var zaas = mockService("zaas").scope(MockService.Scope.TEST)
+            .addEndpoint("/zaas/scheme/ticket")
+            .responseCode(SC_INTERNAL_SERVER_ERROR)
+            .and().start();
+        var service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
+            .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
+            .addEndpoint("/" + SERVICE_ID + "/test")
+            .and().start();
+        given()
+            .cookie(COOKIE_NAME, JWT)
+        .when()
+            .get(basePath + "/" + SERVICE_ID + "/api/v1/test")
+        .then()
+            .statusCode(Matchers.is(SC_INTERNAL_SERVER_ERROR))
+            .body("messages[0].messageKey", is("org.zowe.apiml.gateway.zaas.internalServerError"))
+            .body("messages[0].messageContent", is("An internal exception occurred in ZAAS service " + zaas.getInstanceId() + "."));
+        assertEquals(0, service.getEndpoint().getCounter());
+    }
+
     @ParameterizedTest(name = "When ZAAS returns {0} the Gateway response with 503")
-    @ValueSource(ints = {400, 403, 404, 405, 500})
+    @ValueSource(ints = {400, 403, 404, 405})
     void whenCannotGeneratePassticket_thenReturn503(int responseCode) throws IOException {
         mockService("zaas").scope(MockService.Scope.TEST)
             .addEndpoint("/zaas/scheme/ticket")
