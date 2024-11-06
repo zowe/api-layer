@@ -22,11 +22,10 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.emptyList;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.base64EncodePublicKey;
 
 /**
  * Service to verify if given certificate chain can be trusted.
@@ -63,7 +62,11 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
-        List<Certificate> trustedCerts = StringUtils.isBlank(proxyCertificatesEndpoint) ? emptyList() : trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
+        if (StringUtils.isBlank(proxyCertificatesEndpoint)) {
+            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrl");
+            return false;
+        }
+        List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
@@ -71,7 +74,7 @@ public class CertificateValidator {
                 return false;
             }
         }
-        log.debug("All certificates are trusted.");
+        log.debug("The whole certificate chain is trusted.");
         return true;
     }
 
@@ -82,8 +85,10 @@ public class CertificateValidator {
      */
     public void updateAPIMLPublicKeyCertificates(X509Certificate[] certs) {
         for (X509Certificate cert : certs) {
-            String publicKey = Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
+            String publicKey = base64EncodePublicKey(cert);
             publicKeyCertificatesBase64.add(publicKey);
         }
     }
+
+
 }

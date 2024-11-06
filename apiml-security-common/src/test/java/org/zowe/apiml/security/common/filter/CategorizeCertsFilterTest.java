@@ -68,6 +68,8 @@ class CategorizeCertsFilterTest {
     private MockHttpServletResponse response;
     private MockFilterChain chain;
     private X509Certificate[] certificates;
+    private X509Certificate[] clientCerts;
+
     private CertificateValidator certificateValidator;
 
     @BeforeAll
@@ -138,11 +140,10 @@ class CategorizeCertsFilterTest {
 
             @BeforeEach
             void setUp() {
+
                 certificates = new X509Certificate[]{
                     X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
-                    X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1")),
-                    X509Utils.getCertificate(X509Utils.correctBase64("foreignCert2")),
-                    X509Utils.getCertificate(X509Utils.correctBase64("apimlCert2"))
+                    X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1CA"))
                 };
                 request.setAttribute("jakarta.servlet.request.X509Certificate", certificates);
             }
@@ -159,7 +160,7 @@ class CategorizeCertsFilterTest {
 
                 X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                 assertNotNull(clientCerts);
-                assertEquals(4, clientCerts.length);
+                assertEquals(2, clientCerts.length);
                 assertArrayEquals(certificates, clientCerts);
 
                 assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
@@ -168,8 +169,8 @@ class CategorizeCertsFilterTest {
 
             @Test
             void thenAllApimlCertificatesWithReversedLogic() throws IOException, ServletException {
-                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
-                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
+                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
+                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
 
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
@@ -181,7 +182,7 @@ class CategorizeCertsFilterTest {
 
                 X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
                 assertNotNull(apimlCerts);
-                assertEquals(4, apimlCerts.length);
+                assertEquals(2, apimlCerts.length);
                 assertArrayEquals(certificates, apimlCerts);
 
                 assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
@@ -201,10 +202,8 @@ class CategorizeCertsFilterTest {
                 void givenTrustedCerts_thenClientCertHeaderAccepted() throws ServletException, IOException {
                     when(certificateValidator.isTrusted(certificates)).thenReturn(true);
                     // when incoming certs are all trusted means that all their public keys are added to the filter
-                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("foreignCert1"));
-                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("foreignCert2"));
                     filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCert1"));
-                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCert2"));
+                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCertCA"));
 
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
@@ -212,7 +211,7 @@ class CategorizeCertsFilterTest {
 
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
-                    assertEquals(4, apimlCerts.length);
+                    assertEquals(2, apimlCerts.length);
                     assertArrayEquals(certificates, apimlCerts);
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
@@ -237,7 +236,7 @@ class CategorizeCertsFilterTest {
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
-                    assertEquals(4, clientCerts.length);
+                    assertEquals(2, clientCerts.length);
                     assertArrayEquals(certificates, clientCerts);
 
                     assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
@@ -266,7 +265,7 @@ class CategorizeCertsFilterTest {
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
-                    assertEquals(4, clientCerts.length);
+                    assertEquals(2, clientCerts.length);
                     assertArrayEquals(certificates, clientCerts);
 
                     assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
@@ -296,7 +295,7 @@ class CategorizeCertsFilterTest {
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
-                    assertEquals(4, clientCerts.length);
+                    assertEquals(2, clientCerts.length);
                     assertArrayEquals(certificates, clientCerts);
 
                     assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
@@ -333,10 +332,11 @@ class CategorizeCertsFilterTest {
 
         @BeforeEach
         void setUp() {
-            filter = new CategorizeCertsFilter(new HashSet<>(Arrays.asList(
+            var serverCertChain = new HashSet<>(Arrays.asList(
                 X509Utils.correctBase64("apimlCert1"),
-                X509Utils.correctBase64("apimlCert2")
-            )), certificateValidator);
+                X509Utils.correctBase64("apimlCertCA")
+            ));
+            filter = new CategorizeCertsFilter(serverCertChain, certificateValidator);
         }
 
         @Nested
@@ -345,31 +345,33 @@ class CategorizeCertsFilterTest {
             @BeforeEach
             void setUp() {
                 certificates = new X509Certificate[]{
-                    X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
                     X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1")),
-                    X509Utils.getCertificate(X509Utils.correctBase64("foreignCert2")),
-                    X509Utils.getCertificate(X509Utils.correctBase64("apimlCert2"))
+                    X509Utils.getCertificate(X509Utils.correctBase64("apimlCertCA")),
                 };
+
+                clientCerts = new X509Certificate[]{
+                    X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
+                    X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1CA"))
+                };
+
                 request.setAttribute("jakarta.servlet.request.X509Certificate", certificates);
             }
 
             @Test
             void thenCategorizedCerts() throws IOException, ServletException {
+                request.setAttribute("jakarta.servlet.request.X509Certificate", clientCerts);
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
                 assertNotNull(nextRequest);
 
                 X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
-                assertNotNull(apimlCerts);
-                assertEquals(2, apimlCerts.length);
-                assertSame(certificates[1], apimlCerts[0]);
-                assertSame(certificates[3], apimlCerts[1]);
+                assertEquals(0, apimlCerts.length);
 
-                X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
-                assertNotNull(clientCerts);
-                assertEquals(2, clientCerts.length);
-                assertSame(certificates[0], clientCerts[0]);
-                assertSame(certificates[2], clientCerts[1]);
+                X509Certificate[] clientCertsFromAttr = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
+                assertNotNull(clientCertsFromAttr);
+                assertEquals(2, clientCertsFromAttr.length);
+                assertSame(clientCerts[0], clientCertsFromAttr[0]);
+                assertSame(clientCerts[1], clientCertsFromAttr[1]);
 
                 assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
                 assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
@@ -377,24 +379,21 @@ class CategorizeCertsFilterTest {
 
             @Test
             void thenCategorizedCertsWithReversedLogic() throws IOException, ServletException {
-                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
-                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(filter.base64EncodePublicKey(crt)));
-
+                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
+                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
+                request.setAttribute("jakarta.servlet.request.X509Certificate", clientCerts);
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
                 assertNotNull(nextRequest);
 
-                X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
-                assertNotNull(clientCerts);
-                assertEquals(2, clientCerts.length);
-                assertSame(certificates[1], clientCerts[0]);
-                assertSame(certificates[3], clientCerts[1]);
+                X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
+                assertEquals(0, apimlCerts.length);
 
-                X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
-                assertNotNull(apimlCerts);
-                assertEquals(2, apimlCerts.length);
-                assertSame(certificates[0], apimlCerts[0]);
-                assertSame(certificates[2], apimlCerts[1]);
+                X509Certificate[] apimlCertificate = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
+                assertNotNull(apimlCertificate);
+                assertEquals(2, apimlCertificate.length);
+                assertSame(clientCerts[0], apimlCertificate[0]);
+                assertSame(clientCerts[1], apimlCertificate[1]);
 
                 assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
                 assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
@@ -413,10 +412,8 @@ class CategorizeCertsFilterTest {
                 void givenTrustedCerts_thenClientCertHeaderAccepted() throws ServletException, IOException {
                     when(certificateValidator.isTrusted(certificates)).thenReturn(true);
                     // when incoming certs are all trusted means that all their public keys are added to the filter
-                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("foreignCert1"));
-                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("foreignCert2"));
                     filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCert1"));
-                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCert2"));
+                    filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCertCA"));
 
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
@@ -424,7 +421,7 @@ class CategorizeCertsFilterTest {
 
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
-                    assertEquals(4, apimlCerts.length);
+                    assertEquals(2, apimlCerts.length);
                     assertArrayEquals(certificates, apimlCerts);
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
@@ -446,14 +443,12 @@ class CategorizeCertsFilterTest {
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
                     assertEquals(2, apimlCerts.length);
-                    assertSame(certificates[1], apimlCerts[0]);
-                    assertSame(certificates[3], apimlCerts[1]);
+                    assertSame(certificates[0], apimlCerts[0]);
+                    assertSame(certificates[1], apimlCerts[1]);
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
-                    assertEquals(2, clientCerts.length);
-                    assertSame(certificates[0], clientCerts[0]);
-                    assertSame(certificates[2], clientCerts[1]);
+                    assertEquals(0, clientCerts.length);
 
                     assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
                     assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
@@ -478,14 +473,12 @@ class CategorizeCertsFilterTest {
                     X509Certificate[] apimlCerts = (X509Certificate[]) nextRequest.getAttribute("jakarta.servlet.request.X509Certificate");
                     assertNotNull(apimlCerts);
                     assertEquals(2, apimlCerts.length);
-                    assertSame(certificates[1], apimlCerts[0]);
-                    assertSame(certificates[3], apimlCerts[1]);
+                    assertSame(certificates[0], apimlCerts[0]);
+                    assertSame(certificates[1], apimlCerts[1]);
 
                     X509Certificate[] clientCerts = (X509Certificate[]) nextRequest.getAttribute("client.auth.X509Certificate");
                     assertNotNull(clientCerts);
-                    assertEquals(2, clientCerts.length);
-                    assertSame(certificates[0], clientCerts[0]);
-                    assertSame(certificates[2], clientCerts[1]);
+                    assertEquals(0, clientCerts.length);
 
                     assertNull(nextRequest.getHeader(CLIENT_CERT_HEADER));
                     assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());

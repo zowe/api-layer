@@ -22,15 +22,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSchemeException;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
-import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
-import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
-import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
-import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -39,20 +30,21 @@ import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
+import org.zowe.apiml.zaas.security.service.schema.source.*;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import javax.management.ServiceNotFoundException;
 import java.util.Date;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -157,6 +149,58 @@ class SchemeControllerTest {
                 .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
                 .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG140E"))
                 .andExpect(jsonPath("$.messages[0].messageContent", is("The 'applicationName' parameter name is missing.")));
+        }
+
+        @Test
+        void givenIncorrectMethod_whenRequestPassticket_thenBadRequest() throws Exception {
+            ticketBody.put("applicationName", "");
+
+            mockMvc.perform(get(PASSTICKET_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ticketBody.toString())
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
+                .andExpect(status().is(SC_METHOD_NOT_ALLOWED))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG101E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("Authentication method 'GET' is not supported for URL '/zaas/scheme/ticket'")));
+        }
+
+        @Test
+        void givenIncorrectMediaType_whenRequestPassticket_thenUnsupportedMedia() throws Exception {
+            ticketBody.put("applicationName", "");
+
+            mockMvc.perform(post(PASSTICKET_URL)
+                    .contentType(MediaType.TEXT_XML)
+                    .content(ticketBody.toString())
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
+                .andExpect(status().is(SC_UNSUPPORTED_MEDIA_TYPE))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO415E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The media format of the requested data is not supported by the service, so the service has rejected the request.")));
+        }
+
+        @Test
+        void givenInvalidPath_whenRequestPassticket_thenNotFound() throws Exception {
+            ticketBody.put("applicationName", "");
+
+            mockMvc.perform(post("/unknown/url")
+                    .contentType(MediaType.TEXT_XML)
+                    .content(ticketBody.toString())
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
+                .andExpect(status().is(SC_NOT_FOUND))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO404E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The service can not find the requested resource.")));
+        }
+
+        @Test
+        void givenMissingRequestAttribute_whenRequestPassticket_thenInternalError() throws Exception {
+            ticketBody.put("applicationName", "");
+
+            mockMvc.perform(post(PASSTICKET_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ticketBody.toString().getBytes()))
+                .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO500E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID")));
+
         }
 
         @Test

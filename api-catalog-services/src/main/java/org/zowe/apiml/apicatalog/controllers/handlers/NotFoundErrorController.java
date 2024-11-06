@@ -15,7 +15,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.zowe.apiml.product.compatibility.ApimlErrorController;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,11 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class NotFoundErrorController implements ApimlErrorController {
-
-
-    private static final String PATH = "/not_found";    // NOSONAR
-
+public class NotFoundErrorController {
 
     @GetMapping(value = "/not_found")
     public String handleError(HttpServletRequest request) {
@@ -48,10 +43,6 @@ public class NotFoundErrorController implements ApimlErrorController {
         return "error";
     }
 
-    @Override
-    public String getErrorPath() {
-        return PATH;
-    }
 }
 
 

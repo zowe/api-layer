@@ -17,8 +17,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class ErrorUtils {
     static final String UNEXPECTED_ERROR_OCCURRED = "Unexpected error occurred";
-    static final String ATTR_ERROR_STATUS_CODE = "javax.servlet.error.status_code";
-    public static final String ATTR_ERROR_EXCEPTION = "javax.servlet.error.exception";
+    static final String ATTR_ERROR_STATUS_CODE = "jakarta.servlet.error.status_code";
+    public static final String ATTR_ERROR_EXCEPTION = "jakarta.servlet.error.exception";
 
     private ErrorUtils() {}
 

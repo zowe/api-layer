@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -67,20 +68,18 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null) {
-            if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
+            Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
+            if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
-                Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
-                if (clientCert.isPresent()) {
-                    // add the client certificate to the certs array
-                    String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
-                    log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
-                    certs = Arrays.copyOf(certs, certs.length + 1);
-                    certs[certs.length - 1] = (X509Certificate) clientCert.get();
-                }
+                // add the client certificate to the certs array
+                String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
+                log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
+                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
+            } else {
+                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
+                request.setAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             }
 
-            request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-            request.setAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
     }
@@ -144,24 +143,19 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     }
 
     private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
-        return Arrays.stream(certs)
-            .filter(test)
-            .toList().toArray(new X509Certificate[0]);
+        if (test.test(certs[0])) {
+            return certs;
+        }
+        return new X509Certificate[0];
     }
 
-    public String base64EncodePublicKey(X509Certificate cert) {
+    public static String base64EncodePublicKey(X509Certificate cert) {
         return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
     }
 
-    public void setCertificateForClientAuth(Predicate<X509Certificate> certificateForClientAuth) {
-        this.certificateForClientAuth = certificateForClientAuth;
-    }
-
-    public void setApimlCertificate(Predicate<X509Certificate> apimlCertificate) {
-        this.apimlCertificate = apimlCertificate;
-    }
-
+    @Setter
     Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+    @Setter
     Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
 
 }

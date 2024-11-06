@@ -436,6 +436,7 @@ task runZaasTest(type: Test) {
     description "Run Zaas tests only"
 
     outputs.cacheIf { false }
+    systemProperty "environment.offPlatform", true
 
     systemProperties System.getProperties()
     useJUnitPlatform {

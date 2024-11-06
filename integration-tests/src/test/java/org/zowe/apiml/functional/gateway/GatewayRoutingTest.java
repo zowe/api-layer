@@ -13,12 +13,13 @@ package org.zowe.apiml.functional.gateway;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -104,4 +105,9 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         given().get(new URI(scgUrl)).then().statusCode(404);
     }
 
+    @Test
+    void givenEndpointDoesNotExistOnRegisteredService() throws URISyntaxException {
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/dcpassticket/api/v1/unknown");
+        given().get(new URI(scgUrl)).then().statusCode(404);
+    }
 }

@@ -18,6 +18,7 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -42,6 +43,20 @@ class HttpBasicPassticketTest {
         FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
         assertEquals("applid", filterDefinition.getArgs().get("applicationName"));
         assertEquals("PassticketFilterFactory", filterDefinition.getName());
+    }
+
+    @Test
+    void givenNoApplid_whenApply_thenSkipConfiguration() {
+        RouteDefinition routeDefinition = new RouteDefinition();
+        new HttpBasicPassticket().apply(mock(ServiceInstance.class), routeDefinition, new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, null));
+        assertTrue(routeDefinition.getFilters().isEmpty());
+    }
+
+    @Test
+    void givenEmptyApplid_whenApply_thenSkipConfiguration() {
+        RouteDefinition routeDefinition = new RouteDefinition();
+        new HttpBasicPassticket().apply(mock(ServiceInstance.class), routeDefinition, new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, ""));
+        assertTrue(routeDefinition.getFilters().isEmpty());
     }
 
 }

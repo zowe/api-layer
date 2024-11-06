@@ -11,24 +11,24 @@
 package org.zowe.apiml.zaas.error;
 
 
+import jakarta.servlet.RequestDispatcher;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.zaas.error.controllers.InternalServerErrorController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
+import org.zowe.apiml.zaas.error.controllers.ZaasErrorController;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.servlet.RequestDispatcher;
+class ZaasErrorControllerTest {
 
-class InternalServerErrorControllerTest {
     @Test
     void testGenericError() {
         MessageService messageService = new YamlMessageService();
-        InternalServerErrorController errorController = new InternalServerErrorController(messageService);
+        ZaasErrorController errorController = new ZaasErrorController(messageService);
 
         MockHttpServletRequest request = new MockHttpServletRequest();
 
@@ -38,9 +38,10 @@ class InternalServerErrorControllerTest {
 
         ResponseEntity<ApiMessageView> response = errorController.error(request);
 
-        assertEquals(523,  response.getStatusCodeValue());
-        assertEquals("org.zowe.apiml.common.internalRequestError",  response.getBody().getMessages().get(0).getMessageKey());
+        assertEquals("org.zowe.apiml.common.internalRequestError", response.getBody().getMessages().get(0).getMessageKey());
+        assertEquals(523, response.getStatusCode().value());
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains("Hello"));
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains("/uri"));
     }
+
 }

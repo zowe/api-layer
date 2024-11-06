@@ -184,7 +184,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_SAFIDT_URI)
             .then()
-                .statusCode(is(SC_BAD_REQUEST))
+                .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             //@formatter:on
         }
@@ -212,19 +212,6 @@ public class SafIdTokensTest implements TestWithStartedInstances {
         private final String jwt = getZosmfJwtToken();
 
         @Test
-        void givenNoContentType() {
-            //@formatter:off
-            given()
-                .body(new TicketRequest(APPLICATION_NAME))
-                .cookie(COOKIE, jwt)
-            .when()
-                .post(ZAAS_SAFIDT_URI)
-            .then()
-                .statusCode(is(SC_NOT_FOUND));
-            //@formatter:on
-        }
-
-        @Test
         void givenInvalidContentType() {
             //@formatter:off
             given()
@@ -234,7 +221,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_SAFIDT_URI)
             .then()
-                .statusCode(is(SC_NOT_FOUND));
+                .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
             //@formatter:on
         }
 
@@ -243,10 +230,11 @@ public class SafIdTokensTest implements TestWithStartedInstances {
             //@formatter:off
             given()
                 .cookie(COOKIE, jwt)
+                .noContentType()
             .when()
                 .post(ZAAS_SAFIDT_URI)
             .then()
-                .statusCode(is(SC_NOT_FOUND));
+                .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
         }
     }

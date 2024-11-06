@@ -82,7 +82,7 @@ class SafResourceAccessEndpointTest {
         ).when(restTemplate).exchange(
                 eq(TEST_URI_ARGS), eq(HttpMethod.GET), any(), eq(SafResourceAccessEndpoint.Response.class), eq(RESOURCE), eq(LEVEL)
         );
-        assertThrows(EndpointImproprietyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
+        assertThrows(EndpointImproperlyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
     @Test
@@ -96,18 +96,18 @@ class SafResourceAccessEndpointTest {
     }
 
     @Test
-    void givenUnsupportedResouceClass_whenVerify_thenEndpointImproprietyConfigureException() {
+    void givenUnsupportedResouceClass_whenVerify_thenendpointImproperlyConfigureException() {
         assertThrows(UnsupportedResourceClassException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, UNSUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
     @Test
-    void givenExceptionOnRestCall_whenVerifying_thenEndpointImproprietyConfigureException() {
+    void givenExceptionOnRestCall_whenVerifying_thenendpointImproperlyConfigureException() {
         doThrow(
             new RuntimeException()
         ).when(restTemplate).exchange(
             anyString(), any(), any(), eq(SafResourceAccessEndpoint.Response.class), anyString(), anyString()
         );
-        assertThrows(EndpointImproprietyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
+        assertThrows(EndpointImproperlyConfigureException.class, () -> safResourceAccessEndpoint.hasSafResourceAccess(authentication, SUPPORTED_CLASS, RESOURCE, LEVEL));
     }
 
 }
