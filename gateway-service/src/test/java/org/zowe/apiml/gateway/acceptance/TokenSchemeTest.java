@@ -140,7 +140,7 @@ public abstract class TokenSchemeTest {
             zaasError.stop();
             zaasOk.stop();
 
-            given().when().get(getServiceUrl()).then().statusCode(500);
+            given().when().get(getServiceUrl()).then().statusCode(503);
             assertEquals(0, service.getCounter());
         }
 
@@ -150,7 +150,7 @@ public abstract class TokenSchemeTest {
             zaasError.start();
             zaasOk.stop();
 
-            given().when().get(getServiceUrl()).then().statusCode(500);
+            given().when().get(getServiceUrl()).then().statusCode(503);
             assertEquals(0, service.getCounter());
         }
 
