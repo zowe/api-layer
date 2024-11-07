@@ -22,6 +22,7 @@ jobs:
                   # RENOVATE_TOKEN should have access :read_user, api, write_repository (repo checkbox)
                   RENOVATE_TOKEN: ${{ secrets.ROBOT_PAT }}
                   RENOVATE_CONFIG_FILE: ${{ github.workspace }}/renovate-config.js
+                  RENOVATE_GIT_AUTHOR: "Renovate Bot <renovate@whitesourcesoftware.com>"
                   LOG_LEVEL: error
               run: |
                   renovate

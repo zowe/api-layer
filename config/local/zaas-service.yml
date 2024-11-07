@@ -47,12 +47,6 @@ spring:
             enabled: always
 
 server:
-    internal:
-        enabled: true
-        port: 10017
-        ssl:
-            keyAlias: localhost-multi
-            keyStore: keystore/localhost/localhost-multi.keystore.p12
     ssl:
         keyAlias: localhost
         keyPassword: password

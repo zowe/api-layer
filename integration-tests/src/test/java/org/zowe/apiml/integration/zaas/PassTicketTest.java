@@ -19,7 +19,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketRequest;
-import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -33,9 +32,7 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.ContentType.XML;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -43,19 +40,13 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
-import static org.zowe.apiml.util.SecurityUtils.USERNAME;
-import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtTokenFromGw;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
-import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
-import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
  */
 @ZaasTest
-class PassTicketTest implements TestWithStartedInstances {
+class PassTicketTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
 
@@ -190,6 +181,23 @@ class PassTicketTest implements TestWithStartedInstances {
         }
 
         @Test
+        void givenIncorrectHTTPMethod_thenReturnNotAllowed() {
+            String expectedMessage = "Authentication method 'GET' is not supported for URL '/zaas/scheme/ticket'";
+
+            //@formatter:off
+            given()
+                .contentType(JSON)
+                .body(new TicketRequest())
+                .cookie(COOKIE, jwt)
+            .when()
+                .get(ZAAS_TICKET_URI)
+            .then()
+                .statusCode(is(SC_METHOD_NOT_ALLOWED))
+                .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
+            //@formatter:on
+        }
+
+        @Test
         void givenInvalidApplicationName() {
             String expectedMessage = "The generation of the PassTicket failed. Reason:";
             TicketRequest ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
@@ -202,7 +210,7 @@ class PassTicketTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_TICKET_URI)
             .then()
-                .statusCode(is(SC_BAD_REQUEST))
+                .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             //@formatter:on
         }
@@ -225,13 +233,14 @@ class PassTicketTest implements TestWithStartedInstances {
         @Test
         void givenNoContentType() {
             //@formatter:off
-             given()
-                .body(new TicketRequest(APPLICATION_NAME))
+            given()
+                .body(new TicketRequest(APPLICATION_NAME).toString().getBytes())
                 .cookie(COOKIE, jwt)
-            .when()
+                .noContentType()
+                .when()
                 .post(ZAAS_TICKET_URI)
-            .then()
-                .statusCode(is(SC_NOT_FOUND));
+                .then()
+                .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
         }
 
@@ -245,7 +254,7 @@ class PassTicketTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_TICKET_URI)
             .then()
-                .statusCode(is(SC_NOT_FOUND));
+                .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
             //@formatter:on
         }
 

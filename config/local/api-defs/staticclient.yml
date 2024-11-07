@@ -111,6 +111,7 @@ services:
                 serviceRelativeUrl: /api/v3 # relativePath that is added to baseUrl of an instance
         authentication:
             scheme: httpBasicPassTicket
+            applid: ZOWEAPPL
         apiInfo:
             -   apiId: zowe.apiml.discoverableclient
                 gatewayUrl: api/v3
@@ -133,6 +134,45 @@ services:
       authentication:
           scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
           applid: ZOWEAPPL  # APPLID to generate PassTickets for this service
+      apiInfo:
+          - apiId: zowe.apiml.discoverableclient
+            gatewayUrl: api/v1
+            version: 1.0.0
+
+    - serviceId: dcpassticketxbadappl  # unique lowercase ID of the service
+      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      title: Discoverable client with passTicket authentication scheme (Misconfiguration - access rights) # Title of the service in the API catalog
+      description: Define service to test passTicket authentication schema for integration tests.
+      instanceBaseUrls:  # list of base URLs for each instance
+          - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+      homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
+      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+      routes:
+          - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+            serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+      authentication:
+          scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
+          applid: XBADAPPL  # APPLID to generate PassTickets for this service
+      apiInfo:
+          - apiId: zowe.apiml.discoverableclient
+            gatewayUrl: api/v1
+            version: 1.0.0
+
+    - serviceId: dcnopassticket  # unique lowercase ID of the service
+      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      title: Discoverable client with passTicket authentication scheme (Misconfiguration - no APPLID) # Title of the service in the API catalog
+      description: Define service to test passTicket authentication schema for integration tests.
+      instanceBaseUrls:  # list of base URLs for each instance
+          - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+      homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
+      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+      routes:
+          - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+            serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+      authentication:
+          scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
       apiInfo:
           - apiId: zowe.apiml.discoverableclient
             gatewayUrl: api/v1

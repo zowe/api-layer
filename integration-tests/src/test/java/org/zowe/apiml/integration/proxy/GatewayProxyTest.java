@@ -73,9 +73,9 @@ class GatewayProxyTest {
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
                 .header(HEADER_X_FORWARD_TO, "discoverableclient")
-            .when()
+                .when()
                 .get(scgUrl)
-            .then()
+                .then()
                 .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
         });
     }
@@ -89,9 +89,9 @@ class GatewayProxyTest {
             given()
                 .config(SslContext.clientCertValid)
                 .header(HEADER_X_FORWARD_TO, "apiml1")
-            .when()
+                .when()
                 .get(scgUrl)
-            .then()
+                .then()
                 .statusCode(HttpStatus.SC_OK)
                 .body("dn", startsWith("CN=APIMTST"))
                 .body("cn", is("APIMTST"))
@@ -103,9 +103,9 @@ class GatewayProxyTest {
             String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
             given()
                 .config(SslContext.clientCertValid)
-            .when()
+                .when()
                 .get(scgUrl)
-            .then()
+                .then()
                 .statusCode(HttpStatus.SC_OK)
                 .body("dn", startsWith("CN=APIMTST"))
                 .body("cn", is("APIMTST"))

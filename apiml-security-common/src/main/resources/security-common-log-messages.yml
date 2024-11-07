@@ -147,7 +147,7 @@ messages:
       reason: "The parameter `apiml.security.authorization.provider` is set to `endpoint`"
       action: "Change the SAF provider to another one to use this endpoint"
 
-    - key: org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproprietyConfigure
+    - key: org.zowe.apiml.security.common.auth.saf.endpoint.endpointImproperlyConfigure
       number: ZWEAT603
       type: ERROR
       text: "Endpoint `%s` is not properly configured"
