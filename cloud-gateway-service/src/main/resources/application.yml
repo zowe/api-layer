@@ -86,6 +86,7 @@ logging:
         org.springframework.context.support: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        javax.net.ssl: ERROR # For running with java 17
 
 management:
     endpoint:

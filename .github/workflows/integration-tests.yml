@@ -26,10 +26,6 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
-            -   name: Publish latest v2 Gateway
-                if: ${{ github.ref_name == 'v2.x.x' }}
-                run: >
-                    ./gradlew :gateway-service:jib -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=latest-v2
             -   name: Standalone Catalog
                 run: >
                     ./gradlew :api-catalog-services:jib -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6305 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
@@ -184,7 +180,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
@@ -228,7 +224,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
@@ -308,7 +304,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CloudGatewayCentralRegistry-${{ env.JOB_ID }}
@@ -356,7 +352,7 @@ jobs:
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
@@ -539,7 +535,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsZosmfPH34201-${{ env.JOB_ID }}
@@ -591,7 +587,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
@@ -644,7 +640,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint-${{ env.JOB_ID }}
@@ -700,7 +696,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
@@ -763,7 +759,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
@@ -831,7 +827,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
@@ -901,6 +897,7 @@ jobs:
                 run: >
                     ./gradlew runHATests --info -Denvironment.config=-ha -Denvironment.offPlatform=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -DcloudGateway.enabled=false
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -910,7 +907,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}
@@ -1005,7 +1002,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: LbHaTests-${{ env.JOB_ID }}
@@ -1064,7 +1061,7 @@ jobs:
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1075,7 +1072,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
@@ -1134,7 +1131,7 @@ jobs:
             -   name: Run Gateway Service Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1145,7 +1142,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsGatewayChaoticHA-${{ env.JOB_ID }}
@@ -1154,7 +1151,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsDicoverableClientChaoticHA:
+    CITestsDiscoverableClientChaoticHA:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
@@ -1208,7 +1205,7 @@ jobs:
             -   name: Run Discoverable Client Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1219,10 +1216,10 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
-                    name: CITestsDicoverableClientChaoticHA-${{ env.JOB_ID }}
+                    name: CITestsDiscoverableClientChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1282,7 +1279,7 @@ jobs:
             -   name: Run WebSocket Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1300,7 +1297,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
@@ -1462,13 +1459,13 @@ jobs:
                     cd metrics-service-ui/frontend
                     npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   name: Upload screenshots Metrics service
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: failure()
                 with:
                     name: cypress-snapshots
@@ -1511,7 +1508,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}

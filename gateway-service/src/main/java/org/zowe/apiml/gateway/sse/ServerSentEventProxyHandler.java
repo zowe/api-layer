@@ -10,11 +10,16 @@
 
 package org.zowe.apiml.gateway.sse;
 
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -28,10 +33,17 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
 import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Flux;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.SslProvider;
 
+import javax.annotation.PostConstruct;
+import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,18 +51,43 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static org.zowe.apiml.security.SecurityUtils.loadKeyStore;
+
 @Slf4j
 @Controller
+@RequiredArgsConstructor
 @Component("ServerSentEventProxyHandler")
 public class ServerSentEventProxyHandler implements RoutedServicesUser {
+
+    @Value("${server.ssl.trustStore:#{null}}")
+    private String trustStore;
+
+    @Value("${server.ssl.trustStorePassword:#{null}}")
+    private char[] trustStorePassword;
+
+    @Value("${server.ssl.trustStoreType:PKCS12}")
+    private String trustStoreType;
+
     private final DiscoveryClient discovery;
     private final MessageService messageService;
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
+    private WebClient webClient;
 
-    @Autowired
-    public ServerSentEventProxyHandler(DiscoveryClient discovery, MessageService messageService) {
-        this.discovery = discovery;
-        this.messageService = messageService;
+    @PostConstruct
+    void initWebClient() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
+        webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(
+            HttpClient.create().secure(SslProvider.builder().sslContext(getSslContext()).build())
+        )).build();
+    }
+
+    private SslContext getSslContext() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
+        SslContextBuilder sslContextBuilder = SslContextBuilder.forClient().clientAuth(ClientAuth.NONE);
+        if (trustStore != null) {
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(loadKeyStore(trustStoreType, trustStore, trustStorePassword));
+            sslContextBuilder.trustManager(tmf);
+        }
+        return sslContextBuilder.build();
     }
 
     @GetMapping({"/sse/**","/*/sse/**"})
@@ -106,11 +143,12 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
     // package protected for unit testing
     Flux<ServerSentEvent<String>> getSseStream(String sseStreamUrl) {
-        WebClient client = WebClient.create(sseStreamUrl);
         ParameterizedTypeReference<ServerSentEvent<String>> type
             = new ParameterizedTypeReference<ServerSentEvent<String>>() {
         };
-        return client.get()
+        return webClient
+            .get()
+            .uri(sseStreamUrl)
             .retrieve()
             .bodyToFlux(type);
     }

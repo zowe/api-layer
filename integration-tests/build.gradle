@@ -496,6 +496,7 @@ task runBaseTestsInternalPort(type: Test) {
 task runHATests(type: Test) {
     group "Integration tests"
     description "Run tests verifying High Availability"
+    dependsOn startUpCheck
 
     outputs.cacheIf { false }
 
@@ -528,6 +529,7 @@ task runLbHaTests(type: Test) {
 task runChaoticHATests(type: Test) {
     group "Integration tests"
     description "Run Chaotic tests verifying High Availability"
+    dependsOn startUpCheck
 
     outputs.cacheIf { false }
 

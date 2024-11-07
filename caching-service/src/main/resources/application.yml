@@ -38,6 +38,7 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        javax.net.ssl: ERROR # For running with java 17
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1

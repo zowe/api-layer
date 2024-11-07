@@ -12,6 +12,7 @@ package org.zowe.apiml.util.requests;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -24,11 +25,13 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 
 @Slf4j
 public class Requests {
     public ReadContext getJson(URI uri) {
         String apps = given()
+            .config(RestAssuredConfig.config().sslConfig(getConfiguredSslConfig()))
             .accept(ContentType.JSON)
         .when()
             .get(uri)

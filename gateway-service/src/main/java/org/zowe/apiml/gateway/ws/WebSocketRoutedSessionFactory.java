@@ -18,7 +18,13 @@ public interface WebSocketRoutedSessionFactory {
      * @param webSocketSession Valid Server side WebSocket Session.
      * @param targetUrl Full websocket URL towards the server
      * @param webSocketClientFactory Factory producing the current SSL Context.
-     * @return Valid routed session handling the client session
+     * @param successCallback callback to be called if the session is established successfully
+     * @param failureCallback callback to be called if the session fails to be established
      */
-    WebSocketRoutedSession session(WebSocketSession webSocketSession, String targetUrl, WebSocketClientFactory webSocketClientFactory);
+    WebSocketRoutedSession session(
+        WebSocketSession webSocketSession,
+        String targetUrl,
+        WebSocketClientFactory webSocketClientFactory,
+        ClientSessionSuccessCallback successCallback,
+        ClientSessionFailureCallback failureCallback);
 }
