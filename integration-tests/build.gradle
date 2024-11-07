@@ -80,7 +80,6 @@ task startUpCheck(type: Test) {
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
-    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'StartupCheck'
     }
@@ -92,7 +91,6 @@ task environmentCheck(type: Test) {
     description "Check that the Integration environment is healthy"
 
     systemProperties System.properties
-    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags 'EnvironmentCheck'
     }
@@ -137,7 +135,6 @@ task runAllIntegrationTestsNormal(type: Test) {
     group "Integration tests"
     description "Run all integration tests normal"
     systemProperties System.properties
-    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
@@ -165,7 +162,6 @@ task runAllIntegrationTests(type: Test) {
     String itags = System.getProperty("includeTags") ?
         System.getProperty("includeTags") : 'zOSMFAuthTest'
     systemProperties System.properties
-    systemProperty "environment.offPlatform", true
     useJUnitPlatform {
         includeTags(
             itags
@@ -185,7 +181,6 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
 
     def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
     systemProperty "environment.config", targetSystem
-    systemProperty "environment.offPlatform", "true"
     systemProperty "environment.zos.target", "true"
     systemProperties System.properties
     systemProperties.remove('java.endorsed.dirs')
@@ -215,7 +210,6 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing"
 
-    systemProperty "environment.offPlatform", "true"
     systemProperties System.properties
 
     useJUnitPlatform {
@@ -269,7 +263,6 @@ task runContainerTests(type: Test) {
 
     outputs.cacheIf { false }
     systemProperty "environment.config", "-docker"
-    systemProperty "environment.offPlatform", "true"
 
     systemProperties System.properties
     useJUnitPlatform {
@@ -299,7 +292,6 @@ task runContainerTests(type: Test) {
 task runBaseTests(type: Test) {
     group "integration tests"
     description "Run base tests"
-    systemProperty "environment.offPlatform", "true"
 
     outputs.cacheIf { false }
 
@@ -436,7 +428,6 @@ task runZaasTest(type: Test) {
     description "Run Zaas tests only"
 
     outputs.cacheIf { false }
-    systemProperty "environment.offPlatform", true
 
     systemProperties System.getProperties()
     useJUnitPlatform {
