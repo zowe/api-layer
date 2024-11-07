@@ -116,6 +116,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFactory.AbstractConfig, R, D> extends AbstractGatewayFilterFactory<T> {
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
+    private static final String SERVICE_IS_UNAVAILABLE_MESSAGE = "There are no instance of ZAAS available";
 
     private static final String[] CERTIFICATE_HEADERS = {
         "X-Certificate-Public",
@@ -196,10 +197,10 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
                 case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
                 case SC_OK -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<>(clientResp.headers(), b));
                 case SC_INTERNAL_SERVER_ERROR -> callNext.apply(new ZaasInternalErrorException(zaasInstance, "An internal exception occurred in ZAAS service. Check its configuration of instance " + zaasInstance.getInstanceId() + "."));
-                default -> callNext.apply(new ServiceNotAccessibleException("There are no instance of ZAAS available"));
+                default -> callNext.apply(new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE));
             })
             .doOnError(t -> log.debug("Error on calling ZAAS service instance {}: {}", zaasInstance.getInstanceId(), t.getMessage()))
-            .onErrorResume(e -> callNext.apply(new ServiceNotAccessibleException("There are no instance of ZAAS available")));
+            .onErrorResume(e -> callNext.apply(new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE)));
     }
 
     protected Mono<Void> invoke(
@@ -209,7 +210,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     ) {
         Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
         if (!i.hasNext()) {
-            throw new ServiceNotAccessibleException("There are no instance of ZAAS available");
+            throw new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE);
         }
 
         return requestWithHa(i, requestCreator,  new AtomicReference<>(Optional.empty()))
