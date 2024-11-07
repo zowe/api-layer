@@ -169,8 +169,8 @@ public class GatewayExceptionHandler {
 
     @ExceptionHandler(ZaasInternalErrorException.class)
     public Mono<Void> handleZaasInternalErrorException(ServerWebExchange exchange, ZaasInternalErrorException ex) {
-        log.debug("The ZAAS instance {} return internal server error for request {}: {}", ex.getZaasInstance(), exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.zaas.internalServerError", ex.getZaasInstance().getInstanceId());
+        log.debug("The ZAAS instance {} return internal server error for request {}: {}", ex.getInstanceId(), exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.zaas.internalServerError", ex.getInstanceId());
     }
 
 }

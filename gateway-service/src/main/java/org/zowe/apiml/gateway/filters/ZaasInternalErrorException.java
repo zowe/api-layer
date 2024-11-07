@@ -16,11 +16,11 @@ import org.springframework.cloud.client.ServiceInstance;
 public class ZaasInternalErrorException extends Exception {
 
     @Getter
-    private final ServiceInstance zaasInstance;
+    private final String instanceId;
 
     public ZaasInternalErrorException(ServiceInstance zaasInstance, String message) {
         super(message);
-        this.zaasInstance = zaasInstance;
+        this.instanceId = zaasInstance.getInstanceId();
     }
 
 }
