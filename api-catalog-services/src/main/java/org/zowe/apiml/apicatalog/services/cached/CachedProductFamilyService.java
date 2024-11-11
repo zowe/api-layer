@@ -68,8 +68,7 @@ public class CachedProductFamilyService {
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
-                                      @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
-                                          Integer cacheRefreshUpdateThresholdInMillis,
+                                      @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}") Integer cacheRefreshUpdateThresholdInMillis,
                                       CustomStyleConfig customStyleConfig) {
         this.cachedServicesService = cachedServicesService;
         this.transformService = transformService;
@@ -359,7 +358,7 @@ public class CachedProductFamilyService {
      * @param instanceInfo the service instance
      * @return a APIService object
      */
-    private APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
+    APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
