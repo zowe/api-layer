@@ -103,6 +103,10 @@ public final class EurekaMetadataDefinition {
             return this == ADDITIONAL;
         }
 
+        public boolean isPrimary() {
+            return this == PRIMARY;
+        }
+
     }
 
 }
