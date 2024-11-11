@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.constants;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+
 public final class EurekaMetadataDefinition {
 
     private EurekaMetadataDefinition() {
@@ -35,6 +39,7 @@ public final class EurekaMetadataDefinition {
     public static final String SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING = "apiml.service.supportClientCertForwarding";
     public static final String ENABLE_URL_ENCODED_CHARACTERS = "apiml.enableUrlEncodedCharacters";
     public static final String APIML_ID = "apiml.service.apimlId";
+    public static final String REGISTRATION_TYPE = "apiml.registrationType";
 
     public static final String API_INFO = "apiml.apiInfo";
     public static final String API_INFO_API_ID = "apiId";
@@ -72,4 +77,32 @@ public final class EurekaMetadataDefinition {
     public static final String API_VERSION_PROPERTIES_TITLE_V1 = "mfaas.api-info.apiVersionProperties.v1.title";
     public static final String API_VERSION_PROPERTIES_VERSION_V1 = "mfaas.api-info.apiVersionProperties.v1.version";
     public static final String API_VERSION_PROPERTIES_DESCRIPTION_V1 = "mfaas.api-info.apiVersionProperties.v1.description";
+
+    @RequiredArgsConstructor
+    public enum RegistrationType {
+            PRIMARY("primary"),
+            ADDITIONAL("additional")
+        ;
+
+        @Getter
+        private final String value;
+
+        public static RegistrationType of(String value) {
+            for (RegistrationType registrationType : RegistrationType.values()) {
+                if (StringUtils.equals(value, registrationType.getValue())) {
+                    return registrationType;
+                }
+            }
+            if (value == null) {
+                return PRIMARY;
+            }
+            return null;
+        }
+
+        public boolean isAdditional() {
+            return this == ADDITIONAL;
+        }
+
+    }
+
 }
