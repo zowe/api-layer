@@ -55,7 +55,7 @@
     "@typescript-eslint/parser": "5.55.0",
     "@zowe/cli": "7.23.5",
     "@zowe/cli-test-utils": "7.19.0",
-    "@zowe/imperative": "5.19.0",
+    "@zowe/imperative": "5.27.2",
     "copyfiles": "2.4.1",
     "env-cmd": "10.1.0",
     "eslint": "8.36.0",
@@ -77,7 +77,7 @@
     "typescript": "4.9.5"
   },
   "peerDependencies": {
-    "@zowe/imperative": "5.9.1"
+    "@zowe/imperative": "5.27.2"
   },
   "overrides": {
     "ip": "2.0.1",
