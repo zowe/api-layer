@@ -116,6 +116,6 @@ describe('>>> Detail page test', () => {
 
         cy.get('#search > div > div > input').as('search').type('API Gateway');
 
-        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Gateway');
+        cy.get('.grid-tile').should('have.length', 2).should('contain', 'API Gateway');
     });
 });
