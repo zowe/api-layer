@@ -81,7 +81,7 @@
   },
   "overrides": {
     "ip": "2.0.1",
-    "@babel/traverse": "7.24.7"
+    "@babel/traverse": "7.25.9"
   },
   "jest": {
     "modulePathIgnorePatterns": [
