@@ -15,9 +15,9 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.product.instance.InstanceNotFoundException;
 
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -36,12 +36,10 @@ public class InstanceLookupExecutor {
             throw new InstanceNotFoundException("Service '" + serviceId + "' is not registered to Discovery Service");
         }
 
-        List<InstanceInfo> appInstances = application.getInstances();
-        if (appInstances.isEmpty()) {
-            throw new InstanceNotFoundException("'" + serviceId + "' has no running instances registered to Discovery Service");
-        }
-
-        return appInstances.get(0);
+        return application.getInstances().stream()
+            .filter(ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isPrimary())
+            .findFirst()
+            .orElseThrow(() -> new InstanceNotFoundException("'" + serviceId + "' has no running instances registered to Discovery Service"));
     }
 
     /**

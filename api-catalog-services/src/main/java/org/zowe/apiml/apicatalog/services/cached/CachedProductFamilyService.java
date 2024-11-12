@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
@@ -24,7 +25,6 @@ import org.zowe.apiml.auth.AuthenticationSchemes;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 /**
  * Caching service for eureka services
@@ -67,8 +68,7 @@ public class CachedProductFamilyService {
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
-                                      @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
-                                          Integer cacheRefreshUpdateThresholdInMillis,
+                                      @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}") Integer cacheRefreshUpdateThresholdInMillis,
                                       CustomStyleConfig customStyleConfig) {
         this.cachedServicesService = cachedServicesService;
         this.transformService = transformService;
@@ -275,7 +275,7 @@ public class CachedProductFamilyService {
         String instanceHomePage = instanceInfo.getHomePageUrl();
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (hasHomePage(instanceInfo) && !isGateway(instanceInfo)) {
+        if (hasHomePage(instanceInfo) && !StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), instanceInfo.getAppName())) {
             instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
             try {
@@ -326,10 +326,6 @@ public class CachedProductFamilyService {
             && !instanceHomePage.isEmpty();
     }
 
-    private boolean isGateway(InstanceInfo instanceInfo) {
-        return instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
-    }
-
     /**
      * Create a new container based on information in a new instance
      *
@@ -362,7 +358,7 @@ public class CachedProductFamilyService {
      * @param instanceInfo the service instance
      * @return a APIService object
      */
-    private APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
+    APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
@@ -384,8 +380,21 @@ public class CachedProductFamilyService {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }
 
-        return new APIService.Builder(instanceInfo.getAppName().toLowerCase())
-            .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
+        String serviceId = instanceInfo.getAppName();
+        String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
+        if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
+            if (RegistrationType.of(instanceInfo.getMetadata()).isAdditional()) {
+                // additional registration for GW means domain one, update serviceId with the ApimlId
+                String apimlId = instanceInfo.getMetadata().get(APIML_ID);
+                if (apimlId != null) {
+                    serviceId = apimlId;
+                    title += " (" + apimlId + ")";
+                }
+            }
+        }
+
+        return new APIService.Builder(StringUtils.lowerCase(serviceId))
+            .title(title)
             .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
             .secured(secureEnabled)
             .baseUrl(instanceInfo.getHomePageUrl())

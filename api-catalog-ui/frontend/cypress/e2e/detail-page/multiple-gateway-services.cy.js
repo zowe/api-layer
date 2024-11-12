@@ -7,17 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
-
 /// <reference types="Cypress" />
 
-describe('>>> Detail page test', () => {
+
+describe('>>> Multi-tenancy deployment test', () => {
     it('Detail page test', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
-        cy.get('#grid-container').contains('API Catalog').click();
+        cy.get('#grid-container').contains('API Gateway (apiml2)').click();
 
-        cy.url().should('contain', '/service/apicatalog');
+        cy.url().should('contain', '/service/apiml2');
 
         cy.get('#go-back-button').should('exist');
 
@@ -30,13 +29,13 @@ describe('>>> Detail page test', () => {
         cy.contains('Version: ');
     });
 
-    it('Should display the API Catalog service title, URL and description in Swagger', () => {
+    it('Should display the additional API Gateway (apiml2) service title, URL and description in Swagger', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.contains('Version: ');
-        cy.get('#grid-container').contains('API Catalog').click();
+        cy.get('#grid-container').contains('API Gateway (apiml2)').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/apicatalog`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/apiml2`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
@@ -44,27 +43,19 @@ describe('>>> Detail page test', () => {
             '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > div > label > select > option'
         )
             .should('exist')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/api/v1`);
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/gateway/api/v1`);
 
         cy.get('.tabs-container').should('not.exist');
-        cy.get('.serviceTab').should('exist').and('contain', 'API Catalog');
+        cy.get('.serviceTab').should('exist').and('contain', 'API Gateway');
 
         cy.contains('Service Homepage').should('exist');
-
-        cy.get(
-            '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div.tabs-swagger > div.serviceTab > div.header > a'
-        )
-            .should('have.attr', 'href')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`); // TODO This originally /ui/v1 but now /ui is selected for service homepage URL, see https://github.com/zowe/api-layer/issues/3652 to verify if it needs to be restored
-
-        cy.get('pre.version').should('contain', '1.0.0');
 
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
     });
 
-    it('Should display the Gateway information in the detail page', () => {
+    it('Should display the API Gateway service title, URL and description in Swagger', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
 
         cy.contains('Version: ');

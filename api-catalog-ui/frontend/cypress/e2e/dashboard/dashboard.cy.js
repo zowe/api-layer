@@ -46,11 +46,11 @@ describe('>>> Dashboard test', () => {
 
         cy.get('#search > div > div > input').as('search').type('API Gateway');
 
-        cy.get('.grid-tile').should('have.length', 1);
+        cy.get('.grid-tile').should('have.length', 2);
 
         cy.get('.clear-text-search').click();
 
-        cy.get('.grid-tile').should('have.length.gte', 1);
+        cy.get('.grid-tile').should('have.length.gte', 2);
         cy.get('@search').should('have.text', '');
 
         cy.contains('API Catalog').click();
