@@ -1398,6 +1398,7 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     APIML_HEALTH_PROTECTED: false
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
 
         steps:
             -   uses: actions/checkout@v4
