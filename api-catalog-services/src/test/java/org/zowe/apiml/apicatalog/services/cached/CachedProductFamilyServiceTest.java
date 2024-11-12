@@ -21,6 +21,9 @@ import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.util.ServicesBuilder;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
@@ -28,16 +31,12 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
@@ -514,4 +513,48 @@ class CachedProductFamilyServiceTest {
             assertThat(underTest.getAllContainers().size(), is(0));
         }
     }
+
+    @Nested
+    class MultiTenancy {
+
+        private CachedProductFamilyService cachedProductFamilyService;
+
+        @BeforeEach
+        void init() {
+            cachedProductFamilyService = new CachedProductFamilyService(
+                new CachedServicesService(),
+                new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
+                30000,
+                new CustomStyleConfig()
+            );
+        }
+
+        private APIService createDto(RegistrationType registrationType) {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put(APIML_ID, "apimlId");
+            metadata.put(SERVICE_TITLE, "title");
+            metadata.put(REGISTRATION_TYPE, registrationType.getValue());
+            var service = InstanceInfo.Builder.newBuilder()
+                .setAppName(CoreService.GATEWAY.getServiceId())
+                .setMetadata(metadata)
+                .build();
+            return cachedProductFamilyService.createAPIServiceFromInstance(service);
+        }
+
+        @Test
+        void givenPrimaryInstance_whenCreateDto_thenDoNotUpdateTitle() {
+            var dto = createDto(RegistrationType.ADDITIONAL);
+            assertEquals("title (apimlId)", dto.getTitle());
+            assertEquals("apimlid", dto.getServiceId());
+        }
+
+        @Test
+        void givenPrimaryInstance_whenCreateDto_thenAddApimlIdIntoTitle() {
+            var dto = createDto(RegistrationType.PRIMARY);
+            assertEquals("title", dto.getTitle());
+            assertEquals("gateway", dto.getServiceId());
+        }
+
+    }
+
 }
