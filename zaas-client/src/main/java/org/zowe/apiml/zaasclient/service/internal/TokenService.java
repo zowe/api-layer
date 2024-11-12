@@ -77,10 +77,14 @@ interface TokenService {
     ZaasToken query(HttpServletRequest request) throws ZaasClientException;
 
     /**
-     *
-     * @param token
-     * @return
-     * @throws ZaasClientException
+     * Return details about a passed OIDC token.
+     * 
+     * As of Zowe v2 and v3.0: valid OIDC token is a token confirmed to be issued by the OIDC provider configured in the target API 
+     * Mediation Layer
+     * 
+     * @param token The token to validate against an API Mediation Layer instance
+     * @return whether the token is valid or not for the target API Mediation Layer
+     * @throws ZaasClientException thrown if no token is passed to the method or a server error occurred in the target API Mediation Layer.
      */
     ZaasOidcValidationResult validateOidc(String token) throws ZaasClientException;
 
