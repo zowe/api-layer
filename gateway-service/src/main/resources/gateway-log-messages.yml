@@ -125,3 +125,10 @@ messages:
       text: "An internal exception occurred in ZAAS service %s."
       reason: "ZAAS cannot process authentication required to finish the request."
       action: "Make sure that the ZAAS is configured well and check all security requirements."
+
+    - key: org.zowe.apiml.gateway.connectionsLimitApproached
+      number: ZWESG429
+      type: ERROR
+      text: "Request was denied access."
+      reason: "Connections limit exceeded."
+      action: "Wait for the number of active connections to decrease before retrying your request."

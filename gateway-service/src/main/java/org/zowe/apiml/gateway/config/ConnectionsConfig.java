@@ -23,6 +23,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -52,12 +53,14 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
@@ -77,8 +80,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
@@ -314,7 +319,6 @@ public class ConnectionsConfig {
     }
 
     private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
-
         log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
         Map<String, String> urls = new HashMap<>();
         urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
@@ -325,9 +329,39 @@ public class ConnectionsConfig {
 
         EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
         InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
+
+        updateMetadata(newInfo, apimlRegistration);
+
         RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
         RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
         return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context, factories, args1);
+    }
+
+    private boolean isRouteKey(String key) {
+        return StringUtils.startsWith(key, ROUTES + ".") &&
+            (
+                StringUtils.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
+                StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
+            );
+    }
+
+    private void updateMetadata(InstanceInfo instanceInfo, AdditionalRegistration additionalRegistration) {
+        var metadata = instanceInfo.getMetadata();
+        metadata.put(REGISTRATION_TYPE, EurekaMetadataDefinition.RegistrationType.ADDITIONAL.getValue());
+
+        // if routes were override replace them in the map, otherwise use the default from the primary registration
+        if (!CollectionUtils.isEmpty(additionalRegistration.getRoutes())) {
+            // remove current routes
+            var currentRoutes = metadata.keySet().stream().filter(this::isRouteKey).collect(Collectors.toSet());
+            currentRoutes.forEach(metadata::remove);
+
+            // generate new routes metadata
+            int index = 0;
+            for (var route : additionalRegistration.getRoutes()) {
+                metadata.put(String.format("apiml.routes.%d.gatewayUrl", index), route.getGatewayUrl());
+                metadata.put(String.format("apiml.routes.%d.serviceUrl", index++), route.getServiceUrl());
+            }
+        }
     }
 
     @Bean

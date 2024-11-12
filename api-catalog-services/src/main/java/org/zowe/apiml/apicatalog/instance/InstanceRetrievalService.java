@@ -15,9 +15,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
+import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.Header;
@@ -30,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -37,9 +40,11 @@ import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
+
+import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 /**
  * Service for instance retrieval from Eureka
@@ -58,11 +63,32 @@ public class InstanceRetrievalService {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
+    private ObjectMapper mapper = new ObjectMapper();
+
     @Autowired
     public InstanceRetrievalService(DiscoveryConfigProperties discoveryConfigProperties,
                                     CloseableHttpClient httpClient) {
         this.discoveryConfigProperties = discoveryConfigProperties;
         this.httpClient = httpClient;
+    }
+
+    private InstanceInfo getInstanceInfo(String serviceId, AtomicBoolean instanceFound, Predicate<InstanceInfo> selector) {
+        List<EurekaServiceInstanceRequest> eurekaServiceInstanceRequests = constructServiceInfoQueryRequest(serviceId, false);
+        // iterate over list of discovery services, return at first success
+        for (EurekaServiceInstanceRequest eurekaServiceInstanceRequest : eurekaServiceInstanceRequests) {
+            // call Eureka REST endpoint to fetch single or all Instances
+            try {
+                String responseBody = queryDiscoveryForInstances(eurekaServiceInstanceRequest);
+                if (responseBody != null) {
+                    instanceFound.set(true);
+                    return extractSingleInstanceFromApplication(serviceId, responseBody, selector);
+                }
+            } catch (Exception e) {
+                log.debug("Error obtaining instance information from {}, error message: {}",
+                    eurekaServiceInstanceRequest.getEurekaRequestUrl(), e.getMessage());
+            }
+        }
+        return null;
     }
 
     /**
@@ -76,22 +102,24 @@ public class InstanceRetrievalService {
             return null;
         }
 
-        List<EurekaServiceInstanceRequest> eurekaServiceInstanceRequests = constructServiceInfoQueryRequest(serviceId, false);
-        // iterate over list of discovery services, return at first success
-        for (EurekaServiceInstanceRequest eurekaServiceInstanceRequest : eurekaServiceInstanceRequests) {
-            // call Eureka REST endpoint to fetch single or all Instances
-            try {
-                String responseBody = queryDiscoveryForInstances(eurekaServiceInstanceRequest);
-                if (responseBody != null) {
-                    return extractSingleInstanceFromApplication(serviceId, responseBody);
-                }
-            } catch (Exception e) {
-                log.debug("Error obtaining instance information from {}, error message: {}",
-                    eurekaServiceInstanceRequest.getEurekaRequestUrl(), e.getMessage());
-            }
+        // identification if there was no instance or any error happened during fetching
+        AtomicBoolean instanceFound = new AtomicBoolean(false);
+        InstanceInfo instanceInfo = getInstanceInfo(serviceId, instanceFound,
+            ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isPrimary()
+        );
+        if (instanceInfo == null) {
+            // maybe the input is apimlId, try to find the matching Gateway (multi-tenancy use case)
+            instanceInfo = getInstanceInfo(GATEWAY.getServiceId(), instanceFound,
+                ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isAdditional()
+            );
         }
-        String msg = "An error occurred when trying to get instance info for:  " + serviceId;
-        throw new InstanceInitializationException(msg);
+
+        if (!instanceFound.get()) {
+            String msg = "An error occurred when trying to get instance info for:  " + serviceId;
+            throw new InstanceInitializationException(msg);
+        }
+
+        return instanceInfo;
     }
 
     /**
@@ -141,7 +169,7 @@ public class InstanceRetrievalService {
      * @param eurekaServiceInstanceRequest information used to query the discovery service
      * @return ResponseEntity<String> query response
      */
-    private String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException {
+    String queryDiscoveryForInstances(EurekaServiceInstanceRequest eurekaServiceInstanceRequest) throws IOException {
         HttpGet httpGet = new HttpGet(eurekaServiceInstanceRequest.getEurekaRequestUrl());
         for (Header header : createRequestHeader(eurekaServiceInstanceRequest)) {
             httpGet.setHeader(header);
@@ -176,9 +204,8 @@ public class InstanceRetrievalService {
      * @param responseBody the fetch attempt response body
      * @return service instance
      */
-    private InstanceInfo extractSingleInstanceFromApplication(String serviceId, String responseBody) {
+    InstanceInfo extractSingleInstanceFromApplication(String serviceId, String responseBody, Predicate<InstanceInfo> selector) {
         ApplicationWrapper application = null;
-        ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
             application = mapper.readValue(responseBody, ApplicationWrapper.class);
@@ -186,15 +213,13 @@ public class InstanceRetrievalService {
             log.debug("Could not extract service: {} info from discovery --{}", serviceId, e.getMessage(), e);
         }
 
-
-        if (application != null
-            && application.getApplication() != null
-            && application.getApplication().getInstances() != null
-            && !application.getApplication().getInstances().isEmpty()) {
-            return application.getApplication().getInstances().get(0);
-        } else {
-            return null;
-        }
+        return Optional.ofNullable(application)
+            .map(ApplicationWrapper::getApplication)
+            .map(Application::getInstances)
+            .orElse(Collections.emptyList())
+            .stream().filter(selector)
+            .findFirst()
+            .orElse(null);
     }
 
     /**
@@ -221,7 +246,7 @@ public class InstanceRetrievalService {
 
             log.debug("Querying instance information of the service {} from the URL {} with the user {} and password {}",
                 serviceId, discoveryServiceLocatorUrl, eurekaUsername,
-                eurekaUserPassword.isEmpty() ? "NO PASSWORD" : "*******");
+                StringUtils.isEmpty(eurekaUserPassword) ? "NO PASSWORD" : "*******");
 
             EurekaServiceInstanceRequest eurekaServiceInstanceRequest = EurekaServiceInstanceRequest.builder()
                 .serviceId(serviceId)

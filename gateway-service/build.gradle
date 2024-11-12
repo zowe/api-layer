@@ -80,6 +80,7 @@ dependencies {
     implementation libs.nimbus.jose.jwt
     implementation libs.bcpkix
     implementation libs.caffeine
+    implementation libs.bucket4j.core
 
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser

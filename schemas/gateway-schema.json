@@ -175,6 +175,33 @@
                                                 "gateway": {
                                                     "type": "object",
                                                     "properties": {
+                                                        "routing": {
+                                                            "properties": {
+                                                                "rateLimiterCapacity":{
+                                                                    "type": "integer",
+                                                                    "description": "Defines the total number of requests that can be allowed at one time.",
+                                                                    "default": 20
+                                                                },
+                                                                "rateLimiterTokens":{
+                                                                    "type": "integer",
+                                                                    "description": "Defines the number of requests that are added to the service’s allowance at regular intervals.",
+                                                                    "default": 20
+                                                                },
+                                                                "rateLimiterRefillDuration":{
+                                                                    "type": "integer",
+                                                                    "description": "Sets the time interval (in minutes) at which new requests (or tokens) are added.",
+                                                                    "default": 1
+                                                                },
+                                                                "servicesToLimitRequestRate":{
+                                                                    "type": "array",
+                                                                    "description": "Array of services which the rate limiter will be applied to.",
+                                                                    "items": {
+                                                                        "type": "string",
+                                                                        "description": "The name of the service."
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
                                                         "registry": {
                                                             "type": "object",
                                                             "description": "Gateway configuration of a service registry endpoint.",

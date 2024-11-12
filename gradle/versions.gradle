@@ -99,6 +99,7 @@ dependencyResolutionManagement {
             version('jacoco', '0.8.11')
             version('gradle', '8.6')
             version('commonsCompress', '1.27.1')
+            version('bucket4j', '8.14.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
@@ -216,6 +217,7 @@ dependencyResolutionManagement {
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').versionRef('springBootGraphQl')
+            library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')

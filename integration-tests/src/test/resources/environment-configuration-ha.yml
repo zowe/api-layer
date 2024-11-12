@@ -7,7 +7,6 @@ gatewayServiceConfiguration:
     scheme: https
     host: gateway-service,gateway-service-2
     port: 10010
-    internalPorts: 10017,10027
     externalPort: 10010
     instances: 2
     servicesEndpoint: gateway/api/v1/services
