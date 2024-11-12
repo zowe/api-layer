@@ -13,6 +13,7 @@ package org.zowe.apiml.zaasclient.service.internal;
 import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 /**
@@ -74,6 +75,14 @@ interface TokenService {
      *                             this exception with details is thrown.
      */
     ZaasToken query(HttpServletRequest request) throws ZaasClientException;
+
+    /**
+     *
+     * @param token
+     * @return
+     * @throws ZaasClientException
+     */
+    ZaasOidcValidationResult validateOidc(String token) throws ZaasClientException;
 
     /**
      * Invalidate the provided JWT token in order to perform logout.

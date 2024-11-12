@@ -47,6 +47,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ZaasJwtServiceTest {
+
     private static final String JWT_TOKEN = "jwtTokenTest";
     private static final String HEADER_AUTHORIZATION = "Bearer " + JWT_TOKEN;
 
@@ -56,6 +57,7 @@ class ZaasJwtServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final ConfigProperties configProperties = new ConfigProperties();
+
     @Captor
     ArgumentCaptor<HttpUriRequestBase> requestCaptor;
 
@@ -83,6 +85,7 @@ class ZaasJwtServiceTest {
         zaasJwtService = new ZaasJwtService(closeableHttpClient, BASE_URL, configProperties);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void givenJwtToken_whenLogout_thenSetCookie() throws ZaasClientException, IOException {
         mockHttpClientResponse(204);
@@ -94,6 +97,7 @@ class ZaasJwtServiceTest {
             (COOKIE_NAME + "=" + JWT_TOKEN).equals(capturedRequest.getHeaders(HttpHeaders.COOKIE)[0].getValue()));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void givenAuthorizationHeaderWithJwtToken_whenLogout_thenAuthorizationHeader() throws ZaasClientException, IOException {
         mockHttpClientResponse(204);
@@ -221,4 +225,5 @@ class ZaasJwtServiceTest {
         Exception exception = assertThrows(ZaasClientException.class, executable);
         assertEquals(exc.getMessage(), exception.getMessage());
     }
+
 }

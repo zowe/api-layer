@@ -17,6 +17,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class ZaasClientImpl implements ZaasClient, Closeable {
+
     private final TokenService tokens;
     private final PassTicketService passTickets;
     private final CloseableHttpClient httpClientWithoutCert;
@@ -148,5 +150,13 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
     public void close() throws IOException {
         httpClient.close();
         httpClientWithoutCert.close();
+    }
+
+    @Override
+    public ZaasOidcValidationResult validateOidc(String token) throws ZaasClientException {
+        if (token == null || token.isEmpty()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
+        }
+        return tokens.validateOidc(token);
     }
 }

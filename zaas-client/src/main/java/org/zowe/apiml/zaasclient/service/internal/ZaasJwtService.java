@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -33,6 +34,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
 
@@ -52,6 +54,7 @@ class ZaasJwtService implements TokenService {
     private final String loginEndpoint;
     private final String queryEndpoint;
     private final String logoutEndpoint;
+    private final String validateOidcEndpoint;
     private final CloseableHttpClient httpClient;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -63,6 +66,7 @@ class ZaasJwtService implements TokenService {
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
         logoutEndpoint = baseUrl + "/logout";
+        validateOidcEndpoint = baseUrl + "/oidc-token/validate";
         zaasConfigProperties = configProperties;
     }
 
@@ -83,7 +87,6 @@ class ZaasJwtService implements TokenService {
     }
 
     private ClassicHttpRequest loginWithCredentials(String userId, char[] password, char[] newPassword) throws IOException {
-
         var httpPost = new HttpPost(loginEndpoint);
         String json = objectMapper.writeValueAsString(new Credentials(userId, password, newPassword));
         var entity = new StringEntity(json);
@@ -137,6 +140,40 @@ class ZaasJwtService implements TokenService {
     @Override
     public void logout(String jwtToken) throws ZaasClientException {
         doLogoutRequest(() -> logoutJwtToken(jwtToken));
+    }
+
+    @Override
+    public ZaasOidcValidationResult validateOidc(String token) throws ZaasClientException {
+        if (token == null || token.isEmpty()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided for OIDC validation");
+        }
+
+        return (ZaasOidcValidationResult) doRequest(
+            () -> validateOidcToken(token),
+            SimpleHttpResponse::fromResponseWithBytesBodyOnSuccess,
+            this::extractZaasOidcValidate
+        );
+    }
+
+    private ClassicHttpRequest validateOidcToken(String oidcToken) throws JsonProcessingException {
+        var httpPost = new HttpPost(validateOidcEndpoint);
+        String json = objectMapper.writeValueAsString(new TokenRequest(oidcToken));
+        var entity = new StringEntity(json);
+        httpPost.setEntity(entity);
+        return httpPost;
+    }
+
+    private ZaasOidcValidationResult extractZaasOidcValidate(SimpleHttpResponse response) throws IOException, ZaasClientException {
+        int statusCode = response.getCode();
+        if (statusCode == 204) {
+            return new ZaasOidcValidationResult(true);
+        }
+
+        if (statusCode == 401) {
+            return new ZaasOidcValidationResult(false);
+        } else {
+            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, response.getStringBody());
+        }
     }
 
     /**
@@ -307,6 +344,12 @@ class ZaasJwtService implements TokenService {
         char[] newPassword;
     }
 
+    @Data
+    @AllArgsConstructor
+    static class TokenRequest {
+        String token;
+    }
+
     interface TokenExtractor {
         Object extract(SimpleHttpResponse response) throws IOException, ZaasClientException;
     }
@@ -314,4 +357,5 @@ class ZaasJwtService implements TokenService {
     interface OperationGenerator {
         ClassicHttpRequest request() throws IOException;
     }
+
 }
