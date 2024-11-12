@@ -16,7 +16,7 @@
         "@react-loadable/revised": "1.5.0",
         "@types/enzyme": "3.10.18",
         "@types/jest": "29.5.13",
-        "@types/react": "18.2.79",
+        "@types/react": "18.3.12",
         "@wojtekmaj/enzyme-adapter-react-17": "0.8.0",
         "agentkeepalive": "4.5.0",
         "buffer": "6.0.3",
