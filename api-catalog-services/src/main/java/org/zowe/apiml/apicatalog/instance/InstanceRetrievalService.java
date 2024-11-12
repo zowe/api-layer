@@ -44,7 +44,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 /**
@@ -106,12 +105,12 @@ public class InstanceRetrievalService {
         // identification if there was no instance or any error happened during fetching
         AtomicBoolean instanceFound = new AtomicBoolean(false);
         InstanceInfo instanceInfo = getInstanceInfo(serviceId, instanceFound,
-            ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata().get(REGISTRATION_TYPE)).isPrimary()
+            ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isPrimary()
         );
         if (instanceInfo == null) {
             // maybe the input is apimlId, try to find the matching Gateway (multi-tenancy use case)
             instanceInfo = getInstanceInfo(GATEWAY.getServiceId(), instanceFound,
-                ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata().get(REGISTRATION_TYPE)).isAdditional()
+                ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isAdditional()
             );
         }
 

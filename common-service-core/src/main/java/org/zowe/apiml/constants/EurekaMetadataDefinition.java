@@ -14,6 +14,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Map;
+import java.util.Optional;
+
 public final class EurekaMetadataDefinition {
 
     private EurekaMetadataDefinition() {
@@ -78,8 +81,20 @@ public final class EurekaMetadataDefinition {
     public static final String API_VERSION_PROPERTIES_VERSION_V1 = "mfaas.api-info.apiVersionProperties.v1.version";
     public static final String API_VERSION_PROPERTIES_DESCRIPTION_V1 = "mfaas.api-info.apiVersionProperties.v1.description";
 
+    public interface BasicRegistrationType {
+
+        default boolean isAdditional() {
+            return false;
+        }
+
+        default boolean isPrimary() {
+            return false;
+        }
+
+    }
+
     @RequiredArgsConstructor
-    public enum RegistrationType {
+    public enum RegistrationType implements BasicRegistrationType {
             PRIMARY("primary"),
             ADDITIONAL("additional")
         ;
@@ -97,6 +112,13 @@ public final class EurekaMetadataDefinition {
                 return PRIMARY;
             }
             return null;
+        }
+
+        public static BasicRegistrationType of(Map<String, String> metadata) {
+            return Optional.ofNullable(metadata)
+                .map(m -> of(m.get(REGISTRATION_TYPE)))
+                .map(BasicRegistrationType.class::cast)
+                .orElse(new BasicRegistrationType() {});
         }
 
         public boolean isAdditional() {

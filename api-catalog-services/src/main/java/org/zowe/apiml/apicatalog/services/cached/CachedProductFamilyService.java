@@ -383,7 +383,7 @@ public class CachedProductFamilyService {
         String serviceId = instanceInfo.getAppName();
         String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
-            if (RegistrationType.of(instanceInfo.getMetadata().get(REGISTRATION_TYPE)).isAdditional()) {
+            if (RegistrationType.of(instanceInfo.getMetadata()).isAdditional()) {
                 // additional registration for GW means domain one, update serviceId with the ApimlId
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
