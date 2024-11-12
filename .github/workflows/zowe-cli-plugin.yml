@@ -48,6 +48,7 @@ jobs:
                     cd zowe-cli-id-federation-plugin
                     if [ -e .npmrc ]; then
                       rm -f .npmrc
+                    fi
 
             - uses: zowe-actions/octorelease@v1
               with:
