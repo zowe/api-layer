@@ -18,6 +18,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
@@ -153,6 +154,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
         @Nested
         class ValidTokenIsReturned {
+
             @Test
             void givenValidCredentials() throws ZaasClientException {
                 String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
@@ -166,11 +168,13 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(token);
                 assertThat(token, is(not(EMPTY_STRING)));
             }
+
         }
 
         @Nested
         @TestsNotMeantForZowe
         class ProperExceptionIsRaised {
+
             @ParameterizedTest(name = "givenInvalidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.services.ZaasClientIntegrationTest#provideInvalidUsernamePassword")
             void givenInvalidCredentials(String username, String password, ZaasClientErrorCodes expectedCode) {
@@ -204,7 +208,9 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
 
                 assertThatExceptionContainValidCode(exception, expectedCode);
             }
+
         }
+
     }
 
     @Nested
@@ -250,7 +256,27 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
     }
 
     @Nested
+    class WhenOidcQuery {
+
+        private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+
+        void givenValidOidcToken_thenValidDetailsAreProvided() throws ZaasClientException {
+            var validationResult = tokenService.validateOidc(VALID_TOKEN_NO_MAPPING);
+            assertNotNull(validationResult);
+            assertTrue(validationResult.isValid());
+        }
+
+        void givenInvalidOidcToken_thenNotValidIsIssued() throws ZaasClientException {
+            var validationResult = tokenService.validateOidc("invalidtoken");
+            assertNotNull(validationResult);
+            assertFalse(validationResult.isValid());
+        }
+
+    }
+
+    @Nested
     class WhenPassTicketRequested {
+
         @Test
         void givenValidToken_thenValidPassTicketIsReturned() throws ZaasClientException, ZaasConfigurationException {
             String token = tokenService.login(USERNAME, PASSWORD.toCharArray());
@@ -288,6 +314,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             }
 
         }
+
     }
 
     @Nested
@@ -305,5 +332,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
             assertThrows(ZaasClientException.class, () ->
                 tokenService.logout(token));
         }
+
     }
+
 }
