@@ -214,7 +214,7 @@ class ZaasJwtServiceTest {
     }
 
     @Test
-    void givenNullOidcToken_whenValidate_thenException() throws ZaasClientException {
+    void givenNullOidcToken_whenValidate_thenException() {
         var thrownException = assertThrows(ZaasClientException.class, () -> zaasJwtService.validateOidc(null));
         assertEquals(TOKEN_NOT_PROVIDED, thrownException.getErrorCode());
     }
@@ -242,7 +242,7 @@ class ZaasJwtServiceTest {
     }
 
     @Test
-    void givenValidToken_whenValidate_thenException() throws ZaasClientException {
+    void givenValidToken_whenValidate_thenException() {
         var token = "validOidcToken";
         mockHttpClientResponse(500, "server error");
         var exceptionThrown = assertThrows(ZaasClientException.class, () -> zaasJwtService.validateOidc(token));
