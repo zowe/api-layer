@@ -1380,7 +1380,6 @@ jobs:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
-                    LOGBACKSERVICENAME: ZWEADS2
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1391,7 +1390,6 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
-                    LOGBACKSERVICENAME: ZWEAGW2
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1401,7 +1399,6 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     APIML_HEALTH_PROTECTED: false
                     APIML_SERVICE_HOSTNAME: zaas-service-2
-                    LOGBACKSERVICENAME: ZWEAZS2
 
         steps:
             -   uses: actions/checkout@v4
@@ -1424,6 +1421,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
             -   name: Show status when APIML is not ready yet
+                if: failure()
                 shell: bash
                 run: |
                     apt update
