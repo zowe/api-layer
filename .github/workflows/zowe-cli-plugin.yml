@@ -43,6 +43,13 @@ jobs:
                   npm run build
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
 
+            -   name: Update npm configuration
+                run: |
+                    cd zowe-cli-id-federation-plugin
+                    if [ -e .npmrc ]; then
+                      rm -f .npmrc
+                    fi
+
             - uses: zowe-actions/octorelease@v1
               with:
                 working-dir: zowe-cli-id-federation-plugin

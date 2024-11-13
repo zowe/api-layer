@@ -29,8 +29,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
@@ -40,13 +38,22 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.GENERIC_EXCEPTION;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class ZaasJwtServiceTest {
+
     private static final String JWT_TOKEN = "jwtTokenTest";
     private static final String HEADER_AUTHORIZATION = "Bearer " + JWT_TOKEN;
 
@@ -56,6 +63,7 @@ class ZaasJwtServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final ConfigProperties configProperties = new ConfigProperties();
+
     @Captor
     ArgumentCaptor<HttpUriRequestBase> requestCaptor;
 
@@ -83,6 +91,7 @@ class ZaasJwtServiceTest {
         zaasJwtService = new ZaasJwtService(closeableHttpClient, BASE_URL, configProperties);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void givenJwtToken_whenLogout_thenSetCookie() throws ZaasClientException, IOException {
         mockHttpClientResponse(204);
@@ -94,6 +103,7 @@ class ZaasJwtServiceTest {
             (COOKIE_NAME + "=" + JWT_TOKEN).equals(capturedRequest.getHeaders(HttpHeaders.COOKIE)[0].getValue()));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void givenAuthorizationHeaderWithJwtToken_whenLogout_thenAuthorizationHeader() throws ZaasClientException, IOException {
         mockHttpClientResponse(204);
@@ -203,6 +213,43 @@ class ZaasJwtServiceTest {
             () -> zaasJwtService.query("jwt"));
     }
 
+    @Test
+    void givenNullOidcToken_whenValidate_thenException() {
+        var thrownException = assertThrows(ZaasClientException.class, () -> zaasJwtService.validateOidc(null));
+        assertEquals(TOKEN_NOT_PROVIDED, thrownException.getErrorCode());
+    }
+
+    @Test
+    void givenEmptyOidcToken_whenValidate_thenException() {
+        var thrownException = assertThrows(ZaasClientException.class, () -> zaasJwtService.validateOidc(""));
+        assertEquals(TOKEN_NOT_PROVIDED, thrownException.getErrorCode());
+    }
+
+    @Test
+    void givenValidToken_whenValidate_thenSuccess() throws ZaasClientException {
+        var token = "validOidcToken";
+        mockHttpClientResponse(204);
+        var validationResult = zaasJwtService.validateOidc(token);
+        assertTrue(validationResult.isValid());
+    }
+
+    @Test
+    void givenInvalidToken_whenValidate_thenSuccess() throws ZaasClientException {
+        var token = "invalidtoken";
+        mockHttpClientResponse(401);
+        var validationResult = zaasJwtService.validateOidc(token);
+        assertFalse(validationResult.isValid());
+    }
+
+    @Test
+    void givenValidToken_whenValidate_thenException() {
+        var token = "validOidcToken";
+        mockHttpClientResponse(500, "server error");
+        var exceptionThrown = assertThrows(ZaasClientException.class, () -> zaasJwtService.validateOidc(token));
+        assertEquals(GENERIC_EXCEPTION, exceptionThrown.getErrorCode());
+        assertTrue(exceptionThrown.getMessage().contains("server error"));
+    }
+
     private void mockHttpClientResponse(int statusCode) {
         mockHttpClientResponse(statusCode, "null");
     }
@@ -221,4 +268,5 @@ class ZaasJwtServiceTest {
         Exception exception = assertThrows(ZaasClientException.class, executable);
         assertEquals(exc.getMessage(), exception.getMessage());
     }
+
 }

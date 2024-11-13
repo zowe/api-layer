@@ -1429,7 +1429,9 @@ jobs:
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
-
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
