@@ -1426,6 +1426,8 @@ jobs:
             -   name: Show status when APIML is not ready yet
                 shell: bash
                 run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
             -   name: Cypress run API Catalog
