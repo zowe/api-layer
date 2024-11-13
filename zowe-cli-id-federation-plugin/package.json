@@ -49,21 +49,21 @@
     "csv-parse": "5.5.6"
   },
   "devDependencies": {
-    "@eslint/js": "9.12.0",
-    "@types/jest": "29.5.13",
-    "@types/node": "20.16.11",
-    "@typescript-eslint/eslint-plugin": "8.9.0",
-    "@typescript-eslint/parser": "8.9.0",
-    "@zowe/cli": "8.3.0",
-    "@zowe/cli-test-utils": "8.2.0",
-    "@zowe/imperative": "8.2.0",
+    "@eslint/js": "9.14.0",
+    "@types/jest": "29.5.14",
+    "@types/node": "20.17.6",
+    "@typescript-eslint/eslint-plugin": "8.14.0",
+    "@typescript-eslint/parser": "8.14.0",
+    "@zowe/cli": "8.8.1",
+    "@zowe/cli-test-utils": "8.8.1",
+    "@zowe/imperative": "8.8.1",
     "copyfiles": "2.4.1",
     "env-cmd": "10.1.0",
-    "eslint": "9.12.0",
-    "eslint-plugin-jest": "28.8.3",
+    "eslint": "9.14.0",
+    "eslint-plugin-jest": "28.9.0",
     "eslint-plugin-license-header": "0.6.1",
     "eslint-plugin-unused-imports": "4.1.4",
-    "globals": "15.11.0",
+    "globals": "15.12.0",
     "husky": "9.1.6",
     "jest": "29.7.0",
     "jest-cli": "29.7.0",
@@ -75,14 +75,14 @@
     "madge": "8.0.0",
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
-    "typedoc": "0.26.10",
+    "typedoc": "0.26.11",
     "typescript": "5.6.3"
   },
   "overrides": {
-    "@babel/traverse": "7.25.7"
+    "@babel/traverse": "7.25.9"
   },
   "peerDependencies": {
-    "@zowe/imperative": "8.2.0"
+    "@zowe/imperative": "8.8.1"
   },
     "engines": {
         "npm": "=10.9.0",
