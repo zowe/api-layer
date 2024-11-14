@@ -152,7 +152,7 @@ public class RouteLocator implements RouteDefinitionLocator {
             rateLimiterFilter.addArg("tokens", serviceInstance.getMetadata().get("gateway.rateLimiterTokens"));
             rateLimiterFilter.addArg("refillDuration", serviceInstance.getMetadata().get("gateway.refillDuration"));
             serviceRelated.add(rateLimiterFilter);
-        } else if(servicesToLimitRequestRate.contains(serviceInstance.getServiceId().toLowerCase())){
+        } else if (servicesToLimitRequestRate.contains(serviceInstance.getServiceId().toLowerCase())) {
             FilterDefinition rateLimiterFilter = new FilterDefinition();
             rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
             serviceRelated.add(rateLimiterFilter);
