@@ -160,6 +160,7 @@ class ZaasJwtService implements TokenService {
         String json = objectMapper.writeValueAsString(new TokenRequest(oidcToken));
         var entity = new StringEntity(json);
         httpPost.setEntity(entity);
+        httpPost.setHeader("Content-Type", "application/json");
         return httpPost;
     }
 
