@@ -26,11 +26,10 @@ public class InMemoryRateLimiterTest {
     private InMemoryRateLimiter rateLimiter;
     String userId = "testUser";
     String routeId = "testRoute";
-    @Mock
-    private Environment environment;
 
     @BeforeEach
     public void setUp() {
+        rateLimiter = new InMemoryRateLimiter();
         rateLimiter.capacity = 3;
         rateLimiter.tokens = 3;
         rateLimiter.refillDuration = 1;
@@ -90,5 +89,16 @@ public class InMemoryRateLimiterTest {
         assertEquals(rateLimiter.capacity, config.getCapacity(), "Config capacity should match the rate limiter capacity");
         assertEquals(rateLimiter.tokens, config.getTokens(), "Config tokens should match the rate limiter tokens");
         assertEquals(rateLimiter.refillDuration, config.getRefillDuration(), "Config refill duration should match the rate limiter refill duration");
+    }
+
+    @Test
+    public void setParametersTest(){
+        Integer newCapacity = 20;
+        Integer newTokens = 20;
+        Integer newRefillDuration = 2;
+        rateLimiter.setParameters(newCapacity, newTokens, newRefillDuration);
+        assertEquals(newCapacity, rateLimiter.capacity);
+        assertEquals(newTokens, rateLimiter.tokens);
+        assertEquals(newRefillDuration, rateLimiter.refillDuration);
     }
 }

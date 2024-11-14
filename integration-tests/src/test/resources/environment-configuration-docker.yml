@@ -5,7 +5,7 @@ credentials:
     clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
-    host: gateway-service
+    host: localhost
     port: 10010
     internalPorts: 10017
     externalPort: 10010
