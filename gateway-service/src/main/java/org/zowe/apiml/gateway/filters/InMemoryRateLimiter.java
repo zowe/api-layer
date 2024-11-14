@@ -30,13 +30,13 @@ public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Conf
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
 
-    @Value("${apiml.gateway.routing.rateLimiterCapacity:20}")
+    @Value("${apiml.gateway.rateLimiterCapacity:20}")
     int capacity;
 
-    @Value("${apiml.gateway.routing.rateLimiterTokens:20}")
+    @Value("${apiml.gateway.rateLimiterTokens:20}")
     int tokens;
 
-    @Value("${apiml.gateway.routing.rateLimiterRefillDuration:1}")
+    @Value("${apiml.gateway.rateLimiterRefillDuration:1}")
     Integer refillDuration;
 
     @Override
@@ -61,9 +61,9 @@ public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Conf
     }
 
     public void setParameters(Integer tokens, Integer capacity, Integer refillDuration) {
-        this.capacity = capacity;
-        this.tokens = tokens;
-        this.refillDuration = refillDuration;
+        this.capacity = (capacity != null) ? capacity : this.capacity;
+        this.tokens = (tokens != null) ? tokens : this.tokens;
+        this.refillDuration = (refillDuration != null) ? refillDuration : this.refillDuration;;
     }
 
     @Override

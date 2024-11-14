@@ -78,6 +78,7 @@ apiml:
     catalog:
         serviceId: apicatalog
     gateway:
+        servicesToLimitRequestRate: discoverableclient, staticclient
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
@@ -88,7 +89,6 @@ apiml:
     routing:
         instanceIdHeader: false
         ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
-        servicesToLimitRequestRate: discoverableclient, staticclient
     service:
         apimlId: apiml1
         corsEnabled: true

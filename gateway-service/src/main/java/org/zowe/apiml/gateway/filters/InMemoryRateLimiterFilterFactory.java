@@ -52,7 +52,7 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
 
     @Override
     public GatewayFilter apply(Config config) {
-        if (config != null) this.rateLimiter.setParameters(config.capacity, config.tokens, config.refillDuration);
+        this.rateLimiter.setParameters(config.capacity, config.tokens, config.refillDuration);
         return (exchange, chain) -> {
             List<PathContainer.Element> pathElements = exchange.getRequest().getPath().elements();
             String requestPath = (!pathElements.isEmpty() && pathElements.size() > 1) ? pathElements.get(1).value() : null;
