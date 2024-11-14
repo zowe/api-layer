@@ -33,6 +33,7 @@ import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
 import org.zowe.apiml.gateway.filters.ForbidSlashException;
+import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -163,7 +164,13 @@ public class GatewayExceptionHandler {
     @ExceptionHandler({ServiceNotAccessibleException.class, WebClientResponseException.ServiceUnavailable.class})
     public Mono<Void> handleServiceNotAccessibleException(ServerWebExchange exchange, Exception ex) {
         log.debug("A service is not available at the moment to finish request {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_SERVICE_UNAVAILABLE, "org.zowe.apiml.common.serviceUnavailable", exchange.getRequest().getURI());
+        return setBodyResponse(exchange, SC_SERVICE_UNAVAILABLE, "org.zowe.apiml.common.serviceUnavailable", exchange.getRequest().getPath());
+    }
+
+    @ExceptionHandler(ZaasInternalErrorException.class)
+    public Mono<Void> handleZaasInternalErrorException(ServerWebExchange exchange, ZaasInternalErrorException ex) {
+        log.debug("The ZAAS instance {} return internal server error for request {}: {}", ex.getInstanceId(), exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.zaas.internalServerError", ex.getInstanceId());
     }
 
 }

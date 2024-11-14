@@ -1420,6 +1420,14 @@ jobs:
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+            -   name: Show status when APIML is not ready yet
+                if: failure()
+                shell: bash
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -k -s https://gateway-service:10010/application/health
+                    curl -k -s https://gateway-service-2:10010/application/health
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
@@ -1429,7 +1437,9 @@ jobs:
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
-
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()

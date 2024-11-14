@@ -28,8 +28,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -42,7 +42,6 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
     private static final String JWT = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjcxNDYxNjIzLCJleHAiOjE2NzE0OTA0MjMsImlzcyI6IkFQSU1MIiwianRpIjoiYmFlMTkyZTYtYTYxMi00MThhLWI2ZGMtN2I0NWI5NzM4ODI3IiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIifQ.Vt5UjJUlbmuzmmEIodAACtj_AOxlsWqkFrFyWh4_MQRRPCj_zMIwnzpqRN-NJvKtUg1zxOCzXv2ypYNsglrXc7cH9wU3leK1gjYxK7IJjn2SBEb0dUL5m7-h4tFq2zNhcGH2GOmTpE2gTQGSTvDIdja-TIj_lAvUtbkiorm1RqrNu2MGC0WfgOGiak3tj2tNJLv_Y1ZMxNjzyHgXBMuNPozQrd4Vtnew3x4yy85LrTYF7jJM3U-e3AD2yImftxwycQvbkjNb-lWadejTVH0MgHMr04wVdDd8Nq5q7yrZf7YPzhias8ehNbew5CHiKut9SseZ1sO2WwgfhpEfsN4okg";
     private static final String PASSTICKET = "ZOWE_DUMMY_PASS_TICKET";
 
-
     @Test
     void whenRequestingPassticketForAllowedAPPLID_thenTranslate() throws IOException {
         TicketResponse response = new TicketResponse();
@@ -51,7 +50,7 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
         response.setApplicationName("IZUDFLT");
         response.setTicket(PASSTICKET);
 
-        mockService("zaas").scope(MockService.Scope.CLASS)
+        mockService("zaas").scope(MockService.Scope.TEST)
             .addEndpoint("/zaas/scheme/ticket")
             .assertion(he -> assertEquals(SERVICE_ID, he.getRequestHeaders().getFirst("X-Service-Id")))
             .assertion(he -> assertEquals(COOKIE_NAME + "=" + JWT, he.getRequestHeaders().getFirst("Cookie")))
@@ -59,7 +58,7 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
             .and().start();
 
         String expectedAuthHeader = "Basic " + Base64.getEncoder().encodeToString((USER_ID + ":" + PASSTICKET).getBytes(StandardCharsets.UTF_8));
-        var mockService = mockService(SERVICE_ID)
+        var mockService = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
             .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
             .addEndpoint("/" + SERVICE_ID + "/test")
             .assertion(he -> assertEquals(expectedAuthHeader, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
@@ -74,29 +73,69 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
         assertEquals(1, mockService.getEndpoint().getCounter());
     }
 
-
-    @ParameterizedTest
-    @ValueSource(ints = {400, 401, 403, 404, 405, 500})
-    void whenCannotGeneratePassticket_thenIgnoreTransformation(int responseCode) throws IOException {
+    @Test
+    void whenCredentialsAreMissingOrInvalid_thenIgnoreTransformation() throws IOException {
         mockService("zaas").scope(MockService.Scope.TEST)
             .addEndpoint("/zaas/scheme/ticket")
-            .responseCode(responseCode)
+            .responseCode(SC_UNAUTHORIZED)
             .and().start();
-        var mockService = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
+        var service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
             .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
             .addEndpoint("/" + SERVICE_ID + "/test")
-            .responseCode(401)
-            .bodyJson(new ResponseDto("ok"))
+                .responseCode(SC_UNAUTHORIZED)
+                .bodyJson(new ResponseDto("ok"))
             .assertion(he -> assertFalse(he.getRequestHeaders().containsKey(HttpHeaders.AUTHORIZATION)))
             .and().start();
         given()
             .cookie(COOKIE_NAME, JWT)
-            .when()
+        .when()
             .get(basePath + "/" + SERVICE_ID + "/api/v1/test")
-            .then()
+        .then()
             .statusCode(Matchers.is(SC_UNAUTHORIZED))
             .body("status", Matchers.is("ok"));
-        assertEquals(1, mockService.getEndpoint().getCounter());
+        assertEquals(1, service.getEndpoint().getCounter());
+    }
+
+    @Test
+    void whenZaasIsMisconfigured_thenReturnError() throws IOException {
+        var zaas = mockService("zaas").scope(MockService.Scope.TEST)
+            .addEndpoint("/zaas/scheme/ticket")
+            .responseCode(SC_INTERNAL_SERVER_ERROR)
+            .and().start();
+        var service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
+            .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
+            .addEndpoint("/" + SERVICE_ID + "/test")
+            .and().start();
+        given()
+            .cookie(COOKIE_NAME, JWT)
+        .when()
+            .get(basePath + "/" + SERVICE_ID + "/api/v1/test")
+        .then()
+            .statusCode(Matchers.is(SC_INTERNAL_SERVER_ERROR))
+            .body("messages[0].messageKey", is("org.zowe.apiml.gateway.zaas.internalServerError"))
+            .body("messages[0].messageContent", is("An internal exception occurred in ZAAS service " + zaas.getInstanceId() + "."));
+        assertEquals(0, service.getEndpoint().getCounter());
+    }
+
+    @ParameterizedTest(name = "When ZAAS returns {0} the Gateway response with 503")
+    @ValueSource(ints = {400, 403, 404, 405})
+    void whenCannotGeneratePassticket_thenReturn503(int responseCode) throws IOException {
+        mockService("zaas").scope(MockService.Scope.TEST)
+            .addEndpoint("/zaas/scheme/ticket")
+            .responseCode(responseCode)
+            .and().start();
+        var service = mockService(SERVICE_ID).scope(MockService.Scope.TEST)
+            .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid("IZUDFLT")
+            .addEndpoint("/" + SERVICE_ID + "/test")
+            .and().start();
+        given()
+            .cookie(COOKIE_NAME, JWT)
+        .when()
+            .get(basePath + "/" + SERVICE_ID + "/api/v1/test")
+        .then()
+            .statusCode(Matchers.is(SC_SERVICE_UNAVAILABLE))
+            .body("messages[0].messageKey", is("org.zowe.apiml.common.serviceUnavailable"));
+        assertEquals(0, service.getEndpoint().getCounter());
     }
 
     @Data
@@ -106,7 +145,5 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
         private String status;
 
     }
+
 }
-
-
-

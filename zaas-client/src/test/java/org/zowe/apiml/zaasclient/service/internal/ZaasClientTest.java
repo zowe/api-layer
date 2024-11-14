@@ -14,14 +14,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,16 +33,35 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.SERVICE_UNAVAILABLE;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED;
 import static org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE;
 
+@ExtendWith(MockitoExtension.class)
 class ZaasClientTest {
+
     private ZaasClient underTest;
+
+    @Mock
     private TokenService tokens;
+    @Mock
     private PassTicketService passTickets;
 
     private static final char[] VALID_PASSWORD = "password".toCharArray();
@@ -58,9 +81,6 @@ class ZaasClientTest {
 
     @BeforeEach
     void setUp() {
-        tokens = mock(TokenService.class);
-        passTickets = mock(PassTicketService.class);
-
         underTest = new ZaasClientImpl(tokens, passTickets);
     }
 
@@ -206,6 +226,40 @@ class ZaasClientTest {
         DefaultZaasClientConfiguration configuration = new DefaultZaasClientConfiguration();
         ConfigProperties properties = configuration.getConfigProperties();
         assertNotNull(properties);
+    }
+
+    @Test
+    void givenValidOidcToken_whenValidate_thenSuccess() throws ZaasClientException {
+        var token = "validOidcToken";
+        var successResult = new ZaasOidcValidationResult(true);
+        when(tokens.validateOidc(token)).thenReturn(successResult);
+        assertSame(successResult, underTest.validateOidc(token));
+    }
+
+    @Test
+    void givenValidOidc_whenValidateException_thenRethrown() throws ZaasClientException {
+        var token = "validOidcToken";
+        var exception = new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
+        doThrow(exception).when(tokens).validateOidc(token);
+
+        var thrownException = assertThrows(ZaasClientException.class, () -> underTest.validateOidc(token));
+        assertSame(exception, thrownException);
+    }
+
+    @Test
+    void givenInvalidOidc_whenValidate_thenFalse() throws ZaasClientException {
+        var token = "invalidOidc";
+        var failResult = new ZaasOidcValidationResult(false);
+        when(tokens.validateOidc(token)).thenReturn(failResult);
+        assertSame(failResult, underTest.validateOidc(token));
+    }
+
+    @Test
+    void givenTokenNotProvided_whenValidate_thenThrowException() {
+        var exception = assertThrows(ZaasClientException.class, () -> underTest.validateOidc(null));
+        assertEquals(TOKEN_NOT_PROVIDED, exception.getErrorCode());
+        exception = assertThrowsExactly(ZaasClientException.class, () -> underTest.validateOidc(""));
+        assertEquals(TOKEN_NOT_PROVIDED, exception.getErrorCode());
     }
 
     @Nested

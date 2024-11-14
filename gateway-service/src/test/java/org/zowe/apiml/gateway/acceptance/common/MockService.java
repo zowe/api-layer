@@ -304,7 +304,7 @@ public class MockService implements AutoCloseable {
      */
     public InstanceInfo getInstanceInfo() {
         return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(serviceId)
+            .setInstanceId(getInstanceId())
             .setHostName(hostname)
             .setPort(port)
             .setAppName(serviceId)

@@ -13,6 +13,7 @@ package org.zowe.apiml.zaasclient.service.internal;
 import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 /**
@@ -74,6 +75,18 @@ interface TokenService {
      *                             this exception with details is thrown.
      */
     ZaasToken query(HttpServletRequest request) throws ZaasClientException;
+
+    /**
+     * Return details about a passed OIDC token.
+     * 
+     * As of Zowe v2 and v3.0: valid OIDC token is a token confirmed to be issued by the OIDC provider configured in the target API 
+     * Mediation Layer
+     * 
+     * @param token The token to validate against an API Mediation Layer instance
+     * @return whether the token is valid or not for the target API Mediation Layer
+     * @throws ZaasClientException thrown if no token is passed to the method or a server error occurred in the target API Mediation Layer.
+     */
+    ZaasOidcValidationResult validateOidc(String token) throws ZaasClientException;
 
     /**
      * Invalidate the provided JWT token in order to perform logout.

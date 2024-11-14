@@ -119,6 +119,13 @@ messages:
       reason: "Cannot connect to the Gateway service."
       action: "Make sure that the external Gateway service is running and the truststore of the both Gateways contain the corresponding certificate."
 
+    - key: org.zowe.apiml.gateway.zaas.internalServerError
+      number: ZWESG101
+      type: ERROR
+      text: "An internal exception occurred in ZAAS service %s."
+      reason: "ZAAS cannot process authentication required to finish the request."
+      action: "Make sure that the ZAAS is configured well and check all security requirements."
+
     - key: org.zowe.apiml.gateway.connectionsLimitApproached
       number: ZWESG429
       type: ERROR
