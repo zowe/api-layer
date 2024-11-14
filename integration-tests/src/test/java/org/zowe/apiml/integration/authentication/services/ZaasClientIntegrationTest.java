@@ -16,6 +16,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -263,6 +264,7 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
     }
 
     @Nested
+    @Tag("OktaOauth2Test")
     class WhenOidcQuery {
 
         private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
