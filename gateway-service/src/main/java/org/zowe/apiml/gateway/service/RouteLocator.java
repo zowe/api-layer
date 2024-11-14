@@ -49,6 +49,9 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
 
+    @Value("${apiml.gateway.routing.servicesToLimitRequestRate:-}")
+    List<String> serviceIds;
+
     private final ApplicationContext context;
 
     private final CorsUtils corsUtils;
@@ -138,6 +141,21 @@ public class RouteLocator implements RouteDefinitionLocator {
             FilterDefinition forbidEncodedCharactersFilter = new FilterDefinition();
             forbidEncodedCharactersFilter.setName("ForbidEncodedCharactersFilterFactory");
             serviceRelated.add(forbidEncodedCharactersFilter);
+        }
+
+        if (Optional.ofNullable(serviceInstance.getMetadata().get(APPLY_RATE_LIMITER_FILTER))
+            .map(Boolean::parseBoolean)
+            .orElse(false)) {
+            FilterDefinition rateLimiterFilter = new FilterDefinition();
+            rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
+            rateLimiterFilter.addArg("capacity", serviceInstance.getMetadata().get("gateway.rateLimiterCapacity"));
+            rateLimiterFilter.addArg("tokens", serviceInstance.getMetadata().get("gateway.rateLimiterTokens"));
+            rateLimiterFilter.addArg("refillDuration", serviceInstance.getMetadata().get("gateway.refillDuration"));
+            serviceRelated.add(rateLimiterFilter);
+        } else if(serviceIds.contains(serviceInstance.getServiceId())){
+            FilterDefinition rateLimiterFilter = new FilterDefinition();
+            rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
+            serviceRelated.add(rateLimiterFilter);
         }
 
         FilterDefinition pageRedirectionFilter = new FilterDefinition();

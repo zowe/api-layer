@@ -14,8 +14,10 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -27,10 +29,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Config> {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+
     @Value("${apiml.gateway.routing.rateLimiterCapacity:20}")
     int capacity;
+
     @Value("${apiml.gateway.routing.rateLimiterTokens:20}")
     int tokens;
+
     @Value("${apiml.gateway.routing.rateLimiterRefillDuration:1}")
     Integer refillDuration;
 
@@ -53,6 +58,12 @@ public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Conf
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put("X-RateLimit-Remaining", String.valueOf(bucket.getAvailableTokens()));
         return headers;
+    }
+
+    public void setParameters(Integer tokens, Integer capacity, Integer refillDuration) {
+        this.capacity = capacity;
+        this.tokens = tokens;
+        this.refillDuration = refillDuration;
     }
 
     @Override

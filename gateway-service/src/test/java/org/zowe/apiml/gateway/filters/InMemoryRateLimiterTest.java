@@ -12,7 +12,9 @@ package org.zowe.apiml.gateway.filters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
+import org.springframework.core.env.Environment;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -24,10 +26,11 @@ public class InMemoryRateLimiterTest {
     private InMemoryRateLimiter rateLimiter;
     String userId = "testUser";
     String routeId = "testRoute";
+    @Mock
+    private Environment environment;
 
     @BeforeEach
     public void setUp() {
-        rateLimiter = new InMemoryRateLimiter();
         rateLimiter.capacity = 3;
         rateLimiter.tokens = 3;
         rateLimiter.refillDuration = 1;

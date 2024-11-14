@@ -137,6 +137,11 @@ apiml:
                 corsAllowedOrigins: http://localhost:3000
                 lb:
                     type: headerRequest
+            gateway:
+                applyRateLimiterFilter: true
+                rateLimiterCapacity: 3
+                rateLimiterTokens: 3
+                refillDuration: 1
 
 server:
     error:

@@ -62,9 +62,9 @@ public class RoutingConfig {
         retryFilter.addArg("series", "");
         filters.add(retryFilter);
 
-        FilterDefinition rateLimiterFilter = new FilterDefinition();
-        rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
-        filters.add(rateLimiterFilter);
+//        FilterDefinition rateLimiterFilter = new FilterDefinition();
+//        rateLimiterFilter.setName("InMemoryRateLimiterFilterFactory");
+//        filters.add(rateLimiterFilter);
 
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
