@@ -8,12 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.service;
+package org.zowe.apiml.zaasclient.oidc;
 
-public class ZaasServiceIsNotAvailableException extends RuntimeException {
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-    public ZaasServiceIsNotAvailableException(String msg) {
-        super(msg);
-    }
+/**
+ *
+ */
+@Data
+@AllArgsConstructor
+public class ZaasOidcValidationResult {
+
+    private boolean isValid = false;
 
 }

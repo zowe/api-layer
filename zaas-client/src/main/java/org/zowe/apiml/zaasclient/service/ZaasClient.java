@@ -13,6 +13,7 @@ package org.zowe.apiml.zaasclient.service;
 import jakarta.servlet.http.HttpServletRequest;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 
 /**
  * Get JWT tokens, PaasTickets and details about the Tokens.
@@ -105,6 +106,21 @@ public interface ZaasClient {
      *                             this exception with details is thrown.
      */
     ZaasToken query(HttpServletRequest request) throws ZaasClientException;
+
+    /***
+     * Return details about the provided OIDC token by validating it against an API Mediation Layer instance.
+     *
+     * This method supports simple boolean validation against Zowe v2 and v2 as of v3.0
+     *
+     * A successful validation means the token was created using the same settings as found in the target API Mediation Layer.
+     * This version does not validate if the OIDC token is mapped to a user if the API Mediation Layer is running on the z platform.
+     *
+     * @param token OIDC Access Token to validate against an OIDC-enabled API Mediation Layer instance
+     * @return ZaasOidcValidationResult instance
+     * @throws ZaasClientException thrown if no token is provided in the request, or if the target API Mediation Layer
+     * returned a server error.
+     */
+    ZaasOidcValidationResult validateOidc(String token) throws ZaasClientException;
 
     /**
      * Retrieve PassTicket based on the valid JWT Token and the application id. To succeed the Application ID must

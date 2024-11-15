@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.filters;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -35,12 +36,12 @@ import reactor.core.publisher.Mono;
 import java.net.HttpCookie;
 import java.security.cert.CertificateEncodingException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_CERT_HEADER;
@@ -111,9 +112,11 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  * private String token;
  * }
  */
+@Slf4j
 public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFactory.AbstractConfig, R, D> extends AbstractGatewayFilterFactory<T> {
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
+    private static final String SERVICE_IS_UNAVAILABLE_MESSAGE = "There are no instance of ZAAS available";
 
     private static final String[] CERTIFICATE_HEADERS = {
         "X-Certificate-Public",
@@ -169,14 +172,35 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     private Mono<AuthorizationResponse<R>> requestWithHa(
         Iterator<ServiceInstance> serviceInstanceIterator,
-        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator
+        Function<ServiceInstance, WebClient.RequestHeadersSpec<?>> requestCreator,
+        AtomicReference<Optional<Exception>> mostCriticalException // to be accessible and updatable in all lambdas below
     ) {
-        return requestCreator.apply(serviceInstanceIterator.next())
+        // selected instance of ZAAS to invoke
+        var zaasInstance = serviceInstanceIterator.next();
+
+        // this lambda creates a chain of call over all instances. It also remembers the most critical exception to
+        // be thrown in case all instances fail
+        Function<Exception, Mono<AuthorizationResponse<R>>> callNext = exception -> {
+            // select the most critical exception to remember (ZaasInternalErrorException is more important one)
+            exception = mostCriticalException.get().filter(ZaasInternalErrorException.class::isInstance).orElse(exception);
+            mostCriticalException.set(Optional.of(exception));
+
+            if (serviceInstanceIterator.hasNext()) {
+                return requestWithHa(serviceInstanceIterator, requestCreator, mostCriticalException);
+            } else {
+                return Mono.error(exception);
+            }
+        };
+
+        return requestCreator.apply(zaasInstance)
             .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
                 case SC_UNAUTHORIZED -> Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
                 case SC_OK -> clientResp.bodyToMono(getResponseClass()).map(b -> new AuthorizationResponse<>(clientResp.headers(), b));
-                default -> serviceInstanceIterator.hasNext() ? requestWithHa(serviceInstanceIterator, requestCreator) : Mono.just(new AuthorizationResponse<>(clientResp.headers(), null));
-            });
+                case SC_INTERNAL_SERVER_ERROR -> callNext.apply(new ZaasInternalErrorException(zaasInstance, "An internal exception occurred in ZAAS service. Check its configuration of instance " + zaasInstance.getInstanceId() + "."));
+                default -> callNext.apply(new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE));
+            })
+            .doOnError(t -> log.debug("Error on calling ZAAS service instance {}: {}", zaasInstance.getInstanceId(), t.getMessage()))
+            .onErrorResume(e -> callNext.apply(new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE)));
     }
 
     protected Mono<Void> invoke(
@@ -186,10 +210,12 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     ) {
         Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
         if (!i.hasNext()) {
-            throw new ServiceNotAccessibleException("There are no instance of ZAAS available");
+            throw new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE);
         }
 
-        return requestWithHa(i, requestCreator).switchIfEmpty(Mono.just(new AuthorizationResponse<>(null,null))).flatMap(responseProcessor);
+        return requestWithHa(i, requestCreator,  new AtomicReference<>(Optional.empty()))
+            .switchIfEmpty(Mono.just(new AuthorizationResponse<>(null,null)))
+            .flatMap(responseProcessor);
     }
 
     /**

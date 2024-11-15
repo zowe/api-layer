@@ -34,15 +34,15 @@ import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.security.HttpsFactory;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,20 +76,29 @@ public class AdditionalRegistrationTest {
         @Mock
         private HttpsFactory httpsFactory;
 
+        private InstanceInfo instanceInfo;
+
         @Captor
         private ArgumentCaptor<EurekaClientConfigBean> clientConfigCaptor;
 
-        private final AdditionalRegistration registration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-1").build();
+        private List<AdditionalRegistration.Route> routes = Arrays.asList(new AdditionalRegistration.Route("/", "/"));
+        private final AdditionalRegistration registration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-1").routes(routes).build();
 
         @BeforeEach
         public void setUp() throws Exception {
-            ReflectionTestUtils.setField(connectionsConfig,"eurekaServerUrl","https://host:2222");
-            ReflectionTestUtils.setField(connectionsConfig,"httpsFactory",httpsFactory);
+            ReflectionTestUtils.setField(connectionsConfig, "eurekaServerUrl", "https://host:2222");
+            ReflectionTestUtils.setField(connectionsConfig, "httpsFactory", httpsFactory);
             configSpy = Mockito.spy(connectionsConfig);
             lenient().doReturn(httpsFactory).when(configSpy).factory();
             lenient().when(httpsFactory.getSslContext()).thenReturn(SSLContexts.custom().build());
             lenient().when(httpsFactory.getHostnameVerifier()).thenReturn(new NoopHostnameVerifier());
             lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
+
+            var metadata = new HashMap<String, String>();
+            metadata.put("apiml.routes.0.gatewayUrl", "/api/v1");
+            metadata.put("apiml.routes.0.serviceUrl", "/service/api/v1");
+            instanceInfo = InstanceInfo.Builder.newBuilder().setAppName("service1").setMetadata(metadata).build();
+            lenient().when(eurekaFactory.createInstanceInfo(any())).thenReturn(instanceInfo);
         }
 
         @Test
@@ -110,6 +119,9 @@ public class AdditionalRegistrationTest {
             assertThat(holder.getDiscoveryClients()).hasSize(2);
             verify(additionalClientOne).registerHealthCheck(healthCheckHandler);
             verify(additionalClientTwo).registerHealthCheck(healthCheckHandler);
+
+            assertThat(instanceInfo.getMetadata().get("apiml.routes.0.gatewayUrl")).isEqualTo("/");
+            assertThat(instanceInfo.getMetadata().get("apiml.routes.0.serviceUrl")).isEqualTo("/");
         }
 
         @Test
