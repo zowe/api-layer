@@ -90,7 +90,7 @@ public class InMemoryRateLimiterTest {
     }
 
     @Test
-    public void setParametersTest() {
+    public void setNonNullParametersTest() {
         Integer newCapacity = 20;
         Integer newTokens = 20;
         Integer newRefillDuration = 2;
@@ -98,5 +98,14 @@ public class InMemoryRateLimiterTest {
         assertEquals(newCapacity, rateLimiter.capacity);
         assertEquals(newTokens, rateLimiter.tokens);
         assertEquals(newRefillDuration, rateLimiter.refillDuration);
+    }
+
+    @Test
+    public void setParametersWithNullValuesTest() {
+        Integer newCapacity = 30;
+        rateLimiter.setParameters(newCapacity, null, null);
+        assertEquals(newCapacity, rateLimiter.capacity);
+        assertNotNull(rateLimiter.tokens);
+        assertNotNull(rateLimiter.refillDuration);
     }
 }
