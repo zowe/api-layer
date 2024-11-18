@@ -105,7 +105,8 @@ public class InMemoryRateLimiterTest {
         Integer newCapacity = 30;
         rateLimiter.setParameters(newCapacity, 0, 0);
         assertEquals(newCapacity, rateLimiter.capacity);
-        assertNotNull(rateLimiter.tokens);
-        assertNotNull(rateLimiter.refillDuration);
+        assertEquals(0, rateLimiter.tokens);
+        assertEquals(0, rateLimiter.refillDuration);
+
     }
 }
