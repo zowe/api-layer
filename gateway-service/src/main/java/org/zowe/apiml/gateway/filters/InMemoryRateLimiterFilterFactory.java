@@ -84,8 +84,8 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
     @Getter
     @Setter
     public static class Config {
-        private Integer capacity;
-        private Integer tokens;
-        private Integer refillDuration;
+        private int capacity;
+        private int tokens;
+        private int refillDuration;
     }
 }

@@ -103,7 +103,7 @@ public class InMemoryRateLimiterTest {
     @Test
     public void setParametersWithNullValuesTest() {
         Integer newCapacity = 30;
-        rateLimiter.setParameters(newCapacity, null, null);
+        rateLimiter.setParameters(newCapacity, 0, 0);
         assertEquals(newCapacity, rateLimiter.capacity);
         assertNotNull(rateLimiter.tokens);
         assertNotNull(rateLimiter.refillDuration);
