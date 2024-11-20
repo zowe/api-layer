@@ -27,7 +27,6 @@ import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +39,6 @@ public class InMemoryRateLimiterFilterFactoryTest {
     private InMemoryRateLimiterFilterFactory filterFactory;
     private ServerWebExchange exchange;
     private GatewayFilterChain chain;
-    private String serviceId;
     private MockServerHttpRequest request;
     private InMemoryRateLimiterFilterFactory.Config config;
     private MessageService messageService;
@@ -49,19 +47,16 @@ public class InMemoryRateLimiterFilterFactoryTest {
 
     @BeforeEach
     public void setUp() {
-        serviceId = "testService";
         rateLimiter = mock(InMemoryRateLimiter.class);
         keyResolver = mock(KeyResolver.class);
         messageService = mock(MessageService.class);
         message = mock(Message.class);
         objectMapper = mock(ObjectMapper.class);
         filterFactory = new InMemoryRateLimiterFilterFactory(rateLimiter, keyResolver,objectMapper, messageService);
-        filterFactory.serviceIds = List.of(serviceId);
-        request = MockServerHttpRequest.get("/" + serviceId).build();
+        request = MockServerHttpRequest.get("/" + "serviceId").build();
         exchange = MockServerWebExchange.from(request);
         chain = mock(GatewayFilterChain.class);
         config = mock(InMemoryRateLimiterFilterFactory.Config.class);
-        when(config.getRouteId()).thenReturn("testRoute");
     }
 
     @Test
@@ -107,20 +102,6 @@ public class InMemoryRateLimiterFilterFactoryTest {
     @Test
     public void apply_shouldAllowRequest_whenKeyIsNull() {
         when(keyResolver.resolve(exchange)).thenReturn(Mono.just(""));
-        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-
-        StepVerifier.create(filterFactory.apply(config).filter(exchange, chain))
-            .expectComplete()
-            .verify();
-        verify(chain, times(1)).filter(exchange);
-    }
-
-    @Test
-    public void apply_shouldAllowRequest_whenServiceIdDoesNotMatch() {
-        String nonMatchingId = "nonMatchingId";
-        when(keyResolver.resolve(exchange)).thenReturn(Mono.just("testKey"));
-        request = MockServerHttpRequest.get("/" + nonMatchingId).build();
-        exchange = MockServerWebExchange.from(request);
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         StepVerifier.create(filterFactory.apply(config).filter(exchange, chain))
