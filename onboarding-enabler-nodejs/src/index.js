@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import Eureka from './EurekaClient';
-const yaml = require('js-yaml');
-const fs = require('fs');
+import Eureka from './EurekaClient.js';
+import yaml from 'js-yaml';
+import * as fs from 'fs';
 
 let certFile = null;
 let keyFile = null;
@@ -33,7 +33,7 @@ function readTlsProps() {
 }
 readTlsProps();
 
-const tlsOptions = {
+export const tlsOptions = {
   cert: fs.readFileSync(certFile),
   key: fs.readFileSync(keyFile),
   passphrase: passPhrase,
@@ -51,7 +51,7 @@ const client = new Eureka({
 /**
  * Function that uses the eureka-js-client library to register the application to Eureka
  */
-function connectToEureka() {
+export function connectToEureka() {
   client.start((error) => {
     if (error != null) {
       console.log(JSON.stringify(error));
@@ -62,11 +62,9 @@ function connectToEureka() {
 /**
  * Unregister the Eureka client from Eureka (i.e. when the application down)
  */
-function unregisterFromEureka() {
+export function unregisterFromEureka() {
   console.log('\nUnregistering the service from Eureka...');
   client.stop();
 }
 
 connectToEureka();
-
-module.exports = { connectToEureka, tlsOptions, unregisterFromEureka };

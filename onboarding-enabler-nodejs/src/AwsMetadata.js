@@ -1,12 +1,11 @@
 import async from 'async';
-import Logger from './Logger';
+import Logger from './Logger.js';
 
 /*
   Utility class for pulling AWS metadata that Eureka requires when
   registering as an Amazon instance (datacenter).
 */
 export default class AwsMetadata {
-
   constructor(config = {}) {
     this.logger = config.logger || new Logger();
     this.host = config.host || '169.254.169.254';

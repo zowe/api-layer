@@ -1,14 +1,15 @@
 /* eslint-disable no-unused-expressions, max-len */
 import sinon from 'sinon';
-import chai, { expect } from 'chai';
+import * as chai from 'chai';
+const expect = chai.expect;
 import sinonChai from 'sinon-chai';
 import { EventEmitter } from 'events';
 import { join } from 'path';
-import merge from 'lodash/merge';
+import merge from 'lodash/merge.js';
 
-import Eureka from '../src/EurekaClient';
-import DnsClusterResolver from '../src/DnsClusterResolver';
-import nock from "nock";
+import Eureka from '../src/EurekaClient.js';
+import DnsClusterResolver from '../src/DnsClusterResolver.js';
+import nock from 'nock';
 
 chai.use(sinonChai);
 
@@ -528,13 +529,13 @@ describe('Eureka client', () => {
   // });
 
   describe('eureka-client.yml', () => {
-    let stub;
+    // let stub;
     before(() => {
-      stub = sinon.stub(process, 'cwd').returns(__dirname);
+      /* stub = */sinon.stub(process, 'cwd').returns(__dirname);
     });
 
     after(() => {
-      stub.restore();
+      // stub.restore();
     });
 
     it('should load the correct', () => {

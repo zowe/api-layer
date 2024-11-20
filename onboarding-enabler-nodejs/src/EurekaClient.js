@@ -1,17 +1,18 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
-import { findIndex, merge } from 'lodash';
-import { findInstance, normalizeDelta } from './deltaUtils';
+import lodash from 'lodash';
+const { findIndex, merge } = lodash;
+import { findInstance, normalizeDelta } from './deltaUtils.js';
 import path from 'path';
 import { series, waterfall } from 'async';
 import { EventEmitter } from 'events';
 
-import AwsMetadata from './AwsMetadata';
-import ConfigClusterResolver from './ConfigClusterResolver';
-import DnsClusterResolver from './DnsClusterResolver';
-import Logger from './Logger';
-import defaultConfig from './defaultConfig';
-const https = require('https');
+import AwsMetadata from './AwsMetadata.js';
+import ConfigClusterResolver from './ConfigClusterResolver.js';
+import DnsClusterResolver from './DnsClusterResolver.js';
+import Logger from './Logger.js';
+import defaultConfig from './defaultConfig.js';
+import https from 'https';
 
 function noop() {}
 
@@ -44,7 +45,6 @@ function getYaml(file) {
 }
 
 export default class Eureka extends EventEmitter {
-
   constructor(config = {}) {
     super();
     // Allow passing in a custom logger:
@@ -53,7 +53,7 @@ export default class Eureka extends EventEmitter {
     this.logger.debug('initializing eureka client');
 
     // Load up the current working directory and the environment:
-    const cwd = config.cwd || process.cwd();
+    const cwd = config.cwd || process.cwd() || '.';
     const env = process.env.EUREKA_ENV || process.env.NODE_ENV || 'development';
 
     const filename = config.filename || 'eureka-client';
@@ -369,7 +369,7 @@ export default class Eureka extends EventEmitter {
     });
   }
 
-    /*
+  /*
     Retrieves all applications registered with the Eureka server
    */
   fetchDelta(callback = noop) {
@@ -661,5 +661,4 @@ export default class Eureka extends EventEmitter {
       callback(error, response, body);
     });
   }
-
 }

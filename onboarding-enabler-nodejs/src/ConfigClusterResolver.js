@@ -1,4 +1,4 @@
-import Logger from './Logger';
+import Logger from './Logger.js';
 
 /*
   Locates a Eureka host using static configuration. Configuration can either be

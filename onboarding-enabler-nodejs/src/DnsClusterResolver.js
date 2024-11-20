@@ -1,8 +1,8 @@
 import dns from 'dns';
 import async from 'async';
-import shuffle from 'lodash/shuffle';
-import xor from 'lodash/xor';
-import Logger from './Logger';
+import shuffle from 'lodash/shuffle.js';
+import xor from 'lodash/xor.js';
+import Logger from './Logger.js';
 
 function noop() {}
 

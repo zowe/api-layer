@@ -86,15 +86,15 @@ gulp.task('docker:run', (cb) => {
   });
 });
 
-gulp.task('test:integration', ['docker:run'], () => (
+gulp.task('test:integration', gulp.series('docker:run', () => (
   gulp.src('test/integration.test.js')
     .pipe(mocha({ timeout: 120000 }))
-));
+)));
 
-gulp.task('test', ['lint', 'mocha']);
+gulp.task('test', gulp.series('lint', 'mocha'));
 
 gulp.task('test:watch', () => (
   gulp.watch(['src/**/*.js', 'test/**/*.test.js'], ['test'])
 ));
 
-gulp.task('default', ['build']);
+gulp.task('default', gulp.series('build'));
