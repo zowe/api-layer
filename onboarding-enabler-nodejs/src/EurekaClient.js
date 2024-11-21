@@ -610,7 +610,7 @@ export default class Eureka extends EventEmitter {
         };
         this.logger.debug(`prepared options for the request ${JSON.stringify(options)}`);
 
-        let response = null;
+        let response = {};
         const req = https.request(options, (res) => {
           response = res;
           let data = '';
@@ -628,7 +628,7 @@ export default class Eureka extends EventEmitter {
           }
         });
         req.on('error', e => {
-          this.logger.error(`Error occuired on ${url}: ${e}`);
+          this.logger.error(`Error occurred on ${url}: ${e}`);
           done(e, response, null, requestOpts);
         });
         if (requestOpts.body) {

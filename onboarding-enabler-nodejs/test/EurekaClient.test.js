@@ -6,6 +6,7 @@ import sinonChai from 'sinon-chai';
 import { EventEmitter } from 'events';
 import { join } from 'path';
 import merge from 'lodash/merge.js';
+import https from 'https';
 
 import Eureka from '../src/EurekaClient.js';
 import DnsClusterResolver from '../src/DnsClusterResolver.js';
@@ -27,6 +28,26 @@ function makeConfig(overrides = {}) {
     eureka: { host: '127.0.0.1', port: 9999, maxRetries: 0 },
   };
   return merge({}, config, overrides);
+}
+
+function mockSuccessfulResponse(accumulator) {
+  const res = {
+    statusCode: 204,
+    callback: [],
+    on: (event, callback) => {
+      console.log(`EVENT ${event}`);
+      res.callback[event] = callback;
+    },
+  };
+  return sinon.stub(https, 'request').yields(res).returns({
+    end: () => {
+      if (res.callback.end) res.callback.end.apply();
+    },
+    write: (body) => {
+      if (accumulator) accumulator.body = body;
+    },
+    on: () => {},
+  });
 }
 
 describe('Eureka client', () => {
@@ -363,57 +384,63 @@ describe('Eureka client', () => {
       client = new Eureka(config);
     });
 
-    afterEach(() => {
-      global.request.post.restore();
-    });
-    it('should trigger register event', () => {
-      sinon.stub(global.request, 'post').yields(null, { statusCode: 204 }, null);
-      const eventSpy = sinon.spy();
-      client.on('registered', eventSpy);
+    it('should trigger register event', (done) => {
+      const requestStub = mockSuccessfulResponse();
+      client.on('registered', () => { done(); });
       client.register();
-      expect(eventSpy).to.have.been.calledOnce;
+      requestStub.restore();
     });
 
     it('should call register URI', () => {
-      sinon.stub(global.fetch).yields(null, { statusCode: 204 }, null);
-      const registerCb = sinon.spy();
-      client.register(registerCb);
-
-      expect(global.request.post).to.have.been.calledWithMatch({
-        body: {
-          instance: {
-            app: 'app',
-            hostName: 'myhost',
-            dataCenterInfo: { name: 'MyOwn' },
-            port: 9999,
-            status: 'UP',
-            vipAddress: '1.2.2.3',
-          },
+      const accumulator = {};
+      const requestStub = mockSuccessfulResponse(accumulator);
+      client.register();
+      expect(JSON.parse(accumulator.body)).to.deep.equal({
+        instance: {
+          app: 'app',
+          hostName: 'myhost',
+          dataCenterInfo: { name: 'MyOwn' },
+          port: 9999,
+          status: 'UP',
+          vipAddress: '1.2.2.3',
         },
-        json: true,
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: 'app',
       });
-
-      expect(registerCb).to.have.been.calledWithMatch(null);
+      requestStub.restore();
     });
 
     it('should throw error for non-204 response', () => {
-      sinon.stub(global.request, 'post').yields(null, { statusCode: 500 }, null);
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').yields({
+        on: () => {},
+        statusCode: 500,
+      }).returns({
+        on: (type, callback) => { callbacks[type] = callback; },
+        end: () => { callbacks.error.apply(); },
+        write: () => {},
+      });
+
       const registerCb = sinon.spy();
       client.register(registerCb);
 
       expect(registerCb).to.have.been.calledWithMatch({
         message: 'eureka registration FAILED: status: 500 body: null',
       });
+      requestStub.restore();
     });
 
     it('should throw error for request error', () => {
-      sinon.stub(global.request, 'post').yields(new Error('request error'), null, null);
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').returns({
+        on: (type, callback) => { callbacks[type] = callback; },
+        write: () => {},
+        end: () => {},
+      });
       const registerCb = sinon.spy();
       client.register(registerCb);
+      callbacks.error(new Error('request error'));
 
       expect(registerCb).to.have.been.calledWithMatch({ message: 'request error' });
+      requestStub.restore();
     });
   });
 
@@ -425,47 +452,63 @@ describe('Eureka client', () => {
       client = new Eureka(config);
     });
 
-    afterEach(() => {
-      global.request.delete.restore();
-    });
-
     it('should should trigger deregister event', () => {
-      sinon.stub(global.request, 'delete').yields(null, { statusCode: 200 }, null);
+      const requestStub = mockSuccessfulResponse();
+
       const eventSpy = sinon.spy();
       client.on('deregistered', eventSpy);
       client.register();
       client.deregister();
+
+      requestStub.restore();
     });
 
     it('should call deregister URI', () => {
-      sinon.stub(global.request, 'delete').yields(null, { statusCode: 200 }, null);
-      const deregisterCb = sinon.spy();
-      client.deregister(deregisterCb);
+      const requestStub = mockSuccessfulResponse();
+      client.deregister();
 
-      expect(global.request.delete).to.have.been.calledWithMatch({
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: 'app/myhost',
-      });
+      const options = requestStub.resolvesArg(0).args[0][0];
+      expect(options.method).to.be.equal('DELETE');
+      expect(options.hostname).to.be.equal('127.0.0.1');
+      expect(options.port).to.be.equal('9999');
+      expect(options.path).to.be.equal('/eureka/v2/apps/app/myhost');
 
-      expect(deregisterCb).to.have.been.calledWithMatch(null);
+      requestStub.restore();
     });
 
     it('should throw error for non-200 response', () => {
-      sinon.stub(global.request, 'delete').yields(null, { statusCode: 500 }, null);
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').yields({
+        on: () => {},
+        statusCode: 500,
+      }).returns({
+        on: (type, callback) => { callbacks[type] = callback; },
+        end: () => { callbacks.error.apply(); },
+        write: () => {},
+      });
+
       const deregisterCb = sinon.spy();
       client.deregister(deregisterCb);
 
       expect(deregisterCb).to.have.been.calledWithMatch({
         message: 'eureka deregistration FAILED: status: 500 body: null',
       });
+      requestStub.restore();
     });
 
     it('should throw error for request error', () => {
-      sinon.stub(global.request, 'delete').yields(new Error('request error'), null, null);
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').returns({
+        on: (type, callback) => { callbacks[type] = callback; },
+        write: () => {},
+        end: () => {},
+      });
       const deregisterCb = sinon.spy();
       client.deregister(deregisterCb);
+      callbacks.error(new Error('request error'));
 
       expect(deregisterCb).to.have.been.calledWithMatch({ message: 'request error' });
+      requestStub.restore();
     });
   });
 
