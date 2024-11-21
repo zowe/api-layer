@@ -363,16 +363,13 @@ public class ConnectionsConfig {
     @Bean
     @Primary
     public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
-            .build();
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
     }
 
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
-        return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
-            .build();
+        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
     }
 
     @Bean
