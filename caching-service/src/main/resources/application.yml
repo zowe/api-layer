@@ -212,3 +212,4 @@ logging:
         ROOT: INFO
         org.apache.tomcat.util.net: DEBUG
         org.jgroups: DEBUG
+        org.infinispan: DEBUG
