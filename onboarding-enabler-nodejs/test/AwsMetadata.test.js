@@ -1,8 +1,9 @@
 import sinon from 'sinon';
 import * as chai from 'chai';
-const expect = chai.expect;
 import sinonChai from 'sinon-chai';
 import AwsMetadata from '../src/AwsMetadata.js';
+
+const expect = chai.expect;
 
 chai.use(sinonChai);
 
@@ -17,7 +18,7 @@ describe('AWS Metadata client', () => {
       global.request.get.restore();
     });
 
-    it('should call metadata URIs', async() => {
+    it('should call metadata URIs', (done) => {
       const requestStub = sinon.stub(global, 'fetch');
 
       const mock = (url, body) => {
@@ -41,7 +42,7 @@ describe('AWS Metadata client', () => {
       mock('http://127.0.0.1:8888/latest/meta-data/network/interfaces/macs/AB:CD:EF:GH:IJ/vpc-id', 'vpc123');
 
       const expected = {
-        accountId: '123456Z',
+        accountId: '123456',
         'ami-id': 'ami-123',
         'availability-zone': 'fake-1',
         'instance-id': 'i123',
@@ -54,41 +55,14 @@ describe('AWS Metadata client', () => {
         'vpc-id': 'vpc123',
       };
 
-      new Promise((resolve) => {
-        client.fetchMetadata(data => {
-          resolve(data);
-        });
-      }).then(actual => {
-        console.log('expected');
-        console.log(expected);
-        expect(actual).to.deep.equal(expected);
-        console.log('ok');
-      }, reason => {
-        throw new Error(reason);
+      client.fetchMetadata(data => {
+        try {
+          expect(data).to.deep.equal(expected);
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
-
-      //
-      // const fetchCb = sinon.spy();
-      // client.fetchMetadata(fetchCb);
-      //
-      // console.log('arg');
-      // console.log(fetchCb.lastCall);
-      //
-      // // expect(requestStub).to.have.been.callCount(11);
-      //
-      // expect(fetchCb).to.have.been.calledWithMatch({
-      //   accountId: '123456',
-      //   'ami-id': 'ami-123',
-      //   'availability-zone': 'fake-1',
-      //   'instance-id': 'i123',
-      //   'instance-type': 'medium',
-      //   'local-hostname': 'ip-127-0-0-1',
-      //   'local-ipv4': '1.1.1.1',
-      //   mac: 'AB:CD:EF:GH:IJ',
-      //   'public-hostname': 'ec2-127-0-0-1',
-      //   'public-ipv4': '2.2.2.2',
-      //   'vpc-id': 'vpc123',
-      // });
     });
 
     it('should call metadata URIs and filter out null and undefined values', () => {
