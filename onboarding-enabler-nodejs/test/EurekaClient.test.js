@@ -386,9 +386,11 @@ describe('Eureka client', () => {
 
     it('should trigger register event', (done) => {
       const requestStub = mockSuccessfulResponse();
-      client.on('registered', () => { done(); });
+      client.on('registered', () => {
+        requestStub.restore();
+        done();
+      });
       client.register();
-      requestStub.restore();
     });
 
     it('should call register URI', () => {
@@ -535,10 +537,11 @@ describe('Eureka client', () => {
 
     it('should trigger a heartbeat event', (done) => {
       const requestStub = mockSuccessfulResponse({}, 200);
-      client.on('heartbeat', () => { done(); });
+      client.on('heartbeat', () => {
+        requestStub.restore();
+        done();
+      });
       client.renew();
-
-      requestStub.restore();
     });
 
     it('should re-register on 404', (done) => {
@@ -557,6 +560,7 @@ describe('Eureka client', () => {
         expect(putOptions.port).to.be.equal('9999');
         expect(putOptions.path).to.be.equal('/eureka/v2/apps/app/myhost');
 
+        requestStub.restore();
         done();
       });
 
@@ -582,8 +586,6 @@ describe('Eureka client', () => {
         on: () => {},
       }).returns(req);
       callbacks.end.apply();
-
-      requestStub.restore();
     });
   });
 
@@ -758,9 +760,11 @@ describe('Eureka client', () => {
 
     it('should should trigger registryUpdated event', (done) => {
       const requestStub = mockSuccessfulResponse({}, 200);
-      client.on('registryUpdated', () => { done(); });
+      client.on('registryUpdated', () => {
+        requestStub.restore();
+        done();
+      });
       client.fetchRegistry();
-      requestStub.restore();
     });
 
     it('should call registry URI', (done) => {
@@ -1216,8 +1220,8 @@ describe('Eureka client', () => {
 
       client.eurekaRequest({ uri: '/path' }, (error) => {
         expect(error).to.be.null;
-        expect(requestStub.args[0][0].hostname).to.be.equal( 'servera');
-        expect(requestStub.args[1][0].hostname).to.be.equal( 'serverb');
+        expect(requestStub.args[0][0].hostname).to.be.equal('servera');
+        expect(requestStub.args[1][0].hostname).to.be.equal('serverb');
         done();
       });
 
