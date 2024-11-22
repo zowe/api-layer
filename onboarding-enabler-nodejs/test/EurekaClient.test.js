@@ -30,9 +30,9 @@ function makeConfig(overrides = {}) {
   return merge({}, config, overrides);
 }
 
-function mockSuccessfulResponse(accumulator) {
+function mockSuccessfulResponse(accumulator, statusCode) {
   const res = {
-    statusCode: 204,
+    statusCode: statusCode || 204,
     callback: [],
     on: (event, callback) => {
       console.log(`EVENT ${event}`);
@@ -520,27 +520,25 @@ describe('Eureka client', () => {
       client = new Eureka(config);
     });
 
-    afterEach(() => {
-      global.request.put.restore();
-    });
-
     it('should call heartbeat URI', () => {
-      sinon.stub(global.request, 'put').yields(null, { statusCode: 200 }, null);
+      const requestStub = mockSuccessfulResponse();
       client.renew();
 
-      expect(global.request.put).to.have.been.calledWithMatch({
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: 'app/myhost',
-      });
+      const options = requestStub.resolvesArg(0).args[0][0];
+      expect(options.method).to.be.equal('PUT');
+      expect(options.hostname).to.be.equal('127.0.0.1');
+      expect(options.port).to.be.equal('9999');
+      expect(options.path).to.be.equal('/eureka/v2/apps/app/myhost');
+
+      requestStub.restore();
     });
 
-    it('should trigger a heartbeat event', () => {
-      sinon.stub(global.request, 'put').yields(null, { statusCode: 200 }, null);
-      const eventSpy = sinon.spy();
-      client.on('heartbeat', eventSpy);
+    it('should trigger a heartbeat event', (done) => {
+      const requestStub = mockSuccessfulResponse({}, 200);
+      client.on('heartbeat', () => { done(); });
       client.renew();
 
-      expect(eventSpy).to.have.been.calledOnce;
+      requestStub.restore();
     });
 
     it('should re-register on 404', () => {
