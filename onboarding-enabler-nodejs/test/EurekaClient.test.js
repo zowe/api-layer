@@ -590,13 +590,15 @@ describe('Eureka client', () => {
   });
 
   describe('eureka-client.yml', () => {
-    // let stub;
+    let stub;
+    let original;
     before(() => {
-      /* stub = */sinon.stub(process, 'cwd').returns(__dirname);
+      original = `${process.cwd()}/test`;
+      stub = sinon.stub(process, 'cwd').returns(original);
     });
 
     after(() => {
-      // stub.restore();
+      stub.restore();
     });
 
     it('should load the correct', () => {
@@ -612,7 +614,7 @@ describe('Eureka client', () => {
 
     it('should support a `cwd` and `filename` property', () => {
       const client = new Eureka(makeConfig({
-        cwd: join(__dirname, 'fixtures'),
+        cwd: join(original, 'fixtures'),
         filename: 'config',
       }));
       expect(client.config.eureka.fromFixture).to.equal(true);
@@ -630,7 +632,7 @@ describe('Eureka client', () => {
     it('should not throw error on malformed config file', () => {
       function missingFile() {
         return new Eureka(makeConfig({
-          cwd: join(__dirname, 'fixtures'),
+          cwd: join(original, 'fixtures'),
           filename: 'missing-config',
         }));
       }
