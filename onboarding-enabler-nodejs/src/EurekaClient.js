@@ -206,7 +206,7 @@ export default class Eureka extends EventEmitter {
     const connectionTimeout = setTimeout(() => {
       this.logger.warn('It looks like it\'s taking a while to register with ' +
         'Eureka. This usually means there is an issue connecting to the host ' +
-        'specified. Start application with NODE_DEBUG=request for more logging.');
+        'specified. Start application with NODE_DEBUG=http for more logging.');
     }, 10000);
     this.eurekaRequest({
       method: 'POST',
