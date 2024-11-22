@@ -10,7 +10,7 @@
 
 const express = require("express");
 const https = require("https");
-const apiLayerService = require("@zowe/apiml-onboarding-enabler-nodejs");
+import apiLayerService from "@zowe/apiml-onboarding-enabler-nodejs";
 
 // Command-line arguments:
 const args = {
