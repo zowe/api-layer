@@ -541,31 +541,49 @@ describe('Eureka client', () => {
       requestStub.restore();
     });
 
-    it('should re-register on 404', () => {
-      sinon.stub(global.request, 'put').yields(null, { statusCode: 404 }, null);
-      sinon.stub(global.request, 'post').yields(null, { statusCode: 204 }, null);
+    it('should re-register on 404', (done) => {
+      const requestStub = sinon.stub(https, 'request');
+
+      client.on('registered', () => {
+        const postOptions = requestStub.resolvesArg(0).args[1][0];
+        expect(postOptions.method).to.be.equal('POST');
+        expect(postOptions.hostname).to.be.equal('127.0.0.1');
+        expect(postOptions.port).to.be.equal('9999');
+        expect(postOptions.path).to.be.equal('/eureka/v2/apps/app');
+
+        const putOptions = requestStub.resolvesArg(0).args[0][0];
+        expect(putOptions.method).to.be.equal('PUT');
+        expect(putOptions.hostname).to.be.equal('127.0.0.1');
+        expect(putOptions.port).to.be.equal('9999');
+        expect(putOptions.path).to.be.equal('/eureka/v2/apps/app/myhost');
+
+        done();
+      });
+
+      const callbacks = [];
+      const req = {
+        end: () => {},
+        write: () => {},
+        on: (type, callback) => {
+          if (!callbacks[type]) callbacks[type] = callback;
+        },
+      };
+      requestStub.yields({
+        statusCode: 404,
+        on: (type, callback) => {
+          if (!callbacks[type]) callbacks[type] = callback;
+        },
+      }).returns(req);
+
       client.renew();
 
-      expect(global.request.put).to.have.been.calledWithMatch({
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: 'app/myhost',
-      });
+      requestStub.yields({
+        statusCode: 204,
+        on: () => {},
+      }).returns(req);
+      callbacks.end.apply();
 
-      expect(global.request.post).to.have.been.calledWithMatch({
-        body: {
-          instance: {
-            app: 'app',
-            hostName: 'myhost',
-            dataCenterInfo: { name: 'MyOwn' },
-            port: 9999,
-            status: 'UP',
-            vipAddress: '1.2.2.3',
-          },
-        },
-        json: true,
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: 'app',
-      });
+      requestStub.restore();
     });
   });
 
