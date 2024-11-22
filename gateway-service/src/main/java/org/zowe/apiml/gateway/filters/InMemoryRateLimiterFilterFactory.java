@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
@@ -34,12 +33,9 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
-    private final InMemoryRateLimiter rateLimiter;
+    private InMemoryRateLimiter rateLimiter;
 
     private final KeyResolver keyResolver;
-
-    @Value("${apiml.gateway.routing.servicesToLimitRequestRate:-}")
-    List<String> serviceIds;
 
     private final ObjectMapper mapper;
 
@@ -55,17 +51,18 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
 
     @Override
     public GatewayFilter apply(Config config) {
+        this.rateLimiter.setParameters(config.capacity, config.tokens, config.refillDuration);
         return (exchange, chain) -> {
             List<PathContainer.Element> pathElements = exchange.getRequest().getPath().elements();
             String requestPath = (!pathElements.isEmpty() && pathElements.size() > 1) ? pathElements.get(1).value() : null;
-            if (requestPath == null || !serviceIds.contains(requestPath)) {
+            if (requestPath == null) {
                 return chain.filter(exchange);
             }
             return keyResolver.resolve(exchange).flatMap(key -> {
                 if (key.isEmpty()) {
                     return chain.filter(exchange);
                 }
-                return rateLimiter.isAllowed(config.getRouteId(), key).flatMap(response -> {
+                return rateLimiter.isAllowed(requestPath, key).flatMap(response -> {
                     if (response.isAllowed()) {
                         return chain.filter(exchange);
                     } else {
@@ -87,9 +84,8 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
     @Getter
     @Setter
     public static class Config {
-        private String routeId;
-        private Integer capacity;
-        private Integer tokens;
-        private Integer refillIntervalSeconds;
+        private int capacity;
+        private int tokens;
+        private int refillDuration;
     }
 }

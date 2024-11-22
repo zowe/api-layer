@@ -88,4 +88,23 @@ public class InMemoryRateLimiterTest {
         assertEquals(rateLimiter.tokens, config.getTokens(), "Config tokens should match the rate limiter tokens");
         assertEquals(rateLimiter.refillDuration, config.getRefillDuration(), "Config refill duration should match the rate limiter refill duration");
     }
+
+    @Test
+    public void setNonNullParametersTest() {
+        Integer newCapacity = 20;
+        Integer newTokens = 20;
+        Integer newRefillDuration = 2;
+        rateLimiter.setParameters(newCapacity, newTokens, newRefillDuration);
+        assertEquals(newCapacity, rateLimiter.capacity);
+        assertEquals(newTokens, rateLimiter.tokens);
+        assertEquals(newRefillDuration, rateLimiter.refillDuration);
+    }
+
+    @Test
+    public void setParametersWithNullValuesTest() {
+        Integer newCapacity = 30;
+        rateLimiter.setParameters(newCapacity, 0, 0);
+        assertEquals(newCapacity, rateLimiter.capacity);
+
+    }
 }

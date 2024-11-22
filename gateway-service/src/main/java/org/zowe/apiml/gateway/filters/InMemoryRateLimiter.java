@@ -27,12 +27,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Config> {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
-    @Value("${apiml.gateway.routing.rateLimiterCapacity:20}")
+
+    @Value("${apiml.gateway.rateLimiterCapacity:20}")
     int capacity;
-    @Value("${apiml.gateway.routing.rateLimiterTokens:20}")
+
+    @Value("${apiml.gateway.rateLimiterTokens:20}")
     int tokens;
-    @Value("${apiml.gateway.routing.rateLimiterRefillDuration:1}")
-    Integer refillDuration;
+
+    @Value("${apiml.gateway.rateLimiterRefillDuration:1}")
+    int refillDuration;
 
     @Override
     public Mono<Response> isAllowed(String routeId, String id) {
@@ -53,6 +56,12 @@ public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Conf
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put("X-RateLimit-Remaining", String.valueOf(bucket.getAvailableTokens()));
         return headers;
+    }
+
+    public void setParameters(int capacity, int tokens, int refillDuration) {
+        this.capacity = (capacity != 0) ? capacity : this.capacity;
+        this.tokens = (tokens != 0) ? tokens : this.tokens;
+        this.refillDuration = (refillDuration != 0) ? refillDuration : this.refillDuration;;
     }
 
     @Override
