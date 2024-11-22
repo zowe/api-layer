@@ -36,7 +36,7 @@ function getYaml(file) {
     return yml; // no configuration file
   }
   try {
-    yml = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
+    yml = yaml.load(fs.readFileSync(file, 'utf8'));
   } catch (e) {
     // configuration file exists but was malformed
     throw new Error(`Error loading YAML configuration file: ${file} ${e}`);
