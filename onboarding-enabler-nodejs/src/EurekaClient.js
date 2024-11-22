@@ -53,7 +53,7 @@ export default class Eureka extends EventEmitter {
     this.logger.debug('initializing eureka client');
 
     // Load up the current working directory and the environment:
-    const cwd = config.cwd || process.cwd() || '.';
+    const cwd = config.cwd || process.cwd();
     const env = process.env.EUREKA_ENV || process.env.NODE_ENV || 'development';
 
     const filename = config.filename || 'eureka-client';
