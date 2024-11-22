@@ -41,6 +41,7 @@ function mockSuccessfulResponse(accumulator, statusCode) {
   };
   return sinon.stub(https, 'request').yields(res).returns({
     end: () => {
+      if (statusCode === 200 && res.callback.data('{}'));
       if (res.callback.end) res.callback.end.apply();
     },
     write: (body) => {
@@ -752,105 +753,138 @@ describe('Eureka client', () => {
     });
 
     afterEach(() => {
-      global.request.get.restore();
       client.transformRegistry.restore();
       client.handleDelta.restore();
     });
 
-    it('should should trigger registryUpdated event', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 200 }, null);
-      const eventSpy = sinon.spy();
-      client.on('registryUpdated', eventSpy);
+    it('should should trigger registryUpdated event', (done) => {
+      const requestStub = mockSuccessfulResponse({}, 200);
+      client.on('registryUpdated', () => { done(); });
       client.fetchRegistry();
-      expect(eventSpy).to.have.been.calledOnce;
+      requestStub.restore();
     });
 
-    it('should call registry URI', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 200 }, null);
-      const registryCb = sinon.spy();
-      client.fetchRegistry(registryCb);
+    it('should call registry URI', (done) => {
+      const requestStub = mockSuccessfulResponse({}, 200);
 
-      expect(global.request.get).to.have.been.calledWithMatch({
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: '',
-        headers: { Accept: 'application/json' },
-      });
-
-      expect(registryCb).to.have.been.calledWithMatch(null);
-    });
-
-    it('should call registry URI for delta', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 200 }, '{ "applications": {} }');
-      const registryCb = sinon.spy();
-      client.config.shouldUseDelta = true;
-      client.hasFullRegistry = true;
-      client.fetchRegistry(registryCb);
-
-      expect(global.request.get).to.have.been.calledWithMatch({
-        baseUrl: 'http://127.0.0.1:9999/eureka/v2/apps/',
-        uri: 'delta',
-        headers: { Accept: 'application/json' },
-      });
-
-      expect(registryCb).to.have.been.calledWithMatch(null);
-    });
-
-    it('should throw error for non-200 response', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 500 }, null);
-      const registryCb = sinon.spy();
-      client.fetchRegistry(registryCb);
-
-      expect(registryCb).to.have.been.calledWithMatch({
-        message: 'Unable to retrieve full registry from Eureka server',
+      client.fetchRegistry(() => {
+        const options = requestStub.resolvesArg(0).args[0][0];
+        expect(options.method).to.be.equal('GET');
+        expect(options.hostname).to.be.equal('127.0.0.1');
+        expect(options.port).to.be.equal('9999');
+        expect(options.path).to.be.equal('/eureka/v2/apps/');
+        requestStub.restore();
+        done();
       });
     });
 
-    it('should throw error for non-200 response for delta', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 500 }, null);
-      const registryCb = sinon.spy();
+    it('should call registry URI for delta', (done) => {
+      const requestStub = mockSuccessfulResponse();
       client.config.shouldUseDelta = true;
       client.hasFullRegistry = true;
-      client.fetchRegistry(registryCb);
-
-      expect(registryCb).to.have.been.calledWithMatch({
-        message: 'Unable to retrieve delta registry from Eureka server',
+      client.fetchRegistry(() => {
+        const options = requestStub.resolvesArg(0).args[0][0];
+        expect(options.method).to.be.equal('GET');
+        expect(options.hostname).to.be.equal('127.0.0.1');
+        expect(options.port).to.be.equal('9999');
+        expect(options.path).to.be.equal('/eureka/v2/apps/delta');
+        requestStub.restore();
+        done();
       });
     });
 
-    it('should throw error for request error', () => {
-      sinon.stub(global.request, 'get').yields(new Error('request error'), null, null);
-      const registryCb = sinon.spy();
-      client.fetchRegistry(registryCb);
-
-      expect(registryCb).to.have.been.calledWithMatch({ message: 'request error' });
+    it('should throw error for non-200 response', (done) => {
+      const requestStub = mockSuccessfulResponse({}, 500);
+      client.fetchRegistry((msg) => {
+        expect(msg.message).to.be.equal('Unable to retrieve full registry from Eureka server');
+        requestStub.restore();
+        done();
+      });
     });
 
-    it('should throw error for request error for delta request', () => {
-      sinon.stub(global.request, 'get').yields(new Error('request error'), null, null);
-      const registryCb = sinon.spy();
+    it('should throw error for non-200 response for delta', (done) => {
+      const requestStub = mockSuccessfulResponse({}, 500);
       client.config.shouldUseDelta = true;
       client.hasFullRegistry = true;
-      client.fetchRegistry(registryCb);
-
-      expect(registryCb).to.have.been.calledWithMatch({ message: 'request error' });
+      client.fetchRegistry((msg) => {
+        expect(msg.message).to.be.equal('Unable to retrieve delta registry from Eureka server');
+        requestStub.restore();
+        done();
+      });
     });
 
-    it('should throw error on invalid JSON', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 200 }, '{ blah');
-      const registryCb = sinon.spy();
-      client.fetchRegistry(registryCb);
-
-      expect(registryCb).to.have.been.calledWith(new SyntaxError());
+    it('should throw error for request error', (done) => {
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').returns({
+        on: (type, callback) => { callbacks[type] = callback; },
+        write: () => {},
+        end: () => {},
+      });
+      client.fetchRegistry((msg) => {
+        expect(msg.message).to.be.equal('request error');
+        requestStub.restore();
+        done();
+      });
+      callbacks.error(new Error('request error'));
     });
 
-    it('should throw error on invalid JSON for delta request', () => {
-      sinon.stub(global.request, 'get').yields(null, { statusCode: 200 }, '{ blah');
-      const registryCb = sinon.spy();
+    it('should throw error for request error for delta request', (done) => {
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').returns({
+        on: (type, callback) => { callbacks[type] = callback; },
+        write: () => {},
+        end: () => {},
+      });
       client.config.shouldUseDelta = true;
       client.hasFullRegistry = true;
-      client.fetchRegistry(registryCb);
+      client.fetchRegistry((msg) => {
+        expect(msg.message).to.be.equal('request error');
+        requestStub.restore();
+        done();
+      });
+      callbacks.error(new Error('request error'));
+    });
 
-      expect(registryCb).to.have.been.calledWith(new SyntaxError());
+    it('should throw error on invalid JSON', (done) => {
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').yields({
+        statusCode: 200,
+        on: (type, callback) => { callbacks[type] = callback; },
+      }).returns({
+        on: () => {},
+        end: () => {
+          callbacks.data('{ blah');
+          callbacks.end.apply();
+        },
+      });
+
+      client.fetchRegistry(error => {
+        expect(error instanceof SyntaxError).to.be.true;
+        requestStub.restore();
+        done();
+      });
+    });
+
+    it('should throw error on invalid JSON for delta request', (done) => {
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request').yields({
+        statusCode: 200,
+        on: (type, callback) => { callbacks[type] = callback; },
+      }).returns({
+        on: () => {},
+        end: () => {
+          callbacks.data('{ blah');
+          callbacks.end.apply();
+        },
+      });
+
+      client.config.shouldUseDelta = true;
+      client.hasFullRegistry = true;
+      client.fetchRegistry(error => {
+        expect(error instanceof SyntaxError).to.be.true;
+        requestStub.restore();
+        done();
+      });
     });
   });
 
