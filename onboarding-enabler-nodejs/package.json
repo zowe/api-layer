@@ -24,9 +24,9 @@
     "lodash": "4.17.21"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
+    "babel-core": "6.26.3",
     "babel-istanbul": "0.12.2",
-    "babel-preset-env": "^1.4.0",
+    "babel-preset-env": "1.7.0",
     "chai": "5.1.2",
     "coveralls": "3.1.1",
     "eslint": "^2.13.1",
@@ -41,10 +41,6 @@
     "nock": "13.5.6",
     "sinon": "19.0.2",
     "sinon-chai": "4.0.0"
-  },
-  "overrides": {
-    "tough-cookie": "5.0.0",
-    "graceful-fs": "^4.2.11"
   },
   "greenkeeper": {
     "ignore": [
