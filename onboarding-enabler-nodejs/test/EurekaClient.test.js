@@ -10,7 +10,6 @@ import https from 'https';
 
 import Eureka from '../src/EurekaClient.js';
 import DnsClusterResolver from '../src/DnsClusterResolver.js';
-import nock from 'nock';
 
 chai.use(sinonChai);
 
@@ -1143,24 +1142,19 @@ describe('Eureka client', () => {
   });
 
   describe('eurekaRequest()', () => {
-    beforeEach(() => {});
-
-    afterEach(() => {
-      // if (request.get.restore) request.get.restore();
-    });
-
     it('should call requestMiddleware with request options', () => {
       const overrides = {
         requestMiddleware: sinon.spy((opts, done) => done(opts)),
       };
+      const requestStub = mockSuccessfulResponse({}, 200);
       const config = makeConfig(overrides);
       const client = new Eureka(config);
-      nock('https://myhost:9999').get().reply(200);
       client.eurekaRequest({}, (error) => {
         expect(Boolean(error)).to.equal(false);
         expect(overrides.requestMiddleware).to.be.calledOnce;
         expect(overrides.requestMiddleware.args[0][0]).to.be.an('object');
       });
+      requestStub.restore();
     });
     it('should catch an error in requestMiddleware', () => {
       const overrides = {
@@ -1168,26 +1162,27 @@ describe('Eureka client', () => {
           done();
         }),
       };
+      const requestStub = mockSuccessfulResponse({}, 200);
       const config = makeConfig(overrides);
       const client = new Eureka(config);
-      nock('https://myhost:9999').get().reply(200);
       client.eurekaRequest({}, (error) => {
         expect(overrides.requestMiddleware).to.be.calledOnce;
         expect(error).to.be.an('error');
       });
+      requestStub.restore();
     });
     it('should check the returnType of requestMiddleware', () => {
       const overrides = {
         requestMiddleware: sinon.spy((opts, done) => done('foo')),
       };
+      const requestStub = mockSuccessfulResponse({}, 200);
       const config = makeConfig(overrides);
       const client = new Eureka(config);
-      nock('https://myhost:9999').get().reply(200);
-      // sinon.stub(request, 'get').yields(null, { statusCode: 200 }, null);
       client.eurekaRequest({}, (error) => {
         expect(error).to.be.an('error');
         expect(error.message).to.equal('requestMiddleware did not return an object');
       });
+      requestStub.restore();
     });
 
     it('should retry next server on request failure', (done) => {
@@ -1202,16 +1197,38 @@ describe('Eureka client', () => {
       };
       const config = makeConfig(overrides);
       const client = new Eureka(config);
-      const requestStub = sinon.stub(global.request, 'get');
-      requestStub.onCall(0).yields(null, { statusCode: 500 }, null);
-      requestStub.onCall(1).yields(null, { statusCode: 200 }, null);
+      const callbacks = [];
+      const requestStub = sinon.stub(https, 'request');
+      const req = {
+        write: () => {},
+        on: (type, callback) => {
+          if (!callbacks[type]) callbacks[type] = [];
+          callbacks[type].push(callback);
+        },
+        end: () => {},
+      };
+      requestStub.yields({
+        statusCode: 500,
+        on: (type, callback) => {
+          callbacks[type] = [callback];
+        },
+      }).returns(req);
+
       client.eurekaRequest({ uri: '/path' }, (error) => {
         expect(error).to.be.null;
-        expect(requestStub).to.be.calledTwice;
-        expect(requestStub.args[0][0]).to.have.property('baseUrl', 'http://serverA');
-        expect(requestStub.args[1][0]).to.have.property('baseUrl', 'http://serverB');
+        expect(requestStub.args[0][0].hostname).to.be.equal( 'servera');
+        expect(requestStub.args[1][0].hostname).to.be.equal( 'serverb');
         done();
       });
+
+      requestStub.yields({
+        statusCode: 200,
+        on: (type, callback) => {
+          callbacks[type].push(callback);
+          req.end = callbacks.end[1];
+        },
+      }).returns(req);
+      callbacks.end[0].apply();
     });
   });
 
