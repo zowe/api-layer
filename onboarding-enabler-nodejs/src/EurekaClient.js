@@ -591,7 +591,6 @@ export default class Eureka extends EventEmitter {
       Perform Request
        */
       (requestOpts, done) => {
-        // const method = requestOpts.method ? requestOpts.method.toLowerCase() : 'get';
         const method = requestOpts.method ? requestOpts.method.toUpperCase() : 'GET';
         const url = new URL(requestOpts.baseUrl + requestOpts.uri);
 
