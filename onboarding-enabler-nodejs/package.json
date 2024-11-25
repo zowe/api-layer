@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js NODE_DEBUG=*",
+    "prepare": "npx --yes license-check-and-add check",
     "prepublish": "gulp",
     "test": "gulp test",
     "integration": "gulp test:integration",
