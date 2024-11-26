@@ -48,7 +48,7 @@ public class CertificateValidatorTest {
         when(mockProvider.getTrustedCerts(URL_PROVIDE_TWO_TRUSTED_CERTS)).thenReturn(Arrays.asList(cert1, cert2));
         when(mockProvider.getTrustedCerts(URL_PROVIDE_THIRD_TRUSTED_CERT)).thenReturn(Collections.singletonList(cert3));
         when(mockProvider.getTrustedCerts(URL_WITH_NO_TRUSTED_CERTS)).thenReturn(Collections.emptyList());
-        certificateValidator = new CertificateValidator(mockProvider, Collections.emptySet());
+        certificateValidator = new CertificateValidator(mockProvider, Collections.emptySet(), null, new String[0]);
     }
 
     @Nested
@@ -94,7 +94,7 @@ public class CertificateValidatorTest {
         @BeforeEach
         void setUp() {
             publicKeys = Stream.of("public_key_1", "public_key_2").collect(Collectors.toCollection(HashSet::new));
-            certificateValidator = new CertificateValidator(mock(TrustedCertificatesProvider.class), publicKeys);
+            certificateValidator = new CertificateValidator(mock(TrustedCertificatesProvider.class), publicKeys, null, new String[0]);
         }
 
         @Test
