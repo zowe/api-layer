@@ -40,10 +40,10 @@ else
 fi
 
 if [ -e "$SOURCE_FILE" ]; then
-    chtag -tc ISO8859-1 $SOURCE_FILE
-    sed -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE > $DEST_FILE
-    iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE > $SOURCE_FILE
-    chtag -tc ISO8859-1 $SOURCE_FILE
+    # _BPXK_AUTOCVT is set on some systems and resulted in twice-converted files when run through chtag and sed
+    _BPXK_AUTOCVT="OFF" sed -W filecodeset=ISO8859-1 -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE >$DEST_FILE # implicit EBCDIC out
+    iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE >$SOURCE_FILE
+    _BPXK_AUTOCVT="OFF" chtag -tc ISO8859-1 $SOURCE_FILE
     rm -f $DEST_FILE
 else
     echo "[discovery-configure.sh]: File $SOURCE_FILE not found"
