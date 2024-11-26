@@ -15,8 +15,6 @@ if [ -z "$ZWE_zowe_workspaceDirectory" ]; then
     exit 1
 fi
 
-echo "$(env)" > $ZWE_zowe_workspaceDirectory/api-mediation/api-defs/env
-
 INSTANCE_ID=$ZWE_haInstance_id
 
 if [ -z "$INSTANCE_ID" ]; then
