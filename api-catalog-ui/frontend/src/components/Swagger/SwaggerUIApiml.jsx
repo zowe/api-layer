@@ -22,9 +22,15 @@ function transformSwaggerToCurrentHost(swagger, selectedService) {
         swagger.servers.forEach((server) => {
             try {
                 const swaggerUrl = new URL(server.url);
-                const updatedPathname = swaggerUrl.pathname.replace(/^\/[^/]+/, selectedService.serviceId);
-                // Rebuild the server URL with the new pathname
-                server.url = selectedService.baseUrl + updatedPathname;
+                // if it's not a GW instance, use the URL from the browser
+                if (!swaggerUrl.pathname.includes("gateway")) {
+                    const location = `${window.location.protocol}//${window.location.host}`;
+                    server.url = location + swaggerUrl.pathname;
+                } else {
+                    // if it's a GW instance, construct the server URL by using the base URL and service ID of the specific instance
+                    const updatedPathname = swaggerUrl.pathname.replace(/^\/[^/]+/, selectedService.serviceId);
+                    server.url = selectedService.baseUrl + updatedPathname;
+                }
             } catch (e) {
                 // not a proper url, assume it is an endpoint
                 server.url = selectedService.baseUrl + server;
