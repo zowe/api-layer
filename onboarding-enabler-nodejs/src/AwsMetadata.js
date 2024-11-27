@@ -101,7 +101,9 @@ export default class AwsMetadata {
         error = new Error(`${response.statusCode}: ${response.statusMessage}`);
         this.logger.error('Error requesting metadata key', error);
       }
-      callback(null, (error || response.statusCode !== 200) ? null : response.body());
+      response.text().then(text => {
+        callback(null, (error || response.statusCode !== 200) ? null : text);
+      });
     });
   }
 
@@ -112,7 +114,9 @@ export default class AwsMetadata {
         error = new Error(`${response.statusCode}: ${response.statusMessage}`);
         this.logger.error('Error requesting instance identity document', error);
       }
-      callback(null, (error || response.statusCode !== 200) ? null : JSON.parse(response.body()));
+      response.json().then(json => {
+        callback(null, (error || response.statusCode !== 200) ? null : json);
+      });
     });
   }
 }

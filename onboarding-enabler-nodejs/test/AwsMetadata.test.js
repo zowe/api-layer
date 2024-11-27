@@ -47,7 +47,8 @@ function mockResponses(type) {
     requestStub.withArgs(url).returns(Promise.resolve({
       ok: true,
       statusCode: 200,
-      body: () => body,
+      text: () => Promise.resolve(body),
+      json: () => Promise.resolve(JSON.parse(body)),
     }));
   };
   const mockError = (url) => {
@@ -55,7 +56,8 @@ function mockResponses(type) {
       ok: false,
       statusMessage: 'fail',
       statusCode: 500,
-      body: () => null,
+      text: () => Promise.resolve(null),
+      json: () => Promise.resolve(null),
     }));
   };
   mock('http://127.0.0.1:8888/latest/meta-data/ami-id', 'ami-123');
