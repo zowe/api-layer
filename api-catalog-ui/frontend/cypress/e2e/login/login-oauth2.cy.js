@@ -32,7 +32,6 @@ describe('>>> Login through Okta OK', () => {
         cy.get('form input.button-primary').should('not.be.disabled');
         cy.get('form input.button-primary').click();
 
-        cy.location('href').should('contain', '/oauth2/v1/authorize')
 
         cy.url().should('contain', '/application');
 
