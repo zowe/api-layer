@@ -34,7 +34,7 @@
 
 import Eureka from '../src/EurekaClient.js';
 import { expect } from 'chai';
-import fs from "fs";
+import fs from 'fs';
 
 describe('Integration Test', () => {
   const config = {
