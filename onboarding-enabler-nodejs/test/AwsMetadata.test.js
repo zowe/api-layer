@@ -45,14 +45,15 @@ function mockResponses(type) {
   const requestStub = sinon.stub(global, 'fetch');
   const mock = (url, body) => {
     requestStub.withArgs(url).returns(Promise.resolve({
-      error: () => null,
+      ok: true,
       statusCode: 200,
       body: () => body,
     }));
   };
   const mockError = (url) => {
     requestStub.withArgs(url).returns(Promise.resolve({
-      error: () => new Error('fail'),
+      ok: false,
+      statusMessage: 'fail',
       statusCode: 500,
       body: () => null,
     }));

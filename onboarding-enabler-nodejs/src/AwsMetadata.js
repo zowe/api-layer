@@ -96,8 +96,9 @@ export default class AwsMetadata {
 
   lookupMetadataKey(key, callback) {
     fetch(`http://${this.host}/latest/meta-data/${key}`).then(response => {
-      const error = response.error();
-      if (error) {
+      let error = null;
+      if (!response.ok) {
+        error = new Error(`${response.statusCode}: ${response.statusMessage}`);
         this.logger.error('Error requesting metadata key', error);
       }
       callback(null, (error || response.statusCode !== 200) ? null : response.body());
@@ -106,9 +107,10 @@ export default class AwsMetadata {
 
   lookupInstanceIdentity(callback) {
     fetch(`http://${this.host}/latest/dynamic/instance-identity/document`).then(response => {
-      const error = response.error();
-      if (error) {
-        this.logger.error('Error requesting instance identity document', error);
+      let error = null;
+      if (!response.ok) {
+        error = new Error(`${response.statusCode}: ${response.statusMessage}`);
+        this.logger.error('Error requesting instance identity document', response.errored);
       }
       callback(null, (error || response.statusCode !== 200) ? null : JSON.parse(response.body()));
     });
