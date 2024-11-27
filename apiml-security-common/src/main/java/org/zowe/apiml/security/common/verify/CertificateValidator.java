@@ -12,7 +12,6 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,22 +47,12 @@ public class CertificateValidator {
     private String[] proxyCertificatesEndpoints;
     private final Set<String> publicKeyCertificatesBase64;
 
+
     @Autowired
-    public CertificateValidator(
-        TrustedCertificatesProvider trustedCertificatesProvider,
-        @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64,
-        @Value("${apiml.security.x509.certificatesUrl:}") String proxyCertificatesEndpointUrl,
-        @Value("${apiml.security.x509.certificatesUrls:}") String[] proxyCertificatesEndpointUrls
-    ) {
+    public CertificateValidator(TrustedCertificatesProvider trustedCertificatesProvider,
+                                @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
         this.trustedCertificatesProvider = trustedCertificatesProvider;
         this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
-        if (proxyCertificatesEndpointUrls.length > 0) {
-            this.proxyCertificatesEndpoints = proxyCertificatesEndpointUrls;
-        } else if (!StringUtils.isBlank(proxyCertificatesEndpointUrl)) {
-            this.proxyCertificatesEndpoints = new String[] {proxyCertificatesEndpointUrl};
-        } else {
-            this.proxyCertificatesEndpoints = new String[0];
-        }
     }
 
     /**
