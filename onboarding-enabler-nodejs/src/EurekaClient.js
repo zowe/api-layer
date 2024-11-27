@@ -645,9 +645,13 @@ export default class Eureka extends EventEmitter {
 
         let response = {};
         const req = https.request(options, (res) => {
+          this.logger.debug(`Received status code: ${res.statusCode}`);
+
           response = res;
           let data = '';
-          if (res.statusCode !== 204) {
+          if (res.statusCode === 204) {
+            done(null, res, null, requestOpts);
+          } else {
             res.on('data', chunk => {
               data += chunk;
             });
@@ -655,9 +659,6 @@ export default class Eureka extends EventEmitter {
               this.logger.debug(`Received data: ${data}`);
               done(null, res, data, requestOpts);
             });
-          } else if (res.statusCode < 500) {
-            this.logger.debug(`Received status code: ${res.statusCode}`);
-            done(null, res, null, requestOpts);
           }
         });
         req.on('error', e => {
