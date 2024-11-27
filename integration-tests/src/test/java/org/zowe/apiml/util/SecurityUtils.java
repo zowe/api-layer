@@ -429,7 +429,7 @@ public class SecurityUtils {
         queryParams.put("nonce", "TEST");
         Response authResponse = given()
                 .config(RestAssured.config().httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 30 * 1000)))
-                .queryParams(queryParams)
+                .queryParams(queryParams).log().all()
             .when()
                 .get(OKTA_HOSTNAME + "/oauth2/v1/authorize")
             .then()
