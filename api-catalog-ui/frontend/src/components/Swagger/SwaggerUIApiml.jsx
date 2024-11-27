@@ -15,18 +15,18 @@ import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 
-function transformSwaggerToCurrentHost(swagger) {
+function transformSwaggerToCurrentHost(swagger, serviceURL) {
     swagger.host = window.location.host;
 
     if (swagger.servers !== null && swagger.servers !== undefined) {
         swagger.servers.forEach((server) => {
-            const location = `${window.location.protocol}//${window.location.host}`;
             try {
                 const swaggerUrl = new URL(server.url);
-                server.url = location + swaggerUrl.pathname;
+                server.url = serviceURL + swaggerUrl.pathname.replace("/", "");
             } catch (e) {
                 // not a proper url, assume it is an endpoint
-                server.url = location + server;
+                server.url = serviceURL + server;
+
             }
         });
     }
@@ -130,11 +130,15 @@ export default class SwaggerUIApiml extends Component {
             // If no version selected use the default apiDoc
             if (
                 (selectedVersion === null || selectedVersion === undefined) &&
+                selectedService.baseUrl !== null &&
+                selectedService.baseUrl !== undefined &&
                 selectedService.apiDoc !== null &&
                 selectedService.apiDoc !== undefined &&
                 selectedService.apiDoc.length !== 0
             ) {
-                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
+                console.log("selected service " + selectedService.homePageUrl);
+                console.log("selected service " + selectedService.baseUrl);
+                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc), selectedService.baseUrl);
 
                 this.setState({
                     swaggerReady: true,
@@ -161,7 +165,7 @@ export default class SwaggerUIApiml extends Component {
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
-                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text),selectedService.baseUrl);
                             res.text = JSON.stringify(swagger);
                             return res;
                         },
