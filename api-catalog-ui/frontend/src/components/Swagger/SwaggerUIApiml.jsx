@@ -15,17 +15,19 @@ import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 
-function transformSwaggerToCurrentHost(swagger, serviceURL) {
+function transformSwaggerToCurrentHost(swagger, selectedService) {
     swagger.host = window.location.host;
 
     if (swagger.servers !== null && swagger.servers !== undefined) {
         swagger.servers.forEach((server) => {
             try {
                 const swaggerUrl = new URL(server.url);
-                server.url = serviceURL + swaggerUrl.pathname.replace("/", "");
+                const updatedPathname = swaggerUrl.pathname.replace(/^\/[^/]+/, selectedService.serviceId);
+                // Rebuild the server URL with the new pathname
+                server.url = selectedService.baseUrl + updatedPathname;
             } catch (e) {
                 // not a proper url, assume it is an endpoint
-                server.url = serviceURL + server;
+                server.url = selectedService.baseUrl + server;
 
             }
         });
@@ -129,16 +131,12 @@ export default class SwaggerUIApiml extends Component {
         try {
             // If no version selected use the default apiDoc
             if (
-                (selectedVersion === null || selectedVersion === undefined) &&
-                selectedService.baseUrl !== null &&
-                selectedService.baseUrl !== undefined &&
-                selectedService.apiDoc !== null &&
-                selectedService.apiDoc !== undefined &&
-                selectedService.apiDoc.length !== 0
+                !selectedVersion &&
+                selectedService?.serviceId &&
+                selectedService?.baseUrl &&
+                selectedService?.apiDoc?.length
             ) {
-                console.log("selected service " + selectedService.homePageUrl);
-                console.log("selected service " + selectedService.baseUrl);
-                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc), selectedService.baseUrl);
+                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc), selectedService);
 
                 this.setState({
                     swaggerReady: true,
@@ -152,7 +150,7 @@ export default class SwaggerUIApiml extends Component {
                     },
                 });
             }
-            if (selectedVersion !== null && selectedVersion !== undefined) {
+            if (selectedVersion) {
                 const basePath = `${selectedService.serviceId}/${selectedVersion}`;
                 const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
                 this.setState({
@@ -165,7 +163,7 @@ export default class SwaggerUIApiml extends Component {
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
-                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text),selectedService.baseUrl);
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text), selectedService);
                             res.text = JSON.stringify(swagger);
                             return res;
                         },
