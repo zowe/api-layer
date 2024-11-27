@@ -44,6 +44,7 @@ public class CertificateValidator {
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
     private boolean forwardingEnabled;
 
+    @Value("${apiml.security.x509.certificatesUrls:${apiml.security.x509.certificatesUrl:}}")
     private String[] proxyCertificatesEndpoints;
     private final Set<String> publicKeyCertificatesBase64;
 
