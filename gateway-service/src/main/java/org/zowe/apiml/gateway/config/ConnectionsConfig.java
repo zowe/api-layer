@@ -477,12 +477,14 @@ public class ConnectionsConfig {
         }
 
         // Add any user-specific metadata information
+        var fromUrl = UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString();
+        var toUrl = UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString();
         for (Map.Entry<String, String> mapEntry : config.getMetadataMap().entrySet()) {
             String key = mapEntry.getKey();
             String value = mapEntry.getValue();
             // only add the metadata if the value is present
             if (value != null && !value.isEmpty()) {
-                value = value.replace(UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString(), UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString());
+                value = value.replace(fromUrl, toUrl);
                 builder.add(key, value);
             }
         }
