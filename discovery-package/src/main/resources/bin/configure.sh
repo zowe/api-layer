@@ -15,8 +15,6 @@ if [ -z "$ZWE_zowe_workspaceDirectory" ]; then
     exit 1
 fi
 
-echo "$(env)" > $ZWE_zowe_workspaceDirectory/api-mediation/api-defs/env
-
 INSTANCE_ID=$ZWE_haInstance_id
 
 if [ -z "$INSTANCE_ID" ]; then
@@ -33,12 +31,20 @@ if [ "$ZWE_zowe_network_client_tls_attls" = "true" ]; then
     ZOSMF_SCHEME=http
 fi
 
+if [ -n "$JAVA_HOME" ]; then
+    PATH=$JAVA_HOME/bin:$PATH
+elif [ -n "$ZWE_java_home" ]; then
+    PATH=$ZWE_java_home/bin:$PATH
+else
+    echo "[discovery-configure.sh]: java_home not found, discovery service relying on PATH to find java"
+fi
+
 if [ -e "$SOURCE_FILE" ]; then
-    chtag -tc ISO8859-1 $SOURCE_FILE
-    sed -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE > $DEST_FILE
-    iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE > $SOURCE_FILE
-    chtag -tc ISO8859-1 $SOURCE_FILE
+    # _BPXK_AUTOCVT is set on some systems and resulted in twice-converted files when run through chtag and sed
+    _BPXK_AUTOCVT="OFF" sed -W filecodeset=ISO8859-1 -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE >$DEST_FILE # implicit EBCDIC out
+    iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE >$SOURCE_FILE
+    _BPXK_AUTOCVT="OFF" chtag -tc ISO8859-1 $SOURCE_FILE
     rm -f $DEST_FILE
 else
-    echo "File $SOURCE_FILE not found"
+    echo "[discovery-configure.sh]: File $SOURCE_FILE not found"
 fi
