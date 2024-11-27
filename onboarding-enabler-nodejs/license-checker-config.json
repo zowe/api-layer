@@ -10,7 +10,7 @@
     }
   },
   "ignore": [
-    "bin", "lib",
+    "bin", "lib", "coverage",
     ".*", "*.md", "*.gradle", "**/*.yml"
   ]
 }
