@@ -2,9 +2,9 @@
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Copyright Contributors to the Zowe Project.
  */
 
@@ -15,7 +15,6 @@ import eslint from 'gulp-eslint';
 import { Instrumenter } from 'babel-istanbul';
 import istanbul from 'gulp-istanbul';
 import env from 'gulp-env';
-import { spawn, exec } from 'child_process';
 
 gulp.task('build', () => (
   gulp.src('src/**/*.js')
@@ -51,55 +50,10 @@ gulp.task('mocha', (cb) => {
     });
 });
 
-const EUREKA_INIT_TIMEOUT = 60000;
-const EUREKA_IMAGE = 'netflixoss/eureka:1.1.147';
-const DOCKER_PORT = '8080';
-const DOCKER_NAME = 'eureka-js-client';
-const DOCKER_RUN_ARGS = [
-  'run', '-d', '-p', `${DOCKER_PORT}:8080`, '--name', DOCKER_NAME, EUREKA_IMAGE,
-];
-const DOCKER_START_ARGS = [
-  'start', DOCKER_NAME,
-];
-
-let startTime;
-function waitForEureka(cb) {
-  if (!startTime) startTime = +new Date();
-  else if ((+new Date() - startTime) > EUREKA_INIT_TIMEOUT) {
-    return cb(new Error('Eureka failed to start before timeout'));
-  }
-  fetch(`http://localhost:${DOCKER_PORT}/eureka`).catch((err) => {
-    if (err) {
-      if (err.code === 'ECONNRESET') {
-        console.log('Eureka connection not ready. Waiting..'); // eslint-disable-line
-        setTimeout(() => waitForEureka(cb), 1000);
-      } else {
-        cb(err);
-      }
-    } else {
-      cb();
-    }
-  });
-}
-
-gulp.task('docker:run', (cb) => {
-  exec(`docker ps -a | grep '\\b${DOCKER_NAME}\\b' | wc -l`, (error, stdout) => {
-    const DOCKER_ARGS = (stdout.trim() === '1') ? DOCKER_START_ARGS : DOCKER_RUN_ARGS;
-    const child = spawn('docker', DOCKER_ARGS, { stdio: 'inherit' });
-    child.on('close', (code) => {
-      if (code > 0) {
-        cb(new Error('Failed to start docker image'));
-      } else {
-        waitForEureka(cb);
-      }
-    });
-  });
-});
-
-gulp.task('test:integration', gulp.series('docker:run', () => (
+gulp.task('test:integration', () => (
   gulp.src('test/integration.test.js')
     .pipe(mocha({ timeout: 120000 }))
-)));
+));
 
 gulp.task('test', gulp.series('lint', 'mocha'));
 

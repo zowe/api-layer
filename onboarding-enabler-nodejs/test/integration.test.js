@@ -8,8 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import Eureka from '../src/index';
+import Eureka from '../src/EurekaClient.js';
 import { expect } from 'chai';
+import fs from "fs";
 
 describe('Integration Test', () => {
   const config = {
@@ -17,9 +18,14 @@ describe('Integration Test', () => {
       app: 'jqservice',
       hostName: 'localhost',
       ipAddr: '127.0.0.1',
-      port: 8080,
+      port: {
+        $: 8080,
+        '@enabled': true,
+      },
       vipAddress: 'jq.test.something.com',
+      instanceId: 'localhost:hwexpress:8080',
       dataCenterInfo: {
+        '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
         name: 'MyOwn',
       },
     },
@@ -29,11 +35,25 @@ describe('Integration Test', () => {
       fetchRegistry: true,
       waitForRegistry: true,
       servicePath: '/eureka/v2/apps/',
-      ssl: false,
+      ssl: true,
       useDns: false,
       fetchMetadata: true,
       host: 'localhost',
-      port: 8080,
+      port: 10011,
+    },
+    ssl: {
+      certificate: '../keystore/localhost/localhost.keystore.cer',
+      keystore: '../keystore/localhost/localhost.keystore.key',
+      caFile: '../keystore/localhost/localhost.pem',
+      keyPassword: 'password',
+    },
+    requestMiddleware: (requestOpts, done) => {
+      done(Object.assign(requestOpts, {
+        cert: fs.readFileSync(config.ssl.certificate),
+        key: fs.readFileSync(config.ssl.keystore),
+        passphrase: config.ssl.keyPassword,
+        ca: fs.readFileSync(config.ssl.caFile),
+      }));
     },
   };
 
