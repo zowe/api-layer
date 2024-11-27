@@ -39,12 +39,14 @@ public class OIDCTokenProviderEndpoint implements OIDCProvider {
     @Override
     public boolean isValid(String token) {
         try {
+            log.debug("Validating the token against URL: {}", endpointUrl);
             HttpGet httpGet = new HttpGet(endpointUrl);
             httpGet.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token);
 
             HttpResponse httpResponse = secureHttpClientWithKeystore.execute(httpGet);
 
             int responseCode = httpResponse.getStatusLine().getStatusCode();
+            log.debug("Response code: {}", responseCode);
             return HttpStatus.valueOf(responseCode).is2xxSuccessful();
         } catch (IOException e) {
             log.error("An error occurred during validation of OIDC token using userInfo URI {}: {}", endpointUrl, e.getMessage());

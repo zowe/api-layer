@@ -14,6 +14,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
@@ -25,9 +26,11 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+
 /**
  * This filter will add X509 certificate from InboundAttls
  */
+@Slf4j
 public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
@@ -35,6 +38,7 @@ public class AttlsFilter extends OncePerRequestFilter {
         try {
             byte[] certificate = InboundAttls.getCertificate();
             if (certificate != null && certificate.length > 0) {
+                log.debug("Certificate length: {}", certificate.length);
                 populateRequestWithCertificate(request, certificate);
             }
         } catch (Exception e) {

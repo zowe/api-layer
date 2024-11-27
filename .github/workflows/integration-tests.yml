@@ -139,7 +139,7 @@ jobs:
                     ./gradlew :integration-tests:runOidcTests --info -Denvironment.config=-docker -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }}
                     -Doidc.test.user=${{ secrets.OIDC_TEST_USER }} -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
                     -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }} -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -DidpConfiguration.host=${{secrets.OKTA_HOST}}
 
             -   uses: ./.github/actions/teardown
 
@@ -466,7 +466,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
-                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
+                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }} -DidpConfiguration.host=${{secrets.OKTA_HOST}}
 
             -   name: Dump DC jacoco data
                 run: >
