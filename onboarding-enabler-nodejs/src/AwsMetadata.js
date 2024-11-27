@@ -110,7 +110,7 @@ export default class AwsMetadata {
       let error = null;
       if (!response.ok) {
         error = new Error(`${response.statusCode}: ${response.statusMessage}`);
-        this.logger.error('Error requesting instance identity document', response.errored);
+        this.logger.error('Error requesting instance identity document', error);
       }
       callback(null, (error || response.statusCode !== 200) ? null : JSON.parse(response.body()));
     });
