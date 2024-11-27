@@ -433,7 +433,7 @@ public class SecurityUtils {
             .when()
                 .get(OKTA_HOSTNAME + "/oauth2/v1/authorize")
             .then()
-            .log().all()
+            .log().ifValidationFails()
                 .statusCode(200)
                 .extract().response();
 
