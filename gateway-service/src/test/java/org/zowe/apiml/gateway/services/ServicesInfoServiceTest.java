@@ -17,12 +17,14 @@ import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -370,6 +372,33 @@ class ServicesInfoServiceTest {
                 .setStatusPageUrl(null, CLIENT_STATUS_URL)
                 .setMetadata(metadata)
                 .build();
+    }
+
+    @Nested
+    class Multitenancy {
+
+        private static final InstanceInfo PRIMARY_WITH_METADATA = InstanceInfo.Builder.newBuilder()
+            .setMetadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.PRIMARY.getValue()))
+            .build();
+        private static final InstanceInfo PRIMARY_WITHOUT_METADATA = InstanceInfo.Builder.newBuilder()
+            .build();
+        private static final InstanceInfo ADDITIONAL = InstanceInfo.Builder.newBuilder()
+            .setMetadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.ADDITIONAL.getValue()))
+            .build();
+
+        @Test
+        void givenApplication_whenGetPrimaryInstances_thenAdditionalWereRemoved() {
+            Application application = new Application("test");
+            application.addInstance(PRIMARY_WITH_METADATA);
+            application.addInstance(PRIMARY_WITHOUT_METADATA);
+            application.addInstance(ADDITIONAL);
+
+            List<InstanceInfo> instances = ServicesInfoService.getPrimaryInstances(application);
+            assertEquals(2, instances.size());
+            assertSame(PRIMARY_WITH_METADATA, instances.get(0));
+            assertSame(PRIMARY_WITHOUT_METADATA, instances.get(1));
+        }
+
     }
 
 }
