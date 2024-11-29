@@ -378,17 +378,24 @@ class ServicesInfoServiceTest {
     class Multitenancy {
 
         private static final InstanceInfo PRIMARY_WITH_METADATA = InstanceInfo.Builder.newBuilder()
+            .setInstanceId("primary-with-metadata")
+            .setAppName("primary-with-metadata")
             .setMetadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.PRIMARY.getValue()))
             .build();
         private static final InstanceInfo PRIMARY_WITHOUT_METADATA = InstanceInfo.Builder.newBuilder()
+            .setInstanceId("primary-without-metadata")
+            .setAppName("primary-without-metadata")
             .build();
         private static final InstanceInfo ADDITIONAL = InstanceInfo.Builder.newBuilder()
+            .setInstanceId("additional")
+            .setAppName("additional")
             .setMetadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.ADDITIONAL.getValue()))
             .build();
 
         @Test
         void givenApplication_whenGetPrimaryInstances_thenAdditionalWereRemoved() {
             Application application = new Application("test");
+            application.setName("test");
             application.addInstance(PRIMARY_WITH_METADATA);
             application.addInstance(PRIMARY_WITHOUT_METADATA);
             application.addInstance(ADDITIONAL);
