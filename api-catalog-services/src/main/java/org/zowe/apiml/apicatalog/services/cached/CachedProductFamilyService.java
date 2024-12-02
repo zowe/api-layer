@@ -382,9 +382,6 @@ public class CachedProductFamilyService {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }
 
-
-        String apimlIdFromDomain = getApimlId();
-
         String serviceId = instanceInfo.getAppName();
         String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
@@ -394,9 +391,9 @@ public class CachedProductFamilyService {
                 if (apimlId != null) {
 //                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
                     serviceId = apimlId;
+                    String apimlIdFromDomain = getApimlId();
                     if (apimlIdFromDomain.isEmpty()) {
-                    String customApimlId = apimlIdFromDomain + "/" + apimlId ;
-                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), customApimlId);
+                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlIdFromDomain + "/" + apimlId);
                     } else {
                         apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
                     }
@@ -468,7 +465,7 @@ public class CachedProductFamilyService {
         return apimlId;
     }
 
-    public void setApimlId(String apimlId) {
+    private void setApimlId(String apimlId) {
         this.apimlId = apimlId;
     }
 
