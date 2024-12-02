@@ -24,16 +24,10 @@ const getBaseUrl = (pEnvironment, pLocation) => {
 
     // Going through the Gateway
     const urlParts = location.pathname.split('/');
-
-    if(urlParts[1]==="apicatalog") {
-        if (urlParts[2] === 'ui') {
-            return `${location.protocol}//${location.host}/${urlParts[1]}/api/${urlParts[3]}`;
-        }
-    } else {
-        if (urlParts[3] === 'ui') {
-            return `${location.protocol}//${location.host}/${urlParts[1]}${urlParts[2]}/api/${urlParts[4]}`;
-        }
+    if (urlParts[2] === 'ui') {
+        return `${location.protocol}//${location.host}/${urlParts[1]}/api/${urlParts[3]}`;
     }
+
     // Testing environment
     if (environment.REACT_APP_GATEWAY_URL && environment.REACT_APP_CATALOG_HOME) {
         return `${environment.REACT_APP_GATEWAY_URL}${environment.REACT_APP_CATALOG_HOME}`;
@@ -41,11 +35,9 @@ const getBaseUrl = (pEnvironment, pLocation) => {
 
     // Local development environment
     if (environment.REACT_APP_CATALOG_HOME) {
-        if(urlParts[1]!== "apicatalog") {
-            return `${location.protocol}//${location.host}/${urlParts[1]}${environment.REACT_APP_CATALOG_HOME}`;
-        }
         return `${location.protocol}//${location.host}${environment.REACT_APP_CATALOG_HOME}`;
     }
+
     // Standalone access to the Catalog
     return location.href;
 };
