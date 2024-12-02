@@ -31,6 +31,16 @@ const terminatingStatusCodes = [500, 401, 403];
 // override the termination if any of these APIM message codes are in the response
 const excludedMessageCodes = ['ZWEAM104'];
 
+/**
+ * Extract the ApimlId from the current URL
+ * @returns {string} The ApimlId
+ */
+function getApimlIdFromUrl() {
+    const pathname = window.location.pathname; // Get the path portion of the URL
+    const pathParts = pathname.split('/'); // Split the path into segments
+    return pathParts[1]; // Return the ApimlId (second segment)
+}
+
 function checkOrigin() {
     // only allow the gateway url to authenticate the user
     let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
@@ -122,6 +132,7 @@ const createFetchTilesEpic =
                                 'Content-Type': 'application/json',
                                 'Access-Control-Allow-Origin': origin(),
                                 'X-Requested-With': 'XMLHttpRequest',
+                                'X-ApimlId': getApimlIdFromUrl(),
                             },
                         }).pipe(
                             map((ajaxResponse) => {
