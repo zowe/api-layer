@@ -60,6 +60,8 @@ public class CachedProductFamilyService {
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final CustomStyleConfig customStyleConfig;
 
+    private String apimlId;
+
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
@@ -380,6 +382,9 @@ public class CachedProductFamilyService {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }
 
+
+        String apimlIdFromDomain = getApimlId();
+
         String serviceId = instanceInfo.getAppName();
         String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
@@ -387,10 +392,18 @@ public class CachedProductFamilyService {
                 // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
-                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
+//                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
                     serviceId = apimlId;
+                    if (apimlIdFromDomain.isEmpty()) {
+                    String customApimlId = apimlIdFromDomain + "/" + apimlId ;
+                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), customApimlId);
+                    }
+                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(),apimlId);
                     title += " (" + apimlId + ")";
                 }
+            }
+            else {
+                apiBasePath = "/";
             }
         }
 
@@ -407,6 +420,11 @@ public class CachedProductFamilyService {
             .build();
     }
 
+    public void getContextPath(String apimlId) {
+        if (!apimlId.isEmpty() && !apimlId.equals("apicatalog")) {
+            setApimlId(apimlId);
+        }
+    }
     private boolean isSso(InstanceInfo instanceInfo) {
         Map<String, String> eurekaMetadata = instanceInfo.getMetadata();
         return Authentication.builder()
@@ -443,6 +461,14 @@ public class CachedProductFamilyService {
             apiContainer.setStatus("WARNING");
         }
 
+    }
+
+    public String getApimlId() {
+        return apimlId;
+    }
+
+    public void setApimlId(String apimlId) {
+        this.apimlId = apimlId;
     }
 
 }
