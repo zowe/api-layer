@@ -397,8 +397,9 @@ public class CachedProductFamilyService {
                     if (apimlIdFromDomain.isEmpty()) {
                     String customApimlId = apimlIdFromDomain + "/" + apimlId ;
                     apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), customApimlId);
+                    } else {
+                        apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
                     }
-                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(),apimlId);
                     title += " (" + apimlId + ")";
                 }
             }
