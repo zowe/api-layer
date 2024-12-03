@@ -15,26 +15,18 @@ import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 
-function transformSwaggerToCurrentHost(swagger, selectedService) {
+function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
 
     if (swagger.servers !== null && swagger.servers !== undefined) {
         swagger.servers.forEach((server) => {
+            const location = `${window.location.protocol}//${window.location.host}`;
             try {
                 const swaggerUrl = new URL(server.url);
-                // if it's not a GW instance, use the URL from the browser
-                if (!swaggerUrl.pathname.includes("gateway")) {
-                    const location = `${window.location.protocol}//${window.location.host}`;
-                    server.url = location + swaggerUrl.pathname;
-                } else {
-                    // if it's a GW instance, construct the server URL by using the base URL and service ID of the specific instance
-                    const updatedPathname = swaggerUrl.pathname.replace(/^\/[^/]+/, selectedService.serviceId);
-                    server.url = selectedService.baseUrl + updatedPathname;
-                }
+                server.url = location + swaggerUrl.pathname;
             } catch (e) {
                 // not a proper url, assume it is an endpoint
-                server.url = selectedService.baseUrl + server;
-
+                server.url = location + server;
             }
         });
     }
@@ -137,12 +129,10 @@ export default class SwaggerUIApiml extends Component {
         try {
             // If no version selected use the default apiDoc
             if (
-                !selectedVersion &&
-                selectedService?.serviceId &&
-                selectedService?.baseUrl &&
+                (selectedVersion === null || selectedVersion === undefined) &&
                 selectedService?.apiDoc?.length
             ) {
-                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc), selectedService);
+                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
 
                 this.setState({
                     swaggerReady: true,
@@ -169,7 +159,7 @@ export default class SwaggerUIApiml extends Component {
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
-                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text), selectedService);
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
                             res.text = JSON.stringify(swagger);
                             return res;
                         },
