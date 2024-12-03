@@ -33,12 +33,16 @@ const excludedMessageCodes = ['ZWEAM104'];
 
 /**
  * Extract the ApimlId from the current URL
- * @returns {string} The ApimlId
+ * @returns {string|null} The ApimlId
  */
 function getApimlIdFromUrl() {
     const pathname = window.location.pathname; // Get the path portion of the URL
     const pathParts = pathname.split('/'); // Split the path into segments
-    return pathParts[1]; // Return the ApimlId (second segment)
+    // Ensure there are enough segments and the second segment is not 'apicatalog'
+    if (pathParts.length > 1 && pathParts[1] !== 'apicatalog') {
+        return pathParts[1]; // Return the ApimlId (second segment)
+    }
+    return null; // Explicitly return null if no valid ApimlId is found
 }
 
 function checkOrigin() {
