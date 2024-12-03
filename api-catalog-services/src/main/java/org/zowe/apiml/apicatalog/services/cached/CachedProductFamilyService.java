@@ -385,23 +385,20 @@ public class CachedProductFamilyService {
         String serviceId = instanceInfo.getAppName();
         String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
+            String apimlIdFromDomain = getApimlId();
             if (RegistrationType.of(instanceInfo.getMetadata()).isAdditional()) {
                 // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
-//                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
                     serviceId = apimlId;
-                    String apimlIdFromDomain = getApimlId();
-                    if (apimlIdFromDomain.isEmpty()) {
-                    apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlIdFromDomain + "/" + apimlId);
-                    } else {
-                        apiBasePath = apiBasePath.replace(serviceId.toLowerCase(), apimlId);
-                    }
+                    apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" + apimlId : "/" + apimlIdFromDomain.toLowerCase() + "/" + apimlId ;
                     title += " (" + apimlId + ")";
                 }
             }
             else {
-                apiBasePath = "/";
+
+                apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" : "/" + apimlIdFromDomain ;
+
             }
         }
 
@@ -418,8 +415,8 @@ public class CachedProductFamilyService {
             .build();
     }
 
-    public void getContextPath(String apimlId) {
-        if (!apimlId.isEmpty() && !apimlId.equals("apicatalog")) {
+    public void getApimlIdFromContextPath(String apimlId) {
+        if (!StringUtils.isEmpty(apimlId)) {
             setApimlId(apimlId);
         }
     }

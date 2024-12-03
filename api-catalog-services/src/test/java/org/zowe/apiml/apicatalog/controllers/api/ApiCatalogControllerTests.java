@@ -13,10 +13,13 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
@@ -35,7 +38,10 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
+import static org.mockito.Mockito.when;
 
+
+@SpringBootTest
 class ApiCatalogControllerTests {
     private final String pathToContainers = "/containers";
 
@@ -45,8 +51,14 @@ class ApiCatalogControllerTests {
 
     private ApiCatalogController underTest;
 
+    @MockBean
+    private HttpServletRequest request;
+
     @BeforeEach
     void setUp() {
+
+        when(request.getHeader("X-ApimlId")).thenReturn("apiml1");
+
         cachedServicesService = mock(CachedServicesService.class);
         cachedProductFamilyService = mock(CachedProductFamilyService.class);
         cachedApiDocService = mock(CachedApiDocService.class);

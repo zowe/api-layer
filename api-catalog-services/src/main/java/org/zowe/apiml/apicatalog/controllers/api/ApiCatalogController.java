@@ -49,8 +49,6 @@ public class ApiCatalogController {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedApiDocService cachedApiDocService;
 
-    @Autowired
-    private HttpServletRequest request;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -88,11 +86,13 @@ public class ApiCatalogController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
+    public ResponseEntity<List<APIContainer>> getAllAPIContainers(HttpServletRequest request) throws ContainerStatusRetrievalThrowable {
         try {
-            String apimlId = request.getHeader("X-ApimlId");
-            cachedProductFamilyService.getContextPath(apimlId);
 
+            String apimlId = request.getHeader("X-ApimlId");
+            if (apimlId != null) {
+                cachedProductFamilyService.getApimlIdFromContextPath(apimlId);
+            }
             Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
             if (apiContainers == null || apiContainers.isEmpty()) {
