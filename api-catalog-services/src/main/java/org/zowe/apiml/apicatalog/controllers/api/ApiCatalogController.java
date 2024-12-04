@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,7 +49,7 @@ public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedApiDocService cachedApiDocService;
-
+    private final static String APIMLID_HEADER = "X-ApimlId";
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -89,9 +90,9 @@ public class ApiCatalogController {
     public ResponseEntity<List<APIContainer>> getAllAPIContainers(HttpServletRequest request) throws ContainerStatusRetrievalThrowable {
         try {
 
-            String apimlId = request.getHeader("X-ApimlId");
-            if (apimlId != null) {
-                cachedProductFamilyService.getApimlIdFromContextPath(apimlId);
+            String apimlId = request.getHeader(APIMLID_HEADER);
+            if (!StringUtils.isEmpty(apimlId)) {
+                cachedProductFamilyService.updateApimlId(apimlId);
             }
             Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);

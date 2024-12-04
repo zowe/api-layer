@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +61,7 @@ public class CachedProductFamilyService {
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final CustomStyleConfig customStyleConfig;
 
+    @Getter
     private String apimlId;
 
     @Value("${apiml.catalog.hide.serviceInfo:false}")
@@ -109,9 +111,7 @@ public class CachedProductFamilyService {
             container -> {
                 boolean isRecent = container.isRecentUpdated(cacheRefreshUpdateThresholdInMillis);
                 if (isRecent) {
-                    log.debug("Container: " + container.getId() + " last updated: "
-                        + container.getLastUpdatedTimestamp().getTime() +
-                        " was updated recently");
+                    log.debug("Container: {} last updated: {} was updated recently", container.getId(), container.getLastUpdatedTimestamp().getTime());
                 }
                 return isRecent;
             }).toList();
@@ -251,7 +251,7 @@ public class CachedProductFamilyService {
     /**
      * Map the configuration to customize the Catalog UI to the container
      *
-     * @param apiContainer
+     * @param apiContainer API container
      */
     private void setCustomUiConfig(APIContainer apiContainer) {
         apiContainer.setCustomStyleConfig(customStyleConfig);
@@ -346,7 +346,7 @@ public class CachedProductFamilyService {
         container.setDescription(description);
         container.setTitle(title);
         container.setVersion(version);
-        log.debug("updated Container cache with product family: " + productFamilyId + ": " + title);
+        log.debug("updated Container cache with product family: {}: {}", productFamilyId, title);
 
         // create API Service from instance and update container last changed date
         container.addService(createAPIServiceFromInstance(instanceInfo));
@@ -396,9 +396,7 @@ public class CachedProductFamilyService {
                 }
             }
             else {
-
                 apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" : "/" + apimlIdFromDomain;
-
             }
         }
 
@@ -415,10 +413,8 @@ public class CachedProductFamilyService {
             .build();
     }
 
-    public void getApimlIdFromContextPath(String apimlId) {
-        if (!StringUtils.isEmpty(apimlId)) {
-            setApimlId(apimlId);
-        }
+    public void updateApimlId(String apimlId) {
+        this.apimlId = apimlId;
     }
     private boolean isSso(InstanceInfo instanceInfo) {
         Map<String, String> eurekaMetadata = instanceInfo.getMetadata();
@@ -457,13 +453,4 @@ public class CachedProductFamilyService {
         }
 
     }
-
-    public String getApimlId() {
-        return apimlId;
-    }
-
-    private void setApimlId(String apimlId) {
-        this.apimlId = apimlId;
-    }
-
 }
