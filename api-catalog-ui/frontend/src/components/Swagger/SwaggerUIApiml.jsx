@@ -15,22 +15,28 @@ import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 
-function transformSwaggerToCurrentHost(swagger) {
+function transformSwaggerToCurrentHost(swagger, selectedService) {
     swagger.host = window.location.host;
 
-    if (swagger.servers !== null && swagger.servers !== undefined) {
+    if (swagger.servers?.length) {
         swagger.servers.forEach((server) => {
             const location = `${window.location.protocol}//${window.location.host}`;
             try {
                 const swaggerUrl = new URL(server.url);
-                server.url = location + swaggerUrl.pathname;
+                if (swaggerUrl?.pathname?.includes('gateway')) {
+                    const basePath = selectedService?.basePath === '/' ? '' : selectedService?.basePath || '';
+
+                    server.url = location + basePath + swaggerUrl.pathname;
+                }
+                else {
+                    server.url = location + swaggerUrl.pathname;
+                }
             } catch (e) {
                 // not a proper url, assume it is an endpoint
                 server.url = location + server;
             }
         });
     }
-
     return swagger;
 }
 
@@ -132,7 +138,7 @@ export default class SwaggerUIApiml extends Component {
                 (selectedVersion === null || selectedVersion === undefined) &&
                 selectedService?.apiDoc?.length
             ) {
-                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc));
+                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc), selectedService);
 
                 this.setState({
                     swaggerReady: true,
@@ -146,9 +152,9 @@ export default class SwaggerUIApiml extends Component {
                     },
                 });
             }
-            if (selectedVersion) {
+            if (selectedVersion && selectedService) {
                 const basePath = `${selectedService.serviceId}/${selectedVersion}`;
-                const url = `${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
+                const url = `${getBaseUrl()}${process?.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
                 this.setState({
                     swaggerReady: true,
                     swaggerProps: {
@@ -159,7 +165,7 @@ export default class SwaggerUIApiml extends Component {
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
-                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text));
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text), selectedService);
                             res.text = JSON.stringify(swagger);
                             return res;
                         },

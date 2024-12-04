@@ -391,13 +391,13 @@ public class CachedProductFamilyService {
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
                     serviceId = apimlId;
-                    apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" + apimlId : "/" + apimlIdFromDomain.toLowerCase() + "/" + apimlId ;
+                    apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" + apimlId : "/" + apimlIdFromDomain.toLowerCase() + "/" + apimlId;
                     title += " (" + apimlId + ")";
                 }
             }
             else {
 
-                apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" : "/" + apimlIdFromDomain ;
+                apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" : "/" + apimlIdFromDomain;
 
             }
         }
