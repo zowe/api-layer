@@ -12,7 +12,6 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,9 +60,6 @@ public class CachedProductFamilyService {
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final CustomStyleConfig customStyleConfig;
 
-    @Getter
-    private String apimlId;
-
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
@@ -111,7 +107,9 @@ public class CachedProductFamilyService {
             container -> {
                 boolean isRecent = container.isRecentUpdated(cacheRefreshUpdateThresholdInMillis);
                 if (isRecent) {
-                    log.debug("Container: {} last updated: {} was updated recently", container.getId(), container.getLastUpdatedTimestamp().getTime());
+                    log.debug("Container: " + container.getId() + " last updated: "
+                        + container.getLastUpdatedTimestamp().getTime() +
+                        " was updated recently");
                 }
                 return isRecent;
             }).toList();
@@ -251,7 +249,7 @@ public class CachedProductFamilyService {
     /**
      * Map the configuration to customize the Catalog UI to the container
      *
-     * @param apiContainer API container
+     * @param apiContainer
      */
     private void setCustomUiConfig(APIContainer apiContainer) {
         apiContainer.setCustomStyleConfig(customStyleConfig);
@@ -346,7 +344,7 @@ public class CachedProductFamilyService {
         container.setDescription(description);
         container.setTitle(title);
         container.setVersion(version);
-        log.debug("updated Container cache with product family: {}: {}", productFamilyId, title);
+        log.debug("updated Container cache with product family: " + productFamilyId + ": " + title);
 
         // create API Service from instance and update container last changed date
         container.addService(createAPIServiceFromInstance(instanceInfo));
@@ -385,18 +383,18 @@ public class CachedProductFamilyService {
         String serviceId = instanceInfo.getAppName();
         String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
-            String apimlIdFromDomain = getApimlId();
+
             if (RegistrationType.of(instanceInfo.getMetadata()).isAdditional()) {
                 // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
                     serviceId = apimlId;
-                    apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" + apimlId : "/" + apimlIdFromDomain.toLowerCase() + "/" + apimlId;
+                    apiBasePath =  "/" + serviceId.toLowerCase();
                     title += " (" + apimlId + ")";
                 }
             }
             else {
-                apiBasePath = StringUtils.isEmpty(apimlIdFromDomain) ? "/" : "/" + apimlIdFromDomain;
+                apiBasePath = "/";
             }
         }
 
@@ -413,9 +411,6 @@ public class CachedProductFamilyService {
             .build();
     }
 
-    public void updateApimlId(String apimlId) {
-        this.apimlId = apimlId;
-    }
     private boolean isSso(InstanceInfo instanceInfo) {
         Map<String, String> eurekaMetadata = instanceInfo.getMetadata();
         return Authentication.builder()
@@ -453,4 +448,5 @@ public class CachedProductFamilyService {
         }
 
     }
+
 }
