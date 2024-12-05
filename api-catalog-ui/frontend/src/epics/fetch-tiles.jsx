@@ -11,6 +11,8 @@
 import * as log from 'loglevel';
 import { of, throwError, timer } from 'rxjs';
 import { ofType } from 'redux-observable';
+import process from 'process';
+window.process = process; // Polyfill process for the browser
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
 import { FETCH_TILES_REQUEST, FETCH_NEW_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
 import {
