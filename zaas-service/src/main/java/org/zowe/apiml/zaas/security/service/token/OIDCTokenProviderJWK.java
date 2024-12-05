@@ -117,8 +117,10 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
     @Override
     public boolean isValid(String token) {
         try {
+            log.debug("Validating the token with JWK: {}", jwksUri);
             return !getClaims(token).isEmpty();
         } catch (JwtException jwte) {
+            log.debug("JWK token validation failed with the exception {}", jwte.getMessage(), jwte.getCause());
             return false;
         }
     }

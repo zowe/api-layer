@@ -328,7 +328,7 @@ public class AuthController {
      * Return all public keys involved at the moment in the ZAAS as well as in zOSMF. Keys used for verification of
      * tokens
      *
-     * @return List of keys composed of zOSMF and ZAAS ones
+     * @return Map of keys composed of zOSMF and ZAAS ones
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -469,6 +469,7 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Invalid token or OIDC provider is not defined")
     })
     public ResponseEntity<Void> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
+        log.debug("Validating OIDC token using provider {}", oidcProvider);
         String token = validateRequestModel.getToken();
         if (oidcProvider != null && oidcProvider.isValid(token)) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -527,13 +528,13 @@ public class AuthController {
     }
 
     @Data
-    private static class ValidateRequestModel {
+    public static class ValidateRequestModel {
         private String token;
         private String serviceId;
     }
 
     @Data
-    private static class RulesRequestModel {
+    public static class RulesRequestModel {
         private String serviceId;
         private String userId;
         private long timestamp;
