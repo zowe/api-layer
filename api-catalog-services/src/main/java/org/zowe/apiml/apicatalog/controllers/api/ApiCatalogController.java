@@ -48,7 +48,6 @@ public class ApiCatalogController {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedApiDocService cachedApiDocService;
 
-
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
