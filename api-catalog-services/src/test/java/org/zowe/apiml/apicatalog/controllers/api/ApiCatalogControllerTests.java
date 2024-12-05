@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 
-
 class ApiCatalogControllerTests {
     private final String pathToContainers = "/containers";
 
