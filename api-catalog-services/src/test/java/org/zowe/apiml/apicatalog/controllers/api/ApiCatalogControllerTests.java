@@ -48,7 +48,6 @@ class ApiCatalogControllerTests {
 
     @BeforeEach
     void setUp() {
-
         cachedServicesService = mock(CachedServicesService.class);
         cachedProductFamilyService = mock(CachedProductFamilyService.class);
         cachedApiDocService = mock(CachedApiDocService.class);
