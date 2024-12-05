@@ -13,10 +13,15 @@ package org.zowe.apiml.security.common.verify;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.utils.X509Utils;
 
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,7 +33,8 @@ import static org.mockito.Mockito.when;
 
 public class CertificateValidatorTest {
 
-    private static final String URL_PROVIDE_TRUSTED_CERTS = "trusted_certs_url";
+    private static final String URL_PROVIDE_TWO_TRUSTED_CERTS = "trusted_two_certs_url";
+    private static final String URL_PROVIDE_THIRD_TRUSTED_CERT = "third_trusted_cert_url";
     private static final String URL_WITH_NO_TRUSTED_CERTS = "invalid_url_for_trusted_certs";
     private static final X509Certificate cert1 = X509Utils.getCertificate(X509Utils.correctBase64("correct_certificate_1"));
     private static final X509Certificate cert2 = X509Utils.getCertificate(X509Utils.correctBase64("correct_certificate_2"));
@@ -38,11 +44,9 @@ public class CertificateValidatorTest {
 
     @BeforeEach
     void setUp() {
-        List<Certificate> trustedCerts = new ArrayList<>();
-        trustedCerts.add(cert1);
-        trustedCerts.add(cert2);
         TrustedCertificatesProvider mockProvider = mock(TrustedCertificatesProvider.class);
-        when(mockProvider.getTrustedCerts(URL_PROVIDE_TRUSTED_CERTS)).thenReturn(trustedCerts);
+        when(mockProvider.getTrustedCerts(URL_PROVIDE_TWO_TRUSTED_CERTS)).thenReturn(Arrays.asList(cert1, cert2));
+        when(mockProvider.getTrustedCerts(URL_PROVIDE_THIRD_TRUSTED_CERT)).thenReturn(Collections.singletonList(cert3));
         when(mockProvider.getTrustedCerts(URL_WITH_NO_TRUSTED_CERTS)).thenReturn(Collections.emptyList());
         certificateValidator = new CertificateValidator(mockProvider, Collections.emptySet());
     }
@@ -52,7 +56,7 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoint", URL_PROVIDE_TRUSTED_CERTS, String.class);
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_PROVIDE_TWO_TRUSTED_CERTS});
         }
         @Test
         void whenAllCertificatesFoundThenTheyAreTrusted() {
@@ -74,7 +78,7 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoint", URL_WITH_NO_TRUSTED_CERTS, String.class);
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_WITH_NO_TRUSTED_CERTS});
         }
         @Test
         void thenAnyCertificateIsNotTrusted() {
@@ -101,7 +105,81 @@ public class CertificateValidatorTest {
             assertTrue(publicKeys.contains(Base64.getEncoder().encodeToString(cert1.getPublicKey().getEncoded())));
             assertTrue(publicKeys.contains(Base64.getEncoder().encodeToString(cert2.getPublicKey().getEncoded())));
             assertTrue(publicKeys.contains(Base64.getEncoder().encodeToString(cert3.getPublicKey().getEncoded())));
+        }
+
+    }
+
+    @Nested
+    class WhenMultipleSources {
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_PROVIDE_TWO_TRUSTED_CERTS, URL_PROVIDE_THIRD_TRUSTED_CERT});
+        }
+
+        @Test
+        void whenAllCertificatesFoundThenTheyAreTrusted() {
+            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
+            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
+            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
+            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert3}));
+        }
+
+    }
+
+    @Nested
+    @Import(CertificateValidator.class)
+    @MockBean(TrustedCertificatesProvider.class)
+    class Configuration {
+
+        @Nested
+        @TestPropertySource(properties = {
+            "apiml.security.x509.certificatesUrl=url1"
+        })
+        @ExtendWith(SpringExtension.class)
+        class OldPropertyValue {
+
+            @Autowired
+            private CertificateValidator certificateValidator;
+
+            @Test
+            void thenUrlIsSetAsListCorrectly() {
+                assertArrayEquals(new String[] {"url1"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+            }
 
         }
+
+        @Nested
+        @TestPropertySource(properties = {
+            "apiml.security.x509.certificatesUrls=url1,url2"
+        })
+        @ExtendWith(SpringExtension.class)
+        class NewPropertyValue {
+
+            @Autowired
+            private CertificateValidator certificateValidator;
+
+            @Test
+            void thenUrlsAreSetCorrectly() {
+                assertArrayEquals(new String[] {"url1", "url2"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+            }
+
+        }
+
+        @Nested
+        @ExtendWith(SpringExtension.class)
+        class NoUrlIsProvided {
+
+            @Autowired
+            private CertificateValidator certificateValidator;
+
+            @Test
+            void thenNoUrlIsProvided() {
+                assertArrayEquals(new String[0], (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+            }
+
+        }
+
     }
+
 }

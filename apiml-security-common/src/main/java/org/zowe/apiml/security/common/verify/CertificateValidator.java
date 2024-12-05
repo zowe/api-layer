@@ -12,7 +12,6 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +21,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -43,8 +43,8 @@ public class CertificateValidator {
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
     private boolean forwardingEnabled;
 
-    @Value("${apiml.security.x509.certificatesUrl:}")
-    private String proxyCertificatesEndpoint;
+    @Value("${apiml.security.x509.certificatesUrls:${apiml.security.x509.certificatesUrl:}}")
+    private String[] proxyCertificatesEndpoints;
     private final Set<String> publicKeyCertificatesBase64;
 
 
@@ -62,11 +62,14 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
-        if (StringUtils.isBlank(proxyCertificatesEndpoint)) {
-            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrl");
+        if ((proxyCertificatesEndpoints == null) || (proxyCertificatesEndpoints.length == 0)) {
+            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrls");
             return false;
         }
-        List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
+        List<Certificate> trustedCerts = Arrays.stream(proxyCertificatesEndpoints)
+            .map(trustedCertificatesProvider::getTrustedCerts)
+            .flatMap(List::stream)
+            .toList();
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
