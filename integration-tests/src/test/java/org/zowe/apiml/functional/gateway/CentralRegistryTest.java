@@ -168,7 +168,6 @@ class CentralRegistryTest implements TestWithStartedInstances {
     void shouldContainCorrectBasePaths() throws MalformedURLException, URISyntaxException {
         URI containers = new URL(gatewayConf.getScheme(), gatewayConf.getHost(), gatewayConf.getPort(), "/apicatalog/api/v1/containers/apimediationlayer")
             .toURI();
-        System.out.println(containers);
 
         final String jwt = gatewayToken();
         String responseBody = with().given()

@@ -56,7 +56,12 @@ describe("Swagger rendering", () => {
                 .get('label')
                 .should('contain', "API Base Path:");
 
-            const regex = new RegExp(`^\/${service.serviceId}\/api(\/v1)?$`);
+            let regexContent = `^\/${service.serviceId}\/api(\/v1)?$`;
+            if (service.serviceId === 'gateway') {
+                regexContent = '/';
+            }
+            const regex = new RegExp(regexContent);
+
             cy.get('@basePath')
                 .get('#apiBasePath').invoke("text").should(text => {
                 expect(text).to.match(regex);

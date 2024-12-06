@@ -43,7 +43,7 @@ describe('>>> Multi-tenancy deployment test', () => {
             '#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > div > label > select > option'
         )
             .should('exist')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/gateway/api/v1`);
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apiml2/gateway/api/v1`);
 
         cy.get('.tabs-container').should('not.exist');
         cy.get('.serviceTab').should('exist').and('contain', 'API Gateway');
