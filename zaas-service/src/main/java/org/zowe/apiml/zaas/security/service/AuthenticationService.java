@@ -268,7 +268,7 @@ public class AuthenticationService {
                 throw new TokenNotValidException("Unknown token type.");
         }
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
         tokenAuthentication.setAuthenticated(authenticated && isValid);
@@ -286,7 +286,7 @@ public class AuthenticationService {
      */
     @CachePut(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication createTokenAuthentication(String user, String jwtToken) {
-        final TokenAuthentication out = new TokenAuthentication(user, jwtToken);
+        final TokenAuthentication out = new TokenAuthentication(user, jwtToken, TokenAuthentication.Type.JWT);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
         out.setAuthenticated(authenticated);

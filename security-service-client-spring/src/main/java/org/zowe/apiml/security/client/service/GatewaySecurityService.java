@@ -11,6 +11,8 @@
 package org.zowe.apiml.security.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -129,6 +131,36 @@ public class GatewaySecurityService {
         return null;
     }
 
+    public QueryResponse verifyOidc(String token) {
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayOidcValidateEndpoint());
+        String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
+
+        try {
+            HttpPost post = new HttpPost(uri);
+            post.setEntity(new StringEntity(objectMapper.writeValueAsString(new TokenRequest(token)), ContentType.APPLICATION_JSON));
+
+            return closeableHttpClient.execute(post, response -> {
+                final HttpEntity responseEntity = response.getEntity();
+                String responseBody = null;
+                if (responseEntity != null) {
+                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                }
+                if (!HttpStatus.valueOf(response.getCode()).is2xxSuccessful()) {
+                    ErrorType errorType = getErrorType(responseBody);
+                    responseHandler.handleErrorType(response, errorType,
+                        "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                    return null;
+                }
+                return new QueryResponse();
+            });
+        } catch (IOException e) {
+            responseHandler.handleException(e);
+        }
+        return null;
+    }
+
     private ErrorType getErrorType(String detailMessage) {
         if (detailMessage == null) {
             return ErrorType.AUTH_GENERAL;
@@ -161,4 +193,11 @@ public class GatewaySecurityService {
             return Optional.of(cookie.replace(cookieName + "=", ""));
         }
     }
+
+    @Data
+    @AllArgsConstructor
+    static class TokenRequest {
+        String token;
+    }
+
 }

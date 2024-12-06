@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
 import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.security.OidcUtils;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -62,6 +63,11 @@ public class ApiCatalogController {
                                 CachedApiDocService cachedApiDocService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.cachedApiDocService = cachedApiDocService;
+    }
+
+    @GetMapping(value = "/oidc/provider")
+    public ResponseEntity<List<String>> getOidcProvider() {
+        return new ResponseEntity<>(OidcUtils.getOidcProvider(), HttpStatus.OK);
     }
 
 
