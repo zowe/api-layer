@@ -110,7 +110,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
             .jsonPath()
             .getObject("applications.application.findAll { it.name == 'GATEWAY' }.instance.metadata", typeRef).get(0);
 
-        assertThat(metadata).hasSize(4);
+        assertThat(metadata).hasSize(2);
 
         assertThat(metadata)
             .extracting(map -> map.get("apiml.service.apimlId"))
