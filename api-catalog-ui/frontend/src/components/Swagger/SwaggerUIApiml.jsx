@@ -213,6 +213,7 @@ SwaggerUIApiml.propTypes = {
     selectedService: PropTypes.shape({
         apiDoc: PropTypes.string,
     }).isRequired,
+    url: PropTypes.string,
 };
 
 SwaggerUIApiml.defaultProps = {
