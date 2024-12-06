@@ -56,7 +56,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     public static final String DOMAIN_APIML = "domain-apiml";
     public static final String CENTRAL_APIML = "central-apiml";
 
-    static ServiceConfiguration conf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
+    static ServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
     @BeforeAll
