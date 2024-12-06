@@ -270,6 +270,10 @@ jobs:
 
         services:
             # First group of services represents central apiml instance with central gateway registry
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
