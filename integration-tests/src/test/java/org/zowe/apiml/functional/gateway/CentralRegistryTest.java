@@ -52,13 +52,12 @@ import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 @Tag("GatewayCentralRegistry")
 class CentralRegistryTest implements TestWithStartedInstances {
     static final String CENTRAL_REGISTRY_PATH = "/" + CoreService.GATEWAY.getServiceId() + "/api/v1/registry";
+    public static final String APIML_CONTAINER_PATH = "/" + CoreService.API_CATALOG.getServiceId() + "/api/v1/containers/apimediationlayer";
     public static final String DOMAIN_APIML = "domain-apiml";
     public static final String CENTRAL_APIML = "central-apiml";
 
     static ServiceConfiguration conf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-    static GatewayServiceConfiguration gatewayConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-
 
     @BeforeAll
     @SneakyThrows
@@ -81,7 +80,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     void shouldFindRegisteredGatewayInCentralApiml() {
         ValidatableResponse response = listCentralRegistry("/central-apiml", "zowe.apiml.gateway", null);
 
-        List<Map<String, Object>> services = response.extract().jsonPath().getObject("[0].services", new TypeRef<List<Map<String, Object>>>() {
+        List<Map<String, Object>> services = response.extract().jsonPath().getObject("[0].services", new TypeRef<>() {
         });
 
         assertThat(services).hasSize(1);
@@ -166,7 +165,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
     @Test
     void shouldContainCorrectBasePaths() throws MalformedURLException, URISyntaxException {
-        URI containers = new URL(gatewayConf.getScheme(), gatewayConf.getHost(), gatewayConf.getPort(), "/apicatalog/api/v1/containers/apimediationlayer")
+        URI containers = new URL(conf.getScheme(), conf.getHost(), conf.getPort(), APIML_CONTAINER_PATH)
             .toURI();
 
         final String jwt = gatewayToken();

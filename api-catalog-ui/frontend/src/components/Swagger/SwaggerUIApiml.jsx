@@ -14,6 +14,7 @@ import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
+import PropTypes from "prop-types";
 
 function transformSwaggerToCurrentHost(swagger, selectedService) {
     swagger.host = window.location.host;
@@ -207,6 +208,12 @@ export default class SwaggerUIApiml extends Component {
         );
     }
 }
+
+SwaggerUIApiml.propTypes = {
+    selectedService: PropTypes.shape({
+        apiDoc: PropTypes.string,
+    }).isRequired,
+};
 
 SwaggerUIApiml.defaultProps = {
     url: `${getBaseUrl()}/apidoc`,

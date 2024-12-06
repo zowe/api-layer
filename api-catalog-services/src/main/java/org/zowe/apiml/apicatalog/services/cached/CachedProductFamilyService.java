@@ -388,7 +388,7 @@ public class CachedProductFamilyService {
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
                     serviceId = apimlId;
-                    apiBasePath =  "/" + serviceId.toLowerCase();
+                    apiBasePath = String.join("/", "", serviceId.toLowerCase());
                     title += " (" + apimlId + ")";
                 }
             }
