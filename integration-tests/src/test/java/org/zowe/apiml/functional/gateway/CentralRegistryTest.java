@@ -183,12 +183,12 @@ class CentralRegistryTest implements TestWithStartedInstances {
         DocumentContext jsonContext = JsonPath.parse(responseBody);
 
         JSONArray gatewayBasePath = jsonContext.read("$[0].services[?(@.serviceId == 'central-apiml')].basePath");
-        assertNotNull(gatewayBasePath, "BasePath for central gw should not be null");
-        assertFalse(gatewayBasePath.isEmpty(), "BasePath for central gw should not be empty");
+        assertNotNull(gatewayBasePath, String.format("BasePath for central gw should not be null but it was '%s'", gatewayBasePath));
+        assertFalse(gatewayBasePath.isEmpty(), String.format("BasePath for central gw should not be empty but it was '%s'", gatewayBasePath));
         assertEquals("/", gatewayBasePath.get(0));
         JSONArray domainGatewayBasePath = jsonContext.read("$[0].services[?(@.serviceId == 'domain-apiml')].basePath");
-        assertNotNull(domainGatewayBasePath, "BasePath for domain gw should not be null");
-        assertFalse(domainGatewayBasePath.isEmpty(), "BasePath for domain gw should not be empty");
+        assertNotNull(domainGatewayBasePath, String.format("BasePath for domain gw should not be null but it was '%s'", domainGatewayBasePath));
+        assertFalse(domainGatewayBasePath.isEmpty(), String.format("BasePath for domain gw should not be empty but it was '%s'", domainGatewayBasePath));
         assertEquals("/" + DOMAIN_APIML, domainGatewayBasePath.get(0));
     }
 
