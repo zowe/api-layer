@@ -182,7 +182,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
         DocumentContext jsonContext = JsonPath.parse(responseBody);
 
-        JSONArray gatewayBasePath = jsonContext.read("$[0].services[?(@.serviceId == 'central-apiml')].basePath");
+        JSONArray gatewayBasePath = jsonContext.read("$[0].services[?(@.serviceId == 'gateway')].basePath");
         assertNotNull(gatewayBasePath, String.format("BasePath for central gw should not be null but it was '%s'", gatewayBasePath));
         assertFalse(gatewayBasePath.isEmpty(), String.format("BasePath for central gw should not be empty but it was '%s'", gatewayBasePath));
         assertEquals("/", gatewayBasePath.get(0));
