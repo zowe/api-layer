@@ -14,6 +14,7 @@ export const isValidUrl = (url) => {
     try {
         return Boolean(new URL(url));
     } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(`Invalid URL: ${url}, Error: ${e.message}`);
         return false;
     }
