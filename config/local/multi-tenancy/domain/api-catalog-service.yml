@@ -1,0 +1,73 @@
+spring.profiles.include: diag
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+    instance:
+        leaseExpirationDurationInSeconds: 6
+        leaseRenewalIntervalInSeconds: 1
+        metadata-map:
+            apiml:
+                catalog:
+                    tile:
+                        id: ${apiml.catalog.id}
+                        title: ${apiml.catalog.title}
+                        description: ${apiml.catalog.description}
+                        version: ${apiml.catalog.version}
+
+#                routes:
+#                    ui-v1:
+#                        gatewayUrl: "/ui/v1/apiml2"
+#                        serviceUrl: /apicatalog
+#                    api-v1:
+#                        gatewayUrl: "/api/v1"
+#                        serviceUrl: /apicatalog
+
+server:
+    ssl:
+        enabled: true
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+apiml:
+    health.protected: true
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        port: 10024
+        discoveryServiceUrls: https://localhost:10021/eureka/
+        dsIpAddress: 0.0.0.0
+        eurekaPassword: password
+        eurekaUserName: eureka
+        gatewayHostname: https://localhost:10020
+        preferIpAddress: false
+
+    service-registry:
+        cacheRefreshInitialDelayInMillis: 10000
+        cacheRefreshRetryDelayInMillis: 10000
+        cacheRefreshUpdateThresholdInMillis: 120000
+        serviceFetchDelayInMillis: 10000
+    banner: console
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
+
+spring:
+    config:
+        useLegacyProcessing: true
+    output:
+        ansi:
+            enabled: always
+
+---
+spring.config.activate.on-profile: standalone
+
+apiml.catalog.standalone:
+    enabled: true
+    servicesDirectory: config/local/catalog-standalone-defs

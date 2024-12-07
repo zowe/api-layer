@@ -1,0 +1,30 @@
+apiml:
+    health.protected: true
+    gateway.registry.enabled: true
+    security.x509.registry.allowedUsers: Zowe Service
+    service:
+        apimlId: apiml1
+        forwardClientCertEnabled: true
+        hostname: localhost
+        port: 10010
+    banner: console
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+spring:
+    output:
+        ansi:
+            enabled: always
+    profiles:
+        include: debug

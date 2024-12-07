@@ -1,0 +1,30 @@
+spring.profiles.active: diag
+
+apiml:
+    health.protected: true
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        port: 10021
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
+    security:
+        ssl.verifySslCertificatesOfServices: true
+    banner: console
+
+spring.output.ansi.enabled: always
+
+---
+spring.config.activate.on-profile: https
+
+
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStoreType: PKCS12
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
