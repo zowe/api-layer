@@ -1,6 +1,11 @@
 # Deploying Services Locally Using Multi-Tenancy Setup
 
-Start the services using the configuration in the [central](./central) and [domain](./domain) folders.
+Start the Domain services using the additional configuration in the [domain](./domain) folder, which overrides certain properties, along with the configuration in the [local](../../local).
+You can do that by passing multiple files via `spring.config.additional-location`.
+
+**Example:**
+
+`spring.config.additional-location=file:./config/local/api-catalog-service.yml,file:./config/local/multi-tenancy/domain/api-catalog-service.yml`
 
 ## Setting Up Mutual Registration
 For mutual registration of the Central Gateway and Domain Gateway, you need to set the following environment variables to specify the discovery service URLs for registration:
