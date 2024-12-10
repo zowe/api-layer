@@ -55,7 +55,7 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
                   DIST_REGISTRY: https://registry.npmjs.org/
 
             - name: Release with Gradle automatic
