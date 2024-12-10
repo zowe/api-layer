@@ -55,7 +55,7 @@ jobs:
               env:
                   ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                   ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-                  NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
                   DIST_REGISTRY: https://registry.npmjs.org/
 
             - name: Release with Gradle automatic
@@ -84,6 +84,6 @@ jobs:
                     caching-service/build/reports/**
                     api-catalog-services/build/reports/**
                     zaas-service/build/reports/**
-                    /home/runner/.npm/logs/**
+                    /home/runner/.npm/_logs/**
 
             - uses: ./.github/actions/teardown
