@@ -84,6 +84,6 @@ jobs:
                     caching-service/build/reports/**
                     api-catalog-services/build/reports/**
                     zaas-service/build/reports/**
-                    /home/runner/.npm/_logs/**
+                    ~/.npm/_logs
 
             - uses: ./.github/actions/teardown
