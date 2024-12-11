@@ -65,7 +65,7 @@ public class ApiCatalogController {
         this.cachedApiDocService = cachedApiDocService;
     }
 
-    @GetMapping(value = "/oidc/provider")
+    @GetMapping(value = "/oidc/provider", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getOidcProvider() {
         return new ResponseEntity<>(OidcUtils.getOidcProvider(), HttpStatus.OK);
     }
