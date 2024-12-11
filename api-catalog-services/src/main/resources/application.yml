@@ -172,6 +172,7 @@ eureka:
 
                 authentication:
                     sso: true
+                    scheme: zoweJwt
     client:
         healthcheck:
             enabled: true
