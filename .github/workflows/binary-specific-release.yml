@@ -44,7 +44,7 @@ jobs:
               run: |
                   cd onboarding-enabler-nodejs
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-                  echo "registry=$DIST_REGISTRY" >> ~/.npmrc
+                  sed -i -e 's|registry=https://zowe.jfrog.io/artifactory/api/npm/npm-org.*|registry=https://registry.npmjs.org/|' ~/.npmrc
                   npm version ${{ github.event.inputs.release_version }} --allow-same-version
                   npm publish --access public
                   git add package.json
