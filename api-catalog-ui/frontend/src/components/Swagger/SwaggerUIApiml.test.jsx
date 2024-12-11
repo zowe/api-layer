@@ -104,7 +104,8 @@ describe('>>> Swagger component tests', () => {
 
         const container = document.createElement('div');
         document.body.appendChild(container);
-        await act(async () => createRoot(container).render(<SwaggerUI selectedService={service} />, container));
+        const root = createRoot(container);
+        await act(async () => root.render(<SwaggerUI selectedService={service} />));
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
 
@@ -292,6 +293,44 @@ describe('>>> Swagger component tests', () => {
         const swaggerDiv = wrapper.find('span');
 
         expect(swaggerDiv).toBeDefined();
+    });
+
+    it('should set correct Gateway server URL based on its basePath', async () => {
+        const endpoint = '/gateway/api/v1';
+        const service = {
+            serviceId: 'gateway',
+            title: 'Gateway service',
+            description: 'Gateway service',
+            status: 'UP',
+            secured: true,
+            homePageUrl: 'http://localhost:10010/',
+            basePath: '/',
+            apiDoc: JSON.stringify({
+                openapi: '3.0.0',
+                servers: [{ url: `https://bad.com${endpoint}` }],
+            }),
+            apis: {
+                default: {
+                    apiId: 'gateway',
+                },
+            },
+            defaultApiVersion: 0,
+        };
+        const wrapper = shallow(
+            <div>
+                <SwaggerUI selectedService={service}/>
+            </div>
+        );
+
+
+        const tiles = [{}];
+        const container = document.createElement('div');
+
+        await act(async () =>
+            createRoot(container).render(<SwaggerUI selectedService={service} tiles={tiles}/>, container)
+        );
+        expect(container.textContent).toContain(`Servershttp://localhost${endpoint}`);
+
     });
 
     it('should not create element api portal disabled and span already exists', () => {

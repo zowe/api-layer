@@ -11,6 +11,8 @@
 import * as log from 'loglevel';
 import { of, throwError, timer } from 'rxjs';
 import { ofType } from 'redux-observable';
+import process from 'process';
+window.process = process; // Polyfill process for the browser
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
 import { FETCH_TILES_REQUEST, FETCH_NEW_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
 import {
@@ -22,9 +24,9 @@ import {
 import { userActions } from '../actions/user-actions';
 import getBaseUrl from '../helpers/urls';
 
-const updatePeriod = Number(process.env.REACT_APP_STATUS_UPDATE_PERIOD);
-const debounce = Number(process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE);
-const scalingDuration = process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION;
+const updatePeriod = Number(process?.env.REACT_APP_STATUS_UPDATE_PERIOD);
+const debounce = Number(process?.env.REACT_APP_STATUS_UPDATE_DEBOUNCE);
+const scalingDuration = process?.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION;
 
 // terminate the epic if you get any of the following Ajax error codes
 const terminatingStatusCodes = [500, 401, 403];
@@ -33,11 +35,11 @@ const excludedMessageCodes = ['ZWEAM104'];
 
 function checkOrigin() {
     // only allow the gateway url to authenticate the user
-    let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
+    let allowOrigin = process?.env.REACT_APP_GATEWAY_URL;
     if (
-        process.env.REACT_APP_GATEWAY_URL === null ||
-        process.env.REACT_APP_GATEWAY_URL === undefined ||
-        process.env.REACT_APP_GATEWAY_URL === ''
+        process?.env.REACT_APP_GATEWAY_URL === null ||
+        process?.env.REACT_APP_GATEWAY_URL === undefined ||
+        process?.env.REACT_APP_GATEWAY_URL === ''
     ) {
         allowOrigin = window.location.origin;
     }
@@ -53,7 +55,7 @@ function checkOrigin() {
  * @returns the URL to call
  */
 function getUrl(action) {
-    let url = `${getBaseUrl()}${process.env.REACT_APP_CATALOG_UPDATE}`;
+    let url = `${getBaseUrl()}${process?.env.REACT_APP_CATALOG_UPDATE}`;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }
@@ -83,7 +85,7 @@ function shouldTerminate(error) {
 
 export const retryMechanism =
     (scheduler) =>
-    ({ maxRetries = Number(process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES) } = {}) =>
+    ({ maxRetries = Number(process?.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES) } = {}) =>
     (attempts) =>
         attempts.pipe(
             mergeMap((error, i) => {

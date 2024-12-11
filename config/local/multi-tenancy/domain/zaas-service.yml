@@ -1,0 +1,9 @@
+apiml:
+    service:
+        port: 10033
+        discoveryServiceUrls: https://localhost:10021/eureka/
+
+    security:
+        x509:
+            certificatesUrl: https://localhost:10020/gateway/certificates
+

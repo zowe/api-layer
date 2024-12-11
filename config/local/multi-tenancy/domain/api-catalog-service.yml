@@ -1,0 +1,6 @@
+apiml:
+    service:
+        port: 10024
+        discoveryServiceUrls: https://localhost:10021/eureka/
+        gatewayHostname: https://localhost:10020
+

@@ -1,0 +1,8 @@
+apiml:
+    service:
+        apimlId: apiml2
+        port: 10020
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10021/eureka/

@@ -384,12 +384,16 @@ public class CachedProductFamilyService {
         String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
             if (RegistrationType.of(instanceInfo.getMetadata()).isAdditional()) {
-                // additional registration for GW means domain one, update serviceId with the ApimlId
+                // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
                 String apimlId = instanceInfo.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
                     serviceId = apimlId;
+                    apiBasePath = String.join("/", "", serviceId.toLowerCase());
                     title += " (" + apimlId + ")";
                 }
+            }
+            else {
+                apiBasePath = "/";
             }
         }
 

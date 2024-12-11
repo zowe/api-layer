@@ -546,6 +546,7 @@ class CachedProductFamilyServiceTest {
             var dto = createDto(RegistrationType.ADDITIONAL);
             assertEquals("title (apimlId)", dto.getTitle());
             assertEquals("apimlid", dto.getServiceId());
+            assertEquals("/apimlid", dto.getBasePath());
         }
 
         @Test
@@ -553,6 +554,7 @@ class CachedProductFamilyServiceTest {
             var dto = createDto(RegistrationType.PRIMARY);
             assertEquals("title", dto.getTitle());
             assertEquals("gateway", dto.getServiceId());
+            assertEquals("/", dto.getBasePath());
         }
 
     }
