@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import process from 'process';
 import 'react-app-polyfill/ie11';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -32,6 +33,8 @@ import { AsyncAppContainer } from './components/App/AsyncModules';
 
 import('./index.css');
 
+window.process = process; // Polyfill process for the browser
+
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
     log.debug('current state', getState());
@@ -54,7 +57,7 @@ const epicMiddleware = createEpicMiddleware({
 });
 const composeEnhancers = compose;
 const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
-if (process.env.NODE_ENV !== 'production') {
+if (typeof process !== 'undefined' && process?.env?.NODE_ENV !== 'production') {
     middlewares.push(logger);
 }
 const persistedReducer = persistReducer(persistConfig, rootReducer);

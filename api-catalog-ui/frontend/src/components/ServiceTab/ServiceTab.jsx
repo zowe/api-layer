@@ -36,14 +36,19 @@ export default class ServiceTab extends Component {
         const { selectedVersion } = this.state;
 
         let basePath = '';
-        if (selectedService.basePath) {
-            const version = selectedVersion || selectedService.defaultApiVersion;
-            let gatewayUrl = '';
-            if (selectedService.apis && selectedService.apis[version] && selectedService.apis[version].gatewayUrl) {
-                gatewayUrl = selectedService.apis[version].gatewayUrl;
+        if (selectedService?.basePath) {
+            if (selectedService?.instances?.[0]?.includes('gateway')) {
+                // Return the basePath right away, since it's a GW instance (either primary or additional)
+                basePath = selectedService.basePath;
+            } else {
+                const version = selectedVersion || selectedService.defaultApiVersion;
+                let gatewayUrl = '';
+                if (selectedService.apis && selectedService.apis[version] && selectedService.apis[version].gatewayUrl) {
+                    gatewayUrl = selectedService.apis[version].gatewayUrl;
+                }
+                // Take the first part of the basePath and then add the gatewayUrl
+                basePath = `/${selectedService.serviceId}/${gatewayUrl}`;
             }
-            // Take the first part of the basePath and then add the gatewayUrl
-            basePath = `/${selectedService.serviceId}/${gatewayUrl}`;
         }
         return basePath;
     }
@@ -321,6 +326,7 @@ ServiceTab.propTypes = {
                 gatewayUrl: PropTypes.string,
             })
         ),
+        instances: PropTypes.arrayOf(PropTypes.string),
         apiVersions: PropTypes.arrayOf(PropTypes.string),
         serviceId: PropTypes.string,
         status: PropTypes.string,

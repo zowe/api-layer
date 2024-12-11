@@ -31,6 +31,7 @@ const selectedService = {
     defaultApiVersion: ['org.zowe v1'],
     ssoAllInstances: true,
     apis: { 'org.zowe v1': { gatewayUrl: 'api/v1' } },
+    instances: ["localhost:gateway:10010"]
 };
 
 const selectedServiceDown = {

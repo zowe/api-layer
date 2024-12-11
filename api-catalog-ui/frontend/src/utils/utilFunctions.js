@@ -14,6 +14,8 @@ export const isValidUrl = (url) => {
     try {
         return Boolean(new URL(url));
     } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(`Invalid URL: ${url}, Error: ${e.message}`);
         return false;
     }
 };
@@ -93,8 +95,7 @@ export const customUIStyle = async (uiConfig) => {
     const root = document.documentElement;
     const logo = document.getElementById('logo');
     if (logo && uiConfig.logo) {
-        const img = await fetchImagePath();
-        logo.src = img;
+        logo.src = await fetchImagePath();
         logo.style.height = 'auto';
         logo.style.width = 'auto';
     }
