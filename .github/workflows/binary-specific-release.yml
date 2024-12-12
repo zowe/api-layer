@@ -49,7 +49,7 @@ jobs:
                   git add package.json
                   git add package-lock.json
                   git commit -m "[skip ci] Update version"
-                  git push
+                  git push --no-verify
                   cd ..
               env:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
