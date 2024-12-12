@@ -75,9 +75,9 @@ class QueryFilterTest {
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
             Optional.of(VALID_TOKEN)
         );
-        TokenAuthentication valid = new TokenAuthentication(VALID_TOKEN);
+        TokenAuthentication valid = new TokenAuthentication(VALID_TOKEN, TokenAuthentication.Type.JWT);
         valid.setAuthenticated(true);
-        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN))).thenReturn(valid);
+        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN, TokenAuthentication.Type.JWT))).thenReturn(valid);
 
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
@@ -137,9 +137,9 @@ class QueryFilterTest {
             Optional.of(VALID_TOKEN)
         );
 
-        TokenAuthentication invalid = new TokenAuthentication(VALID_TOKEN);
+        TokenAuthentication invalid = new TokenAuthentication(VALID_TOKEN, TokenAuthentication.Type.JWT);
         invalid.setAuthenticated(false);
-        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN))).thenReturn(invalid);
+        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN, TokenAuthentication.Type.JWT))).thenReturn(invalid);
 
         assertThrows(TokenNotValidException.class, () -> {
             queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
