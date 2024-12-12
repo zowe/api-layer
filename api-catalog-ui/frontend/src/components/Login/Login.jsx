@@ -134,6 +134,7 @@ function Login(props) {
                 resp.json().then(json => {
                     console.log('json')
                     setOidcProviders(json)
+                    return json
                 })
             ).catch(() => setOidcProviderLoadingStarted(false))
         }
