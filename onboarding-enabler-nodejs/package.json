@@ -1,6 +1,6 @@
 {
   "name": "@zowe/apiml-onboarding-enabler-nodejs",
-  "version": "3.0.44",
+  "version": "3.0.47",
   "description": "NodeJS enabler for Zowe API Mediation Layer",
   "type": "module",
   "main": "src/index.js",
