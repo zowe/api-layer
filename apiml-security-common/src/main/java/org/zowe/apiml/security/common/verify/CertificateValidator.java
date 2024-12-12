@@ -16,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -35,9 +33,6 @@ import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.base64
 public class CertificateValidator {
 
     final TrustedCertificatesProvider trustedCertificatesProvider;
-
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Getter
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
@@ -72,8 +67,7 @@ public class CertificateValidator {
             .toList();
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
-                apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
-                log.debug("Untrusted certificate is {}", cert);
+                log.debug("Certificate is not trusted by endpoint {}. Untrusted certificate is {}", proxyCertificatesEndpoints, cert);
                 return false;
             }
         }
