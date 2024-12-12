@@ -72,7 +72,7 @@ public class CertificateValidator {
             .toList();
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
-                apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
+                apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert", Arrays.toString(proxyCertificatesEndpoints));
                 log.debug("Untrusted certificate is {}", cert);
                 return false;
             }
