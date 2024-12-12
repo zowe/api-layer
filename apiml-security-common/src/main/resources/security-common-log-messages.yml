@@ -123,13 +123,6 @@ messages:
       reason: "The string sent by the central Gateway was not recognized as valid DER-encoded certificates in the Base64 printable form."
       action: "Check that the URL configured in apiml.security.x509.certificatesUrls responds with valid DER-encoded certificates in the Base64 printable form."
 
-    - key: org.zowe.apiml.security.common.verify.untrustedCert
-      number: ZWEAT505
-      type: ERROR
-      text: "Incoming request certificate is not one of the trusted certificates provided by the central Gateway."
-      reason: "The Gateway performs additional check of request certificates when the central Gateway forwards incoming client certificate to the domain Gateway. This check may fail when the certificatesUrl parameter does not point to proper central Gateway certificates endpoint."
-      action: "Check that the URL configured in apiml.security.x509.certificatesUrls points to the central Gateway and it responds with valid DER-encoded certificates in the Base64 printable form."
-
     # Various messages
     # 600-699
 
