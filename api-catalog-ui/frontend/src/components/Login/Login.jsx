@@ -127,7 +127,6 @@ function Login(props) {
     }
 
     function loadOidcProviders() {
-        console.log(oidcProviders)
         if (!oidcProvidersLoadingStarted) {
             setOidcProviderLoadingStarted(true);
             fetch(`${getBaseUrl()}/oidc/provider`).then(resp =>

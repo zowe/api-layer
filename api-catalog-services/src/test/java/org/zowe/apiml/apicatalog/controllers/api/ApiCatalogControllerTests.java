@@ -240,9 +240,9 @@ class ApiCatalogControllerTests {
     class OidcProviders {
 
         private String[] env = {
-            "ZWE_configs_spring_security_oauth2_client_provider_oidc1_authorizationUri",
-            "ZWE_configs_spring_security_oauth2_client_registration_oidc2_clientId",
-            "ZWE_configs_spring_security_oauth2_client_provider_oidc1_tokenUri"
+            "ZWE_components_gateway_spring_security_oauth2_client_provider_oidc1_authorizationUri",
+            "ZWE_components_gateway_spring_security_oauth2_client_registration_oidc2_clientId",
+            "ZWE_components_gateway_spring_security_oauth2_client_provider_oidc1_tokenUri"
         };
 
         Map<String, String> getEnvMap() {

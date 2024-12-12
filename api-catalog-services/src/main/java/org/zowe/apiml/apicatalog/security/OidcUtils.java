@@ -18,7 +18,7 @@ import java.util.List;
 @UtilityClass
 public class OidcUtils {
 
-    private String PREFIX = "ZWE_configs_spring_security_oauth2_client_";
+    private String PREFIX = "ZWE_components_gateway_spring_security_oauth2_client_";
 
     public List<String> getOidcProvider() {
         return System.getenv().keySet().stream()
