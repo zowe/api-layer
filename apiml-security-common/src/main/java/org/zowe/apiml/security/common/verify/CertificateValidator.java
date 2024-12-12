@@ -16,8 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.springframework.util.ObjectUtils;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -33,9 +32,6 @@ import java.util.Set;
 public class CertificateValidator {
 
     final TrustedCertificatesProvider trustedCertificatesProvider;
-
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Getter
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
@@ -60,11 +56,15 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
+        if (ObjectUtils.isEmpty(proxyCertificatesEndpoint)) {
+            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrls");
+            return false;
+        }
+
         List<Certificate> trustedCerts = trustedCertificatesProvider.getTrustedCerts(proxyCertificatesEndpoint);
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
-                apimlLog.log("org.zowe.apiml.security.common.verify.untrustedCert");
-                log.debug("Untrusted certificate is {}", cert);
+                log.debug("Certificate is not trusted by endpoint {}. Untrusted certificate is {}", proxyCertificatesEndpoint, cert);
                 return false;
             }
         }

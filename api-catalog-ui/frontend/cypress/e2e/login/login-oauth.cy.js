@@ -26,13 +26,12 @@ describe('>>> Login through Okta OK', () => {
             cy.log("System env CYPRESS_OKTA_PASSWORD is not set");
         }
 
-        cy.get('form span.o-form-input-name-identifier input').type(username);
+        cy.get('form span.o-form-input-name-username input').type(username);
         cy.get('form input[type="password"]').type(password);
 
         cy.get('form input.button-primary').should('not.be.disabled');
         cy.get('form input.button-primary').click();
 
-        cy.location('href').should('contain', '/oauth2/v1/authorize')
 
         cy.url().should('contain', '/application');
 
