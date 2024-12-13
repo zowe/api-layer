@@ -74,7 +74,7 @@ public class ApiCatalogController {
             oidcProviderCache.set(OidcUtils.getOidcProvider());
         }
 
-        return new ResponseEntity<>(oidcProviderCache.get(), HttpStatus.OK);
+        return new ResponseEntity<>(oidcProviderCache.get(), oidcProviderCache.get().isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
 
 
