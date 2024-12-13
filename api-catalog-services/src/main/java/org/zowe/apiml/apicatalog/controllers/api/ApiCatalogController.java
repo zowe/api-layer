@@ -35,6 +35,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 /**
@@ -52,6 +53,8 @@ public class ApiCatalogController {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
+    private AtomicReference<List<String>> oidcProviderCache = new AtomicReference<>();
+
     /**
      * Create the controller and autowire in the repository services
      *
@@ -67,7 +70,11 @@ public class ApiCatalogController {
 
     @GetMapping(value = "/oidc/provider", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getOidcProvider() {
-        return new ResponseEntity<>(OidcUtils.getOidcProvider(), HttpStatus.OK);
+        if (oidcProviderCache.get() == null) {
+            oidcProviderCache.set(OidcUtils.getOidcProvider());
+        }
+
+        return new ResponseEntity<>(oidcProviderCache.get(), HttpStatus.OK);
     }
 
 
