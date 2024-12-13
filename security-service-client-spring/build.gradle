@@ -10,5 +10,6 @@ dependencies {
     testImplementation(testFixtures(project(":apiml-common")))
 
     compileOnly libs.lombok
+    testCompileOnly libs.lombok
     annotationProcessor libs.lombok
 }
