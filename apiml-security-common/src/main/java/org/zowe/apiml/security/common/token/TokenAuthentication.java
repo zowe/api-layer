@@ -79,6 +79,7 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         return out;
     }
 
+    @SuppressWarnings("squid:S3655")
     public static TokenAuthentication createAuthenticatedFromHeader(String token, String authHeader) {
         var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
         return createAuthenticated(loginRequest.get().getUsername(), token, Type.JWT);
