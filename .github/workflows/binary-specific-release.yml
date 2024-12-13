@@ -44,19 +44,15 @@ jobs:
               run: |
                   cd onboarding-enabler-nodejs
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-                  echo "registry=$DIST_REGISTRY" >> ~/.npmrc
                   npm version ${{ github.event.inputs.release_version }} --allow-same-version
                   npm publish --access public
                   git add package.json
                   git add package-lock.json
                   git commit -m "[skip ci] Update version"
-                  git push
+                  git push --no-verify
                   cd ..
               env:
-                  ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-                  DIST_REGISTRY: https://registry.npmjs.org/
 
             - name: Release with Gradle automatic
               shell: bash
@@ -84,6 +80,6 @@ jobs:
                     caching-service/build/reports/**
                     api-catalog-services/build/reports/**
                     zaas-service/build/reports/**
-                    /home/runner/.npm/logs/**
+                    ~/.npm/_logs
 
             - uses: ./.github/actions/teardown
