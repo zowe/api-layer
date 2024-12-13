@@ -202,9 +202,10 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-                    .when()
+                .when()
                     .get(uri)
-                    .then()
+                .then()
+                    .log().ifValidationFails()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
 

@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -90,10 +91,16 @@ public class ServicesInfoService {
                 gatewayAddress.getScheme(), gatewayAddress.getHostname(), getBasePath(apiInfo, instanceInfo));
     }
 
+    static List<InstanceInfo> getPrimaryInstances(Application application) {
+        return application.getInstances()
+            .stream()
+            .filter(instanceInfo -> EurekaMetadataDefinition.RegistrationType.of(instanceInfo.getMetadata()).isPrimary())
+            .toList();
+    }
+
     private ServiceInfo getServiceInfo(Application application) {
         String serviceId = application.getName().toLowerCase();
-
-        List<InstanceInfo> appInstances = application.getInstances();
+        List<InstanceInfo> appInstances = getPrimaryInstances(application);
         if (ObjectUtils.isEmpty(appInstances)) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
