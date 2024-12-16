@@ -10,17 +10,20 @@
 
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import io.swagger.v3.core.util.Json;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.swagger.v3.core.jackson.mixin.MediaTypeMixin;
+import io.swagger.v3.core.jackson.mixin.SchemaMixin;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -193,11 +196,12 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     }
 
     private ObjectMapper objectMapper() {
-        return Json.mapper()
+        return new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .registerModule(new SimpleModule().addSerializer(SecurityScheme.class, new SecuritySchemeSerializer()))
-            .enable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-            .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
-            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            .registerModule(new JavaTimeModule())
+            .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+            .addMixIn(Schema.class, SchemaMixin.class)
+            .addMixIn(MediaType.class, MediaTypeMixin.class);
     }
 }
