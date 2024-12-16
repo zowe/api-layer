@@ -72,6 +72,8 @@ public class CachedApiDocService {
                 String apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(cacheKey, apiDoc);
                 return apiDoc;
+            } else {
+                log.debug("No API Documentation found for the service {}", serviceId);
             }
         } catch (Exception e) {
             log.debug("Exception updating API doc in cache for '{} {}'", serviceId, cacheKeySuffix, e);
