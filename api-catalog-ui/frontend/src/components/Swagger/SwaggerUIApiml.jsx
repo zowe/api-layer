@@ -15,6 +15,7 @@ import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 import { isAPIPortal } from '../../utils/utilFunctions';
+import PropTypes from "prop-types";
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;
@@ -204,8 +205,9 @@ export default class SwaggerUIApiml extends Component {
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
                         <h4 id="no-doc_message">
-                            API documentation could not be retrieved. There may be something wrong in your Swagger
-                            definition. Please review the values of 'schemes', 'host' and 'basePath'.
+                            {selectedService.apiDocErrorMessage
+                                ? selectedService.apiDocErrorMessage
+                                : "API documentation could not be retrieved. There may be something wrong in your Swagger definition. Please review the values of 'schemes', 'host' and 'basePath'."}
                         </h4>
                     </div>
                 )}
@@ -218,6 +220,14 @@ export default class SwaggerUIApiml extends Component {
         );
     }
 }
+
+SwaggerUIApiml.propTypes = {
+    selectedService: PropTypes.shape({
+        apiDoc: PropTypes.string,
+        apiDocErrorMessage: PropTypes.string,
+    }).isRequired,
+    url: PropTypes.string,
+};
 
 SwaggerUIApiml.defaultProps = {
     url: `${getBaseUrl()}/apidoc`,
