@@ -94,7 +94,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader)));
                 return Optional.of(certificate);
             } catch (Exception e) {
-                apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", e.getMessage(), certFromHeader);
+                apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", request.getRemoteHost(), e.getMessage(), certFromHeader);
             }
         }
         return Optional.empty();
