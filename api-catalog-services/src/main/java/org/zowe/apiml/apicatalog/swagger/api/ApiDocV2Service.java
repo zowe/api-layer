@@ -40,11 +40,10 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
-
         Swagger swagger = new SwaggerParser().readWithInfo(apiDocInfo.getApiDocContent()).getSwagger();
         if (swagger == null) {
             log.debug("Could not convert response body to a Swagger object.");
-            throw new UnexpectedTypeException("Response is not a Swagger type object.");
+            throw new UnexpectedTypeException(String.format("The Swagger definition for service '%s' was retrieved but was not a valid JSON document.", serviceId));
         }
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;

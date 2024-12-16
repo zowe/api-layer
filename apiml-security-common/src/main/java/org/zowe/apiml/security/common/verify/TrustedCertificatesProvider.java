@@ -64,7 +64,7 @@ public class TrustedCertificatesProvider {
                     .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
                 trustedCerts.addAll(certs);
             } catch (Exception e) {
-                apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", e.getMessage());
+                apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", certificatesEndpoint, e.getMessage());
             }
         }
         return trustedCerts;
@@ -87,9 +87,9 @@ public class TrustedCertificatesProvider {
                 return body;
             });
         } catch (URISyntaxException e) {
-            apimlLog.log("org.zowe.apiml.security.common.verify.invalidURL", e.getMessage());
+            apimlLog.log("org.zowe.apiml.security.common.verify.invalidURL", url, e.getMessage());
         } catch (IOException e) {
-            apimlLog.log("org.zowe.apiml.security.common.verify.httpError", e.getMessage());
+            apimlLog.log("org.zowe.apiml.security.common.verify.httpError", url, e.getMessage());
         }
         return null;
     }
