@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -56,6 +53,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
@@ -74,6 +72,8 @@ import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -146,6 +146,9 @@ public class ConnectionsConfig {
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
     }
+
+    @Value("${apiml.service.externalUrl:}")
+    private String externalUrl;
 
     @PostConstruct
     public void updateConfigParameters() {
@@ -328,7 +331,7 @@ public class ConnectionsConfig {
         configBean.setServiceUrl(urls);
 
         EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
-        InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
+        InstanceInfo newInfo = create(eurekaInstanceConfig);
 
         updateMetadata(newInfo, apimlRegistration);
 
@@ -416,4 +419,68 @@ public class ConnectionsConfig {
         return new CorsUtils(corsEnabled, null);
     }
 
+    public InstanceInfo create(EurekaInstanceConfig config)  {
+        LeaseInfo.Builder leaseInfoBuilder = LeaseInfo.Builder.newBuilder()
+            .setRenewalIntervalInSecs(config.getLeaseRenewalIntervalInSeconds())
+            .setDurationInSecs(config.getLeaseExpirationDurationInSeconds());
+
+        // Builder the instance information to be registered with eureka
+        // server
+        InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
+
+        String namespace = config.getNamespace();
+        if (!namespace.endsWith(".")) {
+            namespace = namespace + ".";
+        }
+        URL url;
+        try {
+            url = new URL(externalUrl);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        ;
+        builder.setNamespace(namespace).setAppName(config.getAppname()).setInstanceId(config.getInstanceId())
+            .setAppGroupName(config.getAppGroupName()).setDataCenterInfo(config.getDataCenterInfo())
+            .setIPAddr("").setHostName(url.getHost())
+            .setPort(url.getPort())
+            .enablePort(InstanceInfo.PortType.UNSECURE, config.isNonSecurePortEnabled())
+            .setSecurePort(url.getPort())
+            .enablePort(InstanceInfo.PortType.SECURE, config.getSecurePortEnabled())
+            .setVIPAddress(config.getVirtualHostName()).setSecureVIPAddress(config.getSecureVirtualHostName())
+            .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
+            .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
+            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null,null)
+            .setASGName(config.getASGName());
+
+        // Start off with the STARTING state to avoid traffic
+        if (!config.isInstanceEnabledOnit()) {
+            InstanceInfo.InstanceStatus initialStatus = InstanceInfo.InstanceStatus.STARTING;
+            if (log.isInfoEnabled()) {
+                log.info("Setting initial instance status as: " + initialStatus);
+            }
+            builder.setStatus(initialStatus);
+        }
+        else {
+            if (log.isInfoEnabled()) {
+                log.info("Setting initial instance status as: " + InstanceInfo.InstanceStatus.UP
+                    + ". This may be too early for the instance to advertise itself as available. "
+                    + "You would instead want to control this via a healthcheck handler.");
+            }
+        }
+
+        // Add any user-specific metadata information
+        for (Map.Entry<String, String> mapEntry : config.getMetadataMap().entrySet()) {
+            String key = mapEntry.getKey();
+            String value = mapEntry.getValue();
+            // only add the metadata if the value is present
+            if (value != null && !value.isEmpty()) {
+                value = value.replace(UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString(),UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString());
+                builder.add(key, value);
+            }
+        }
+
+        InstanceInfo instanceInfo = builder.build();
+        instanceInfo.setLeaseInfo(leaseInfoBuilder.build());
+        return instanceInfo;
+    }
 }
