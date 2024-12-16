@@ -213,6 +213,7 @@ export default class SwaggerUIApiml extends Component {
 SwaggerUIApiml.propTypes = {
     selectedService: PropTypes.shape({
         apiDoc: PropTypes.string,
+        apiDocErrorMessage: PropTypes.string,
     }).isRequired,
     url: PropTypes.string,
 };
