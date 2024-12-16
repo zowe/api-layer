@@ -134,7 +134,7 @@ class ZosmfAuthenticationProviderTest {
         authConfigurationProperties.getZosmf().setJwtAutoconfiguration(JWT);
         zosmfInstance = createInstanceInfo(HOST, PORT);
 
-        lenient().doAnswer((Answer<TokenAuthentication>) invocation -> TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1))).when(authenticationService).createTokenAuthentication(anyString(), anyString());
+        lenient().doAnswer((Answer<TokenAuthentication>) invocation -> TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1), TokenAuthentication.Type.JWT)).when(authenticationService).createTokenAuthentication(anyString(), anyString());
         lenient().when(authenticationService.createJwtToken(anyString(), anyString(), anyString())).thenReturn("someJwtToken");
     }
 

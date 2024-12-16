@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.token;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
@@ -28,17 +29,26 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
 
     private final String username;
     private final String token;
+    @Getter
+    private Type type;
 
     public TokenAuthentication(String token) {
-        super(Collections.emptyList());
-        this.username = null;
-        this.token = token;
+        this(token, (Type) null);
+    }
+
+    public TokenAuthentication(String token, Type type) {
+        this(null, token, type);
     }
 
     public TokenAuthentication(String username, String token) {
+        this(username, token, (Type) null);
+    }
+
+    public TokenAuthentication(String username, String token, Type type) {
         super(Collections.emptyList());
         this.username = username;
         this.token = token;
+        this.type = type;
     }
 
     /**
@@ -63,15 +73,21 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
      * @param token Token, which authenticate the user
      * @return TokenAuthentication marked as authenticated with username, token
      */
-    public static TokenAuthentication createAuthenticated(String username, String token) {
-        final TokenAuthentication out = new TokenAuthentication(username, token);
+    public static TokenAuthentication createAuthenticated(String username, String token, Type type) {
+        final TokenAuthentication out = new TokenAuthentication(username, token, type);
         out.setAuthenticated(true);
         return out;
     }
 
+    @SuppressWarnings("squid:S3655")
     public static TokenAuthentication createAuthenticatedFromHeader(String token, String authHeader) {
         var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
-        return createAuthenticated(loginRequest.get().getUsername(), token);
+        return createAuthenticated(loginRequest.get().getUsername(), token, Type.JWT);
+    }
+
+    public enum Type {
+        JWT,
+        OIDC
     }
 
 }

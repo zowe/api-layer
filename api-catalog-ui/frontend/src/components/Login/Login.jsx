@@ -31,6 +31,7 @@ import WarningIcon from '@material-ui/icons/Warning';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
 import Footer from '../Footer/Footer';
+import getBaseUrl from "../../helpers/urls";
 
 function Login(props) {
     const [username, setUsername] = useState('');
@@ -41,6 +42,9 @@ function Login(props) {
     const [showPassword, setShowPassword] = useState(false);
     const [warning, setWarning] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    const [oidcProvidersLoadingStarted, setOidcProviderLoadingStarted] = useState(false);
+    const [oidcProviders, setOidcProviders] = useState([]);
 
     const { returnToLogin, login, authentication, isFetching, validateInput } = props;
     const enterNewPassMsg = 'Enter a new password for account';
@@ -121,6 +125,21 @@ function Login(props) {
         }
         setSubmitted(true);
     }
+
+    function loadOidcProviders() {
+        if (!oidcProvidersLoadingStarted) {
+            setOidcProviderLoadingStarted(true);
+            fetch(`${getBaseUrl()}/oidc/provider`).then(resp =>
+                resp.json().then(json => {
+                    console.log('json')
+                    setOidcProviders(json)
+                    return json
+                })
+            ).catch(() => setOidcProviderLoadingStarted(false))
+        }
+    }
+
+    loadOidcProviders();
 
     let errorData = { messageText: null, expired: false, invalidNewPassword: true, invalidCredentials: false };
     if (
@@ -299,6 +318,17 @@ function Login(props) {
                                     )}
                                 </FormControl>
                                 <div className="login-btns" id="loginButton">
+                                    {
+                                        oidcProviders.map(oidcProvider =>
+                                            <Button
+                                                variant="contained"
+                                                style={{ marginRight: '10px' }}
+                                                onClick={() => window.location = `/gateway/oauth2/authorization/${oidcProvider}?returnUrl=${encodeURIComponent(window.location.href.split('#')[0])}`}
+                                            >
+                                                Login with {oidcProvider}
+                                            </Button>)
+                                    }
+
                                     <Button
                                         variant="contained"
                                         color="primary"

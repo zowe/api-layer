@@ -13,10 +13,7 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
@@ -26,15 +23,15 @@ import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 
 class ApiCatalogControllerTests {
     private final String pathToContainers = "/containers";
@@ -142,9 +139,9 @@ class ApiCatalogControllerTests {
 
                 containers.getBody().forEach(apiContainer ->
                     apiContainer.getServices().forEach(apiService -> {
-                        Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                        Assertions.assertEquals(apiVersions, apiService.getApiVersions());
-                        Assertions.assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
+                        assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                        assertEquals(apiVersions, apiService.getApiVersions());
+                        assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
                     }));
             }
 
@@ -158,8 +155,8 @@ class ApiCatalogControllerTests {
                 containers.getBody().forEach(apiContainer ->
                     apiContainer.getServices().forEach(apiService -> {
                         if (apiService.getServiceId().equals("service1")) {
-                            Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                            Assertions.assertEquals(apiService.getApiVersions(), apiVersions);
+                            assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                            assertEquals(apiService.getApiVersions(), apiVersions);
                         }
                         if (apiService.getServiceId().equals("service2")) {
                             Assertions.assertNull(apiService.getApiDoc());
@@ -177,11 +174,11 @@ class ApiCatalogControllerTests {
                 containers.getBody().forEach(apiContainer ->
                     apiContainer.getServices().forEach(apiService -> {
                         if (apiService.getServiceId().equals("service1")) {
-                            Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                            Assertions.assertEquals(apiService.getApiVersions(), apiVersions);
+                            assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                            assertEquals(apiService.getApiVersions(), apiVersions);
                         }
                         if (apiService.getServiceId().equals("service2")) {
-                            Assertions.assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                            assertEquals(apiService.getServiceId(), apiService.getApiDoc());
                             Assertions.assertNull(apiService.getApiVersions());
                         }
                     }));
@@ -238,4 +235,52 @@ class ApiCatalogControllerTests {
             null, null, null, null, null, null, null, 0, null, "hostname", status, null, null, null, null, null,
             null, null, null, null);
     }
+
+    @Nested
+    class OidcProviders {
+
+        private String[] env = {
+            "ZWE_components_gateway_spring_security_oauth2_client_provider_oidc1_authorizationUri",
+            "ZWE_components_gateway_spring_security_oauth2_client_registration_oidc2_clientId",
+            "ZWE_components_gateway_spring_security_oauth2_client_provider_oidc1_tokenUri"
+        };
+
+        Map<String, String> getEnvMap() {
+            try {
+                Class<?> envVarClass = System.getenv().getClass();
+                Field mField = envVarClass.getDeclaredField("m");
+                mField.setAccessible(true);
+                return (Map<String, String>) mField.get(System.getenv());
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                fail(e);
+                return null;
+            }
+        }
+
+        @AfterEach
+        void tearDown() {
+            Arrays.stream(env).forEach(k -> getEnvMap().remove(k));
+        }
+
+        @Test
+        void givenSystemEnv_whenInvokeOidcProviders_thenReturnTheList() {
+            Arrays.stream(env).forEach(k -> getEnvMap().put(k, "anyValue"));
+            List<String> oidcProviders = RestAssuredMockMvc.given()
+                .when().get("/oidc/provider")
+                .getBody().jsonPath().getList(".");
+            assertEquals(2, oidcProviders.size());
+            assertTrue(oidcProviders.contains("oidc1"));
+            assertTrue(oidcProviders.contains("oidc2"));
+        }
+
+        @Test
+        void givenNoSystemEnv_whenInvokeOidcProviders_thenReturnAnEmptyList() {
+            List<String> oidcProviders = RestAssuredMockMvc.given()
+                .when().get("/oidc/provider")
+                .getBody().jsonPath().getList(".");
+            assertEquals(0, oidcProviders.size());
+        }
+
+    }
+
 }
