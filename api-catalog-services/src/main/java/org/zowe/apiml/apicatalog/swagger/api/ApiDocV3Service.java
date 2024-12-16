@@ -64,7 +64,8 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             if (parseResult.getMessages() == null) {
                 throw new UnexpectedTypeException("Response is not an OpenAPI type object.");
             } else {
-                throw new UnexpectedTypeException(parseResult.getMessages().toString());
+                throw new UnexpectedTypeException(
+                    String.format("The OpenAPI for service '%s' was retrieved but was not a valid JSON document. '%s'", serviceId, parseResult.getMessages().toString()));
             }
         }
 
