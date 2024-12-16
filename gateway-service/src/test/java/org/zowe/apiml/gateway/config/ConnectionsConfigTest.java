@@ -11,7 +11,9 @@
 package org.zowe.apiml.gateway.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -25,27 +27,39 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 
-@SpringBootTest
-@ComponentScan(basePackages = "org.zowe.apiml.gateway")
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 class ConnectionsConfigTest {
 
-    @Autowired
-    private ConnectionsConfig connectionsConfig;
-
     @Nested
+    @SpringBootTest
+    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
     class WhenCreateEurekaJerseyClientBuilder {
+
+        @Autowired
+        private ConnectionsConfig connectionsConfig;
+
         @Test
         void thenIsNotNull() {
             assertThat(connectionsConfig).isNotNull();
         }
+
     }
 
     @Nested
+    @SpringBootTest
+    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
     class WhenInitializeEurekaClient {
+
+        @Autowired
+        private ConnectionsConfig connectionsConfig;
+
         @Mock
         private ApplicationInfoManager manager;
 
@@ -59,9 +73,12 @@ class ConnectionsConfigTest {
         void thenCreateIt() {
             assertThat(connectionsConfig.primaryEurekaClient(manager, config, healthCheckHandler)).isNotNull();
         }
+
     }
 
     @Nested
+    @SpringBootTest
+    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
     class KeyringFormatAndPasswordUpdate {
 
         ApplicationContext context;
@@ -101,6 +118,71 @@ class ConnectionsConfigTest {
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isNull();
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isNull();
         }
+
     }
+
+    @Nested
+    class AdditionalRegistration {
+
+        private EurekaInstanceConfig createConfig() {
+            var config = mock(EurekaInstanceConfig.class);
+            doReturn(30).when(config).getLeaseRenewalIntervalInSeconds();
+            doReturn(90).when(config).getLeaseExpirationDurationInSeconds();
+            doReturn("namespace").when(config).getNamespace();
+            doReturn("serviceId").when(config).getAppname();
+            doReturn("instanceId").when(config).getInstanceId();
+            doReturn("/").when(config).getHomePageUrlPath();
+            doReturn("/application/health").when(config).getHealthCheckUrlPath();
+            doReturn("/application/status").when(config).getStatusPageUrlPath();
+            doReturn("https://localhost:10010/").when(config).getHomePageUrl();
+            doReturn(10010).when(config).getSecurePort();
+            doReturn(true).when(config).getSecurePortEnabled();
+
+            return config;
+        }
+
+        @Test
+        void givenInvalidUrl_whenCreate_thenThrowAnException() {
+            var connectionsConfig = new ConnectionsConfig(null);
+            ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "invalidUrl");
+            var e = assertThrows(RuntimeException.class, () -> connectionsConfig.create(createConfig()));
+            assertInstanceOf(MalformedURLException.class, e.getCause());
+        }
+
+        @Test
+        void givenValidInputs_whenCreate_thenCreateIt() {
+            var config = createConfig();
+            var connectionsConfig = new ConnectionsConfig(null);
+            ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
+
+            InstanceInfo instanceInfo = connectionsConfig.create(config);
+
+            assertNotNull(instanceInfo);
+            assertEquals("https://domain:1234/", instanceInfo.getHomePageUrl());
+            assertEquals("https://domain:1234/application/health", instanceInfo.getSecureHealthCheckUrl());
+            assertEquals("https://domain:1234/application/status", instanceInfo.getStatusPageUrl());
+        }
+
+        @Test
+        void givenMetadataWithUrl_whenCreate_thenUpdateThem() {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("swaggerUrl", "https://localhost:10010/swagger");
+            metadata.put("otherKey", "otherValue");
+
+            var config = createConfig();
+            doReturn(metadata).when(config).getMetadataMap();
+
+            var connectionsConfig = new ConnectionsConfig(null);
+            ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
+
+            InstanceInfo instanceInfo = connectionsConfig.create(config);
+
+            assertNotNull(instanceInfo);
+            assertEquals("https://domain:1234/swagger", instanceInfo.getMetadata().get("swaggerUrl"));
+            assertEquals("otherValue", instanceInfo.getMetadata().get("otherKey"));
+        }
+
+    }
+
 }
 

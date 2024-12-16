@@ -438,7 +438,7 @@ public class ConnectionsConfig {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-        ;
+
         builder.setNamespace(namespace).setAppName(config.getAppname()).setInstanceId(config.getInstanceId())
             .setAppGroupName(config.getAppGroupName()).setDataCenterInfo(config.getDataCenterInfo())
             .setIPAddr("").setHostName(url.getHost())
@@ -474,7 +474,7 @@ public class ConnectionsConfig {
             String value = mapEntry.getValue();
             // only add the metadata if the value is present
             if (value != null && !value.isEmpty()) {
-                value = value.replace(UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString(),UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString());
+                value = value.replace(UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString(), UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString());
                 builder.add(key, value);
             }
         }
@@ -483,4 +483,5 @@ public class ConnectionsConfig {
         instanceInfo.setLeaseInfo(leaseInfoBuilder.build());
         return instanceInfo;
     }
+
 }
