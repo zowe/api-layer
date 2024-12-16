@@ -61,7 +61,7 @@ class CookieContentFilterTest {
     void authenticationWithValidTokenInsideCookie() throws ServletException, IOException {
         String token = "token";
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
 
@@ -97,7 +97,7 @@ class CookieContentFilterTest {
         String token = "token";
         AuthenticationException exception = new BadCredentialsException("Token not valid");
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
 
@@ -116,7 +116,7 @@ class CookieContentFilterTest {
         String token = "token";
         RuntimeException exception = new RuntimeException("No Gateway");
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
 
@@ -154,7 +154,7 @@ class CookieContentFilterTest {
 
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);
 
-        TokenAuthentication actualToken = new TokenAuthentication(cookie.getValue());
+        TokenAuthentication actualToken = new TokenAuthentication(cookie.getValue(), TokenAuthentication.Type.JWT);
 
         assertTrue(content.isPresent());
         assertEquals(actualToken, content.get());

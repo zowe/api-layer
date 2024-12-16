@@ -39,6 +39,8 @@ public class AuthConfigurationProperties {
     private String gatewayQueryEndpoint = "/gateway/api/v1/auth/query";
     private String gatewayTicketEndpoint = "/gateway/api/v1/auth/ticket";
 
+    private String gatewayOidcValidateEndpoint = "/gateway/api/v1/auth/oidc-token/validate";
+
     private String zaasLoginEndpoint = "/zaas/api/v1/auth/login";
     private String zaasLogoutEndpoint = "/zaas/api/v1/auth/logout";
     private String zaasQueryEndpoint = "/zaas/api/v1/auth/query";

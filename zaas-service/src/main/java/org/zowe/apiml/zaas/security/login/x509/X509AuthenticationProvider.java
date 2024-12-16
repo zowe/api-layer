@@ -66,7 +66,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             }
             log.debug("Successfully mapped user to certificate: {}", username);
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(username);
-            Authentication tokenAuthentication = new TokenAuthentication(username, jwtToken);
+            Authentication tokenAuthentication = new TokenAuthentication(username, jwtToken, TokenAuthentication.Type.JWT);
             tokenAuthentication.setAuthenticated(true);
             log.debug("Successfully authenticated user {} by X509 certificate.", username);
             return tokenAuthentication;

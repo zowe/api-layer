@@ -53,7 +53,7 @@ public class BearerContentFilter extends AbstractSecureContentFilter {
         ).map(
             header -> {
                 header = header.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "").trim();
-                return new TokenAuthentication(header);
+                return new TokenAuthentication(header, TokenAuthentication.Type.JWT);
             }
         );
     }

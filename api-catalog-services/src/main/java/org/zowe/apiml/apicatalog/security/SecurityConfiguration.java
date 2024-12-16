@@ -46,6 +46,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.content.OidcContentFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
@@ -151,7 +152,8 @@ public class SecurityConfiguration {
                 "/favicon.ico",
                 "/v3/api-docs",
                 "/index.html",
-                "/application/info"
+                "/application/info",
+                "/oidc/provider"
             };
             return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
         }
@@ -232,7 +234,8 @@ public class SecurityConfiguration {
                 .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint(), authenticationManager), ShouldBeAlreadyAuthenticatedFilter.class)
                 .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(cookieFilter(authenticationManager), BasicContentFilter.class)
-                .addFilterAfter(bearerContentFilter(authenticationManager), CookieContentFilter.class);
+                .addFilterAfter(bearerContentFilter(authenticationManager), CookieContentFilter.class)
+                .addFilterAfter(oidcFilter(authenticationManager), BearerContentFilter.class);
         }
 
         private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -278,6 +281,18 @@ public class SecurityConfiguration {
                 handlerInitializer.getResourceAccessExceptionHandler()
             );
         }
+
+        /**
+         * Secures content with a OIDC token
+         */
+        private OidcContentFilter oidcFilter(AuthenticationManager authenticationManager) {
+            return new OidcContentFilter(
+                authenticationManager,
+                handlerInitializer.getAuthenticationFailureHandler(),
+                handlerInitializer.getResourceAccessExceptionHandler()
+            );
+        }
+
     }
 
     @Bean

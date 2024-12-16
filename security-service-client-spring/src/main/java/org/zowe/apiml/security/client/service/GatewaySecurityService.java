@@ -11,7 +11,10 @@
 package org.zowe.apiml.security.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -40,6 +43,7 @@ import java.util.Optional;
  * provides facility for performing login and validating JWT token
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class GatewaySecurityService {
     private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
@@ -116,12 +120,41 @@ public class GatewaySecurityService {
                     responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
                 }
                 if (!HttpStatus.valueOf(response.getCode()).is2xxSuccessful()) {
+                    log.debug("Cannot access Gateway service to verify JWT token. Uri '{}' returned: {}", uri, response);
                     ErrorType errorType = getErrorType(responseBody);
-                    responseHandler.handleErrorType(response, errorType,
-                        "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                    responseHandler.handleErrorType(response, errorType, uri);
                     return null;
                 }
                 return objectMapper.readValue(responseBody, QueryResponse.class);
+            });
+        } catch (IOException e) {
+            responseHandler.handleException(e);
+        }
+        return null;
+    }
+
+    public QueryResponse verifyOidc(String token) {
+        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+        String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayOidcValidateEndpoint());
+
+        try {
+            HttpPost post = new HttpPost(uri);
+            post.setEntity(new StringEntity(objectMapper.writeValueAsString(new TokenRequest(token)), ContentType.APPLICATION_JSON));
+
+            return closeableHttpClient.execute(post, response -> {
+                final HttpEntity responseEntity = response.getEntity();
+                String responseBody = null;
+                if (responseEntity != null) {
+                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                }
+                if (!HttpStatus.valueOf(response.getCode()).is2xxSuccessful()) {
+                    log.debug("Cannot access Gateway service to verify OIDC token. Uri '{}' returned: {}", uri, response);
+                    ErrorType errorType = getErrorType(responseBody);
+                    responseHandler.handleErrorType(response, errorType, uri);
+                    return null;
+                }
+                return new QueryResponse();
             });
         } catch (IOException e) {
             responseHandler.handleException(e);
@@ -161,4 +194,11 @@ public class GatewaySecurityService {
             return Optional.of(cookie.replace(cookieName + "=", ""));
         }
     }
+
+    @Data
+    @AllArgsConstructor
+    static class TokenRequest {
+        String token;
+    }
+
 }
