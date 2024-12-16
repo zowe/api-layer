@@ -10,12 +10,13 @@
 
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -47,11 +48,8 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
-    private final ObjectMapper mapper;
-
     public ApiDocV3Service(GatewayClient gatewayClient) {
         super(gatewayClient);
-        mapper = initializeObjectMapper();
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -75,7 +73,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
-            return mapper.writeValueAsString(openAPI);
+            return objectMapper().writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
             log.debug("Could not convert OpenAPI to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
@@ -189,17 +187,12 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         return tags != null && tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
     }
 
-    private ObjectMapper initializeObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addSerializer(SecurityScheme.class, new SecuritySchemeSerializer());
-
-        objectMapper.registerModule(simpleModule);
-        objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+    private ObjectMapper objectMapper() {
+        return Json.mapper()
+            .registerModule(new SimpleModule().addSerializer(SecurityScheme.class, new SecuritySchemeSerializer()))
+            .enable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            .enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
+            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 }
