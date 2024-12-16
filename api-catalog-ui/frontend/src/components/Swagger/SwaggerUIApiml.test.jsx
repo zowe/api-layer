@@ -109,6 +109,28 @@ describe('>>> Swagger component tests', () => {
         expect(container.textContent).toContain(`API documentation could not be retrieved`);
     });
 
+    it('should not render swagger if apiDoc contains error', async () => {
+        const service = {
+            serviceId: 'testservice',
+            title: 'Spring Boot Enabler Service',
+            description: 'Dummy Service for enabling others',
+            status: 'UP',
+            secured: false,
+            homePageUrl: 'http://localhost:10013/enabler/',
+            basePath: '/enabler/api/v1',
+            defaultApiVersion: 0,
+            apiDoc: null,
+            apiDocErrorMessage: "API documentation could not be retrieved. Invalid JSON"
+
+        };
+
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const root = createRoot(container);
+        await act(async () => root.render(<SwaggerUI selectedService={service} />));
+        expect(container.textContent).toEqual(`API documentation could not be retrieved. Invalid JSON`);
+    });
+
     it('should transform swagger server url', async () => {
         const endpoint = '/enabler/api/v1';
         const service = {
