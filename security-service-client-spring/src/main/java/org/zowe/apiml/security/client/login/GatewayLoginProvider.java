@@ -61,7 +61,7 @@ public class GatewayLoginProvider implements AuthenticationProvider {
                 throw new BadCredentialsException("Invalid Credentials");
             }
 
-            TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token.get());
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token.get(), TokenAuthentication.Type.JWT);
             tokenAuthentication.setAuthenticated(true);
 
             return tokenAuthentication;

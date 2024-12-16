@@ -21,6 +21,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
@@ -43,7 +44,7 @@ public class TokenAuthFilter implements WebFilter {
             .validateToken(jwt)
             .flatMap(resp -> {
                 if (StringUtils.isNotBlank(resp.getUserId())) {
-                    Authentication authentication = createAuthenticated(resp.getUserId(), jwt);
+                    Authentication authentication = createAuthenticated(resp.getUserId(), jwt, TokenAuthentication.Type.JWT);
                     return chain.filter(exchange)
                         .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
                 }

@@ -85,7 +85,7 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         String token = authenticationService.getJwtTokenFromRequest(request)
             .orElseThrow(() -> new TokenNotProvidedException("Authorization token not provided."));
 
-        Authentication result = this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
+        Authentication result = this.getAuthenticationManager().authenticate(new TokenAuthentication(token, TokenAuthentication.Type.JWT));
         if (result.isAuthenticated()) {
             return result;
         } else {

@@ -14,13 +14,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.security.common.token.TokenAuthentication.Type.JWT;
+
 class TokenAuthenticationTest {
 
     @Test
     void testCreateAuthenticated() {
-        TokenAuthentication ta = TokenAuthentication.createAuthenticated("user", "token");
+        TokenAuthentication ta = TokenAuthentication.createAuthenticated("user", "token", JWT);
         assertEquals("user", ta.getPrincipal());
         assertEquals("token", ta.getCredentials());
+        assertEquals(JWT, ta.getType());
         assertTrue(ta.isAuthenticated());
     }
 

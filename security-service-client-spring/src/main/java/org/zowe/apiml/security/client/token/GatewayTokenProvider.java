@@ -35,9 +35,14 @@ public class GatewayTokenProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
-        QueryResponse queryResponse = gatewaySecurityService.query(tokenAuthentication.getCredentials());
+        QueryResponse queryResponse;
+        if (tokenAuthentication.getType() == TokenAuthentication.Type.OIDC) {
+            queryResponse = gatewaySecurityService.verifyOidc(tokenAuthentication.getCredentials());
+        } else {
+            queryResponse = gatewaySecurityService.query(tokenAuthentication.getCredentials());
+        }
 
-        TokenAuthentication validTokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), tokenAuthentication.getCredentials());
+        TokenAuthentication validTokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), tokenAuthentication.getCredentials(), tokenAuthentication.getType());
         validTokenAuthentication.setAuthenticated(true);
 
         return validTokenAuthentication;

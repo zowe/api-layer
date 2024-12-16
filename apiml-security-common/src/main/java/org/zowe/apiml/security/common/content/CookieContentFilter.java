@@ -61,6 +61,6 @@ public class CookieContentFilter extends AbstractSecureContentFilter {
             .filter(cookie -> cookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
-            .map(cookie -> new TokenAuthentication(cookie.getValue()));
+            .map(cookie -> new TokenAuthentication(cookie.getValue(), TokenAuthentication.Type.JWT));
     }
 }

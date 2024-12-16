@@ -59,7 +59,7 @@ class BearerContentFilterTest {
             @Test
             void thenSuccess() throws ServletException, IOException {
                 String token = "token";
-                TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
                 request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
 
                 bearerContentFilter.doFilter(request, response, filterChain);
@@ -78,7 +78,7 @@ class BearerContentFilterTest {
                 String token = "token";
                 RuntimeException exception = new RuntimeException("No Gateway");
 
-                TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
                 request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
                 when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
@@ -122,7 +122,7 @@ class BearerContentFilterTest {
                 String token = "token";
                 AuthenticationException exception = new BadCredentialsException("Token not valid");
 
-                TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
                 request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
                 when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
@@ -163,7 +163,7 @@ class BearerContentFilterTest {
             request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
             Optional<AbstractAuthenticationToken> content = bearerContentFilter.extractContent(request);
 
-            TokenAuthentication actualToken = new TokenAuthentication("token");
+            TokenAuthentication actualToken = new TokenAuthentication("token", TokenAuthentication.Type.JWT);
 
             assertTrue(content.isPresent());
             assertEquals(actualToken, content.get());

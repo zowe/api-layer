@@ -14,6 +14,20 @@ import '@testing-library/jest-dom';
 import Login from './Login';
 
 describe('>>> Login page component tests', () => {
+
+    beforeEach(() => {
+        global.fetch = jest.fn().mockImplementation(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve([])
+            })
+        );
+    });
+
+    afterEach(() => {
+        global.fetch.mockRestore();
+    });
+
     it('should display password update form', () => {
         render(
             <Login

@@ -52,7 +52,7 @@ class JwtAuthSourceServiceTest {
     @BeforeEach
     public void setup() {
         jwtAuthSource = new JwtAuthSource("jwtToken");
-        tokenAuthentication = TokenAuthentication.createAuthenticated("user", token);
+        tokenAuthentication = TokenAuthentication.createAuthenticated("user", token, TokenAuthentication.Type.JWT);
         expectedParsedSource = new ParsedTokenAuthSource("user", new Date(111), new Date(222), Origin.ZOSMF);
     }
 

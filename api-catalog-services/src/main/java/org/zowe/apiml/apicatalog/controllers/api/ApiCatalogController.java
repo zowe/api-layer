@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
 import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.security.OidcUtils;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -34,6 +35,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 /**
@@ -51,6 +53,8 @@ public class ApiCatalogController {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
+    private AtomicReference<List<String>> oidcProviderCache = new AtomicReference<>();
+
     /**
      * Create the controller and autowire in the repository services
      *
@@ -62,6 +66,15 @@ public class ApiCatalogController {
                                 CachedApiDocService cachedApiDocService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.cachedApiDocService = cachedApiDocService;
+    }
+
+    @GetMapping(value = "/oidc/provider", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getOidcProvider() {
+        if (oidcProviderCache.get() == null) {
+            oidcProviderCache.set(OidcUtils.getOidcProvider());
+        }
+
+        return new ResponseEntity<>(oidcProviderCache.get(), oidcProviderCache.get().isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
 
 
