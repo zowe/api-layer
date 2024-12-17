@@ -172,9 +172,8 @@ public class ApiCatalogController {
                 String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(serviceId);
                 apiService.setDefaultApiVersion(defaultApiVersion);
             } catch (Exception e) {
-                log.debug("An error occurred when trying to fetch ApiDoc for service: " + serviceId +
-                    ", processing can continue but this service will not be able to display any Api Documentation.\n" +
-                    "Error Message: " + e.getMessage());
+                log.debug("An error occurred when trying to fetch ApiDoc for service: {}, processing can continue but this service will not be able to display any Api Documentation.\nError:", serviceId, e);
+                apiService.setApiDocErrorMessage("Failed to fetch API documentation: " + e.getMessage());
             }
         });
     }
