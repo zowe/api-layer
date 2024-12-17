@@ -10,12 +10,12 @@
 import { Component } from 'react';
 import * as React from 'react';
 import SwaggerUi from 'swagger-ui-react';
+import PropTypes from 'prop-types';
 import InstanceInfo from '../ServiceTab/InstanceInfo';
 import getBaseUrl from '../../helpers/urls';
 import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 import { isAPIPortal } from '../../utils/utilFunctions';
-import PropTypes from "prop-types";
 
 function transformSwaggerToCurrentHost(swagger) {
     swagger.host = window.location.host;

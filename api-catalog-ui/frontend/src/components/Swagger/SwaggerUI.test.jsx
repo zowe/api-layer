@@ -123,14 +123,12 @@ describe('>>> Swagger component tests', () => {
             basePath: '/enabler/api/v1',
             defaultApiVersion: 0,
             apiDoc: null,
-            apiDocErrorMessage: "API documentation could not be retrieved. Invalid JSON"
-
+            apiDocErrorMessage: 'API documentation could not be retrieved. Invalid JSON',
         };
 
         const container = document.createElement('div');
         document.body.appendChild(container);
-        const root = createRoot(container);
-        await act(async () => root.render(<SwaggerUI selectedService={service} />));
+        await act(async () => render(<SwaggerUI selectedService={service} />, container));
         expect(container.textContent).toEqual(`API documentation could not be retrieved. Invalid JSON`);
     });
 
