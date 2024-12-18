@@ -34,6 +34,7 @@ import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
 import jakarta.validation.UnexpectedTypeException;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ class ApiDocV3ServiceTest {
                 RoutedServices routedServices = new RoutedServices();
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null,  "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
 
                 String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
@@ -175,7 +176,7 @@ class ApiDocV3ServiceTest {
             @Test
             void givenEmptyJson() {
                 String invalidJson = "";
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null,  "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
@@ -187,7 +188,7 @@ class ApiDocV3ServiceTest {
                 String invalidJson = "nonsense";
                 String error = "The OpenAPI for service 'serviceId' was retrieved but was not a valid JSON document. '[Cannot construct instance of `java.util.LinkedHashMap` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('nonsense')\n" +
                     " at [Source: UNKNOWN; byte offset: #UNKNOWN]]'";
-                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null, "https://www.zowe.org");
+                ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
                 ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
@@ -239,14 +240,28 @@ class ApiDocV3ServiceTest {
                 }
             };
             String transformed = apiDocV3Service.transformApiDoc("serviceId", new ApiDocInfo(
-                    mock(ApiInfo.class),
-                    IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8),
-                    mock(RoutedServices.class)
+                mock(ApiInfo.class),
+                IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8),
+                mock(RoutedServices.class)
             ));
             assertNotNull(transformed);
             verifyOpenApi3(openApiHolder.get());
         }
 
+        @Test
+        void givenValidApiDoc_thenDoNotLeakExampleSetFlag() throws IOException {
+            ApiInfo apiInfo = new ApiInfo("zowe.apiml.apicatalog", "api/v1", API_VERSION, "https://localhost:10014/apicatalog/v3/api-docs", null, "https://www.zowe.org");
+            String content = IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8);
+
+            RoutedServices routedServices = new RoutedServices();
+            routedServices.addRoutedService(new RoutedService("api-v1", "api/v1", "/apicatalog"));
+
+            ApiDocInfo info = new ApiDocInfo(apiInfo, content, routedServices);
+            assertThat(content, containsString("\"exampleSetFlag\":"));
+
+            String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, info);
+            assertThat(actualContent, not(containsString("\"exampleSetFlag\":")));
+        }
     }
 
     private String convertOpenApiToJson(OpenAPI openApi) {

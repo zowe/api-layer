@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Scope;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
 import jakarta.validation.UnexpectedTypeException;
+
 import java.io.IOException;
 import java.util.function.Function;
 
@@ -42,8 +43,8 @@ public class ApiTransformationConfig {
     @Bean
     @Scope(value = "prototype")
     public AbstractApiDocService<?, ?> abstractApiDocService(String content) {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
             ObjectNode objectNode = mapper.readValue(content, ObjectNode.class);
             JsonNode openApiNode = objectNode.get("openapi");

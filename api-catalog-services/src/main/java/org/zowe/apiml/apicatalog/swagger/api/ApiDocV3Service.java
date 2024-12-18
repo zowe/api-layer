@@ -16,10 +16,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.swagger.v3.core.jackson.mixin.MediaTypeMixin;
+import io.swagger.v3.core.jackson.mixin.SchemaMixin;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -47,11 +51,8 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
-    private final ObjectMapper mapper;
-
     public ApiDocV3Service(GatewayClient gatewayClient) {
         super(gatewayClient);
-        mapper = initializeObjectMapper();
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -79,7 +80,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
-            return mapper.writeValueAsString(openAPI);
+            return objectMapper().writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
             log.debug("Could not convert OpenAPI to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
@@ -195,17 +196,13 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         return tags != null && tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
     }
 
-    private ObjectMapper initializeObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addSerializer(SecurityScheme.class, new SecuritySchemeSerializer());
-
-        objectMapper.registerModule(simpleModule);
-        objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+    private ObjectMapper objectMapper() {
+        return new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .registerModule(new SimpleModule().addSerializer(SecurityScheme.class, new SecuritySchemeSerializer()))
+            .registerModule(new JavaTimeModule())
+            .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+            .addMixIn(Schema.class, SchemaMixin.class)
+            .addMixIn(MediaType.class, MediaTypeMixin.class);
     }
 }
