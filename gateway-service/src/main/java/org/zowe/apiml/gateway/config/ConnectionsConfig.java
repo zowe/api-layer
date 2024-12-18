@@ -19,6 +19,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.support.AopUtils;
@@ -337,7 +339,7 @@ public class ConnectionsConfig {
 
         RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
         RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
-        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context, factories, args1);
+        return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
     }
 
     private boolean isRouteKey(String key) {
@@ -482,6 +484,51 @@ public class ConnectionsConfig {
         InstanceInfo instanceInfo = builder.build();
         instanceInfo.setLeaseInfo(leaseInfoBuilder.build());
         return instanceInfo;
+    }
+
+    @RequiredArgsConstructor
+    static class AdditionalEurekaConfiguration implements EurekaInstanceConfig {
+
+        @Delegate(excludes = NonDelegated.class)
+        private final EurekaInstanceConfig eurekaInstanceConfig;
+
+        private final InstanceInfo instanceInfo;
+
+        @Override
+        public String getHostName(boolean refresh) {
+            return instanceInfo.getHostName();
+        }
+
+        @Override
+        public String getHealthCheckUrl() {
+            return instanceInfo.getHealthCheckUrl();
+        }
+
+        @Override
+        public String getSecureHealthCheckUrl() {
+            return instanceInfo.getSecureHealthCheckUrl();
+        }
+
+        @Override
+        public String getHomePageUrl() {
+            return instanceInfo.getHomePageUrl();
+        }
+
+        @Override
+        public String getStatusPageUrl() {
+            return instanceInfo.getStatusPageUrl();
+        }
+
+        interface NonDelegated {
+
+            String getHostName(boolean refresh);
+            String getHealthCheckUrl();
+            String getSecureHealthCheckUrl();
+            String getHomePageUrl();
+            String getStatusPageUrl();
+
+        }
+
     }
 
 }
