@@ -441,14 +441,20 @@ public class ConnectionsConfig {
             throw new RuntimeException(e);
         }
 
-        builder.setNamespace(namespace).setAppName(config.getAppname()).setInstanceId(config.getInstanceId())
-            .setAppGroupName(config.getAppGroupName()).setDataCenterInfo(config.getDataCenterInfo())
-            .setIPAddr("").setHostName(url.getHost())
+        builder
+            .setNamespace(namespace)
+            .setAppName(config.getAppname())
+            .setInstanceId(config.getInstanceId())
+            .setAppGroupName(config.getAppGroupName())
+            .setDataCenterInfo(config.getDataCenterInfo())
+            .setIPAddr(config.getIpAddress())
+            .setHostName(url.getHost())
             .setPort(url.getPort())
             .enablePort(InstanceInfo.PortType.UNSECURE, config.isNonSecurePortEnabled())
             .setSecurePort(url.getPort())
             .enablePort(InstanceInfo.PortType.SECURE, config.getSecurePortEnabled())
-            .setVIPAddress(config.getVirtualHostName()).setSecureVIPAddress(config.getSecureVirtualHostName())
+            .setVIPAddress(config.getVirtualHostName())
+            .setSecureVIPAddress(config.getSecureVirtualHostName())
             .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
             .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
             .setHealthCheckUrls(config.getHealthCheckUrlPath(), null,null)
