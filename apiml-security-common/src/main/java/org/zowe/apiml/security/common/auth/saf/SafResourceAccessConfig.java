@@ -29,7 +29,7 @@ public class SafResourceAccessConfig {
     private static final String NATIVE = "native";
     private static final String DUMMY = "dummy";
 
-    private static final String[] PROVIDERS = new String[] { ENDPOINT, NATIVE, DUMMY };
+    private static final String[] PROVIDERS = new String[] { NATIVE, ENDPOINT, DUMMY };
 
     @Value("${apiml.security.authorization.provider:native}")
     private String provider;
@@ -83,6 +83,12 @@ public class SafResourceAccessConfig {
         if (!StringUtils.isEmpty(provider)) {
             return create(restTemplate, authConfigurationProperties, provider);
         }
+
+        for (String type : PROVIDERS) {
+            SafResourceAccessVerifying srv = create(restTemplate, authConfigurationProperties, type);
+            if (srv != null) return srv;
+        }
+
         return null;
     }
 

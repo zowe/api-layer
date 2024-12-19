@@ -37,7 +37,7 @@ class SafResourceAccessConfigTest {
         SafResourceAccessConfig output = new SafResourceAccessConfigMock(endpointAvailable, nativeAvailable, dummyAvailable);
         ReflectionTestUtils.setField(output, "provider", provider);
         ReflectionTestUtils.setField(output, "endpointEnabled", endpointEnabled);
-        return output.safResourceAccessVerifying(restTemplate,authConfigurationProperties);
+        return output.safResourceAccessVerifying(restTemplate, authConfigurationProperties);
     }
 
     @Test
