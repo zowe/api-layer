@@ -496,6 +496,7 @@ public class ConnectionsConfig {
 
         @Override
         public String getHostName(boolean refresh) {
+            eurekaInstanceConfig.getHostName(refresh);
             return instanceInfo.getHostName();
         }
 
