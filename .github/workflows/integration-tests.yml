@@ -288,6 +288,7 @@ jobs:
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service
+                    APIML_SERVICE_EXTERNALURL: https://gateway-service:10010
                     APIML_GATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
             mock-services:
@@ -313,6 +314,7 @@ jobs:
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_EXTERNALURL: https://gateway-service-2:10010
                     APIML_GATEWAY_REGISTRY_ENABLED: false
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
