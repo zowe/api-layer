@@ -31,7 +31,7 @@ public class SafResourceAccessConfig {
 
     private static final String[] PROVIDERS = new String[] { ENDPOINT, NATIVE, DUMMY };
 
-    @Value("${apiml.security.authorization.provider:}")
+    @Value("${apiml.security.authorization.provider:native}")
     private String provider;
 
     @Value("${apiml.security.authorization.endpoint.enabled:false}")
@@ -49,10 +49,10 @@ public class SafResourceAccessConfig {
         return new SafResourceAccessDummy();
     }
 
-    private SafResourceAccessVerifying create(RestTemplate restTemplate,AuthConfigurationProperties authConfigurationProperties, String type, boolean force) {
+    private SafResourceAccessVerifying create(RestTemplate restTemplate,AuthConfigurationProperties authConfigurationProperties, String type) {
         switch (StringUtils.lowerCase(type)) {
             case ENDPOINT:
-                if (endpointEnabled || force) {
+                if (endpointEnabled) {
                     return createEndpoint(restTemplate, authConfigurationProperties);
                 }
                 return null;
@@ -81,14 +81,8 @@ public class SafResourceAccessConfig {
     @Bean
     public SafResourceAccessVerifying safResourceAccessVerifying(RestTemplate restTemplate, AuthConfigurationProperties authConfigurationProperties) {
         if (!StringUtils.isEmpty(provider)) {
-            return create(restTemplate, authConfigurationProperties, provider, true);
+            return create(restTemplate, authConfigurationProperties, provider);
         }
-
-        for (String type : PROVIDERS) {
-            SafResourceAccessVerifying srv = create(restTemplate, authConfigurationProperties, type, false);
-            if (srv != null) return srv;
-        }
-
         return null;
     }
 
