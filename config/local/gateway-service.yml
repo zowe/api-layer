@@ -8,6 +8,11 @@ apiml:
         hostname: localhost
         port: 10010
     banner: console
+    security:
+        oidc:
+            enabled: true
+            jwks:
+                uri: https://dev-15878923.okta.com/oauth2/v1/keys
 eureka:
     client:
         serviceUrl:

@@ -18,6 +18,8 @@ import com.netflix.discovery.EurekaClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
@@ -180,6 +182,56 @@ class ConnectionsConfigTest {
             assertNotNull(instanceInfo);
             assertEquals("https://domain:1234/swagger", instanceInfo.getMetadata().get("swaggerUrl"));
             assertEquals("otherValue", instanceInfo.getMetadata().get("otherKey"));
+        }
+
+    }
+
+    @Nested
+    class ConfigDelegator {
+
+        private final EurekaInstanceConfig eurekaInstanceConfig = mock(EurekaInstanceConfig.class);
+        private final InstanceInfo instanceInfo = mock(InstanceInfo.class);
+        private final ConnectionsConfig.AdditionalEurekaConfiguration delegator = new ConnectionsConfig.AdditionalEurekaConfiguration(eurekaInstanceConfig, instanceInfo);
+
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        void givenDelegator_whenGetHostName_thenCallConfigButReturnInstanceInfo(boolean refresh) {
+            doReturn("hostname").when(instanceInfo).getHostName();
+            assertEquals("hostname", delegator.getHostName(refresh));
+            verify(eurekaInstanceConfig, times(1)).getHostName(refresh);
+            verify(instanceInfo, times(1)).getHostName();
+        }
+
+        @Test
+        void givenUnsecuredConfiguration_whenGetHealthCheckUrl_thenCallGetHealthCheckUrl() {
+            doReturn(true).when(instanceInfo).isPortEnabled(InstanceInfo.PortType.UNSECURE);
+            doReturn("unsecuredUrl").when(instanceInfo).getHealthCheckUrl();
+            assertEquals("unsecuredUrl", delegator.getHealthCheckUrl());
+        }
+
+        @Test
+        void givenSecuredConfiguration_whenGetHealthCheckUrl_thenCallGetSecureHealthCheckUrl() {
+            doReturn(false).when(instanceInfo).isPortEnabled(InstanceInfo.PortType.UNSECURE);
+            doReturn("securedUrl").when(instanceInfo).getSecureHealthCheckUrl();
+            assertEquals("securedUrl", delegator.getHealthCheckUrl());
+        }
+
+        @Test
+        void givenDelegator_whenGetSecureHealthCheckUrl_thenCallInstanceInfo() {
+            doReturn("securedUrl").when(instanceInfo).getSecureHealthCheckUrl();
+            assertEquals("securedUrl", delegator.getSecureHealthCheckUrl());
+        }
+
+        @Test
+        void givenDelegator_whenGetHomePageUrl_thenCallInstanceInfo() {
+            doReturn("homepageUrl").when(instanceInfo).getHomePageUrl();
+            assertEquals("homepageUrl", delegator.getHomePageUrl());
+        }
+
+        @Test
+        void givenDelegator_whenGetStatusPageUrl_thenCallInstanceInfo() {
+            doReturn("statuspageUrl").when(instanceInfo).getStatusPageUrl();
+            assertEquals("statuspageUrl", delegator.getStatusPageUrl());
         }
 
     }
