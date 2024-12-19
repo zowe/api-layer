@@ -508,7 +508,10 @@ public class ConnectionsConfig {
 
         @Override
         public String getHealthCheckUrl() {
-            return instanceInfo.getHealthCheckUrl();
+            if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
+                return instanceInfo.getHealthCheckUrl();
+            }
+            return instanceInfo.getSecureHealthCheckUrl();
         }
 
         @Override
