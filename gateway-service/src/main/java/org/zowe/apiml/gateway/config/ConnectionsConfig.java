@@ -443,7 +443,7 @@ public class ConnectionsConfig {
 
         builder.setNamespace(namespace).setAppName(config.getAppname()).setInstanceId(config.getInstanceId())
             .setAppGroupName(config.getAppGroupName()).setDataCenterInfo(config.getDataCenterInfo())
-            .setIPAddr("").setHostName(url.getHost())
+            .setIPAddr(config.getIpAddress()).setHostName(url.getHost())
             .setPort(url.getPort())
             .enablePort(InstanceInfo.PortType.UNSECURE, config.isNonSecurePortEnabled())
             .setSecurePort(url.getPort())
@@ -502,7 +502,10 @@ public class ConnectionsConfig {
 
         @Override
         public String getHealthCheckUrl() {
-            return instanceInfo.getHealthCheckUrl();
+            if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
+                return instanceInfo.getHealthCheckUrl();
+            }
+            return instanceInfo.getSecureHealthCheckUrl();
         }
 
         @Override
