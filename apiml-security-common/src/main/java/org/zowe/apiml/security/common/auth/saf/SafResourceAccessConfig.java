@@ -31,7 +31,7 @@ public class SafResourceAccessConfig {
 
     private static final String[] PROVIDERS = new String[] { NATIVE, ENDPOINT, DUMMY };
 
-    @Value("${apiml.security.authorization.provider:native}")
+    @Value("${apiml.security.authorization.provider:}")
     private String provider;
 
     @Value("${apiml.security.authorization.endpoint.enabled:false}")
