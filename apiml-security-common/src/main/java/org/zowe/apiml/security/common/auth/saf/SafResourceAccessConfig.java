@@ -49,10 +49,10 @@ public class SafResourceAccessConfig {
         return new SafResourceAccessDummy();
     }
 
-    private SafResourceAccessVerifying create(RestTemplate restTemplate,AuthConfigurationProperties authConfigurationProperties, String type) {
+    private SafResourceAccessVerifying create(RestTemplate restTemplate,AuthConfigurationProperties authConfigurationProperties, String type, boolean force) {
         switch (StringUtils.lowerCase(type)) {
             case ENDPOINT:
-                if (endpointEnabled) {
+                if (endpointEnabled || force) {
                     return createEndpoint(restTemplate, authConfigurationProperties);
                 }
                 return null;
@@ -81,11 +81,11 @@ public class SafResourceAccessConfig {
     @Bean
     public SafResourceAccessVerifying safResourceAccessVerifying(RestTemplate restTemplate, AuthConfigurationProperties authConfigurationProperties) {
         if (!StringUtils.isEmpty(provider)) {
-            return create(restTemplate, authConfigurationProperties, provider);
+            return create(restTemplate, authConfigurationProperties, provider, true);
         }
 
         for (String type : PROVIDERS) {
-            SafResourceAccessVerifying srv = create(restTemplate, authConfigurationProperties, type);
+            SafResourceAccessVerifying srv = create(restTemplate, authConfigurationProperties, type, false);
             if (srv != null) return srv;
         }
 
