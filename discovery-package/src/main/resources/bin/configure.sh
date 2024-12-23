@@ -10,6 +10,41 @@
 # Copyright IBM Corporation 2021
 ################################################################################
 
+
+convert_ebcdic() {
+    # _BPXK_AUTOCVT is set on some systems and resulted in twice-converted files when run through chtag and sed
+    _BPXK_AUTOCVT="ON" sed -W filecodeset=ISO8859-1 -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE > $DEST_FILE # implicit EBCDIC out
+    iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE > $SOURCE_FILE
+    _BPXK_AUTOCVT="OFF" chtag -tc ISO8859-1 $SOURCE_FILE
+    rm -f $DEST_FILE
+}
+
+convert_utf() {
+    iconv -f ISO8859-1 -t IBM-1047 $SOURCE_FILE > $DEST_FILE
+    _BPXK_AUTOCVT="OFF" sed -W filecodeset=ISO8859-1 -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE > $DEST_FILE # implicit EBCDIC out
+    _BPXK_AUTOCVT="OFF" mv $DEST_FILE $SOURCE_FILE
+    _BPXK_AUTOCVT="OFF" chtag -tc ISO8859-1 $SOURCE_FILE
+    rm -f $DEST_FILE
+}
+
+do_convert() {
+    current_scheme=$(cat $SOURCE_FILE | grep "ZOSMF_SCHEME")
+    rc1=$?
+    has_scheme=$(cat $SOURCE_FILE | grep "services:")
+    rc2=$?
+
+    if [ $rc1 -eq 0 ]; then
+        # file is readable, ZOSMF_SCHEME needs to be replaced
+        convert_ebcdic
+    else
+        if [ $rc2 -eq 0 ]; then
+            exit 0
+        else
+            convert_utf
+        fi
+    fi
+}
+
 if [ -z "$ZWE_zowe_workspaceDirectory" ]; then
     echo "Workspace directory is not defined"
     exit 1
@@ -40,11 +75,7 @@ else
 fi
 
 if [ -e "$SOURCE_FILE" ]; then
-    # _BPXK_AUTOCVT is set on some systems and resulted in twice-converted files when run through chtag and sed
-    _BPXK_AUTOCVT="ON" sed -W filecodeset=ISO8859-1 -e "s|%ZOSMF_SCHEME%|${ZOSMF_SCHEME}|g" $SOURCE_FILE >$DEST_FILE # implicit EBCDIC out
-    iconv -f IBM-1047 -t ISO8859-1 $DEST_FILE >$SOURCE_FILE
-    _BPXK_AUTOCVT="OFF" chtag -tc ISO8859-1 $SOURCE_FILE
-    rm -f $DEST_FILE
+    do_convert
 else
     echo "[discovery-configure.sh]: File $SOURCE_FILE not found"
 fi
