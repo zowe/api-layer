@@ -106,5 +106,7 @@ instanceEnv:
     ZWE_configs_apiml_security_auth_passticket_customUserHeader: customUserHeader
     ZWE_configs_apiml_security_auth_passticket_customAuthHeader: customPassticketHeader
     ZWE_configs_apiml_health_protected: false
+    ZWE_components_gateway_apiml_security_authorization_provider: endpoint
+    ZWE_configs_apiml_security_authorization_provider: endpoint
     # set the value to "authentication" if you want to test the sticky session load balancing
     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: headerRequest
