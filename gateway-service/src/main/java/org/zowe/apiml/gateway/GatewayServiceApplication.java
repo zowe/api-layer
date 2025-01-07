@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
-import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfiguration;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -24,7 +23,7 @@ import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfigu
         "org.zowe.apiml.product.logging",
         "org.zowe.apiml.security"
     },
-    exclude = {ReactiveOAuth2ClientAutoConfiguration.class, GatewayReactiveOAuth2AutoConfiguration.class}
+    exclude = {ReactiveOAuth2ClientAutoConfiguration.class}
 )
 public class GatewayServiceApplication {
 

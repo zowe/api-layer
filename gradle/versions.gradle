@@ -149,6 +149,7 @@ dependencyResolutionManagement {
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eureka')
+            library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
             library('google_errorprone', 'com.google.errorprone', 'error_prone_annotations').versionRef('googleErrorprone') // to define minimum version and avoid duplicity libraries in the classpath
             library('guava', 'com.google.guava', 'guava').versionRef('guava')
             library('hamcrest', 'org.hamcrest', 'hamcrest').versionRef('hamcrest')
