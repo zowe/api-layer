@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
             .noStore()
             .cachePrivate()
             .mustRevalidate())
-        .addResourceLocations("/static/index.html", "classpath:/static/index.html");
+        .addResourceLocations("/static/", "classpath:/static/");
 
         registry
         .addResourceHandler("/static/**")
@@ -40,6 +40,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry
         .addResourceHandler("/resources/**")
         .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
-        .addResourceLocations("/resources/**", "/resources/static/**", "/resources/templates/**");
+        .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
     }
 }
