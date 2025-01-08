@@ -74,6 +74,7 @@ dependencies {
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.doc.webflux
     implementation libs.netty.reactor.http
+    implementation libs.google.gson
     implementation libs.jjwt
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
