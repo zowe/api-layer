@@ -43,6 +43,12 @@ jobs:
                   npm run build
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
 
+            - name: Configure npm
+              run: |
+                  cd zowe-cli-id-federation-plugin
+                  echo "registry=https://registry.npmjs.org/" > .npmrc
+                  echo "@zowe:registry=https://zowe.jfrog.io/zowe/api/npm/npm-release/" >> .npmrc
+
             - uses: zowe-actions/octorelease@master
               with:
                 working-dir: zowe-cli-id-federation-plugin

@@ -80,7 +80,7 @@ class ApiDocV2ServiceTest {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
 
         Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo));
-        assertEquals("Response is not a Swagger type object.", exception.getMessage());
+        assertEquals("The Swagger definition for service 'serviceId' was retrieved but was not a valid JSON document.", exception.getMessage());
     }
 
     @Nested
