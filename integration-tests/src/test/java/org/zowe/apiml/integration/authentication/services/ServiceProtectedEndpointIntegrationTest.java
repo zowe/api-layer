@@ -16,6 +16,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.StringUtils;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
@@ -44,9 +45,10 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
+    private static final String ZOSMF_CONTEXT_ROOT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getContextRoot();
 
     private final static String ZOSMF_ENDPOINT_MOCK = "/" + ZOSMF_SERVICE_ID + "/api/zosmf/restfiles/ds";
-    private final static String ZOSMF_ENDPOINT_GW = "/" + ZOSMF_SERVICE_ID + "/api/v1/restfiles/ds";
+    private final static String ZOSMF_ENDPOINT_GW = "/" + ZOSMF_SERVICE_ID + "/api/v1/" + (StringUtils.hasText(ZOSMF_CONTEXT_ROOT) ? ZOSMF_CONTEXT_ROOT + "/" : "") + "restfiles/ds";
     private final static String ZOSMF_ENDPOINT = ZOS_TARGET ? ZOSMF_ENDPOINT_GW : ZOSMF_ENDPOINT_MOCK;
 
     private static final NameValuePair ARGUMENT = new BasicNameValuePair("dslevel", "sys1.p*");
@@ -72,6 +74,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT);
 
                 given()
+                    .log().all()
                     .header("Authorization", "Bearer " + token)
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()

@@ -70,7 +70,7 @@ public class ConfigReader {
 
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
-                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf");
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf", "");
                         IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
                         SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
                         OidcConfiguration oidcConfiguration = new OidcConfiguration("");
