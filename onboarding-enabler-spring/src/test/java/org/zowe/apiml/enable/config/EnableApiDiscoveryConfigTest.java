@@ -16,8 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
@@ -40,7 +40,7 @@ class EnableApiDiscoveryConfigTest {
     @Autowired
     private ApiMediationServiceConfig apiMediationServiceConfig;
 
-    @MockBean
+    @MockitoBean
     private ApiMediationClient apiMediationClient;
 
     @Test

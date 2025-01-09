@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
@@ -33,10 +33,12 @@ import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIF
 @TestPropertySource(properties = {
     "apiml.security.auth.provider=dummy" // To simulate SAF auth provider that does not run outside of mainframe
 })
-@MockBean(name = "x509Mapper", classes = AuthenticationMapper.class)
 class ZaasTest {
 
     private static final String COOKIE = "apimlAuthenticationToken";
+
+    @MockitoBean(name = "x509Mapper")
+    private AuthenticationMapper x509Mapper;
 
     @Autowired
     private HttpConfig httpConfig;
