@@ -190,7 +190,7 @@ public class ZaasExceptionHandler {
     }
 
     @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class})
-    public ResponseEntity<ApiMessageView> handleInternalException(IllegalArgumentException exception) {
+    public ResponseEntity<ApiMessageView> handleIllegalArguments(Exception exception) {
         log.debug("Client sent illegal arguments", exception);
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.badRequest").mapToView();
         return ResponseEntity
