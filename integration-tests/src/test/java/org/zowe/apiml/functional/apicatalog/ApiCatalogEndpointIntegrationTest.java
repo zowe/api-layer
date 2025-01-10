@@ -197,7 +197,8 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         private static final String STATIC_DEFINITION_GENERATE_ENDPOINT = "/apicatalog/api/v1/static-api/generate";
         private static final String STATIC_DEFINITION_DELETE_ENDPOINT = "/apicatalog/api/v1/static-api/delete";
         private static final String REFRESH_STATIC_APIS_ENDPOINT = "/apicatalog/api/v1/static-api/refresh";
-        private String staticDefinitionServiceId = "a" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        private final String staticDefinitionServiceId = "a" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        private final String staticDefinitionServiceIdUnauthorized = "una" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
 
         @AfterAll
         void cleanupStaticDefinition() {
@@ -225,7 +226,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         @Order(31)
         void whenCallStaticDefinitionGenerateWithUnauthorizedUser_thenResponse403() throws IOException {
             String json = "# Dummy content";
-            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_FORBIDDEN, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceIdUnauthorized, HttpStatus.SC_FORBIDDEN, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
         }
 
         private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body, String JWT) throws IOException {
