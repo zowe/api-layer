@@ -126,7 +126,7 @@ public class AccessTokenServiceTest {
 //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
 //            validate after revocation rule
@@ -171,7 +171,7 @@ public class AccessTokenServiceTest {
 //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("serviceId", "api-catalog");
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
                 .when().delete(REVOKE_FOR_SCOPE_ENDPOINT)
                 .then().statusCode(204);
 //            validate after revocation rule
@@ -186,16 +186,16 @@ public class AccessTokenServiceTest {
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
             requestBody.put("timestamp", "1582239600000");
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
 //            evict the rule
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid)
                 .when()
                 .delete(EVICT_ENDPOINT)
                 .then().statusCode(204);
 //            return all the items from the cache
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid)
                 .when()
                 .get(CACHE_LIST_ENDPOINT)
                 .then()
@@ -216,7 +216,7 @@ public class AccessTokenServiceTest {
 //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
-            given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(403);
 //            validate after revocation rule
