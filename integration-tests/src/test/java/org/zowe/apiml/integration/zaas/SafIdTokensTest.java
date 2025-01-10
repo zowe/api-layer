@@ -226,11 +226,24 @@ public class SafIdTokensTest implements TestWithStartedInstances {
         }
 
         @Test
-        void givenNoBody() {
+        void givenNoBodyWithoutContentType() {
             //@formatter:off
             given()
                 .cookie(COOKIE, jwt)
                 .noContentType()
+            .when()
+                .post(ZAAS_SAFIDT_URI)
+            .then()
+                .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
+            //@formatter:on
+        }
+
+        @Test
+        void givenNoBody() {
+            //@formatter:off
+            given()
+                .cookie(COOKIE, jwt)
+                .contentType(JSON)
             .when()
                 .post(ZAAS_SAFIDT_URI)
             .then()
