@@ -18,6 +18,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationContextInitializedEvent;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -26,7 +27,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestContextManager;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.CustomBean;
 
@@ -43,10 +43,10 @@ class ExtensionsLoaderTest {
     @Autowired
     private ApplicationEventPublisher publisher;
 
-    @MockitoBean
+    @MockBean
     private ExtensionsLoader extensionsLoader;
 
-    @MockitoBean
+    @MockBean
     private ExtensionConfigReader reader;
 
     @AfterEach
