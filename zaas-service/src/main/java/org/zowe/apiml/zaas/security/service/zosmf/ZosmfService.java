@@ -116,7 +116,6 @@ public class ZosmfService extends AbstractZosmfService {
 
     }
 
-    private final ApplicationContext applicationContext;
     private final List<TokenValidationStrategy> tokenValidationStrategy;
 
     private ZosmfService meAsProxy;
@@ -136,7 +135,6 @@ public class ZosmfService extends AbstractZosmfService {
                 restTemplateWithoutKeystore,
                 securityObjectMapper
         );
-        this.applicationContext = applicationContext;
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
     }
@@ -144,6 +142,7 @@ public class ZosmfService extends AbstractZosmfService {
     private final AuthenticationService authenticationService;
 
     @PostConstruct
+    @Override
     public void afterPropertiesSet() {
         super.afterPropertiesSet();
         meAsProxy = applicationContext.getBean(ZosmfService.class);
