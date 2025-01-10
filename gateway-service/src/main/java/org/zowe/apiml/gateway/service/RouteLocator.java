@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.gateway.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.UnsatisfiedDependencyException;
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -34,12 +34,10 @@ import reactor.core.publisher.Flux;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-@Slf4j
 @Service
 public class RouteLocator implements RouteDefinitionLocator {
 
@@ -63,7 +61,8 @@ public class RouteLocator implements RouteDefinitionLocator {
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new EnumMap<>(AuthenticationScheme.class);
 
-    private final AtomicReference<UrlBasedCorsConfigurationSource> corsConfigurationSource = new AtomicReference<>();
+    @Getter(lazy = true, value = AccessLevel.PRIVATE)
+    private final UrlBasedCorsConfigurationSource corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
 
     public RouteLocator(
         ApplicationContext context,
@@ -100,29 +99,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         }
     }
 
-    private UrlBasedCorsConfigurationSource getCorsConfigurationSource() {
-        var output = corsConfigurationSource.get();
-        if (output == null) {
-            if (!context.containsBean("routePredicateHandlerMapping")) {
-                return null;
-            }
-
-            try {
-                output = context.getBean(UrlBasedCorsConfigurationSource.class);
-                corsConfigurationSource.set(output);
-            } catch (UnsatisfiedDependencyException e) {
-                log.debug("Bean urlBasedCorsConfigurationSource is not ready yet, routing rules will be postponed", e);
-            }
-        }
-
-        return output;
-    }
-
-    boolean setCors(ServiceInstance serviceInstance) {
-        var corsConfigurationSource = getCorsConfigurationSource();
-        if (corsConfigurationSource == null) {
-            return false;
-        }
+    void setCors(ServiceInstance serviceInstance) {
         corsUtils.setCorsConfiguration(
             serviceInstance.getServiceId().toLowerCase(),
             serviceInstance.getMetadata(),
@@ -130,7 +107,6 @@ public class RouteLocator implements RouteDefinitionLocator {
                 serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId().toLowerCase());
                 getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config);
             });
-        return true;
     }
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
@@ -230,10 +206,8 @@ public class RouteLocator implements RouteDefinitionLocator {
         AtomicInteger order = new AtomicInteger();
         // iterate over services
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
-            // configure CORS for the service (if necessary), if the Spring context is not ready wait for the next round
-            if (!setCors(serviceInstance)) {
-                return Collections.<RouteDefinition>emptyList();
-            }
+            // configure CORS for the service (if necessary)
+            setCors(serviceInstance);
 
             // generate route definition per services and its routing rules
             return getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance));
