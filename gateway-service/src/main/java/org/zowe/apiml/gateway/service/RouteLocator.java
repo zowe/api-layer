@@ -34,6 +34,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -61,6 +62,8 @@ public class RouteLocator implements RouteDefinitionLocator {
     private final List<FilterDefinition> commonFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new EnumMap<>(AuthenticationScheme.class);
+
+    private final AtomicReference<UrlBasedCorsConfigurationSource> corsConfigurationSource = new AtomicReference<>();
 
     public RouteLocator(
         ApplicationContext context,
@@ -98,15 +101,24 @@ public class RouteLocator implements RouteDefinitionLocator {
     }
 
     private UrlBasedCorsConfigurationSource getCorsConfigurationSource() {
-        try {
-            return context.getBean(UrlBasedCorsConfigurationSource.class);
-        } catch (UnsatisfiedDependencyException e) {
-            log.debug("Bean urlBasedCorsConfigurationSource is not ready yet, routing rules will be postponed", e);
-            return null;
+        var output = corsConfigurationSource.get();
+        if (output == null) {
+            if (!context.containsBean("routePredicateHandlerMapping")) {
+                return null;
+            }
+
+            try {
+                output = context.getBean(UrlBasedCorsConfigurationSource.class);
+                corsConfigurationSource.set(output);
+            } catch (UnsatisfiedDependencyException e) {
+                log.debug("Bean urlBasedCorsConfigurationSource is not ready yet, routing rules will be postponed", e);
+            }
         }
+
+        return output;
     }
 
-    private boolean setCors(ServiceInstance serviceInstance) {
+    boolean setCors(ServiceInstance serviceInstance) {
         var corsConfigurationSource = getCorsConfigurationSource();
         if (corsConfigurationSource == null) {
             return false;
