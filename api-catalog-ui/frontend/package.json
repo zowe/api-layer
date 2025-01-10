@@ -150,7 +150,8 @@
         "resolve-url-loader": "5.0.0",
         "lodash": "4.17.21",
         "semver": "7.6.3",
-        "@babel/traverse": "7.26.4"
+        "@babel/traverse": "7.26.4",
+        "axios": "1.7.9"
     },
     "engines": {
         "npm": "=10.9.2",
