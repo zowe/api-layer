@@ -69,7 +69,7 @@ jobs:
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
                     SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_ROUTING_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
