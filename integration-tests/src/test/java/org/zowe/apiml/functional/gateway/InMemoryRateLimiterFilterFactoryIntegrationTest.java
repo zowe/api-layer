@@ -28,7 +28,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
 
-    final int bucketCapacity = 20;
+    final int bucketCapacity = 21;
 
     @BeforeAll
     static void setUpTester() {
