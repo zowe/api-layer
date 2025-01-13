@@ -136,8 +136,8 @@ dependencyResolutionManagement {
             version('woodstoxStax2', '4.2.2')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
-                strictly '[1.4.20,2.0['
-                prefer '1.4.20'
+                strictly '[1.4.21,2.0['
+                prefer '1.4.21'
             }
 
             // version 6.x is not compatible with gradleGitProperties and requires Java 11
