@@ -13,10 +13,7 @@ package org.zowe.apiml.integration.proxy;
 import io.restassured.RestAssured;
 import jakarta.websocket.ContainerProvider;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -68,6 +65,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         String invalidBase64cred = Base64.getEncoder().encodeToString(invalidPlainCred.getBytes());
         INVALID_AUTH_HEADERS.add("Authorization", "Basic " + invalidBase64cred);
 
+    }
+
+    @AfterAll
+    static void teardown() {
+        VALID_AUTH_HEADERS.clear();
+        INVALID_AUTH_HEADERS.clear();
     }
 
     private TextWebSocketHandler appendResponseHandler(StringBuilder target, int countToNotify) {
