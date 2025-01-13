@@ -30,8 +30,7 @@ import java.security.cert.CertificateException;
 import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.http.ContentType.JSON;
-import static io.restassured.http.ContentType.XML;
+import static io.restassured.http.ContentType.*;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -250,7 +249,7 @@ class PassTicketTest {
             given()
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
-                .contentType(XML)
+                .contentType(TEXT)
             .when()
                 .post(ZAAS_TICKET_URI)
             .then()
