@@ -216,7 +216,7 @@ public class AccessTokenServiceTest {
 //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
-            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(403);
 //            validate after revocation rule
