@@ -13,8 +13,8 @@ dependencyResolutionManagement {
             version('springCloudCB', '2.1.8')
             version('springCloudGateway', '3.1.9')
             version('springSecurity') {
-                strictly '[5.8.13,6.0.0['
-                prefer '5.8.13'
+                strictly '[5.8.16,6.0.0['
+                prefer '5.8.16'
             }
             version('springFramework') {
                 strictly '[5.3.39,6.0.0['
