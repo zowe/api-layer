@@ -13,6 +13,10 @@ eureka:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
 server:
+    webSocket:
+        requestBufferSize: 16348
+    max-http-request-header-size: 16348
+
     ssl:
         keyAlias: localhost
         keyPassword: password
