@@ -13,26 +13,39 @@
 # Variables required on shell:
 # - JAVA_HOME
 # - ZWE_STATIC_DEFINITIONS_DIR
-# - ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
-# - ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
-# - ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
-# - ZWE_zowe_certificate_truststore_file
+# - ZWE_configs_certificate_keystore_alias / ZWE_zowe_certificate_keystore_alias - The default alias of the key within the keystore
+# - ZWE_configs_certificate_keystore_file / ZWE_zowe_certificate_keystore_file - The default keystore to use for SSL certificates
+# - ZWE_configs_certificate_keystore_password / ZWE_zowe_certificate_keystore_password - The default password to access the keystore supplied by KEYSTORE
+# - ZWE_configs_certificate_truststore_file / ZWE_zowe_certificate_truststore_file
+# - ZWE_zowe_externalDomains_0
+# - ZWE_zowe_externalPort
 # - ZWE_zowe_job_prefix
 # - ZWE_zowe_logDirectory
 # - ZWE_zowe_runtimeDirectory
 # - ZWE_zowe_workspaceDirectory
 
 # Optional variables:
+# - LAUNCH_COMPONENT
 # - CMMN_LB
 # - LIBPATH
 # - LIBRARY_PATH
+# - QUICK_START
+# - TMPDIR
+# - ZWE_GATEWAY_SHARED_LIBS
+# - ZWE_haInstance_hostname
 # - ZWE_components_discovery_port - the port the discovery service will use
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
+# - ZWE_configs_sslDebug
+# - ZWE_configs_apimlId
 # - ZWE_configs_apiml_catalog_serviceId
 # - ZWE_configs_apiml_gateway_timeoutMillis
 # - ZWE_configs_apiml_gateway_externalProtocol
+# - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_security_auth_provider
+# - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
+# - ZWE_configs_apiml_security_auth_passticket_customUserHeader
+# - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
 # - ZWE_configs_apiml_security_allowtokenrefresh
 # - ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration
 # - ZWE_configs_apiml_security_auth_zosmf_serviceId
@@ -61,16 +74,13 @@
 # - ZWE_configs_apiml_security_oidc_validationType
 # - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
 # - ZWE_configs_apiml_service_corsEnabled
-# - ZWE_configs_certificate_keystore_alias - The alias of the key within the keystore
-# - ZWE_configs_certificate_keystore_file - The keystore to use for SSL certificates
-# - ZWE_configs_certificate_keystore_password - The password to access the keystore supplied by KEYSTORE
-# - ZWE_configs_certificate_keystore_type - The keystore type to use for SSL certificates
-# - ZWE_configs_certificate_truststore_file
-# - ZWE_configs_certificate_truststore_type
+# - ZWE_configs_certificate_keystore_type / ZWE_zowe_certificate_keystore_type - The keystore type to use for SSL certificates
+# - ZWE_configs_certificate_key_password / ZWE_zowe_certificate_key_password
+# - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
+# - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
 # - ZWE_configs_certificate_ciphers / ZWE_configs_ciphers
 # - ZWE_configs_debug
 # - ZWE_configs_port - the port the api gateway service will use
-# - ZWE_configs_apimlId
 # - ZWE_configs_server_internal_ssl_certificate_keystore_alias
 # - ZWE_configs_server_internal_ssl_certificate_keystore_file
 # - ZWE_configs_server_internal_enabled
@@ -81,8 +91,6 @@
 # - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
-# - ZWE_GATEWAY_SHARED_LIBS
-# - ZWE_haInstance_hostname
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_zowe_network_client_tls_attls
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
