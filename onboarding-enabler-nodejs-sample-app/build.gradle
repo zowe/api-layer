@@ -17,7 +17,7 @@ node {
     version = libs.versions.projectNode.get()
     npmVersion = libs.versions.projectNpm.get()
     distBaseUrl = "https://nodejs.org/dist"
-    npmInstallCommand = "ci"
+    npmInstallCommand = "install"
     workDir = file("${project.projectDir}/tools/nodejs")
     npmWorkDir = file("${project.projectDir}/tools/npm")
     yarnWorkDir = file("${project.projectDir}/tools/yarn")

@@ -24,6 +24,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,21 +32,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.*;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -59,22 +50,16 @@ import org.springframework.security.web.server.savedrequest.CookieServerRequestC
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -422,6 +407,26 @@ public class WebSecurity {
             return requestMono;
         }
 
+    }
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    WebFilter writeableHeaders() {
+        return (exchange, chain) -> {
+            HttpHeaders writeableHeaders = HttpHeaders.writableHttpHeaders(
+                exchange.getRequest().getHeaders());
+            ServerHttpRequestDecorator writeableRequest = new ServerHttpRequestDecorator(
+                exchange.getRequest()) {
+                @Override
+                public HttpHeaders getHeaders() {
+                    return writeableHeaders;
+                }
+            };
+            ServerWebExchange writeableExchange = exchange.mutate()
+                .request(writeableRequest)
+                .build();
+            return chain.filter(writeableExchange);
+        };
     }
 
 }
