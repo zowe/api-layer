@@ -50,7 +50,7 @@ public class ZaasErrorController implements ErrorController {
     private Message getMessageByStatus(HttpServletRequest request, int status) {
         switch (status) {
             case SC_BAD_REQUEST:
-                return messageService.createMessage("org.zowe.apiml.common.badRequest");
+                return messageService.createMessage("org.zowe.apiml.common.badRequest", request.getRequestURI());
             case SC_NOT_FOUND:
                 return messageService.createMessage("org.zowe.apiml.common.endPointNotFound", ErrorUtils.getForwardUri(request));
             case SC_INTERNAL_SERVER_ERROR:

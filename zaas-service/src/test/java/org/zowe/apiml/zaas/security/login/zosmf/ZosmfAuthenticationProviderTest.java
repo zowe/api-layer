@@ -55,7 +55,8 @@ import java.util.EnumMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.*;
+import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.JWT;
+import static org.zowe.apiml.security.common.config.AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA;
 
 @ExtendWith(MockitoExtension.class)
 class ZosmfAuthenticationProviderTest {
@@ -107,14 +108,14 @@ class ZosmfAuthenticationProviderTest {
     private ZosmfService createZosmfService() {
         ApplicationContext applicationContext = mock(ApplicationContext.class);
         ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
-            new CompositeDiscoveryClient(Collections.singletonList(new EurekaDiscoveryClient(eurekaClient, clientConfig))),
             restTemplate,
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            tokenCreationService,
             new ArrayList<>());
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
+        ReflectionTestUtils.setField(zosmfService, "discovery", new CompositeDiscoveryClient(Collections.singletonList(new EurekaDiscoveryClient(eurekaClient, clientConfig))));
+        ReflectionTestUtils.setField(zosmfService, "tokenCreationService", tokenCreationService);
 
         return spy(zosmfService);
     }

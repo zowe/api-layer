@@ -11,10 +11,12 @@
 package org.zowe.apiml.zaas.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -45,10 +47,17 @@ public abstract class AbstractZosmfService {
     @InjectApimlLogger
     protected ApimlLogger apimlLog = ApimlLogger.empty();
 
+    protected final ApplicationContext applicationContext;
     protected final AuthConfigurationProperties authConfigurationProperties;
-    protected final DiscoveryClient discovery;
     protected final RestTemplate restTemplateWithoutKeystore;
     protected final ObjectMapper securityObjectMapper;
+
+    protected DiscoveryClient discovery;
+
+    @PostConstruct
+    protected void afterPropertiesSet() {
+        discovery = applicationContext.getBean(DiscoveryClient.class);
+    }
 
     /**
      * @return serviceId of z/OSMF service from configuration, which is used

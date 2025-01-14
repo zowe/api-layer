@@ -91,25 +91,28 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                     );
                     headers.set(HttpHeaders.COOKIE, cookieHeader);
                 }).build();
+                exchange = exchange.mutate().request(request).build();
             }
             if (!StringUtils.isEmpty(response.get().getHeaderName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
                 request = request.mutate().headers(headers ->
                     headers.add(response.get().getHeaderName(), response.get().getToken())
                 ).build();
+                exchange = exchange.mutate().request(request).build();
             }
             if (failureHeader.isPresent()) {
                 if (request != null) {
                     request = request.mutate().headers(httpHeaders -> httpHeaders.add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get())).build();
+                    exchange = exchange.mutate().request(request).build();
                 }
                 exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get());
             }
         }
         if (request == null) {
             request = cleanHeadersOnAuthFail(exchange, failureHeader.orElse("Invalid or missing authentication"));
+            exchange = exchange.mutate().request(request).build();
         }
 
-        exchange = exchange.mutate().request(request).build();
         return chain.filter(exchange);
     }
 

@@ -13,8 +13,8 @@ package org.zowe.apiml.zaas.security.service.zosmf;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -28,12 +28,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -44,17 +39,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
-import jakarta.annotation.PostConstruct;
 import javax.management.ServiceNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -122,38 +116,37 @@ public class ZosmfService extends AbstractZosmfService {
 
     }
 
-    private final ApplicationContext applicationContext;
     private final List<TokenValidationStrategy> tokenValidationStrategy;
+
+    private ZosmfService meAsProxy;
+    private TokenCreationService tokenCreationService;
 
     public ZosmfService(
             final AuthConfigurationProperties authConfigurationProperties,
-            final DiscoveryClient discovery,
             final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
             final ObjectMapper securityObjectMapper,
             final ApplicationContext applicationContext,
             final AuthenticationService authenticationService,
-            final TokenCreationService tokenCreationService,
             List<TokenValidationStrategy> tokenValidationStrategy
     ) {
         super(
+                applicationContext,
                 authConfigurationProperties,
-                discovery,
                 restTemplateWithoutKeystore,
                 securityObjectMapper
         );
-        this.applicationContext = applicationContext;
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
-        this.tokenCreationService = tokenCreationService;
     }
 
-    private ZosmfService meAsProxy;
     private final AuthenticationService authenticationService;
-    private final TokenCreationService tokenCreationService;
 
     @PostConstruct
+    @Override
     public void afterPropertiesSet() {
+        super.afterPropertiesSet();
         meAsProxy = applicationContext.getBean(ZosmfService.class);
+        tokenCreationService = applicationContext.getBean(TokenCreationService.class);
     }
 
     @Retryable(value = {TokenNotValidException.class}, maxAttempts = 2, backoff = @Backoff(value = 1500))

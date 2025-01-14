@@ -231,15 +231,29 @@ class PassTicketTest {
         }
 
         @Test
-        void givenNoContentType() {
+        void givenNoContentTypeWithoutContentType() {
             //@formatter:off
             given()
                 .body(new TicketRequest(APPLICATION_NAME).toString().getBytes())
                 .cookie(COOKIE, jwt)
                 .noContentType()
-                .when()
+            .when()
                 .post(ZAAS_TICKET_URI)
-                .then()
+            .then()
+                .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
+            //@formatter:on
+        }
+
+        @Test
+        void givenNoContentType() {
+            //@formatter:off
+            given()
+                .body(new TicketRequest(APPLICATION_NAME).toString().getBytes())
+                .cookie(COOKIE, jwt)
+                .contentType(JSON)
+            .when()
+                .post(ZAAS_TICKET_URI)
+            .then()
                 .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
         }

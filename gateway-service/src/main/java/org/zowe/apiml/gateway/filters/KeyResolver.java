@@ -20,7 +20,7 @@ import java.util.Collections;
 @Component
 public class KeyResolver implements org.springframework.cloud.gateway.filter.ratelimit.KeyResolver {
 
-    @Value("${apiml.gateway.routing.cookieNameForRateLimit:apimlAuthenticationToken}")
+    @Value("${apiml.gateway.cookieNameForRateLimit:apimlAuthenticationToken}")
     private String cookieName;
 
     @Override
