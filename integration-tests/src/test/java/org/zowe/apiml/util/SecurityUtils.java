@@ -62,27 +62,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.security.Key;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -94,10 +77,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.zowe.apiml.util.requests.Endpoints.GENERATE_ACCESS_TOKEN;
-import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
-import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
-import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
@@ -326,9 +306,19 @@ public class SecurityUtils {
 
     public static String getClientCertificate() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         KeyStore ks = loadKeystore(SecurityUtils.tlsConfiguration.getClientKeystore());
-        Certificate certificate = ks.getCertificate(ks.aliases().nextElement());
+        var clientCN = SecurityUtils.tlsConfiguration.getClientCN();
+        var aliases = ks.aliases();
 
-        return Base64.encode(certificate.getEncoded()).toString();
+        while (aliases.hasMoreElements()) {
+            var certificate = (X509Certificate) ks.getCertificate(aliases.nextElement());
+            if (certificate.getSubjectX500Principal().getName().contains("CN=" + clientCN)) {
+                return Base64.encode(certificate.getEncoded()).toString();
+            }
+        }
+
+        throw new IllegalArgumentException(
+            "TlsConfiguration error: provided client CN: %s is not present in client keystore %s"
+                .formatted(clientCN, tlsConfiguration.getClientKeystore()));
     }
 
     public static String getDummyClientCertificate()throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException, IOException {
