@@ -19,11 +19,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.util.categories.RateLimitTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
 
+@RateLimitTest
 public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
@@ -33,7 +35,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
     @BeforeAll
     static void setUpTester() {
         String baseUrl = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/greeting").toString();
-        SslContext sslContext = null;
+        SslContext sslContext;
         try {
             sslContext = SslContextBuilder
                 .forClient()
