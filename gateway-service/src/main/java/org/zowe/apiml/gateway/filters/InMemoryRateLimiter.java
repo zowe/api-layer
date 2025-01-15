@@ -48,7 +48,7 @@ public class InMemoryRateLimiter implements RateLimiter<InMemoryRateLimiter.Conf
     }
 
     private Bucket newBucket(String id) {
-        Bandwidth limit = Bandwidth.builder().capacity(capacity).refillGreedy(tokens, Duration.ofMinutes(refillDuration)).build();
+        Bandwidth limit = Bandwidth.builder().capacity(capacity).refillIntervally(tokens, Duration.ofMinutes(refillDuration)).build();
         return Bucket.builder().addLimit(limit).build();
     }
 
