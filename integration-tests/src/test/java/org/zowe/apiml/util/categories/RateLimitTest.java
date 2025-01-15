@@ -17,7 +17,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
 /**
- * Test that makes sense only in AT-TLS context.
+ * Test related to the API Rate limiting.
  */
 @Tag("RateLimitTest")
 @Target({ TYPE, METHOD })
