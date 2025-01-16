@@ -11,11 +11,12 @@ import { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import PropTypes from 'prop-types';
+import {useNavigate} from "react-router-dom";
 
 export default class PageNotFound extends Component {
     handleGoToHome = () => {
-        const { history } = this.props;
-        history.push('/dashboard');
+        const navigate = useNavigate();
+        navigate('/dashboard');
     };
 
     render() {
@@ -42,8 +43,8 @@ export default class PageNotFound extends Component {
     }
 }
 
-PageNotFound.propTypes = {
-    history: PropTypes.shape({
-        push: PropTypes.func.isRequired,
-    }).isRequired,
-};
+// PageNotFound.propTypes = {
+//     history: PropTypes.shape({
+//         push: PropTypes.func.isRequired,
+//     }).isRequired,
+// };

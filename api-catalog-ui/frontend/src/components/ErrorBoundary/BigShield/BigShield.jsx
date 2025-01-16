@@ -7,66 +7,49 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component } from 'react';
+import { useState } from 'react';
 import { Typography, Button } from '@material-ui/core';
 import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
-import PropTypes from 'prop-types';
+import {useLocation, useNavigate} from 'react-router-dom';
 import './BigShield.css';
 
-export default class BigShield extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            error: false,
-            info: null,
-        };
-    }
+function BigShield({children}) {
 
-    componentDidCatch(error, info) {
-        this.setState({
-            error,
-            info,
-        });
-    }
-
-    handleGoToHome = () => {
-        const { history } = this.props;
-        this.setState({ error: null });
-        history.push('/dashboard');
+    const [error, setError] = useState(false);
+    const [info, setInfo] = useState(null);
+    const handleGoToHome = () => {
+        const navigate = useNavigate();
+        setError(null)
+        navigate('/dashboard');
     };
 
-    render() {
+
         const iconBack = <ArrowBackIosNewIcon />;
-        const { history } = this.props;
+
         const path = '/dashboard';
         let disableButton = true;
-        if (history !== undefined && history !== null) {
-            if (
-                history.location === undefined ||
-                (history.location !== undefined &&
-                    history.location.pathname !== undefined &&
-                    history.location.pathname !== path)
-            ) {
+        const location = useLocation();
+
+            if (location.pathname !== path) {
                 disableButton = false;
             }
-        }
-        if (this.state.error) {
-            const {
-                error: { stack },
-                info: { componentStack },
-            } = this.state;
+
+        if (error) {
+            setError(stack);
+            setInfo(componentStack);
+
             return (
                 <div>
-                    <div style={{ marginLeft: '100px', marginRight: '100px' }}>
-                        <br />
-                        <br />
+                    <div style={{marginLeft: '100px', marginRight: '100px'}}>
+                        <br/>
+                        <br/>
                         {!disableButton && (
                             <div>
                                 <Button
                                     id="go-back-button"
                                     data-testid="go-home-button"
                                     primary
-                                    onClick={this.handleGoToHome}
+                                    onClick={handleGoToHome}
                                     size="medium"
                                     iconStart={iconBack}
                                 >
@@ -74,16 +57,16 @@ export default class BigShield extends Component {
                                 </Button>
                             </div>
                         )}
-                        <br />
+                        <br/>
                         <div className="local-dev-debug">
-                            <Typography variant="h4" style={{ color: '#de1b1b' }}>
+                            <Typography variant="h4" style={{color: '#de1b1b'}}>
                                 An unexpected browser error occurred
                             </Typography>
-                            <br />
-                            <Typography variant="h6" style={{ color: 'black', fontWeight: 'semiBold' }}>
+                            <br/>
+                            <Typography variant="h6" style={{color: 'black', fontWeight: 'semiBold'}}>
                                 You are seeing this page because an unexpected error occurred while rendering your page.
-                                <br />
-                                <br />
+                                <br/>
+                                <br/>
                                 {disableButton && (
                                     <b>The Dashboard is broken, you cannot navigate away from this page.</b>
                                 )}
@@ -93,12 +76,12 @@ export default class BigShield extends Component {
                             </Typography>
                             <Typography variant="h6" color="#de1b1b">
                                 <pre>
-                                    <code>{this.state.error.message}</code>
+                                    <code>{error?.message}</code>
                                 </pre>
                             </Typography>
 
                             <div className="wrap-collabsible">
-                                <input id="collapsible" className="toggle" type="checkbox" />
+                                <input id="collapsible" className="toggle" type="checkbox"/>
                                 <label htmlFor="collapsible" className="lbl-toggle">
                                     Display the error stack
                                 </label>
@@ -112,10 +95,10 @@ export default class BigShield extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <br />
-                            <br />
+                            <br/>
+                            <br/>
                             <div className="wrap-collabsible2">
-                                <input id="collapsible2" className="toggle2" type="checkbox" />
+                                <input id="collapsible2" className="toggle2" type="checkbox"/>
                                 <label htmlFor="collapsible2" className="lbl-toggle2">
                                     Display the component stack
                                 </label>
@@ -134,15 +117,10 @@ export default class BigShield extends Component {
                 </div>
             );
         }
-        return this.props.children;
-    }
+        return children;
+
+
 }
 
-BigShield.propTypes = {
-    history: PropTypes.shape({
-        push: PropTypes.func.isRequired,
-        location: PropTypes.shape({
-            pathname: PropTypes.string,
-        }),
-    }).isRequired,
-};
+export default BigShield
+

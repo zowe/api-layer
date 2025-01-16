@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { fetchTilesStop } from '../../actions/catalog-tile-actions';
 import { selectService } from '../../actions/selected-service-actions';
 import ServiceTab from './ServiceTab';
@@ -23,5 +22,12 @@ const mapDispatchToProps = (dispatch) => ({
     fetchTilesStop: () => dispatch(fetchTilesStop()),
     selectService: (service, tileId) => dispatch(selectService(service, tileId)),
 });
+
+
+const withRouter = (ServiceTab) =>{
+    return (props) =>{
+        return <ServiceTab {...props}/>
+    }
+}
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ServiceTab));

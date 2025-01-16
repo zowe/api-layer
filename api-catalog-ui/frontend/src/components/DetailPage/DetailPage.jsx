@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { Component, Suspense } from 'react';
+import React, { Component, Suspense, useEffect, useRef, useState } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import {Navigate, Route, Router, Routes, useMatch, useNavigate, useParams} from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
@@ -22,80 +22,172 @@ import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNav
 import Shield from '../ErrorBoundary/Shield/Shield';
 import { customUIStyle } from '../../utils/utilFunctions';
 
-export default class DetailPage extends Component {
-    componentDidUpdate() {
-        const { selectedContentAnchor } = this.props;
+function DetailPage({
+                        isLoading,
+                        clearService,
+                        fetchTilesStop,
+                        fetchTilesError,
+                        selectedContentAnchor,
+                        selectedTile,
+                        services,
+                        match,
+                        fetchTilesStart,
+                        history,
+                        currentTileId,
+                        fetchNewTiles,
+                        tiles,
+                    }) {
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
         const elementToView = document.querySelector(selectedContentAnchor);
         if (elementToView) {
             setTimeout(() => {
                 elementToView.scrollIntoView({ behavior: 'smooth' });
             }, 300);
         }
-    }
+    }, [selectedContentAnchor]);
 
-    componentDidMount() {
-        const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
+    useEffect(() => {
         fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);
         }
-    }
 
-    componentWillUnmount() {
-        const { fetchTilesStop } = this.props;
-        fetchTilesStop();
-    }
-
-    // eslint-disable-next-line react/sort-comp
-    handleGoBack = () => {
-        const { history } = this.props;
-        history.push('/dashboard');
-    };
-
-    render() {
-        const {
-            isLoading,
-            clearService,
-            fetchTilesStop,
-            fetchTilesError,
-            selectedTile,
-            services,
-            match,
-            fetchTilesStart,
-            history,
-            currentTileId,
-            fetchNewTiles,
-        } = this.props;
-        let { tiles } = this.props;
-        const iconBack = <ChevronLeftIcon />;
-        let error = null;
-        if (fetchTilesError !== undefined && fetchTilesError !== null) {
+        return () => {
             fetchTilesStop();
-            error = formatError(fetchTilesError);
-        } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== currentTileId) {
+        };
+    }, [fetchNewTiles, fetchTilesStart, fetchTilesStop, currentTileId]);
+
+    useEffect(() => {
+        if (fetchTilesError) {
+            fetchTilesStop();
+            setError(formatError(fetchTilesError));
+        } else if (selectedTile && selectedTile !== currentTileId) {
             clearService();
             fetchTilesStop();
             fetchNewTiles();
             fetchTilesStart(currentTileId);
         } else if (services && services.length > 0 && !currentTileId) {
-            const id = history.location.pathname.split('/service/')[1];
+            // const id = history.location.pathname.split('/service/')[1];
+            const id = 'apicatalog';
             if (id) {
-                const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
+                const correctTile = services.find((tile) =>
+                    tile.services.some((service) => service.serviceId === id)
+                );
                 if (correctTile) {
                     tiles = [correctTile];
                 }
             }
         }
+    }, [
+        fetchTilesError,
+        selectedTile,
+        currentTileId,
+        clearService,
+        fetchTilesStop,
+        fetchNewTiles,
+        fetchTilesStart,
+        services,
+    ]);
+    // const mounted = useRef();
+    // useEffect(() => {
+    //
+    //     if (!mounted.current) {
+    //
+    //         fetchNewTiles();
+    //         if (currentTileId) {
+    //             console.log('tileid',currentTileId)
+    //             fetchTilesStart(currentTileId);
+    //         }
+    //         mounted.current = true;
+    //     } else {
+    //         const elementToView = document.querySelector(selectedContentAnchor);
+    //         if (elementToView) {
+    //             setTimeout(() => {
+    //                 elementToView.scrollIntoView({ behavior: 'smooth' });
+    //             }, 300);
+    //         }
+    //     }
+    //     // fetchTilesStop();
+    // });
+    // componentDidUpdate() {
+    //     const { selectedContentAnchor } = this.props;
+    //     const elementToView = document.querySelector(selectedContentAnchor);
+    //     if (elementToView) {
+    //         setTimeout(() => {
+    //             elementToView.scrollIntoView({ behavior: 'smooth' });
+    //         }, 300);
+    //     }
+    // }
+    //
+    // componentDidMount() {
+    //     const { fetchTilesStart, currentTileId, fetchNewTiles } = this.props;
+    //     fetchNewTiles();
+    //     if (currentTileId) {
+    //         fetchTilesStart(currentTileId);
+    //     }
+    // }
+
+    // componentWillUnmount() {
+    //     const { fetchTilesStop } = this.props;
+    //     fetchTilesStop();
+    // }
+
+    // eslint-disable-next-line react/sort-comp
+    const navigate = useNavigate();
+    const handleGoBack = () => {
+
+        navigate('/dashboard');
+    };
+
+
+        // const {
+        //     isLoading,
+        //     clearService,
+        //     fetchTilesStop,
+        //     fetchTilesError,
+        //     selectedTile,
+        //     services,
+        //     match,
+        //     fetchTilesStart,
+        //     history,
+        //     currentTileId,
+        //     fetchNewTiles,
+        // } = this.props;
+        // let { tiles } = this.props;
+        const iconBack = <ChevronLeftIcon />;
+        // let error = null;
+        // if (fetchTilesError !== undefined && fetchTilesError !== null) {
+        //     fetchTilesStop();
+        //     setError(formatError(fetchTilesError));
+        // } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== currentTileId) {
+        //     clearService();
+        //     fetchTilesStop();
+        //     fetchNewTiles();
+        //     console.log(currentTileId)
+        //     fetchTilesStart(currentTileId);
+        // } else if (services && services.length > 0 && !currentTileId) {
+        //     const id = history.location.pathname.split('/service/')[1];
+        //     if (id) {
+        //         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
+        //         if (correctTile) {
+        //             tiles = [correctTile];
+        //         }
+        //     }
+        // }
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
+        const params = useParams();
+        console.log('paramss',params)
         return (
             <div className="main">
                 <div className="nav-bar">
                     {services !== undefined && services.length > 0 && (
                         <Shield>
-                            <ServicesNavigationBarContainer services={services} match={match} />
+                            <ServicesNavigationBarContainer services={services} />
                         </Shield>
                     )}
                 </div>
@@ -105,7 +197,7 @@ export default class DetailPage extends Component {
                     {fetchTilesError && (
                         <div className="no-tiles-container">
                             <br />
-                            <IconButton id="go-back-button" onClick={this.handleGoBack} size="medium">
+                            <IconButton id="go-back-button" onClick={handleGoBack} size="medium">
                                 {iconBack}
                                 Back
                             </IconButton>
@@ -129,7 +221,7 @@ export default class DetailPage extends Component {
                                 id="go-back-button"
                                 data-testid="go-back-button"
                                 color="primary"
-                                onClick={this.handleGoBack}
+                                onClick={handleGoBack}
                                 size="medium"
                             >
                                 {iconBack}
@@ -156,58 +248,60 @@ export default class DetailPage extends Component {
                     <div className="content-description-container">
                         {tiles !== undefined && tiles.length === 1 && (
                             <Suspense>
-                                <Router history={history}>
-                                    <Switch>
-                                        <Route
-                                            exact
-                                            path={`${match.path}`}
-                                            render={() => (
-                                                <Redirect
-                                                    replace
-                                                    to={`${match.url}/${tiles[0].services[0].serviceId}`}
-                                                />
-                                            )}
-                                        />
-                                        <Route
-                                            exact
-                                            path={`${match.path}/:serviceId`}
-                                            render={() => (
-                                                <div className="tabs-swagger">
-                                                    <ServiceTabContainer tiles={tiles} />
-                                                </div>
-                                            )}
-                                        />
-                                        <Route
-                                            render={(props, state) => (
-                                                <BigShield history={history}>
-                                                    <PageNotFound {...props} {...state} />
-                                                </BigShield>
-                                            )}
-                                        />
-                                    </Switch>
-                                    <div id="detailFooter">
-                                        <Footer />
-                                    </div>
-                                </Router>
+                            <div>
+                                <Routes>
+                                    <Route
+                                        exact
+                                        path={`/`}
+                                        element={
+                                            <Navigate
+                                                replace={true}
+                                                to={`/${tiles[0].services[0].serviceId}`}
+                                            />
+                                        }
+                                    />
+                                    <Route
+                                        path=":serviceId"
+                                        element={
+                                            <div className="tabs-swagger">
+
+                                                <ServiceTabContainer tiles={tiles}/>
+                                            </div>
+                                        }
+                                    />
+                                    <Route
+                                        element={
+                                            <BigShield>
+                                                <PageNotFound/>
+                                            </BigShield>
+                                        }
+                                    />
+                                </Routes>
+                                <div id="detailFooter">
+                                    <Footer/>
+                                </div>
+                            </div>
                             </Suspense>
                         )}
                     </div>
                 </div>
             </div>
         );
-    }
+
 }
 
-DetailPage.propTypes = {
-    history: PropTypes.shape({
-        push: PropTypes.func.isRequired,
-    }).isRequired,
-    selectedService: PropTypes.object.isRequired,
-    selectedContentAnchor: PropTypes.string.isRequired,
-    tiles: PropTypes.arrayOf(
-        PropTypes.shape({
-            title: PropTypes.string.isRequired,
-            customStyleConfig: PropTypes.object.isRequired,
-        })
-    ).isRequired,
-};
+export default DetailPage;
+
+// DetailPage.propTypes = {
+//     history: PropTypes.shape({
+//         push: PropTypes.func.isRequired,
+//     }).isRequired,
+//     selectedService: PropTypes.object.isRequired,
+//     selectedContentAnchor: PropTypes.string.isRequired,
+//     tiles: PropTypes.arrayOf(
+//         PropTypes.shape({
+//             title: PropTypes.string.isRequired,
+//             customStyleConfig: PropTypes.object.isRequired,
+//         })
+//     ).isRequired,
+// };

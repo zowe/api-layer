@@ -13,9 +13,11 @@ import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import PropTypes from 'prop-types';
+import {useNavigate} from "react-router-dom";
 
-export default class Tile extends Component {
-    getTileStatus = (tile) => {
+function Tile({ tile, service, storeCurrentTileId }) {
+    const navigate = useNavigate();
+    const getTileStatus = (tile) => {
         const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
         if (tile === null || tile === undefined) {
             return unknownIcon;
@@ -31,7 +33,7 @@ export default class Tile extends Component {
         }
     };
 
-    getTileStatusText = (tile) => {
+    const getTileStatusText = (tile) => {
         if (tile === null || tile === undefined) {
             return 'Status unknown';
         }
@@ -46,25 +48,24 @@ export default class Tile extends Component {
         }
     };
 
-    handleClick = () => {
-        const { tile, history, storeCurrentTileId, service } = this.props;
+    const handleClick = () => {
+        // const { tile, storeCurrentTileId, service } = this.props;
         const tileRoute = `/service/${service.serviceId}`;
         storeCurrentTileId(tile.id);
-        history.push(tileRoute);
+
+        navigate(tileRoute);
         localStorage.setItem('serviceId', service.serviceId);
     };
 
-    render() {
-        const { tile, service } = this.props;
         return (
-            <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
+            <Card key={tile.id} className="grid-tile pop grid-item" onClick={handleClick} data-testid="tile">
                 <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
                     <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
                         <div className="tile-ctn">
                             <div className="tile-title">
                                 <Typography id="tileLabel" className="grid-tile-status">
-                                    {this.getTileStatus(tile)}
-                                    {this.getTileStatusText(tile)}
+                                    {getTileStatus(tile)}
+                                    {getTileStatusText(tile)}
                                 </Typography>
                                 <Typography id="tiles-service-title" variant="subtitle1">
                                     {service.title}
@@ -80,12 +81,14 @@ export default class Tile extends Component {
                 </CardActionArea>
             </Card>
         );
-    }
+
 }
 
-Tile.propTypes = {
-    service: PropTypes.shape({
-        title: PropTypes.string,
-        sso: PropTypes.bool,
-    }).isRequired,
-};
+export default Tile;
+
+// Tile.propTypes = {
+//     service: PropTypes.shape({
+//         title: PropTypes.string,
+//         sso: PropTypes.bool,
+//     }).isRequired,
+// };

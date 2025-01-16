@@ -9,8 +9,7 @@
  */
 import { Typography, IconButton, Snackbar } from '@material-ui/core';
 import { Alert } from '@mui/material';
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, {useEffect} from 'react';
 import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -25,53 +24,54 @@ import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle } from '../../utils/utilFunctions';
 import { sortServices } from '../../selectors/selectors';
 
-export default class Dashboard extends Component {
-    componentDidMount() {
-        const { fetchTilesStart, clearService } = this.props;
+function Dashboard({
+                       tiles,
+                       searchCriteria,
+                       isLoading,
+                       fetchTilesError,
+                       fetchTilesStop,
+                       fetchTilesStart,
+                       clearService,
+                       refreshedStaticApisError,
+                       clearError,
+                       authentication,
+                       storeCurrentTileId,
+                       storeContentAnchor,
+                       selectEnabler,
+                       clear
+                   }) {
+
+    useEffect(() => {
         clearService();
         fetchTilesStart();
-    }
 
-    componentWillUnmount() {
-        const { fetchTilesStop, clear } = this.props;
-        clear();
-        fetchTilesStop();
-    }
+        return function cleanup () {
+            clear();
+            fetchTilesStop();
+        }
+    }, []);
 
-    handleSearch = (value) => {
+    const handleSearch = (value) => {
         const { filterText } = this.props;
         filterText(value);
     };
 
-    refreshStaticApis = () => {
+    const refreshStaticApis = () => {
         const { refreshedStaticApi } = this.props;
         refreshedStaticApi();
     };
 
-    toggleWizard = () => {
+    const toggleWizard = () => {
         const { wizardToggleDisplay } = this.props;
         wizardToggleDisplay();
     };
 
-    handleClose = () => {
+    const handleClose = () => {
         const { closeAlert } = this.props;
         closeAlert();
     };
 
-    render() {
-        const {
-            tiles,
-            history,
-            searchCriteria,
-            isLoading,
-            fetchTilesError,
-            fetchTilesStop,
-            refreshedStaticApisError,
-            clearError,
-            authentication,
-            storeCurrentTileId,
-            storeContentAnchor,
-        } = this.props;
+
         const hasSearchCriteria =
             typeof searchCriteria !== 'undefined' &&
             searchCriteria !== undefined &&
@@ -96,16 +96,16 @@ export default class Dashboard extends Component {
             <div className="main-content dashboard-content">
                 <div id="dash-buttons">
                     <DialogDropdown
-                        selectEnabler={this.props.selectEnabler}
+                        selectEnabler={selectEnabler}
                         data={enablerData}
-                        toggleWizard={this.toggleWizard}
+                        toggleWizard={toggleWizard}
                         visible
                     />
                     <IconButton
                         id="refresh-api-button"
                         size="medium"
                         variant="outlined"
-                        onClick={this.refreshStaticApis}
+                        onClick={refreshStaticApis}
                         style={{ borderRadius: '0.1875em' }}
                     >
                         Refresh Static APIs
@@ -115,9 +115,9 @@ export default class Dashboard extends Component {
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     open={authentication.showUpdatePassSuccess}
-                    onClose={this.handleClose}
+                    onClose={handleClose}
                 >
-                    <Alert onClose={this.handleClose} severity="success" sx={{ width: '100%' }}>
+                    <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
                         Your mainframe password was successfully changed.
                     </Alert>
                 </Snackbar>
@@ -139,7 +139,7 @@ export default class Dashboard extends Component {
                         <div
                             id="grid-container"
                             onScroll={(e) => {
-                                this.dashboardTileScroll(e);
+                                dashboardTileScroll(e);
                             }}
                         >
                             <div className="filtering-container">
@@ -148,7 +148,7 @@ export default class Dashboard extends Component {
                                         <SearchCriteria
                                             id="search-input"
                                             placeholder="Search..."
-                                            doSearch={this.handleSearch}
+                                            doSearch={handleSearch}
                                         />
                                     </Shield>
                                 </div>
@@ -168,7 +168,6 @@ export default class Dashboard extends Component {
                                                     service={service}
                                                     key={service}
                                                     tile={tile}
-                                                    history={history}
                                                 />
                                             ))
                                     )}
@@ -188,12 +187,13 @@ export default class Dashboard extends Component {
                 )}
             </div>
         );
-    }
+
 }
 
-Dashboard.propTypes = {
-    tiles: PropTypes.shape({
-        filter: PropTypes.func.isRequired,
-    }).isRequired,
-    storeContentAnchor: PropTypes.func.isRequired,
-};
+export default Dashboard;
+// Dashboard.propTypes = {
+//     tiles: PropTypes.shape({
+//         filter: PropTypes.func.isRequired,
+//     }).isRequired,
+//     storeContentAnchor: PropTypes.func.isRequired,
+// };

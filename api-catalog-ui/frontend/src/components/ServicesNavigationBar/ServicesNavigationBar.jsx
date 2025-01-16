@@ -8,40 +8,17 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { Component } from 'react';
+import {Component, useEffect} from 'react';
 import { Tab, Tabs, Tooltip, Typography, withStyles } from '@material-ui/core';
-import { Link as RouterLink } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import {Link as RouterLink, useParams, useLocation, useMatch} from 'react-router-dom';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import { sortServices } from '../../selectors/selectors';
 
-export default class ServicesNavigationBar extends Component {
-    componentDidMount() {
-        window.addEventListener('popstate', this.handlePopstate);
-    }
+function ServicesNavigationBar({match, services, searchCriteria,clear,filterText,storeCurrentTileId}) {
 
-    componentWillUnmount() {
-        window.removeEventListener('popstate', this.handlePopstate);
-        const { clear } = this.props;
-        clear();
-    }
-
-    handleSearch = (value) => {
-        const { filterText } = this.props;
-        filterText(value);
-    };
-
-    handleTabClick = (id) => {
-        const { storeCurrentTileId, services } = this.props;
-        const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
-        if (correctTile) {
-            storeCurrentTileId(correctTile.id);
-        }
-    };
-
-    handlePopstate = () => {
-        const { services, storeCurrentTileId } = this.props;
+    const handlePopstate = () => {
+        // const { services, storeCurrentTileId } = this.props;
         const url = window.location.href ?? '';
         if (url.includes('/service')) {
             const parts = url.split('/');
@@ -54,8 +31,33 @@ export default class ServicesNavigationBar extends Component {
             }
         }
     };
+    useEffect(() => {
+        // ComponentDidMount equivalent
+        window.addEventListener('popstate', handlePopstate);
+        // ComponentWillUnmount equivalent
+        return function cleanup () {
+            window.removeEventListener('popstate', handlePopstate);
+            clear();
+        };
+    },[]); // Dependencies
 
-    styles = () => ({
+
+
+    const handleSearch = (value) => {
+        filterText(value);
+    };
+
+    const handleTabClick = (id) => {
+        // const { storeCurrentTileId, services } = this.props;
+        const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
+        if (correctTile) {
+            storeCurrentTileId(correctTile.id);
+        }
+    };
+
+
+
+    const styles = () => ({
         truncatedTabLabel: {
             maxWidth: '100%',
             width: 'max-content',
@@ -65,21 +67,33 @@ export default class ServicesNavigationBar extends Component {
         },
     });
 
-    render() {
-        const { match, services, searchCriteria } = this.props;
+
+        // const { match, services, searchCriteria } = this.props;
         const hasTiles = services && services.length > 0;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const url = window.location.href;
-        const parts = url.split('/');
-        const serviceId = parts[parts.length - 1];
-        let selectedTab = Number(0);
+        console.log("neheehe")
+    let location = useLocation();
+    console.log(location.pathname)
+
+    console.log(url);
+    const parts = url.split('/');
+
+    const serviceId = parts[parts.length - 1];
+    console.log(serviceId)
+    let m = useMatch(serviceId);
+    let servicesUrl = url.split('/');
+    servicesUrl.pop();
+    const sss = location.pathname.replace(serviceId,'');
+    console.log(sss)
+    let selectedTab = Number(0);
         let allServices;
         if (hasTiles) {
             allServices = sortServices(services);
             const index = allServices.findIndex((item) => item.serviceId === serviceId);
             selectedTab = Number(index);
         }
-        const TruncatedTabLabel = withStyles(this.styles)(({ classes, label }) => (
+        const TruncatedTabLabel = withStyles(styles)(({ classes, label }) => (
             <Tooltip title={label} placement="bottom">
                 <div className={classes.truncatedTabLabel}>{label}</div>
             </Tooltip>
@@ -88,7 +102,7 @@ export default class ServicesNavigationBar extends Component {
             <div>
                 <div id="search2">
                     <Shield title="Search Bar is broken !">
-                        <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={this.handleSearch} />
+                        <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={handleSearch} />
                     </Shield>
                 </div>
                 <Typography id="serviceIdTabs" variant="h5">
@@ -102,7 +116,7 @@ export default class ServicesNavigationBar extends Component {
                 {hasTiles && (
                     <Tabs
                         value={selectedTab}
-                        onChange={this.handleTabChange}
+                        // onChange={handleTabChange}
                         variant="scrollable"
                         orientation="vertical"
                         scrollButtons="auto"
@@ -110,11 +124,12 @@ export default class ServicesNavigationBar extends Component {
                     >
                         {allServices.map((service, serviceIndex) => (
                             <Tab
-                                onClick={() => this.handleTabClick(service.serviceId)}
+                                onClick={() => handleTabClick(service.serviceId)}
                                 key={service.serviceId}
                                 className="tabs"
                                 component={RouterLink}
-                                to={`${match.url}/${service.serviceId}`}
+
+                                to={`${sss}${service.serviceId}`}
                                 value={serviceIndex}
                                 label={<TruncatedTabLabel label={service.title} />}
                                 wrapped
@@ -124,12 +139,12 @@ export default class ServicesNavigationBar extends Component {
                 )}
             </div>
         );
-    }
-}
 
-ServicesNavigationBar.propTypes = {
-    storeCurrentTileId: PropTypes.func.isRequired,
-    services: PropTypes.shape({
-        find: PropTypes.func.isRequired,
-    }).isRequired,
-};
+}
+export default ServicesNavigationBar;
+// ServicesNavigationBar.propTypes = {
+//     storeCurrentTileId: PropTypes.func.isRequired,
+//     services: PropTypes.shape({
+//         find: PropTypes.func.isRequired,
+//     }).isRequired,
+// };

@@ -78,7 +78,6 @@ function logout() {
         userService.logout().then(
             () => {
                 dispatch(success());
-                history.push('/login');
             },
             (error) => {
                 dispatch(failure(error));
@@ -87,7 +86,7 @@ function logout() {
     };
 }
 
-function authenticationFailure(error) {
+const authenticationFailure = (error) =>{
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
@@ -96,7 +95,8 @@ function authenticationFailure(error) {
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
         } else {
-            history.push('/login');
+            // const navigate = useNavigate();
+            // navigate('/login');
         }
     };
 }

@@ -139,7 +139,7 @@ function Login(props) {
         }
     }
 
-    loadOidcProviders();
+    // loadOidcProviders();
 
     let errorData = { messageText: null, expired: false, invalidNewPassword: true, invalidCredentials: false };
     if (
