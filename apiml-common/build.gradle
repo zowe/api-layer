@@ -8,6 +8,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.web
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.eureka.core
 
     implementation libs.apache.commons.lang3
     implementation libs.janino

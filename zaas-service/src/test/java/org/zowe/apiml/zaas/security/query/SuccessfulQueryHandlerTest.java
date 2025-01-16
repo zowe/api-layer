@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -91,13 +92,15 @@ class SuccessfulQueryHandlerTest {
             privateKey = keyPair.getPrivate();
         }
         ZosmfService zosmfService = new ZosmfService(authConfigurationProperties,
-            discoveryClient,
             restTemplate,
             new ObjectMapper(),
             applicationContext,
             authenticationService,
-            tokenCreationService,
             new ArrayList<>());
+        ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
+        ReflectionTestUtils.setField(zosmfService, "discovery", discoveryClient);
+        ReflectionTestUtils.setField(zosmfService, "tokenCreationService", tokenCreationService);
+
         AuthenticationService authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             eurekaClient, restTemplate, cacheManager, new CacheUtils()

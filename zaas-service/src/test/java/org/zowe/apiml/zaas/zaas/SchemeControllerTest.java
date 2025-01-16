@@ -166,7 +166,7 @@ class SchemeControllerTest {
 
         @Test
         void givenIncorrectMediaType_whenRequestPassticket_thenUnsupportedMedia() throws Exception {
-            ticketBody.put("applicationName", "");
+            ticketBody.put("applicationName", "DUMMY");
 
             mockMvc.perform(post(PASSTICKET_URL)
                     .contentType(MediaType.TEXT_XML)

@@ -16,34 +16,29 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
+import org.zowe.apiml.ticket.TicketRequest;
+import org.zowe.apiml.ticket.TicketResponse;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.ticket.ApplicationNameNotFoundException;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.ticket.TicketRequest;
-import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import javax.management.ServiceNotFoundException;
 
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
-import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(SchemeController.CONTROLLER_PATH)
+@RequestMapping(value = SchemeController.CONTROLLER_PATH)
 public class SchemeController {
     public static final String CONTROLLER_PATH = "/zaas/scheme"; // NOSONAR
 
@@ -52,7 +47,7 @@ public class SchemeController {
     private final ZosmfService zosmfService;
     private final TokenCreationService tokenCreationService;
 
-    @PostMapping(path = "ticket", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "ticket", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     public ResponseEntity<TicketResponse> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
         throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
@@ -111,7 +106,7 @@ public class SchemeController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    @PostMapping(path = "safIdt", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "safIdt", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides SAF Identity Token for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getSafIdToken(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
         throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {

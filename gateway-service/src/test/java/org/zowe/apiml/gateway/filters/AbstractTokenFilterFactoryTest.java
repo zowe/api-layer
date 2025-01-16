@@ -10,36 +10,52 @@
 
 package org.zowe.apiml.gateway.filters;
 
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class AbstractTokenFilterFactoryTest {
 
     @Nested
     class RequestUpdate {
 
-        private MockServerHttpRequest testRequestMutation(AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
-            MockServerHttpRequest request = MockServerHttpRequest.get("/url").build();
-            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+        private ServerHttpRequest testRequestMutation(AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
+            var chain = mock(GatewayFilterChain.class);
+            var request = MockServerHttpRequest.get("/url").build();
+            var exchange = MockServerWebExchange.from(request);
 
             new AbstractTokenFilterFactory<>(AbstractTokenFilterFactory.Config.class, null, null, null) {
                 @Override
                 public String getEndpointUrl(ServiceInstance instance) {
                     return null;
                 }
-            }.processResponse(exchange, mock(GatewayFilterChain.class), tokenResponse);
+            }.processResponse(exchange, chain, tokenResponse);
 
-            return request;
+            var modifiedExchange = ArgumentCaptor.forClass(ServerWebExchange.class);
+            verify(chain).filter(modifiedExchange.capture());
+
+            return modifiedExchange.getValue().getRequest();
         }
 
         @Nested
@@ -47,7 +63,7 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenHeaderResponse_whenHandling_thenUpdateTheRequest() {
-                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .headerName("headerName")
                     .token("headerValue")
                     .build()
@@ -57,7 +73,7 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenCookieResponse_whenHandling_thenUpdateTheRequest() {
-                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .cookieName("cookieName")
                     .token("cookieValue")
                     .build()
@@ -72,17 +88,34 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenEmptyResponse_whenHandling_thenNoUpdate() {
-                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .token("jwt")
                     .build()
                 ));
                 assertEquals(1, request.getHeaders().size());
                 assertTrue(request.getHeaders().containsKey(ApimlConstants.AUTH_FAIL_HEADER));
+                assertEquals("Invalid or missing authentication", request.getHeaders().getFirst(ApimlConstants.AUTH_FAIL_HEADER));
+            }
+
+            @Test
+            void givenEmptyResponseWithError_whenHandling_thenProvideErrorHeader() {
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    MockHeaders.builder()
+                        .name(ApimlConstants.AUTH_FAIL_HEADER.toLowerCase())
+                        .value("anError")
+                        .build(),
+                    ZaasTokenResponse.builder()
+                        .token("jwt")
+                        .build()
+                ));
+                assertEquals(1, request.getHeaders().size());
+                assertTrue(request.getHeaders().containsKey(ApimlConstants.AUTH_FAIL_HEADER));
+                assertEquals("anError", request.getHeaders().getFirst(ApimlConstants.AUTH_FAIL_HEADER));
             }
 
             @Test
             void givenCookieAndHeaderInResponse_whenHandling_thenSetBoth() {
-                MockServerHttpRequest request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
                     .cookieName("cookie")
                     .headerName("header")
                     .token("jwt")
@@ -92,6 +125,37 @@ class AbstractTokenFilterFactoryTest {
                 assertEquals("cookie=jwt", request.getHeaders().getFirst("cookie"));
             }
 
+        }
+
+    }
+
+    @RequiredArgsConstructor
+    @Builder
+    static class MockHeaders implements ClientResponse.Headers {
+
+        private final String name;
+        private final String value;
+
+        @Override
+        public OptionalLong contentLength() {
+            return OptionalLong.empty();
+        }
+
+        @Override
+        public Optional<MediaType> contentType() {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<String> header(String headerName) {
+            return List.of(value);
+        }
+
+        @Override
+        public org.springframework.http.HttpHeaders asHttpHeaders() {
+            var headers = new org.springframework.http.HttpHeaders();
+            headers.add(name, value);
+            return headers;
         }
 
     }

@@ -29,7 +29,6 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -74,9 +73,6 @@ class ZosmfServiceTest {
     private final AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
 
     @Mock
-    private DiscoveryClient discovery;
-
-    @Mock
     private RestTemplate restTemplate;
 
     @Mock
@@ -104,12 +100,10 @@ class ZosmfServiceTest {
 
     private ZosmfService getZosmfServiceSpy() {
         ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties,
-            discovery,
             restTemplate,
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            tokenCreationService,
             null);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
@@ -120,12 +114,10 @@ class ZosmfServiceTest {
 
     private ZosmfService getZosmfServiceWithValidationStrategy(List<TokenValidationStrategy> validationStrategyList) {
         ZosmfService zosmfServiceObj = new ZosmfService(authConfigurationProperties,
-            discovery,
             restTemplate,
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            tokenCreationService,
             validationStrategyList);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
@@ -704,8 +696,6 @@ class ZosmfServiceTest {
                 null,
                 null,
                 null,
-                null,
-                null,
                 null)
                 .readTokenFromCookie(null, null));
         }
@@ -732,12 +722,10 @@ class ZosmfServiceTest {
 
             ZosmfService zosmfService = new ZosmfService(
                 authConfigurationProperties,
-                discovery,
                 restTemplate,
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
-                tokenCreationService,
                 null
             );
 
@@ -873,12 +861,10 @@ class ZosmfServiceTest {
 
             ZosmfService zosmfService = new ZosmfService(
                 authConfigurationProperties,
-                discovery,
                 restTemplate,
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
-                tokenCreationService,
                 null
             );
 
@@ -911,14 +897,13 @@ class ZosmfServiceTest {
         void setup() {
             underTest = new ZosmfService(
                 authConfigurationProperties,
-                discovery,
                 restTemplate,
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
-                tokenCreationService,
                 null
             );
+            ReflectionTestUtils.setField(underTest, "tokenCreationService", tokenCreationService);
         }
 
         @Test

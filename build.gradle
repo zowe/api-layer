@@ -98,6 +98,9 @@ allprojects {
     configurations.all {
         resolutionStrategy.dependencySubstitution {
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
+            // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
+            substitute(module('io.projectreactor.netty:reactor-netty-core')).using(module('io.projectreactor.netty:reactor-netty-core:1.1.23'))
+            substitute(module('io.projectreactor.netty:reactor-netty-http')).using(module('io.projectreactor.netty:reactor-netty-http:1.1.23'))
         }
     }
 
