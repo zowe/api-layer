@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.config;
+package org.zowe.apiml.gateway.config;
 
 import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.BeansException;
@@ -30,7 +30,7 @@ public class DiscoveryClientOrderProcessorBean implements BeanFactoryPostProcess
             .flatMap(Arrays::stream)
             .distinct()
             .map(beanFactory::getBeanDefinition)
-            .forEach(bd -> bd.setDependsOn("scopedTarget.zosmfService"));
+            .forEach(bd -> bd.setDependsOn("gatewayLoadBalancerClientFilter"));
     }
 
 }
