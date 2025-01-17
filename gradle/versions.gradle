@@ -69,10 +69,7 @@ dependencyResolutionManagement {
             version('lombok', '1.18.36')
             version('netty', '4.1.117.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
-            version('nettyReactor') {
-                strictly '[1.1.0,1.1.24['
-                prefer '1.1.23'
-            }
+            version('nettyReactor', '1.2.2')
             version('nimbusJoseJwt', '9.48')
             version('openApiDiff', '2.0.1')
             version('picocli', '4.7.6')
