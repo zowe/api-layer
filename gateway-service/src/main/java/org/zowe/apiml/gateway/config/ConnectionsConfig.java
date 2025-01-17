@@ -55,8 +55,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
@@ -431,6 +433,28 @@ public class ConnectionsConfig {
     @Bean
     public CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
+    }
+
+    @Bean
+    public WebFilter corsWebFilter(CorsConfigurationWrapper corsConfigurationWrapper) {
+        AtomicReference<WebFilter> webFilter = new AtomicReference<>();
+        return (exchange, chain) -> {
+            if (corsConfigurationWrapper.isReady()) {
+                var filter = webFilter.get();
+                if (filter == null) {
+                    synchronized (this) {
+                        if (webFilter.get() == null) {
+                            var newFilter = new CorsWebFilter(corsConfigurationWrapper.getCorsConfigurationSource());
+                            webFilter.set(newFilter);
+                            filter = newFilter;
+                        }
+                    }
+                }
+                return filter.filter(exchange, chain);
+
+            }
+            return chain.filter(exchange);
+        };
     }
 
     public InstanceInfo create(EurekaInstanceConfig config)  {
