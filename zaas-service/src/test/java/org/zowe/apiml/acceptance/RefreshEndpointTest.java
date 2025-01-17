@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.zaas.ZaasApplication;
@@ -34,7 +34,6 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
 
 @SpringBootTest(classes = ZaasApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@MockBean(name = "x509Mapper", classes = AuthenticationMapper.class)
 public class RefreshEndpointTest {
 
     private final static String USERNAME = "USER";
@@ -45,6 +44,9 @@ public class RefreshEndpointTest {
 
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
+
+    @MockitoBean(name = "x509Mapper")
+    private AuthenticationMapper x509Mapper;
 
     @Autowired
     HttpConfig httpConfig;

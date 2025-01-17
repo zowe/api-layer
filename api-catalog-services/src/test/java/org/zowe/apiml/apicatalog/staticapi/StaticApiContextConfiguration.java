@@ -10,15 +10,18 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
+import static org.mockito.Mockito.mock;
+
 public class StaticApiContextConfiguration {
 
-    @MockBean
-    private StaticAPIService staticAPIService;
+    @Bean
+    public StaticAPIService staticAPIService() {
+        return mock(StaticAPIService.class);
+    }
 
     @Bean
     public MessageService messageService() {
@@ -31,12 +34,14 @@ public class StaticApiContextConfiguration {
     }
 
     @Bean
-    public StaticAPIRefreshController apiCatalogController() {
+    public StaticAPIRefreshController apiCatalogController(StaticAPIService staticAPIService) {
         return new StaticAPIRefreshController(staticAPIService);
     }
 
-    @MockBean
-    private StaticDefinitionGenerator staticDefinitionGenerator;
+    @Bean
+    public StaticDefinitionGenerator staticDefinitionGenerator() {
+        return mock(StaticDefinitionGenerator.class);
+    }
 
     @Bean
     public StaticDefinitionControllerExceptionHandler staticDefinitionControllerExceptionHandler(MessageService messageService) {
@@ -44,7 +49,7 @@ public class StaticApiContextConfiguration {
     }
 
     @Bean
-    public StaticDefinitionController staticAPIRefreshController() {
+    public StaticDefinitionController staticAPIRefreshController(StaticDefinitionGenerator staticDefinitionGenerator) {
         return new StaticDefinitionController(staticDefinitionGenerator);
     }
 }

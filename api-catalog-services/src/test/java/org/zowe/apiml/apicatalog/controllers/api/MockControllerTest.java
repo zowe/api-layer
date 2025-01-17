@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -27,6 +26,7 @@ import org.zowe.apiml.apicatalog.standalone.ExampleService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -72,8 +72,12 @@ class MockControllerTest {
 
     @Configuration
     @Profile("test")
-    @SpyBean(ExampleService.class)
     static class Context {
+
+        @Bean
+        public ExampleService exampleService() {
+            return spy(new ExampleService());
+        }
 
         @Bean
         public MockController mockController(ExampleService exampleService) {
