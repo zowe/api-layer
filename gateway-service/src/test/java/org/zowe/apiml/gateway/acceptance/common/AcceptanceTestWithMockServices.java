@@ -10,16 +10,14 @@
 
 package org.zowe.apiml.gateway.acceptance.common;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.gateway.acceptance.netflix.ApplicationRegistry;
-import org.zowe.apiml.gateway.config.ConnectionsConfig;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -29,19 +27,11 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
-    private ConnectionsConfig.CorsConfigurationWrapper corsConfigurationWrapper;
-
-    @Autowired
     protected ApplicationRegistry applicationRegistry;
 
     @BeforeEach
     void resetCounters() {
         applicationRegistry.getMockServices().forEach(MockService::resetCounter);
-    }
-
-    @BeforeAll
-    void waitForCorsInitialisation() {
-        await().atMost(1, TimeUnit.MINUTES).until(corsConfigurationWrapper::isReady);
     }
 
     @AfterEach

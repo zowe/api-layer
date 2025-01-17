@@ -27,7 +27,7 @@ public class CorsUtils {
     private static final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
     private final List<String> allowedOrigins;
-    private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
+    private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
 
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
 

@@ -19,9 +19,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import jakarta.annotation.PostConstruct;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +36,11 @@ import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.gateway.config.*;
+import org.springframework.cloud.gateway.config.HttpClientCustomizer;
+import org.springframework.cloud.gateway.config.HttpClientFactory;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.config.HttpClientSslConfigurer;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
-import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
@@ -56,11 +56,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
@@ -86,7 +84,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
@@ -413,48 +410,13 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public CorsConfigurationWrapper corsConfigurationWrapper(GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
-        return new CorsConfigurationWrapper(globalCorsProperties, corsUtils);
-    }
-
-    @Bean
-    public BeanPostProcessor corsConfigurationHelper(CorsConfigurationWrapper corsConfigurationWrapper) {
-        return new BeanPostProcessor() {
-            @Override
-            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-                if (bean instanceof RoutePredicateHandlerMapping) {
-                    corsConfigurationWrapper.setHandlerMapping((RoutePredicateHandlerMapping) bean);
-                }
-                return bean;
-            }
-        };
-    }
-
-    @Bean
     public CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
     }
 
     @Bean
-    public WebFilter corsWebFilter(CorsConfigurationWrapper corsConfigurationWrapper) {
-        AtomicReference<WebFilter> webFilter = new AtomicReference<>();
-        return (exchange, chain) -> {
-            if (corsConfigurationWrapper.isReady()) {
-                var filter = webFilter.get();
-                if (filter == null) {
-                    synchronized (this) {
-                        if (webFilter.get() == null) {
-                            var newFilter = new CorsWebFilter(corsConfigurationWrapper.getCorsConfigurationSource());
-                            webFilter.set(newFilter);
-                            filter = newFilter;
-                        }
-                    }
-                }
-                return filter.filter(exchange, chain);
-
-            }
-            return chain.filter(exchange);
-        };
+    public WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
+        return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }
 
     public InstanceInfo create(EurekaInstanceConfig config)  {
@@ -575,39 +537,6 @@ public class ConnectionsConfig {
             String getHomePageUrl();
             String getStatusPageUrl();
 
-        }
-
-    }
-
-    @RequiredArgsConstructor
-    public static class CorsConfigurationWrapper {
-
-        private final GlobalCorsProperties globalCorsProperties;
-        private final CorsUtils corsUtils;
-        @Setter(AccessLevel.PRIVATE)
-        private RoutePredicateHandlerMapping handlerMapping;
-
-        private final AtomicReference<UrlBasedCorsConfigurationSource> instance = new AtomicReference<>();
-
-        public boolean isReady() {
-            return handlerMapping != null;
-        }
-
-        public UrlBasedCorsConfigurationSource getCorsConfigurationSource() {
-            var output = instance.get();
-            if (output == null) {
-                synchronized (this) {
-                    if (instance.get() == null) {
-                        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
-                        source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
-                        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
-                        handlerMapping.setCorsConfigurationSource(source);
-                        instance.set(source);
-                        output = source;
-                    }
-                }
-            }
-            return output;
         }
 
     }

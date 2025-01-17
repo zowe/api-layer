@@ -24,11 +24,9 @@ import org.springframework.util.PatternMatchUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.gateway.config.ConnectionsConfig;
 import org.zowe.apiml.gateway.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.gateway.service.scheme.SchemeHandler;
 import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
@@ -54,15 +52,12 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.gateway.servicesToLimitRequestRate:-}")
     List<String> servicesToLimitRequestRate;
 
-    private final CorsUtils corsUtils;
     private final ReactiveDiscoveryClient discoveryClient;
 
     private final List<FilterDefinition> commonFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final List<SchemeHandler> schemeHandlersList;
     private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new EnumMap<>(AuthenticationScheme.class);
-
-    private final ConnectionsConfig.CorsConfigurationWrapper corsConfigurationWrapper;
 
     @PostConstruct
     void afterPropertiesSet() {
@@ -87,15 +82,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         }
     }
 
-    void setCors(ServiceInstance serviceInstance) {
-        corsUtils.setCorsConfiguration(
-            serviceInstance.getServiceId().toLowerCase(),
-            serviceInstance.getMetadata(),
-            (prefix, serviceId, config) -> {
-                serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId().toLowerCase());
-                corsConfigurationWrapper.getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config);
-            });
-    }
+
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
         return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
@@ -190,18 +177,10 @@ public class RouteLocator implements RouteDefinitionLocator {
      */
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
-        if (!corsConfigurationWrapper.isReady()) {
-            log.debug("Dependent beans are not ready yet. Routing will be configured next round.");
-            return Flux.empty();
-        }
-
         // counter of generated route definition to prevent clashing by the order
         AtomicInteger order = new AtomicInteger();
         // iterate over services
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
-            // configure CORS for the service (if necessary)
-            setCors(serviceInstance);
-
             // generate route definition per services and its routing rules
             return getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance));
         })
