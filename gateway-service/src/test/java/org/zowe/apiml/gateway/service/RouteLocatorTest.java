@@ -25,6 +25,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.config.ConnectionsConfig;
 import org.zowe.apiml.gateway.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.gateway.service.scheme.SchemeHandler;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -57,22 +58,25 @@ class RouteLocatorTest {
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = mock(UrlBasedCorsConfigurationSource.class);
     private CorsUtils corsUtils = mock(CorsUtils.class);
     private ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
+    private ConnectionsConfig.CorsConfigurationWrapper corsConfigurationWrapper = mock(ConnectionsConfig.CorsConfigurationWrapper.class);
 
     private RouteLocator routeLocator;
 
     @BeforeEach
     void init() {
         ApplicationContext context = mock(ApplicationContext.class);
-        doReturn(urlBasedCorsConfigurationSource).when(context).getBean(UrlBasedCorsConfigurationSource.class);
+        doReturn(urlBasedCorsConfigurationSource).when(corsConfigurationWrapper).getCorsConfigurationSource();
+        doReturn(true).when(corsConfigurationWrapper).isReady();
 
         routeLocator = spy(new RouteLocator(
-            context,
             corsUtils,
             discoveryClient,
             Arrays.asList(COMMON_FILTERS),
+            Arrays.asList(PRODUCERS),
             Arrays.asList(SCHEME_HANDLER_FILTERS),
-            Arrays.asList(PRODUCERS)
+            corsConfigurationWrapper
         ));
+        routeLocator.afterPropertiesSet();
     }
 
     private ServiceInstance createServiceInstance(String serviceId, String...routes) {
@@ -263,7 +267,7 @@ class RouteLocatorTest {
         class PostRoutingFilterDefinition {
 
             private final List<FilterDefinition> COMMON_FILTERS = Collections.singletonList(mock(FilterDefinition.class));
-            private final RouteLocator routeLocator = new RouteLocator(null, null, null, COMMON_FILTERS, Collections.emptyList(), null);
+            private final RouteLocator routeLocator = new RouteLocator(null, null, COMMON_FILTERS, Collections.emptyList(), null, corsConfigurationWrapper);
 
             private ServiceInstance createServiceInstance(Boolean forwardingEnabled, Boolean encodedCharactersEnabled, Boolean rateLimiterEnabled) {
                 Map<String, String> metadata = new HashMap<>();

@@ -19,7 +19,9 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import jakarta.annotation.PostConstruct;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -82,6 +84,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
@@ -408,12 +411,21 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
-        source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
-        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
-        handlerMapping.setCorsConfigurationSource(source);
-        return source;
+    public CorsConfigurationWrapper corsConfigurationWrapper(GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
+        return new CorsConfigurationWrapper(globalCorsProperties, corsUtils);
+    }
+
+    @Bean
+    public BeanPostProcessor corsConfigurationHelper(CorsConfigurationWrapper corsConfigurationWrapper) {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                if (bean instanceof RoutePredicateHandlerMapping) {
+                    corsConfigurationWrapper.setHandlerMapping((RoutePredicateHandlerMapping) bean);
+                }
+                return bean;
+            }
+        };
     }
 
     @Bean
@@ -539,6 +551,39 @@ public class ConnectionsConfig {
             String getHomePageUrl();
             String getStatusPageUrl();
 
+        }
+
+    }
+
+    @RequiredArgsConstructor
+    public static class CorsConfigurationWrapper {
+
+        private final GlobalCorsProperties globalCorsProperties;
+        private final CorsUtils corsUtils;
+        @Setter(AccessLevel.PRIVATE)
+        private RoutePredicateHandlerMapping handlerMapping;
+
+        private final AtomicReference<UrlBasedCorsConfigurationSource> instance = new AtomicReference<>();
+
+        public boolean isReady() {
+            return handlerMapping != null;
+        }
+
+        public UrlBasedCorsConfigurationSource getCorsConfigurationSource() {
+            var output = instance.get();
+            if (output == null) {
+                synchronized (this) {
+                    if (instance.get() == null) {
+                        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
+                        source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
+                        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
+                        handlerMapping.setCorsConfigurationSource(source);
+                        instance.set(source);
+                        output = source;
+                    }
+                }
+            }
+            return output;
         }
 
     }
