@@ -35,10 +35,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Do not fail when headers cannot be modified (#3845) ([084eb6d](https://github.com/zowe/api-layer/commit/084eb6d)), closes [#3845](https://github.com/zowe/api-layer/issues/3845)
 * Bugfix:  Fix error message in case of TLS error (#3864) ([945fc9c](https://github.com/zowe/api-layer/commit/945fc9c)), closes [#3864](https://github.com/zowe/api-layer/issues/3864)
 * Bugfix:  Update Gateway schema with OIDC config parameters (#3867) ([19ece5e](https://github.com/zowe/api-layer/commit/19ece5e)), closes [#3867](https://github.com/zowe/api-layer/issues/3867)
-* Bugfix:  Use lite JAR for gateway-package (#3866) ([b727bdd](https://github.com/zowe/api-layer/commit/b727bdd)), closes [#3866](https://github.com/zowe/api-layer/issues/3866)
 * Bugfix:  Respect SSL strictness in enabler (#3813) ([bc55168](https://github.com/zowe/api-layer/commit/bc55168)), closes [#3813](https://github.com/zowe/api-layer/issues/3813)
 * Bugfix:  Configure SSL context for webclient (#3811) ([476c69b](https://github.com/zowe/api-layer/commit/476c69b)), closes [#3811](https://github.com/zowe/api-layer/issues/3811)
-* Bugfix:  Fix duplicities in the lite lib JAR (#3808) ([88ca6dc](https://github.com/zowe/api-layer/commit/88ca6dc)), closes [#3808](https://github.com/zowe/api-layer/issues/3808)
 * Bugfix:  Minor fixes in logs (#3806) ([5abc91e](https://github.com/zowe/api-layer/commit/5abc91e)), closes [#3806](https://github.com/zowe/api-layer/issues/3806)
 
 ## `APIML 3.0.36 / Zowe 3.0.0 (2024-10-01)`
