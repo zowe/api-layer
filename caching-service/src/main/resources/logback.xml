@@ -8,7 +8,7 @@
     <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %magenta(%X{userid:-}) %cyan(%-5level) %clr\(\(%logger{15}\)\) %msg%n"/>
 
     <turboFilter class="org.zowe.apiml.product.logging.UseridFilter"/>
-    <if condition='property("spring.config.activate.on-profile").contains("debug")||property("spring.config.activate.on-profile").contains("diag")||property("spring.config.activate.on-profile").contains("dev")'>
+    <if condition='property("spring.profiles.active").contains("debug")||property("spring.profiles.active").contains("diag")||property("spring.profiles.active").contains("dev")'>
         <then>
         </then>
         <else>
