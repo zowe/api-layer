@@ -41,6 +41,7 @@ logging:
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         javax.net.ssl: ERROR
+    timezone: ${apiml.logging.timezone:UTC}
 
 eureka:
     client:

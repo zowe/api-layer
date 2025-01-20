@@ -5,7 +5,8 @@
     <property name="MIN_INDEX" value="${rollingPolicy.minIndex:-1}"/>
     <property name="MAX_FILE_SIZE" value="${rollingPolicy.file.maxSize:-50MB}"/>
     <property name="STORAGE_LOCATION" value="${apiml.logs.location}" />
-    <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %magenta(%X{userid:-}) %cyan(%-5level) %clr\(\(%logger{15}\)\) %msg%n"/>
+    <property name="LOGGING_TIMEZONE" value="${logging.timezone:-UTC}"/>
+    <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,${LOGGING_TIMEZONE}} %clr&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %magenta(%X{userid:-}) %cyan(%-5level) %clr\(\(%logger{15}\)\) %msg%n"/>
 
     <turboFilter class="org.zowe.apiml.product.logging.UseridFilter"/>
     <if condition='property("spring.config.activate.on-profile").contains("debug")||property("spring.config.activate.on-profile").contains("diag")||property("spring.config.activate.on-profile").contains("dev")'>

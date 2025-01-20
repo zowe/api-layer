@@ -26,6 +26,7 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty.util.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
+    timezone: ${apiml.logging.timezone:UTC}
 
 apiml:
     service:
