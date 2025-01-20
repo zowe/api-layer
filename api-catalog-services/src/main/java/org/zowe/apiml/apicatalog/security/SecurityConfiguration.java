@@ -69,7 +69,7 @@ import java.util.Set;
 @EnableApimlAuth
 @EnableMethodSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
-@ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "false", matchIfMissing = false)
+@ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "false", matchIfMissing = true)
 public class SecurityConfiguration {
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
@@ -301,4 +301,5 @@ public class SecurityConfiguration {
     public LogoutSuccessHandler logoutSuccessHandler() {
         return new ApiCatalogLogoutSuccessHandler(authConfigurationProperties);
     }
+
 }
