@@ -180,10 +180,10 @@ public class RouteLocator implements RouteDefinitionLocator {
         // counter of generated route definition to prevent clashing by the order
         AtomicInteger order = new AtomicInteger();
         // iterate over services
-        return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
+        return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance ->
             // generate route definition per services and its routing rules
-            return getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance));
-        })
+            getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance))
+        )
         .flatMapIterable(list -> list);
     }
 
