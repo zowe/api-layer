@@ -109,7 +109,8 @@ configure(subprojects.findAll { it.name in [
     'caching-service',
     'discovery-service',
     'gateway-service',
-    'zaas-service'
+    'zaas-service',
+    'integration-tests'
 ]}) {
 
     configurations.all {
