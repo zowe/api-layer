@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.services.status.listeners;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
@@ -18,7 +19,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.product.gateway.GatewayLookupCompleteEvent;
-import org.zowe.apiml.product.registry.CannotRegisterServiceException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * This class fires on GatewayLookupCompleteEvent event
  * Initializes Catalog instances from Eureka
  */
+@Slf4j
 @Component
 @ConditionalOnProperty(
     value = "apiml.catalog.standalone.enabled",
@@ -39,10 +40,15 @@ public class GatewayLookupEventListener {
     private final AtomicBoolean hasRun = new AtomicBoolean(false);
 
     @EventListener(GatewayLookupCompleteEvent.class)
-    public void onApplicationEvent() throws CannotRegisterServiceException {
+    public void onApplicationEvent() {
         if (!hasRun.get()) {
             hasRun.set(true);
-            instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+            try {
+                instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+            } catch (Exception e) {
+                hasRun.set(false);
+                log.debug("Unexpected error occurred while initial retrieving of services: {}", e.getMessage());
+            }
         }
     }
 }

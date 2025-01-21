@@ -78,6 +78,8 @@ public class InstanceInitializeService {
                 getAllInstances(apiCatalogInstance);
                 instanceRefreshService.start();
             }
+        } catch (RetryException re) {
+            throw re;
         } catch (InstanceInitializationException | GatewayNotAvailableException e) {
             throw new RetryException(e.getMessage());
         } catch (Exception e) {
