@@ -30,7 +30,7 @@ public class DiscoveryClientOrderProcessorBean implements BeanFactoryPostProcess
             .flatMap(Arrays::stream)
             .distinct()
             .map(beanFactory::getBeanDefinition)
-            .forEach(bd -> bd.setDependsOn("gatewayLoadBalancerClientFilter", "eurekaAutoServiceRegistration"));
+            .forEach(bd -> bd.setDependsOn("gatewayLoadBalancerClientFilter", "eurekaAutoServiceRegistration", "webFluxConversionService", "gatewayAutoConfiguration"));
     }
 
 }
