@@ -223,6 +223,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         }
 
         @Test
+        @Disabled("Disabled until SAF issues are fixed")
         @Order(31)
         void whenCallStaticDefinitionGenerateWithUnauthorizedUser_thenResponse403() throws IOException {
             String json = "# Dummy content";
