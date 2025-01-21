@@ -15,6 +15,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class DiscoveryClientOrderProcessorBean implements BeanFactoryPostProcess
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        Stream.of(DiscoveryClient.class, EurekaClient.class)
+        Stream.of(DiscoveryClient.class, EurekaClient.class, CloudEurekaClient.class)
             .map(beanFactory::getBeanNamesForType)
             .flatMap(Arrays::stream)
             .distinct()

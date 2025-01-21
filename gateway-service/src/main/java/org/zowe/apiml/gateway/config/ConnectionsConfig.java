@@ -49,10 +49,7 @@ import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOp
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
@@ -302,6 +299,7 @@ public class ConnectionsConfig {
     }
 
     @Bean
+    @DependsOn("discoveryClient")
     public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
