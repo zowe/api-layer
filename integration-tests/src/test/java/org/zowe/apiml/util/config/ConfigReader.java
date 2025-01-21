@@ -106,7 +106,7 @@ public class ConfigReader {
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
-                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", new String(configuration.getCredentials().getPassword())));
+                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", StringUtils.isEmpty(configuration.getCredentials().getPassword()) ? "" : new String(configuration.getCredentials().getPassword())));
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
