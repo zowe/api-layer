@@ -21,6 +21,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CatalogTest;
@@ -47,7 +48,9 @@ import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @CatalogTest
+@TestInstance(Lifecycle.PER_CLASS)
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
+
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
@@ -61,6 +64,14 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
     private String baseHost;
+    private String validGatewayToken;
+    private String unauthorizedGatewayToken;
+
+    @BeforeAll
+    void init() {
+        validGatewayToken = gatewayToken(USERNAME, PASSWORD);
+        unauthorizedGatewayToken = gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD);
+    }
 
     @BeforeEach
     void setUp() {
@@ -205,21 +216,21 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             given().relaxedHTTPSValidation()
                 .when()
                 .header("Service-Id", staticDefinitionServiceId)
-                .cookie(COOKIE_NAME, gatewayToken())
+                .cookie(COOKIE_NAME, validGatewayToken)
                 .delete(getUriFromGateway(STATIC_DEFINITION_DELETE_ENDPOINT));
         }
 
         @Test
         @Order(1)
         void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
-            getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null, gatewayToken(USERNAME, PASSWORD));
+            getStaticApiResponse(REFRESH_STATIC_APIS_ENDPOINT, null, HttpStatus.SC_OK, null, validGatewayToken);
         }
 
         @Test
         @Order(30)
         void whenCallStaticDefinitionGenerate_thenResponse201() throws IOException {
             String json = "# Dummy content";
-            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_CREATED, json, gatewayToken(USERNAME, PASSWORD));
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceId, HttpStatus.SC_CREATED, json, validGatewayToken);
         }
 
         @Test
@@ -227,7 +238,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         @Order(31)
         void whenCallStaticDefinitionGenerateWithUnauthorizedUser_thenResponse403() throws IOException {
             String json = "# Dummy content";
-            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceIdUnauthorized, HttpStatus.SC_FORBIDDEN, json, gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD));
+            getStaticApiResponse(STATIC_DEFINITION_GENERATE_ENDPOINT, staticDefinitionServiceIdUnauthorized, HttpStatus.SC_FORBIDDEN, json, unauthorizedGatewayToken);
         }
 
         private Response getStaticApiResponse(String endpoint, String definitionFileName, int returnCode, String body, String JWT) throws IOException {

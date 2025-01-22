@@ -18,6 +18,7 @@ import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.Cookie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -162,18 +163,21 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        String cookie = given()
-                .contentType(JSON)
-                .body(loginRequest)
-            .when()
-                .post(gatewayLoginEndpoint)
-            .then()
-                .statusCode(is(SC_NO_CONTENT))
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
-                .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-        return cookie;
+        try {
+            String cookie = given()
+                    .contentType(JSON)
+                    .body(loginRequest)
+                .when()
+                    .post(gatewayLoginEndpoint)
+                .then()
+                    .log().ifValidationFails(LogDetail.ALL)
+                    .statusCode(is(SC_NO_CONTENT))
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                    .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+            return cookie;
+        } finally {
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     /**
@@ -389,7 +393,7 @@ public class SecurityUtils {
             .when()
                 .post(gatewayGenerateAccessTokenEndpoint)
             .then()
-                .log().ifValidationFails()
+                .log().ifValidationFails(LogDetail.ALL)
                 .statusCode(is(SC_OK))
                 .extract().body().asString();
             return token;
