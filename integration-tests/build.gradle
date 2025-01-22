@@ -202,6 +202,12 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'SafIdTokenTest'
         )
     }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
     outputs.upToDateWhen { false }
 }
 
