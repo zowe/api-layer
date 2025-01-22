@@ -9,12 +9,11 @@
  */
 import { Button, Link, MenuItem, Select, Tooltip, Typography } from '@material-ui/core';
 import {Component, useState} from 'react';
-import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import {useParams} from "react-router-dom";
+import {useParams} from "react-router";
 
 // const { selectedVersion, isDialogOpen } = this.state;
 

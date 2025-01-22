@@ -7,15 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { useNavigate } from 'react-router-dom';
 import App from './App';
 
 const withRouter = (App) =>{
-    const Wrapper = (props) =>{
-
+    return (props) =>{
         return <App {...props}/>
     }
-    return Wrapper;
 }
 
 export default withRouter(App)

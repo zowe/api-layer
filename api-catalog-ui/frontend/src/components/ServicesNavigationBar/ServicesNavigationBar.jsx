@@ -8,53 +8,28 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {Component, useEffect} from 'react';
-import { Tab, Tabs, Tooltip, Typography, withStyles } from '@material-ui/core';
-import {Link as RouterLink, useParams, useLocation, useMatch} from 'react-router-dom';
+import {useEffect} from 'react';
+import {Tab, Tabs, Tooltip, Typography, withStyles} from '@material-ui/core';
+import {Link as RouterLink, useParams, useLocation, useMatch} from 'react-router';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
-import { sortServices } from '../../selectors/selectors';
+import {sortServices} from '../../selectors/selectors';
 
-function ServicesNavigationBar({match, services, searchCriteria,clear,filterText,storeCurrentTileId}) {
+function ServicesNavigationBar({services, searchCriteria, clear, filterText, storeCurrentTileId}) {
 
-    const handlePopstate = () => {
-        // const { services, storeCurrentTileId } = this.props;
-        const url = window.location.href ?? '';
-        if (url.includes('/service')) {
-            const parts = url.split('/');
-            const serviceId = parts[parts.length - 1];
-            const correctTile = services.find((tile) =>
-                tile.services.some((service) => service.serviceId === serviceId)
-            );
-            if (correctTile) {
-                storeCurrentTileId(correctTile.id);
-            }
-        }
-    };
+
     useEffect(() => {
-        // ComponentDidMount equivalent
-        window.addEventListener('popstate', handlePopstate);
-        // ComponentWillUnmount equivalent
-        return function cleanup () {
-            window.removeEventListener('popstate', handlePopstate);
+        return function cleanup() {
             clear();
         };
-    },[]); // Dependencies
-
-
-
-    const handleSearch = (value) => {
-        filterText(value);
-    };
+    }, []); // Dependencies
 
     const handleTabClick = (id) => {
-        // const { storeCurrentTileId, services } = this.props;
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
         if (correctTile) {
             storeCurrentTileId(correctTile.id);
         }
     };
-
 
 
     const styles = () => ({
@@ -67,84 +42,70 @@ function ServicesNavigationBar({match, services, searchCriteria,clear,filterText
         },
     });
 
-
-        // const { match, services, searchCriteria } = this.props;
-        const hasTiles = services && services.length > 0;
-        const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
-        const url = window.location.href;
-        console.log("neheehe")
+    const hasTiles = services && services.length > 0;
+    const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+    const url = window.location.href;
     let location = useLocation();
-    console.log(location.pathname)
-
-    console.log(url);
     const parts = url.split('/');
 
     const serviceId = parts[parts.length - 1];
-    console.log(serviceId)
-    let m = useMatch(serviceId);
     let servicesUrl = url.split('/');
     servicesUrl.pop();
-    const sss = location.pathname.replace(serviceId,'');
-    console.log(sss)
+    const basePath = location.pathname.replace(serviceId, '');
     let selectedTab = Number(0);
-        let allServices;
-        if (hasTiles) {
-            allServices = sortServices(services);
-            const index = allServices.findIndex((item) => item.serviceId === serviceId);
-            selectedTab = Number(index);
-        }
-        const TruncatedTabLabel = withStyles(styles)(({ classes, label }) => (
-            <Tooltip title={label} placement="bottom">
-                <div className={classes.truncatedTabLabel}>{label}</div>
-            </Tooltip>
-        ));
-        return (
-            <div>
-                <div id="search2">
-                    <Shield title="Search Bar is broken !">
-                        <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={handleSearch} />
-                    </Shield>
-                </div>
-                <Typography id="serviceIdTabs" variant="h5">
-                    Product APIs
-                </Typography>
-                {!hasTiles && hasSearchCriteria && (
-                    <Typography id="search_no_results" variant="subtitle2" className="no-content">
-                        No services found matching search criteria
-                    </Typography>
-                )}
-                {hasTiles && (
-                    <Tabs
-                        value={selectedTab}
-                        // onChange={handleTabChange}
-                        variant="scrollable"
-                        orientation="vertical"
-                        scrollButtons="auto"
-                        className="custom-tabs"
-                    >
-                        {allServices.map((service, serviceIndex) => (
-                            <Tab
-                                onClick={() => handleTabClick(service.serviceId)}
-                                key={service.serviceId}
-                                className="tabs"
-                                component={RouterLink}
-
-                                to={`${sss}${service.serviceId}`}
-                                value={serviceIndex}
-                                label={<TruncatedTabLabel label={service.title} />}
-                                wrapped
-                            />
-                        ))}
-                    </Tabs>
-                )}
+    let allServices;
+    if (hasTiles) {
+        allServices = sortServices(services);
+        const index = allServices.findIndex((item) => item.serviceId === serviceId);
+        selectedTab = Number(index);
+    }
+    const TruncatedTabLabel = withStyles(styles)(({classes, label}) => (
+        <Tooltip title={label} placement="bottom">
+            <div className={classes.truncatedTabLabel}>{label}</div>
+        </Tooltip>
+    ));
+    return (
+        <div>
+            <div id="search2">
+                <Shield title="Search Bar is broken !">
+                    <SearchCriteria data-testid="search-bar" placeholder="Search..." doSearch={filterText}/>
+                </Shield>
             </div>
-        );
+            <Typography id="serviceIdTabs" variant="h5">
+                Product APIs
+            </Typography>
+            {!hasTiles && hasSearchCriteria && (
+                <Typography id="search_no_results" variant="subtitle2" className="no-content">
+                    No services found matching search criteria
+                </Typography>
+            )}
+            {hasTiles && (
+                <Tabs
+                    value={selectedTab}
+                    // onChange={handleTabChange}
+                    variant="scrollable"
+                    orientation="vertical"
+                    scrollButtons="auto"
+                    className="custom-tabs"
+                >
+                    {allServices.map((service, serviceIndex) => (
+                        <Tab
+                            onClick={() => handleTabClick(service.serviceId)}
+                            key={service.serviceId}
+                            className="tabs"
+                            component={RouterLink}
+
+                            to={`${basePath}${service.serviceId}`}
+                            value={serviceIndex}
+                            label={<TruncatedTabLabel label={service.title}/>}
+                            wrapped
+                        />
+                    ))}
+                </Tabs>
+            )}
+        </div>
+    );
 
 }
+
 export default ServicesNavigationBar;
-// ServicesNavigationBar.propTypes = {
-//     storeCurrentTileId: PropTypes.func.isRequired,
-//     services: PropTypes.shape({
-//         find: PropTypes.func.isRequired,
-//     }).isRequired,
-// };

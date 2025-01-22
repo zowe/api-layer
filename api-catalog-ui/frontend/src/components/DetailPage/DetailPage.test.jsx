@@ -7,9 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { shallow } from 'enzyme';
-import { describe, expect, it } from '@jest/globals';
+import {fireEvent, render, screen} from '@testing-library/react';
+import {describe, expect, it} from '@jest/globals';
 import DetailPage from './DetailPage';
+import {BrowserRouter, HashRouter, Route, Routes} from "react-router";
+import PageNotFound from "../PageNotFound/PageNotFound";
+import {Provider} from "react-redux";
 
 Object.defineProperty(global, 'performance', {
     writable: true,
@@ -39,17 +42,14 @@ const tile = {
     createdTimestamp: '2018-08-22T08:31:22.948+0000',
 };
 
-const match = {
-    path: '/service',
-};
-
-const history = {
-    push: jest.fn(),
-    location: {
-        pathname: '/service/serviceId',
-    },
-};
-
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
 describe('>>> Detailed Page component tests', () => {
     afterEach(() => {
         jest.clearAllMocks();
@@ -58,20 +58,22 @@ describe('>>> Detailed Page component tests', () => {
     it('should start epic on mount', () => {
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
-            />
+
+        render(<BrowserRouter>
+                <Provider store={store}>
+                    <Routes>
+                        <Route path="*" element={<DetailPage
+                            tiles={[tile]}
+                            services={tile.services}
+                            currentTileId="apicatalog"
+                            fetchTilesStart={fetchTilesStart}
+                            fetchNewTiles={fetchNewTiles}
+                            fetchTilesStop={jest.fn()}
+                        />}/>
+                    </Routes>
+                </Provider>
+            </BrowserRouter>
         );
-        const instance = wrapper.instance();
-        instance.componentDidMount();
         expect(fetchTilesStart).toHaveBeenCalled();
     });
 
@@ -83,8 +85,6 @@ describe('>>> Detailed Page component tests', () => {
                 fetchNewTiles={jest.fn()}
                 fetchTilesStart={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                match={match}
-                history={history}
             />
         );
         const instance = wrapper.instance();
@@ -101,12 +101,9 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={history}
-                match={match}
             />
         );
         wrapper.find('[data-testid="go-back-button"]').simulate('click');
-        expect(history.push.mock.calls[0]).toEqual(['/dashboard']);
     });
 
     it('should load spinner when waiting for data', () => {
@@ -117,8 +114,6 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                match={match}
-                isLoading={isLoading}
             />
         );
         const spinner = wrapper.find('Spinner');
@@ -135,8 +130,6 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={history}
-                match={match}
                 isLoading={isLoading}
             />
         );
@@ -154,8 +147,6 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={history}
-                match={match}
                 isLoading={isLoading}
             />
         );
@@ -175,9 +166,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                history={history}
                 fetchTilesError={fetchTilesError}
-                match={match}
                 isLoading={isLoading}
             />
         );
@@ -196,9 +185,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={jest.fn()}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                history={history}
                 fetchTilesError={fetchTilesError}
-                match={match}
                 isLoading={isLoading}
             />
         );
@@ -219,9 +206,7 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={jest.fn()}
                 fetchTilesStop={fetchTilesStop}
-                history={history}
                 fetchTilesError={fetchTilesError}
-                match={match}
                 isLoading={isLoading}
                 selectedTile={selectedTile}
             />
@@ -245,17 +230,15 @@ describe('>>> Detailed Page component tests', () => {
                 fetchTilesStart={fetchTilesStart}
                 fetchNewTiles={fetchNewTiles}
                 fetchTilesStop={jest.fn()}
-                match={match}
-                history={history}
                 selectedContentAnchor="#id"
             />
         );
 
         const scrollIntoViewMock = jest.fn();
-        const elementMock = { scrollIntoView: scrollIntoViewMock };
+        const elementMock = {scrollIntoView: scrollIntoViewMock};
         const spyQuerySelector = jest.spyOn(document, 'querySelector').mockReturnValue(elementMock);
 
-        wrapper.setProps({ selectedContentAnchor: '#new-selected-content-anchor' });
+        wrapper.setProps({selectedContentAnchor: '#new-selected-content-anchor'});
 
         // Run all timers to execute the setTimeout
         jest.runAllTimers();

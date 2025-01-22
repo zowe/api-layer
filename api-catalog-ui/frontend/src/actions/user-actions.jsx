@@ -10,9 +10,9 @@
 
 import userConstants from '../constants/user-constants';
 import { userService } from '../services';
-import history from '../helpers/history';
 
 function login(credentials) {
+
     function request(user) {
         return { type: userConstants.USERS_LOGIN_REQUEST, user };
     }
@@ -41,13 +41,8 @@ function login(credentials) {
                     showUpdatePassSuccess = true;
                 }
                 const dashBoardPath = '/dashboard';
+                localStorage.setItem('username', credentials.username);
                 dispatch(success(token, showUpdatePassSuccess));
-                if (history.location.pathname !== dashBoardPath) {
-                    history.replace(dashBoardPath);
-                    window.location.reload();
-                } else {
-                    history.push(dashBoardPath);
-                }
             },
             (error) => {
                 if (error.messageNumber === 'ZWEAT413E') {
@@ -94,9 +89,6 @@ const authenticationFailure = (error) =>{
         dispatch(failure(error));
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
-        } else {
-            // const navigate = useNavigate();
-            // navigate('/login');
         }
     };
 }

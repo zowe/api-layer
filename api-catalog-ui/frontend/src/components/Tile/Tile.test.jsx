@@ -57,7 +57,14 @@ const resetSampleTile = () => {
     sampleTile.status = 'UP';
     sampleTile.totalServices = 1;
 };
-
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
 describe('>>> Tile component tests', () => {
     beforeEach(() => {
         resetSampleTile();

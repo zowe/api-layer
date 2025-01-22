@@ -13,7 +13,7 @@ import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import customDoc from '../../assets/images/custom-doc.png';
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 const useStyles = makeStyles({
     root: {

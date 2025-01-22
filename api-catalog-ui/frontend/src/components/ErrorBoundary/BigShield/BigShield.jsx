@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { Typography, Button } from '@material-ui/core';
 import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIos';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router';
 import './BigShield.css';
 
 function BigShield({children}) {

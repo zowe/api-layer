@@ -59,6 +59,15 @@ const tiles = {
         'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.',
     services: [selectedService],
 };
+
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
 describe('>>> ServiceTab component tests', () => {
     it('should display service tab information', () => {
         const selectService = jest.fn();

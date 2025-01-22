@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useEffect, Suspense } from 'react';
-import {Navigate, Route, Routes} from 'react-router-dom';
+import {Navigate, Route, Routes} from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ErrorContainer from '../Error/ErrorContainer';
@@ -20,7 +20,6 @@ import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer 
 
 function App() {
     const isLoading = true;
-    const headerPath = '/(dashboard|service/.*)/';
     const dashboardPath = '/dashboard';
 
     useEffect(() => {
@@ -47,9 +46,10 @@ function App() {
                                         exact
                                         path={dashboardPath}
                                         element={
+
                                             <BigShield>
-                                                <HeaderContainer/>
-                                                <AsyncDashboardContainer/>
+                                                    <HeaderContainer/>
+                                                    <AsyncDashboardContainer/>
                                             </BigShield>
                                         }
                                     />

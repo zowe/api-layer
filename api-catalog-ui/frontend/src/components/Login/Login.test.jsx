@@ -8,11 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 import * as enzyme from 'enzyme';
-import { jest } from '@jest/globals';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Login from './Login';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
 describe('>>> Login page component tests', () => {
 
     beforeEach(() => {
@@ -101,7 +108,7 @@ describe('>>> Login page component tests', () => {
 
     it('should submit username and password input', () => {
         const loginMock = jest.fn();
-        render(<Login login={loginMock} />);
+        render(<Login login={loginMock} authentication={true} />);
         const password = screen.getByTestId('password');
         fireEvent.change(password, { target: { value: 'password' } });
         const username = screen.getByTestId('username');
@@ -211,7 +218,8 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should track keydown event on capslock', () => {
-        render(<Login />);
+
+        render(<Login authentication={true}/>);
 
         const password = screen.getByTestId('password');
         fireEvent.keyDown(password, { key: 'A', modifierCapsLock: true });
@@ -220,7 +228,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should track keyup event on capslock', () => {
-        render(<Login />);
+        render(<Login authentication={true}/>);
 
         const password = screen.getByTestId('password');
         fireEvent.keyUp(password, { key: 'A', modifierCapsLock: true });

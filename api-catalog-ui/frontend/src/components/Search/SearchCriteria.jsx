@@ -18,6 +18,7 @@ export default class SearchCriteria extends Component {
     raiseDoSearchWhenUserStoppedTyping = debounce(() => {
         const { criteria } = this.state;
         const { doSearch } = this.props;
+        console.log('vole')
         doSearch(criteria);
     }, 300);
 
@@ -32,13 +33,17 @@ export default class SearchCriteria extends Component {
 
     handleCriteriaChange(e) {
         this.setState({ criteria: e.currentTarget.value }, () => {
-            this.raiseDoSearchWhenUserStoppedTyping();
+            const { doSearch } = this.props;
+            const { criteria } = this.state;
+            doSearch(criteria);
+            // this.raiseDoSearchWhenUserStoppedTyping();
         });
     }
 
     clearSearch() {
         this.setState({ criteria: '' }, () => {
-            this.raiseDoSearchWhenUserStoppedTyping();
+            doSearch(criteria);
+            // this.raiseDoSearchWhenUserStoppedTyping();
         });
     }
 

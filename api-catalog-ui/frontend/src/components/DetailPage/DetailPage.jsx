@@ -10,7 +10,7 @@
 import React, { Component, Suspense, useEffect, useRef, useState } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import {Navigate, Route, Router, Routes, useMatch, useNavigate, useParams} from 'react-router-dom';
+import {Navigate, Route, Router, Routes, useMatch, useNavigate, useParams} from 'react-router';
 import PropTypes from 'prop-types';
 import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
@@ -30,9 +30,7 @@ function DetailPage({
                         selectedContentAnchor,
                         selectedTile,
                         services,
-                        match,
                         fetchTilesStart,
-                        history,
                         currentTileId,
                         fetchNewTiles,
                         tiles,
@@ -180,8 +178,6 @@ function DetailPage({
         if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
             customUIStyle(tiles[0].customStyleConfig);
         }
-        const params = useParams();
-        console.log('paramss',params)
         return (
             <div className="main">
                 <div className="nav-bar">

@@ -12,8 +12,7 @@ import React, { Component } from 'react';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import PropTypes from 'prop-types';
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 function Tile({ tile, service, storeCurrentTileId }) {
     const navigate = useNavigate();

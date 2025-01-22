@@ -27,6 +27,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                 error: null,
                 user: action.user,
                 showHeader: true,
+                loginSuccess: true,
                 showUpdatePassSuccess: action.showUpdatePassSuccess,
             };
         case userConstants.USERS_LOGIN_FAILURE:

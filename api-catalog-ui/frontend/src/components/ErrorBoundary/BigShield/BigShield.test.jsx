@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 /* eslint-disable no-console */
-import { React, act } from 'react';
+import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import BigShield from './BigShield';
 
@@ -16,7 +16,16 @@ const Child = () => {
     // eslint-disable-next-line no-throw-literal
     throw 'error';
 };
-
+const mockNavigate = jest.fn();
+const mockLocation = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+        useLocation: () => mockLocation,
+    };
+});
 describe('>>> BigShield component tests', () => {
     it('Should catches error and renders message', () => {
         const errorMessageMatch = new RegExp(
@@ -29,8 +38,7 @@ describe('>>> BigShield component tests', () => {
             root.render(
                 <BigShield>
                     <Child />
-                </BigShield>,
-                container
+                </BigShield>
             );
         });
         expect(container.textContent).toMatch(errorMessageMatch);
@@ -43,10 +51,9 @@ describe('>>> BigShield component tests', () => {
         act(() => {
             const root = createRoot(container);
             root.render(
-                <BigShield history={historyMock}>
-                    <Child history={historyMock} />
-                </BigShield>,
-                container
+                <BigShield >
+                    <Child />
+                </BigShield>
             );
         });
 

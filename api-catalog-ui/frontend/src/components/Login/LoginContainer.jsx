@@ -8,11 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import Login from './Login';
 import { userActions } from '../../actions/user-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
-import ServiceTab from "../ServiceTab/ServiceTab";
 
 const loadingSelector = createLoadingSelector(['USERS_LOGIN']);
 
@@ -29,12 +27,9 @@ const mapDispatchToProps = {
 };
 
 const withRouter = (Login) =>{
-
-    const Wrapper = (props) =>{
-
+    return (props) =>{
         return <Login {...props}/>
     }
-    return Wrapper;
 }
 
 

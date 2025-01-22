@@ -23,6 +23,7 @@ import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle } from '../../utils/utilFunctions';
 import { sortServices } from '../../selectors/selectors';
+import {useNavigate} from "react-router";
 
 function Dashboard({
                        tiles,
@@ -38,39 +39,24 @@ function Dashboard({
                        storeCurrentTileId,
                        storeContentAnchor,
                        selectEnabler,
-                       clear
+                       clear,
+                       refreshedStaticApi,
+                       wizardToggleDisplay,
+                       filterText,
+                       closeAlert
                    }) {
-
+    const navigate = useNavigate();
     useEffect(() => {
         clearService();
         fetchTilesStart();
-
+        if (!authentication.user) {
+            navigate('/login');
+        }
         return function cleanup () {
             clear();
             fetchTilesStop();
         }
     }, []);
-
-    const handleSearch = (value) => {
-        const { filterText } = this.props;
-        filterText(value);
-    };
-
-    const refreshStaticApis = () => {
-        const { refreshedStaticApi } = this.props;
-        refreshedStaticApi();
-    };
-
-    const toggleWizard = () => {
-        const { wizardToggleDisplay } = this.props;
-        wizardToggleDisplay();
-    };
-
-    const handleClose = () => {
-        const { closeAlert } = this.props;
-        closeAlert();
-    };
-
 
         const hasSearchCriteria =
             typeof searchCriteria !== 'undefined' &&
@@ -98,14 +84,14 @@ function Dashboard({
                     <DialogDropdown
                         selectEnabler={selectEnabler}
                         data={enablerData}
-                        toggleWizard={toggleWizard}
+                        toggleWizard={wizardToggleDisplay}
                         visible
                     />
                     <IconButton
                         id="refresh-api-button"
                         size="medium"
                         variant="outlined"
-                        onClick={refreshStaticApis}
+                        onClick={refreshedStaticApi}
                         style={{ borderRadius: '0.1875em' }}
                     >
                         Refresh Static APIs
@@ -115,9 +101,9 @@ function Dashboard({
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     open={authentication.showUpdatePassSuccess}
-                    onClose={handleClose}
+                    onClose={closeAlert}
                 >
-                    <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    <Alert onClose={closeAlert} severity="success" sx={{ width: '100%' }}>
                         Your mainframe password was successfully changed.
                     </Alert>
                 </Snackbar>
@@ -138,9 +124,6 @@ function Dashboard({
                     <div className="apis">
                         <div
                             id="grid-container"
-                            onScroll={(e) => {
-                                dashboardTileScroll(e);
-                            }}
                         >
                             <div className="filtering-container">
                                 <div id="search">
@@ -148,7 +131,7 @@ function Dashboard({
                                         <SearchCriteria
                                             id="search-input"
                                             placeholder="Search..."
-                                            doSearch={handleSearch}
+                                            doSearch={filterText}
                                         />
                                     </Shield>
                                 </div>
