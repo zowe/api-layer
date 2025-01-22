@@ -103,12 +103,13 @@ then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-# API Mediation Layer Debug Mode
-export LOG_LEVEL=
-
 if [ "${ZWE_configs_debug}" = "true" ]
 then
-  export LOG_LEVEL="debug"
+    if [ -n "${ZWE_configs_spring_profiles_active}" ];
+    then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
 fi
 
 if [  "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
@@ -288,7 +289,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dspring.profiles.include=${LOG_LEVEL} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
