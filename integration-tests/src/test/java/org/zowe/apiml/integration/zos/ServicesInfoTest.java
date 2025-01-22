@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -161,7 +160,6 @@ class ServicesInfoTest implements TestWithStartedInstances {
         class ReturnForbidden {
 
             @Test
-            @Disabled("Disabled until SAF issues are fixed")
             @SuppressWarnings({"squid:S2699", "Assets are after then()"})
             void givenValidUnauthorizedCredentials() {
                 String expectedMessage = "The user is not authorized to the target resource:";
