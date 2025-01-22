@@ -42,16 +42,4 @@ describe('>>> Search bar component tests', () => {
         expect(wrapper.state().criteria).toEqual('foo');
     });
 
-    it('should handle search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
-        wrapper.setState({ criteria: '' });
-        const instance = wrapper.instance();
-        const e = {
-            currentTarget: {
-                value: 'foo',
-            },
-        };
-        instance.handleCriteriaChange(e);
-        expect(wrapper.state().criteria).toEqual('foo');
-    });
 });
