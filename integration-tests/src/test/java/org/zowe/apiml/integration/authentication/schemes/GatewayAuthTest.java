@@ -81,10 +81,12 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 "cookies.jwtToken",
                 "headers.authorization"
             }) {
-                if (path.equals(ignore)) continue;
-                assertNull(response.jsonPath().getString(path));
+                if (path.equals(ignore)) {
+                    continue;
+                }
+                assertNull(response.jsonPath().getString(path), "Expected " + path + " to be Null. Response is: " + response.asPrettyString());
             }
-            assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+            assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs. Response is: " + response.asPrettyString());
         };
 
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
@@ -196,7 +198,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
             .when()
                 .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
-            assertEquals(200, response.getStatusCode());
+            assertEquals(200, response.getStatusCode(), "Expected 200 while using token " + pat);
             assertions.accept("headers.authorization", response);
             assertEquals("Bearer " + pat, response.jsonPath().getString("headers.authorization"));
         }

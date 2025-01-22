@@ -382,17 +382,20 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        String token = given()
-            .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
-            .body(accessTokenRequest)
+        try {
+            String token = given()
+                .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
+                .body(accessTokenRequest)
             .when()
-            .post(gatewayGenerateAccessTokenEndpoint)
+                .post(gatewayGenerateAccessTokenEndpoint)
             .then()
-            .statusCode(is(SC_OK))
-            .extract().body().asString();
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-        return token;
+                .log().ifValidationFails()
+                .statusCode(is(SC_OK))
+                .extract().body().asString();
+            return token;
+        } finally {
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     public static String personalAccessTokenWithClientCert(RestAssuredConfig sslConfig) {
