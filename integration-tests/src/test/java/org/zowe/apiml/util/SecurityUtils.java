@@ -268,20 +268,21 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        String zosmfToken = given()
-            .contentType(JSON)
-            .auth().preemptive().basic(USERNAME, PASSWORD)
-            .header("X-CSRF-ZOSMF-HEADER", "")
+        try {
+            String zosmfToken = given()
+                .contentType(JSON)
+                .auth().preemptive().basic(USERNAME, PASSWORD)
+                .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
-            .post(url)
+                .post(url)
             .then()
-            .statusCode(is(expectedCode))
-            .cookie(cookie, not(isEmptyString()))
-            .extract().cookie(cookie);
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-
-        return zosmfToken;
+                .statusCode(is(expectedCode))
+                .cookie(cookie, not(isEmptyString()))
+                .extract().cookie(cookie);
+            return zosmfToken;
+        } finally {
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     public static String generateZoweJwtWithLtpa(String ltpaToken) throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
@@ -412,16 +413,18 @@ public class SecurityUtils {
         SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60, scopes);
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
 
-        String token = given().config(sslConfig)
-            .body(accessTokenRequest)
-            .when()
-            .post(gatewayGenerateAccessTokenEndpoint)
-            .then()
-            .statusCode(is(SC_OK))
-            .extract().body().asString();
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-        return token;
+        try {
+            String token = given().config(sslConfig)
+                .body(accessTokenRequest)
+                .when()
+                .post(gatewayGenerateAccessTokenEndpoint)
+                .then()
+                .statusCode(is(SC_OK))
+                .extract().body().asString();
+            return token;
+        } finally {
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     public static String validOktaAccessToken(boolean userHasMappingDefined) {
