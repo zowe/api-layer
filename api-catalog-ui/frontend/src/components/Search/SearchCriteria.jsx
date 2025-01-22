@@ -8,19 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { Component } from 'react';
-import { debounce } from 'lodash';
 import { InputAdornment, TextField } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import ClearIcon from '@material-ui/icons/Clear';
 
 export default class SearchCriteria extends Component {
-    // eslint-disable-next-line react/sort-comp
-    raiseDoSearchWhenUserStoppedTyping = debounce(() => {
-        const { criteria } = this.state;
-        const { doSearch } = this.props;
-        console.log('vole')
-        doSearch(criteria);
-    }, 300);
 
     constructor(props) {
         super(props);
@@ -31,20 +23,18 @@ export default class SearchCriteria extends Component {
         this.clearSearch = this.clearSearch.bind(this);
     }
 
+    doSearch() {
+        const { doSearch } = this.props;
+        const { criteria } = this.state;
+        doSearch(criteria);
+    }
+
     handleCriteriaChange(e) {
-        this.setState({ criteria: e.currentTarget.value }, () => {
-            const { doSearch } = this.props;
-            const { criteria } = this.state;
-            doSearch(criteria);
-            // this.raiseDoSearchWhenUserStoppedTyping();
-        });
+        this.setState({ criteria: e.currentTarget.value }, () => this.doSearch());
     }
 
     clearSearch() {
-        this.setState({ criteria: '' }, () => {
-            doSearch(criteria);
-            // this.raiseDoSearchWhenUserStoppedTyping();
-        });
+        this.setState({ criteria: '' }, () => this.doSearch());
     }
 
     render() {
