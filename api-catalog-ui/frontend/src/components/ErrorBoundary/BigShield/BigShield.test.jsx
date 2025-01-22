@@ -8,9 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 /* eslint-disable no-console */
-import { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import {act} from 'react';
+import {createRoot} from 'react-dom/client';
 import BigShield from './BigShield';
+import {useNavigate} from "react-router";
 
 const Child = () => {
     // eslint-disable-next-line no-throw-literal
@@ -29,14 +30,13 @@ jest.mock('react-router', () => {
 describe('>>> BigShield component tests', () => {
     it('Should catches error and renders message', () => {
         const errorMessageMatch = new RegExp(
-            'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack\n' +
-                '    at Child\n.*'
+            'An unexpected browser error occurredYou are seeing this page because an unexpected error occurred while rendering your page.The Dashboard is broken, you cannot navigate away from this page.Display the error stackDisplay the component stack.*'
         );
         const container = document.createElement('div');
         act(() => {
             const root = createRoot(container);
             root.render(
-                <BigShield>
+                <BigShield disableButton={true}>
                     <Child />
                 </BigShield>
             );
@@ -45,13 +45,16 @@ describe('>>> BigShield component tests', () => {
     });
 
     it('Should go back to dashboard', () => {
-        const historyMock = { push: jest.fn() };
+        jest.mock('react-router', () => ({
+            ...jest.requireActual('react-router'),
+            useNavigate: () => jest.fn(),
+        }));
 
         const container = document.createElement('div');
         act(() => {
             const root = createRoot(container);
             root.render(
-                <BigShield >
+                <BigShield disableButton={false}>
                     <Child />
                 </BigShield>
             );
@@ -65,6 +68,6 @@ describe('>>> BigShield component tests', () => {
             button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         });
 
-        expect(historyMock.push).toHaveBeenCalledWith('/dashboard');
+        expect(useNavigate()).toHaveBeenCalledWith('/dashboard');
     });
 });
