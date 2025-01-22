@@ -119,7 +119,7 @@ fi
 #   then
 #       ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
 #   fi
-#   ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
+#   ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}diag"
 # fi
 
 # how to verifyCertificates
