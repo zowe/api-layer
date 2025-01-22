@@ -27,7 +27,6 @@ function DetailPage({
                         clearService,
                         fetchTilesStop,
                         fetchTilesError,
-                        selectedContentAnchor,
                         selectedTile,
                         services,
                         fetchTilesStart,
@@ -36,15 +35,7 @@ function DetailPage({
                         tiles,
                     }) {
     const [error, setError] = useState(null);
-    console.log(selectedContentAnchor);
-    useEffect(() => {
-        const elementToView = document.querySelector(selectedContentAnchor);
-        if (elementToView) {
-            setTimeout(() => {
-                elementToView.scrollIntoView({behavior: 'smooth'});
-            }, 300);
-        }
-    }, [selectedContentAnchor]);
+
 
     useEffect(() => {
         fetchNewTiles();

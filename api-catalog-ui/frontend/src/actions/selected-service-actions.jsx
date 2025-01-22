@@ -26,9 +26,3 @@ export function clearService() {
     };
 }
 
-export function storeContentAnchor(id) {
-    return {
-        type: STORE_CONTENT_ANCHOR,
-        payload: id,
-    };
-}

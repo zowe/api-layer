@@ -37,7 +37,6 @@ function Dashboard({
                        clearError,
                        authentication,
                        storeCurrentTileId,
-                       storeContentAnchor,
                        selectEnabler,
                        clear,
                        refreshedStaticApi,
@@ -147,7 +146,6 @@ function Dashboard({
                                             .map((tile) => (
                                                 <Tile
                                                     storeCurrentTileId={storeCurrentTileId}
-                                                    storeContentAnchor={storeContentAnchor}
                                                     service={service}
                                                     key={service}
                                                     tile={tile}
@@ -174,9 +172,4 @@ function Dashboard({
 }
 
 export default Dashboard;
-// Dashboard.propTypes = {
-//     tiles: PropTypes.shape({
-//         filter: PropTypes.func.isRequired,
-//     }).isRequired,
-//     storeContentAnchor: PropTypes.func.isRequired,
-// };
+
