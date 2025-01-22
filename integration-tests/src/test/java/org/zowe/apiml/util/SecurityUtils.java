@@ -16,18 +16,18 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
-import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
-import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.ContentType;
@@ -36,6 +36,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.util.EntityUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -56,16 +57,32 @@ import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.SSLContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.security.*;
+import java.net.URISyntaxException;
+import java.security.Key;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -77,7 +94,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.GENERATE_ACCESS_TOKEN;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
+import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
 
 public class SecurityUtils {
     public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
@@ -408,31 +428,33 @@ public class SecurityUtils {
         assertNotNull(sessionToken, "Failed to get session token from Okta authentication.");
 
         // retrieve the access token from Okta using session token
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("client_id", OKTA_CLIENT_ID);
-        queryParams.put("redirect_uri", "https://localhost:10010/login/oauth2/code/okta");
-        queryParams.put("response_type", "token");
-        queryParams.put("response_mode", "form_post");
-        queryParams.put("sessionToken", sessionToken);
-        queryParams.put("scope", "openid");
-        queryParams.put("state", "TEST");
-        queryParams.put("nonce", "TEST");
-        Response authResponse = given()
-                .config(RestAssured.config().httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 30 * 1000)))
-                .queryParams(queryParams)
-            .when()
-                .get(OKTA_HOSTNAME + "/oauth2/v1/authorize")
-            .then()
-            .log().ifValidationFails()
-                .statusCode(200)
-                .extract().response();
 
-        // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            var uriBuilder = new URIBuilder(OKTA_HOSTNAME + "/oauth2/v1/authorize");
+            uriBuilder.setParameter("client_id", OKTA_CLIENT_ID)
+                .setParameter("redirect_uri", "https://localhost:10010/login/oauth2/code/okta")
+                .setParameter("response_type", "token")
+                .setParameter("response_mode", "form_post")
+                .setParameter("sessionToken", sessionToken)
+                .setParameter("scope", "openid")
+                .setParameter("state", "TEST")
+                .setParameter("nonce", "TEST");
+            var request = new HttpGet(uriBuilder.build());
+            var response = httpClient.execute(request);
 
-        String body = authResponse.getBody().asString();
-        String accessToken = StringUtils.substringBetween(body, "name=\"access_token\" value=\"", "\"/>");
-        assertNotNull(accessToken, "Failed to locate access token in the Okta /authorize response.");
-        return accessToken;
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+
+                var body = EntityUtils.toString(response.getEntity());
+                var accessToken = StringUtils.substringBetween(body, "name=\"access_token\" value=\"", "\"/>");
+                assertNotNull(accessToken, "Failed to locate access token in the Okta /authorize response.");
+                return accessToken;
+            } else {
+                throw new RuntimeException("Failed obtaining OKTA access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String getOktaSession(String username, String password) {
