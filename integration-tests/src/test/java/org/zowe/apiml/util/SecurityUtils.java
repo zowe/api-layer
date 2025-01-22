@@ -22,6 +22,7 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.Cookie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,6 +33,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -475,14 +477,26 @@ public class SecurityUtils {
             e.printStackTrace();
         }
 
-        return given()
-            .contentType(JSON)
-            .body(requestBody.toString())
-            .when()
-            .post(OKTA_HOSTNAME + "/api/v1/authn")
-            .then()
-            .statusCode(200)
-            .extract().path("sessionToken");
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            var uriBuilder = new URIBuilder(OKTA_HOSTNAME + "/api/v1/authn");
+
+            var request = new HttpPost(uriBuilder.build());
+            request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            var entity = new StringEntity(requestBody.toString());
+            request.setEntity(entity);
+            var response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+
+                var responseBody = EntityUtils.toString(response.getEntity());
+                return new JSONObject(responseBody).getString("sessionToken");
+            } else {
+                throw new RuntimeException("Failed obtaining OKTA access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException | ParseException | JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String expiredOktaAccessToken() {
