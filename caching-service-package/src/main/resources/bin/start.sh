@@ -92,12 +92,12 @@ fi
 
 if [ -z "${ZWE_configs_storage_infinispan_persistence_dataLocation}" ]; then
   if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
-    ZWE_configs_storage_infinispan_persistence_dataLocation="${ZWE_zowe_workspaceDirectory}/caching-service/data"
+    ZWE_configs_storage_infinispan_persistence_dataLocation="${ZWE_zowe_workspaceDirectory}/caching-service/${ZWE_haInstance_id:-localhost}/data"
   fi
 fi
 if [ -z "${ZWE_configs_storage_infinispan_persistence_indexLocation}" ]; then
   if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
-    ZWE_configs_storage_infinispan_persistence_indexLocation="${ZWE_zowe_workspaceDirectory}/caching-service/index"
+    ZWE_configs_storage_infinispan_persistence_indexLocation="${ZWE_zowe_workspaceDirectory}/caching-service/${ZWE_haInstance_id:-localhost}/index"
   fi
 fi
 if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ]; then
