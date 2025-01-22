@@ -79,7 +79,6 @@ export function fetchTilesRetry(retryAttempt, maxRetries) {
 
 export function fetchTilesStart(id) {
     // dismiss the notification if it is displayed
-    console.log('start')
     toast.dismiss(fetchRetryToastId);
     return {
         type: FETCH_TILES_REQUEST,
@@ -88,7 +87,6 @@ export function fetchTilesStart(id) {
 }
 
 export function fetchNewTiles(id) {
-    console.log('new')
     return {
         type: FETCH_NEW_TILES_REQUEST,
         payload: id,

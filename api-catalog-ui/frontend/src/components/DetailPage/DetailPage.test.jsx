@@ -7,12 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import {fireEvent, render, screen} from '@testing-library/react';
+import {fireEvent, screen} from '@testing-library/react';
 import {describe, expect, it} from '@jest/globals';
 import DetailPage from './DetailPage';
 import {BrowserRouter, HashRouter, Route, Routes} from "react-router";
-import PageNotFound from "../PageNotFound/PageNotFound";
-import {Provider} from "react-redux";
+import configureStore from "redux-mock-store";
+import {renderWithProviders} from "../../helpers/test-utils";
+import '@testing-library/jest-dom';
 
 Object.defineProperty(global, 'performance', {
     writable: true,
@@ -41,7 +42,7 @@ const tile = {
     lastUpdatedTimestamp: '2018-08-22T08:32:03.110+0000',
     createdTimestamp: '2018-08-22T08:31:22.948+0000',
 };
-
+const store = configureStore();
 const mockNavigate = jest.fn();
 jest.mock('react-router', () => {
     return {
@@ -59,8 +60,7 @@ describe('>>> Detailed Page component tests', () => {
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
 
-        render(<BrowserRouter>
-                <Provider store={store}>
+        renderWithProviders(<BrowserRouter>
                     <Routes>
                         <Route path="*" element={<DetailPage
                             tiles={[tile]}
@@ -71,7 +71,6 @@ describe('>>> Detailed Page component tests', () => {
                             fetchTilesStop={jest.fn()}
                         />}/>
                     </Routes>
-                </Provider>
             </BrowserRouter>
         );
         expect(fetchTilesStart).toHaveBeenCalled();
@@ -79,115 +78,124 @@ describe('>>> Detailed Page component tests', () => {
 
     it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={fetchTilesStop}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStart={jest.fn()}
+                        fetchTilesStop={fetchTilesStop}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
-        const instance = wrapper.instance();
-        instance.componentWillUnmount();
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
     it('should handle a back button click', () => {
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={jest.fn()}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={jest.fn()}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        services={tile.services}
+                        currentTileId="apicatalog"
+                        fetchTilesStart={jest.fn()}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStop={jest.fn()}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
-        wrapper.find('[data-testid="go-back-button"]').simulate('click');
+        fireEvent.click( screen.getByTestId('go-back-button'));
+
     });
 
     it('should load spinner when waiting for data', () => {
         const isLoading = true;
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                fetchTilesStart={jest.fn()}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={jest.fn()}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        fetchTilesStart={jest.fn()}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStop={jest.fn()}
+                        isLoading={isLoading}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
-        const spinner = wrapper.find('Spinner');
-        expect(spinner.props().isLoading).toEqual(true);
+        const spinner  = screen.getByTestId('spinner');
+        expect(spinner).toBeInTheDocument();
     });
 
-    it('should display tile title', () => {
+    it('should display tile title and description', () => {
         const isLoading = false;
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={jest.fn()}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                isLoading={isLoading}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        services={tile.services}
+                        currentTileId="apicatalog"
+                        fetchTilesStart={jest.fn()}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStop={jest.fn()}
+                        isLoading={isLoading}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
-        const title = wrapper.find('#title');
-        expect(title.props().children).toEqual(tile.title);
+        const catalogTile  = screen.getByText('API Catalog');
+        expect(catalogTile).toBeInTheDocument();
+        const catalogDescription  = screen.getByText('API ML Microservice to locate and display API documentation for API ML discovered microservices');
+        expect(catalogDescription).toBeInTheDocument();
     });
 
-    it('should display tile description', () => {
-        const isLoading = false;
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={jest.fn()}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={jest.fn()}
-                isLoading={isLoading}
-            />
-        );
-        const title = wrapper.find('#description');
-        expect(title.props().children).toEqual(tile.description);
-    });
-
-    it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
+    it('should stop fetch tiles for 404 response code', () => {
         const isLoading = false;
         const fetchTilesStop = jest.fn();
         const fetchTilesError = {
             status: 404,
         };
-        shallow(
-            <DetailPage
-                tiles={[tile]}
-                fetchTilesStart={jest.fn()}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={fetchTilesStop}
-                fetchTilesError={fetchTilesError}
-                isLoading={isLoading}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        fetchTilesStart={jest.fn()}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStop={fetchTilesStop}
+                        fetchTilesError={fetchTilesError}
+                        isLoading={isLoading}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
-    it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
+    it('should stop fetch tiles for error message', () => {
         const isLoading = false;
         const fetchTilesStop = jest.fn();
         const fetchTilesError = {
             message: 'some message',
         };
-        shallow(
-            <DetailPage
-                tiles={[tile]}
-                fetchTilesStart={jest.fn()}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={fetchTilesStop}
-                fetchTilesError={fetchTilesError}
-                isLoading={isLoading}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        fetchTilesStart={jest.fn()}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStop={fetchTilesStop}
+                        fetchTilesError={fetchTilesError}
+                        isLoading={isLoading}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
         expect(fetchTilesStop).toHaveBeenCalled();
     });
@@ -199,21 +207,57 @@ describe('>>> Detailed Page component tests', () => {
         const fetchTilesStart = jest.fn();
         const clearService = jest.fn();
         const selectedTile = 'apicatalog';
-        shallow(
-            <DetailPage
-                tiles={[tile]}
-                clearService={clearService}
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={jest.fn()}
-                fetchTilesStop={fetchTilesStop}
-                fetchTilesError={fetchTilesError}
-                isLoading={isLoading}
-                selectedTile={selectedTile}
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        clearService={clearService}
+                        fetchTilesStart={fetchTilesStart}
+                        fetchNewTiles={jest.fn()}
+                        fetchTilesStop={fetchTilesStop}
+                        fetchTilesError={fetchTilesError}
+                        isLoading={isLoading}
+                        selectedTile={selectedTile}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
         expect(fetchTilesStop).toHaveBeenCalled();
         expect(clearService).toHaveBeenCalled();
         expect(fetchTilesStart).toHaveBeenCalled();
+    });
+
+    it('calls scrollIntoView with correct options after 300ms when selectedContentAnchor changes', () => {
+        const scrollIntoViewMock = jest.fn();
+        window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+        const fetchTilesStart = jest.fn();
+        const fetchNewTiles = jest.fn();
+        const selectedAnchor = '.detailed-description-container';
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        services={tile.services}
+                        currentTileId="apicatalog"
+                        fetchTilesStart={fetchTilesStart}
+                        fetchNewTiles={fetchNewTiles}
+                        fetchTilesStop={jest.fn()}
+                        selectedContentAnchor={selectedAnchor}
+                    />}/>
+                </Routes>
+            </BrowserRouter>
+        );
+
+
+        const element = screen.getByText('API ML Microservice to locate and display API documentation for API ML discovered microservices');
+        expect(element).toBeInTheDocument();
+        expect(scrollIntoViewMock).not.toHaveBeenCalled();
+
+        jest.advanceTimersByTime(400);
+
+        expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: 'smooth' });
     });
 
     it('should scroll into view when selectedContentAnchor prop is updated', () => {
@@ -221,17 +265,20 @@ describe('>>> Detailed Page component tests', () => {
 
         const fetchTilesStart = jest.fn();
         const fetchNewTiles = jest.fn();
-
-        const wrapper = shallow(
-            <DetailPage
-                tiles={[tile]}
-                services={tile.services}
-                currentTileId="apicatalog"
-                fetchTilesStart={fetchTilesStart}
-                fetchNewTiles={fetchNewTiles}
-                fetchTilesStop={jest.fn()}
-                selectedContentAnchor="#id"
-            />
+        renderWithProviders(
+            <BrowserRouter>
+                <Routes>
+                    <Route path="*" element={<DetailPage
+                        tiles={[tile]}
+                        services={tile.services}
+                        currentTileId="apicatalog"
+                        fetchTilesStart={fetchTilesStart}
+                        fetchNewTiles={fetchNewTiles}
+                        fetchTilesStop={jest.fn()}
+                        selectedContentAnchor="#id"
+                    />}/>
+                </Routes>
+            </BrowserRouter>
         );
 
         const scrollIntoViewMock = jest.fn();

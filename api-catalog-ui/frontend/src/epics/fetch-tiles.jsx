@@ -56,7 +56,6 @@ function checkOrigin() {
  */
 function getUrl(action) {
     let url = `${getBaseUrl()}${process?.env.REACT_APP_CATALOG_UPDATE}`;
-    console.log('tiles',url)
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }

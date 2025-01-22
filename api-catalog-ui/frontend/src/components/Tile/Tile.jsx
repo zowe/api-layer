@@ -14,7 +14,7 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import {useNavigate} from "react-router";
 
-function Tile({ tile, service, storeCurrentTileId }) {
+function Tile({ tile, service, storeCurrentTileId, storeContentAnchor }) {
     const navigate = useNavigate();
     const getTileStatus = (tile) => {
         const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;

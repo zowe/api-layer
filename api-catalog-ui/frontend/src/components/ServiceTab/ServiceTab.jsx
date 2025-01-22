@@ -167,7 +167,6 @@ function ServiceTab({tiles,selectedService,basePath,selectService,currentTileId,
     if (tiles === null || tiles === undefined || tiles.length === 0) {
         throw new Error('No tile is selected.');
     }
-    console.log('tttail',tiles)
 
     const graphqlUrl = getGraphqlUrl(selectedService.apis);
     const title = graphqlUrl ? 'GraphQL' : 'Swagger';
@@ -175,7 +174,6 @@ function ServiceTab({tiles,selectedService,basePath,selectService,currentTileId,
     const message = 'The API documentation was retrieved but could not be displayed.';
     const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
     const { serviceId } = useParams();
-    console.log('serrID',serviceId)
     return (
         <>
             {currentService() === null && (
