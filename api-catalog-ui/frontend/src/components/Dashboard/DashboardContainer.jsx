@@ -38,7 +38,7 @@ const mapStateToProps = (state) => ({
 
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = {
     clearService,
     fetchTilesStart,
     fetchTilesSuccess,
@@ -52,7 +52,7 @@ const mapDispatchToProps = (dispatch) => ({
     selectEnabler,
     closeAlert: () => userActions.closeAlert(),
     storeCurrentTileId: (id) => storeCurrentTileId(id),
-    selectService: (service, tileId) => dispatch(selectService(service, tileId)),
-});
+    selectService: (service, tileId) => selectService(service, tileId),
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
