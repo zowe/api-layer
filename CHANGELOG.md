@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 3.1.1 / Zowe 3.1.0 (2025-02-03)`
+## `APIML 3.1.3 / Zowe 3.1.0 (2025-02-03)`
 
 * Feature:  Override external URL for additional registration (#3935) ([d5dd912](https://github.com/zowe/api-layer/commit/d5dd912)), closes [#3935](https://github.com/zowe/api-layer/issues/3935)
 * Feature:  Support OIDC token to authenticate in API Catalog (#3925) ([a4ead1d](https://github.com/zowe/api-layer/commit/a4ead1d)), closes [#3925](https://github.com/zowe/api-layer/issues/3925)
@@ -38,6 +38,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Respect SSL strictness in enabler (#3813) ([bc55168](https://github.com/zowe/api-layer/commit/bc55168)), closes [#3813](https://github.com/zowe/api-layer/issues/3813)
 * Bugfix:  Configure SSL context for webclient (#3811) ([476c69b](https://github.com/zowe/api-layer/commit/476c69b)), closes [#3811](https://github.com/zowe/api-layer/issues/3811)
 * Bugfix:  Minor fixes in logs (#3806) ([5abc91e](https://github.com/zowe/api-layer/commit/5abc91e)), closes [#3806](https://github.com/zowe/api-layer/issues/3806)
+* Bugfix:  Change refill strategy for API rate limiting (#3949) ([32793d87](https://github.com/zowe/api-layer/commit/32793d87)), closes [#3949](https://github.com/zowe/api-layer/issues/3949)
+* Bugfix:  Fix LogBack turbofilters configuration (#3954) ([fc8b58d5](https://github.com/zowe/api-layer/commit/fc8b58d5)), closes [#3954](https://github.com/zowe/api-layer/issues/3954)
 
 ## `APIML 3.0.36 / Zowe 3.0.0 (2024-10-01)`
 
