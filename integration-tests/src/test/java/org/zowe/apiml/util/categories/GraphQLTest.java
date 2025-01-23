@@ -19,8 +19,8 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
-@Tag("BookControllerTest")
+@Tag("GraphQLTest")
 @Target({ TYPE, METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BookControllerTest {
+public @interface GraphQLTest {
 }
