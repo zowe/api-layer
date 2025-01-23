@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -22,6 +19,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.support.AopUtils;
@@ -56,6 +55,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
@@ -74,6 +74,8 @@ import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -146,6 +148,9 @@ public class ConnectionsConfig {
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
     }
+
+    @Value("${apiml.service.externalUrl:}")
+    private String externalUrl;
 
     @PostConstruct
     public void updateConfigParameters() {
@@ -328,13 +333,13 @@ public class ConnectionsConfig {
         configBean.setServiceUrl(urls);
 
         EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
-        InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
+        InstanceInfo newInfo = create(eurekaInstanceConfig);
 
         updateMetadata(newInfo, apimlRegistration);
 
         RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
         RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
-        return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, context, factories, args1);
+        return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
     }
 
     private boolean isRouteKey(String key) {
@@ -414,6 +419,128 @@ public class ConnectionsConfig {
     @Bean
     public CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
+    }
+
+    public InstanceInfo create(EurekaInstanceConfig config)  {
+        LeaseInfo.Builder leaseInfoBuilder = LeaseInfo.Builder.newBuilder()
+            .setRenewalIntervalInSecs(config.getLeaseRenewalIntervalInSeconds())
+            .setDurationInSecs(config.getLeaseExpirationDurationInSeconds());
+
+        // Builder the instance information to be registered with eureka
+        // server
+        InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
+
+        String namespace = config.getNamespace();
+        if (!namespace.endsWith(".")) {
+            namespace = namespace + ".";
+        }
+        URL url;
+        try {
+            url = new URL(externalUrl);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+        builder
+            .setNamespace(namespace)
+            .setAppName(config.getAppname())
+            .setInstanceId(config.getInstanceId())
+            .setAppGroupName(config.getAppGroupName())
+            .setDataCenterInfo(config.getDataCenterInfo())
+            .setIPAddr(config.getIpAddress())
+            .setHostName(url.getHost())
+            .setPort(url.getPort())
+            .enablePort(InstanceInfo.PortType.UNSECURE, config.isNonSecurePortEnabled())
+            .setSecurePort(url.getPort())
+            .enablePort(InstanceInfo.PortType.SECURE, config.getSecurePortEnabled())
+            .setVIPAddress(config.getVirtualHostName())
+            .setSecureVIPAddress(config.getSecureVirtualHostName())
+            .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
+            .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
+            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null,null)
+            .setASGName(config.getASGName());
+
+        // Start off with the STARTING state to avoid traffic
+        if (!config.isInstanceEnabledOnit()) {
+            InstanceInfo.InstanceStatus initialStatus = InstanceInfo.InstanceStatus.STARTING;
+            if (log.isInfoEnabled()) {
+                log.info("Setting initial instance status as: " + initialStatus);
+            }
+            builder.setStatus(initialStatus);
+        }
+        else {
+            if (log.isInfoEnabled()) {
+                log.info("Setting initial instance status as: " + InstanceInfo.InstanceStatus.UP
+                    + ". This may be too early for the instance to advertise itself as available. "
+                    + "You would instead want to control this via a healthcheck handler.");
+            }
+        }
+
+        // Add any user-specific metadata information
+        var fromUrl = UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString();
+        var toUrl = UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString();
+        for (Map.Entry<String, String> mapEntry : config.getMetadataMap().entrySet()) {
+            String key = mapEntry.getKey();
+            String value = mapEntry.getValue();
+            // only add the metadata if the value is present
+            if (value != null && !value.isEmpty()) {
+                value = value.replace(fromUrl, toUrl);
+                builder.add(key, value);
+            }
+        }
+
+        InstanceInfo instanceInfo = builder.build();
+        instanceInfo.setLeaseInfo(leaseInfoBuilder.build());
+        return instanceInfo;
+    }
+
+    @RequiredArgsConstructor
+    static class AdditionalEurekaConfiguration implements EurekaInstanceConfig {
+
+        @Delegate(excludes = NonDelegated.class)
+        private final EurekaInstanceConfig eurekaInstanceConfig;
+
+        private final InstanceInfo instanceInfo;
+
+        @Override
+        public String getHostName(boolean refresh) {
+            eurekaInstanceConfig.getHostName(refresh);
+            return instanceInfo.getHostName();
+        }
+
+        @Override
+        public String getHealthCheckUrl() {
+            if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
+                return instanceInfo.getHealthCheckUrl();
+            }
+            return instanceInfo.getSecureHealthCheckUrl();
+        }
+
+        @Override
+        public String getSecureHealthCheckUrl() {
+            return instanceInfo.getSecureHealthCheckUrl();
+        }
+
+        @Override
+        public String getHomePageUrl() {
+            return instanceInfo.getHomePageUrl();
+        }
+
+        @Override
+        public String getStatusPageUrl() {
+            return instanceInfo.getStatusPageUrl();
+        }
+
+        interface NonDelegated {
+
+            String getHostName(boolean refresh);
+            String getHealthCheckUrl();
+            String getSecureHealthCheckUrl();
+            String getHomePageUrl();
+            String getStatusPageUrl();
+
+        }
+
     }
 
 }

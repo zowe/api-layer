@@ -31,7 +31,6 @@ class LogLevelInfoFilterTest {
 
     @BeforeEach
     void setUp() {
-        System.getProperties().setProperty("spring.profiles.include", "");
         filterInstance = new LogLevelInfoFilter();
     }
 
@@ -40,22 +39,6 @@ class LogLevelInfoFilterTest {
         FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null,
                 null);
         assertEquals(FilterReply.DENY, reply, "Filter does not filter INFO level messages");
-    }
-
-    @Test
-    void createInactiveFilterInDebugMode() {
-        System.getProperties().setProperty("spring.profiles.include", "blueberries,debug,diag");
-        LogLevelInfoFilter filter = new LogLevelInfoFilter();
-        FilterReply reply = filter.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null, null);
-        assertEquals(FilterReply.NEUTRAL, reply, "Filter should not filter when service not in debug mode");
-    }
-
-    @Test
-    void createInactiveFilterInDebugModeWithDevProfile() {
-        System.getProperties().setProperty("spring.profiles.include", "blueberries,dev,diag");
-        LogLevelInfoFilter filter = new LogLevelInfoFilter();
-        FilterReply reply = filter.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null, null);
-        assertEquals(FilterReply.NEUTRAL, reply, "Filter should not filter when service not in debug mode");
     }
 
     @Test

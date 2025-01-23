@@ -53,12 +53,14 @@ else
 fi
 
 echo "jar file: "${JAR_FILE}
-# API Mediation Layer Debug Mode
-export LOG_LEVEL=
 
 if [ "${ZWE_configs_debug}" = "true" ]
 then
-  export LOG_LEVEL="debug"
+    if [ -n "${ZWE_configs_spring_profiles_active}" ];
+    then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
 fi
 
 if [ -z "${LIBRARY_PATH}" ]
@@ -239,7 +241,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dfile.encoding=UTF-8 \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-  -Dspring.profiles.include=$LOG_LEVEL \
   -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
   -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
   -Dapiml.service.port=${ZWE_configs_port:-7555} \

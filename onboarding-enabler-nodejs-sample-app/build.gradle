@@ -26,6 +26,8 @@ node {
 
 build.dependsOn npmInstall
 
+npmInstall.dependsOn ":onboarding-enabler-nodejs:build"
+
 task nodeClean(type: Delete) {
     group = 'node'
     if (rootProject.cleanNodeModules == 'true') {

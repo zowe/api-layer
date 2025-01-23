@@ -98,7 +98,7 @@ public class AdditionalRegistrationTest {
             metadata.put("apiml.routes.0.gatewayUrl", "/api/v1");
             metadata.put("apiml.routes.0.serviceUrl", "/service/api/v1");
             instanceInfo = InstanceInfo.Builder.newBuilder().setAppName("service1").setMetadata(metadata).build();
-            lenient().when(eurekaFactory.createInstanceInfo(any())).thenReturn(instanceInfo);
+            lenient().doReturn(instanceInfo).when(configSpy).create(any());
         }
 
         @Test

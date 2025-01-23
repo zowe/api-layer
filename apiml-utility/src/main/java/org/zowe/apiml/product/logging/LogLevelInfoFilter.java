@@ -25,24 +25,15 @@ import org.slf4j.Marker;
  * Solution is that ApimlLogger is enhancing its logs with Marker instances and this filter is providing
  * adequate filtering.
  *
- * The filter is normally enabled (filtering), or disabled when the service is started with debug profile included
- * in system variable spring.profiles.include
  */
 public class LogLevelInfoFilter extends TurboFilter {
 
     private static final String APIML_MARKER = "APIML-LOGGER";
-    private boolean isFilterActive;
-
-    public LogLevelInfoFilter() {
-        String profiles = System.getProperties().getProperty("spring.profiles.include");
-        isFilterActive = profiles == null || !(profiles.toLowerCase().contains("debug") || profiles.toLowerCase().contains("dev"));
-    }
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
 
-        if (isFilterActive
-            && isLevelInfoOrLower(level)
+        if (isLevelInfoOrLower(level)
             && isInternalLogger(logger)
             && ( marker == null || !marker.getName().equals(APIML_MARKER))
         ) {

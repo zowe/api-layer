@@ -8,12 +8,27 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+plugins {
+    alias(libs.plugins.gradle.node)
+}
+
+node {
+    download = true
+    version = libs.versions.projectNode.get()
+    npmVersion = libs.versions.projectNpm.get()
+    distBaseUrl = "https://nodejs.org/dist"
+    npmInstallCommand = "ci"
+    workDir = file("${project.projectDir}/tools/nodejs")
+    npmWorkDir = file("${project.projectDir}/tools/npm")
+    nodeProjectDir = file("${project.projectDir}")
+}
+
 task nodeClean(type: Delete) {
     group = 'node'
     delete 'node_modules'
 }
 clean.dependsOn nodeClean
-
+build.dependsOn npmInstall
 jar {
     enabled false
 }
