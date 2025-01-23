@@ -30,6 +30,7 @@ const mapStateToProps = (state) => ({
     selectedService: state.selectedServiceReducer.selectedService,
     isLoading: loadingSelector(state),
     currentTileId: state.tilesReducer.currentTileId,
+    authentication: state.authenticationReducer,
 });
 
 const mapDispatchToProps = (dispatch) => ({

@@ -33,6 +33,7 @@ function DetailPage({
                         currentTileId,
                         fetchNewTiles,
                         tiles,
+    authentication
                     }) {
     const [error, setError] = useState(null);
 
@@ -89,6 +90,9 @@ function DetailPage({
     const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
     if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
         customUIStyle(tiles[0].customStyleConfig);
+    }
+    if(authentication?.error?.status === 401){
+        navigate('/login');
     }
     return (
         <div className="main">

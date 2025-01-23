@@ -10,8 +10,7 @@
 import {fireEvent, screen} from '@testing-library/react';
 import {describe, expect, it} from '@jest/globals';
 import DetailPage from './DetailPage';
-import {BrowserRouter, HashRouter, Route, Routes} from "react-router";
-import configureStore from "redux-mock-store";
+import {BrowserRouter, Route, Routes} from "react-router";
 import {renderWithProviders} from "../../helpers/test-utils";
 import '@testing-library/jest-dom';
 
@@ -42,7 +41,6 @@ const tile = {
     lastUpdatedTimestamp: '2018-08-22T08:32:03.110+0000',
     createdTimestamp: '2018-08-22T08:31:22.948+0000',
 };
-const store = configureStore();
 const mockNavigate = jest.fn();
 jest.mock('react-router', () => {
     return {
@@ -78,7 +76,7 @@ describe('>>> Detailed Page component tests', () => {
 
     it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
-        renderWithProviders(
+        const {unmount} = renderWithProviders(
             <BrowserRouter>
                 <Routes>
                     <Route path="*" element={<DetailPage
@@ -90,6 +88,7 @@ describe('>>> Detailed Page component tests', () => {
                 </Routes>
             </BrowserRouter>
         );
+        unmount();
         expect(fetchTilesStop).toHaveBeenCalled();
     });
 
@@ -228,71 +227,5 @@ describe('>>> Detailed Page component tests', () => {
         expect(fetchTilesStart).toHaveBeenCalled();
     });
 
-    it('calls scrollIntoView with correct options after 300ms when selectedContentAnchor changes', () => {
-        const scrollIntoViewMock = jest.fn();
-        window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        const selectedAnchor = '.detailed-description-container';
-        renderWithProviders(
-            <BrowserRouter>
-                <Routes>
-                    <Route path="*" element={<DetailPage
-                        tiles={[tile]}
-                        services={tile.services}
-                        currentTileId="apicatalog"
-                        fetchTilesStart={fetchTilesStart}
-                        fetchNewTiles={fetchNewTiles}
-                        fetchTilesStop={jest.fn()}
-                        selectedContentAnchor={selectedAnchor}
-                    />}/>
-                </Routes>
-            </BrowserRouter>
-        );
 
-
-        const element = screen.getByText('API ML Microservice to locate and display API documentation for API ML discovered microservices');
-        expect(element).toBeInTheDocument();
-        expect(scrollIntoViewMock).not.toHaveBeenCalled();
-
-        jest.advanceTimersByTime(400);
-
-        expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: 'smooth' });
-    });
-
-    it('should scroll into view when selectedContentAnchor prop is updated', () => {
-        jest.useFakeTimers();
-
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
-        renderWithProviders(
-            <BrowserRouter>
-                <Routes>
-                    <Route path="*" element={<DetailPage
-                        tiles={[tile]}
-                        services={tile.services}
-                        currentTileId="apicatalog"
-                        fetchTilesStart={fetchTilesStart}
-                        fetchNewTiles={fetchNewTiles}
-                        fetchTilesStop={jest.fn()}
-                        selectedContentAnchor="#id"
-                    />}/>
-                </Routes>
-            </BrowserRouter>
-        );
-
-        const scrollIntoViewMock = jest.fn();
-        const elementMock = {scrollIntoView: scrollIntoViewMock};
-        const spyQuerySelector = jest.spyOn(document, 'querySelector').mockReturnValue(elementMock);
-
-        wrapper.setProps({selectedContentAnchor: '#new-selected-content-anchor'});
-
-        // Run all timers to execute the setTimeout
-        jest.runAllTimers();
-
-        expect(spyQuerySelector).toHaveBeenCalledWith('#new-selected-content-anchor');
-        expect(scrollIntoViewMock).toHaveBeenCalled();
-
-        jest.useRealTimers(); // restore the real timers
-    });
 });

@@ -7,43 +7,37 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Card, CardActionArea, CardContent, Typography } from '@material-ui/core';
-import React, { Component } from 'react';
+import {Card, CardActionArea, CardContent, Typography} from '@material-ui/core';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import {useNavigate} from "react-router";
 
-function Tile({ tile, service, storeCurrentTileId }) {
+function Tile({tile, service, storeCurrentTileId}) {
     const navigate = useNavigate();
     const getTileStatus = (tile) => {
-        const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
+        const unknownIcon = <>
+            <HelpOutlineIcon id="unknown" style={{color: 'rgb(51, 56, 64)', fontSize: '12px'}}/>
+            'Status unknown'
+        </>;
         if (tile === null || tile === undefined) {
             return unknownIcon;
         }
-        const { status } = tile;
+        const {status} = tile;
         switch (status) {
             case 'UP':
-                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)', fontSize: '12px' }} />;
+                return <>
+                    <Brightness1RoundedIcon data-testid="success-icon" id="success"
+                                            style={{color: 'rgb(42, 133, 78)', fontSize: '12px'}}/>
+                    'The service is running'
+                </>;
             case 'DOWN':
-                return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)', fontSize: '12px' }} />;
+                return <>
+                    <ReportProblemIcon id="danger" style={{color: 'rgb(222, 27, 27)', fontSize: '12px'}}/>;
+                    'The service is not running'
+                </>
             default:
                 return unknownIcon;
-        }
-    };
-
-    const getTileStatusText = (tile) => {
-        if (tile === null || tile === undefined) {
-            return 'Status unknown';
-        }
-        const { status } = tile;
-        switch (status) {
-            case 'UP':
-                return 'The service is running';
-            case 'DOWN':
-                return 'The service is not running';
-            default:
-                return 'Status unknown';
         }
     };
 
@@ -56,30 +50,29 @@ function Tile({ tile, service, storeCurrentTileId }) {
         localStorage.setItem('serviceId', service.serviceId);
     };
 
-        return (
-            <Card key={tile.id} className="grid-tile pop grid-item" onClick={handleClick} data-testid="tile">
-                <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
-                    <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
-                        <div className="tile-ctn">
-                            <div className="tile-title">
-                                <Typography id="tileLabel" className="grid-tile-status">
-                                    {getTileStatus(tile)}
-                                    {getTileStatusText(tile)}
+    return (
+        <Card key={tile.id} className="grid-tile pop grid-item" onClick={handleClick} data-testid="tile">
+            <CardActionArea style={{fontSize: '0.875em', color: 'rgb(88, 96, 110)'}} className="card-action">
+                <CardContent style={{fontSize: '0.875em', color: 'rgb(88, 96, 110)'}} className="tile">
+                    <div className="tile-ctn">
+                        <div className="tile-title">
+                            <Typography id="tileLabel" className="grid-tile-status">
+                                {getTileStatus(tile)}
+                            </Typography>
+                            <Typography id="tiles-service-title" variant="subtitle1">
+                                {service.title}
+                            </Typography>
+                            {service.sso && (
+                                <Typography variant="h6" id="grid-tile-sso">
+                                    (SSO)
                                 </Typography>
-                                <Typography id="tiles-service-title" variant="subtitle1">
-                                    {service.title}
-                                </Typography>
-                                {service.sso && (
-                                    <Typography variant="h6" id="grid-tile-sso">
-                                        (SSO)
-                                    </Typography>
-                                )}
-                            </div>
+                            )}
                         </div>
-                    </CardContent>
-                </CardActionArea>
-            </Card>
-        );
+                    </div>
+                </CardContent>
+            </CardActionArea>
+        </Card>
+    );
 
 }
 

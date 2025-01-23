@@ -83,7 +83,7 @@ function logout() {
 
 const authenticationFailure = (error) =>{
     function failure(err) {
-        return { type: userConstants.AUTHENTICATION_FAILURE, err };
+        return { type: userConstants.AUTHENTICATION_FAILURE, error: err };
     }
     return (dispatch) => {
         dispatch(failure(error));

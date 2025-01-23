@@ -76,6 +76,7 @@ function Dashboard({
         if (hasTiles) {
             allServices = sortServices(tiles);
         }
+        console.log(allServices)
 
         return (
             <div className="main-content dashboard-content">
