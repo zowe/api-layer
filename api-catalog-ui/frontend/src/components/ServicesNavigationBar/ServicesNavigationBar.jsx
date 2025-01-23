@@ -15,7 +15,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import {sortServices} from '../../selectors/selectors';
 
-function ServicesNavigationBar({services, searchCriteria, clear, filterText, storeCurrentTileId}) {
+function ServicesNavigationBar({services, searchCriteria, clear, filterText, storeCurrentTileId,selectService}) {
 
 
     useEffect(() => {
@@ -25,8 +25,18 @@ function ServicesNavigationBar({services, searchCriteria, clear, filterText, sto
     }, []); // Dependencies
 
     const handleTabClick = (id) => {
+        let service;
+        for(const tl of services) {
+            for(const sr of tl?.services) {
+                if(sr?.serviceId === id){
+                    service = sr;
+                }
+
+            }
+        }
         const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
         if (correctTile) {
+            selectService(service, correctTile.id);
             storeCurrentTileId(correctTile.id);
         }
     };
@@ -82,7 +92,6 @@ function ServicesNavigationBar({services, searchCriteria, clear, filterText, sto
             {hasTiles && (
                 <Tabs
                     value={selectedTab}
-                    // onChange={handleTabChange}
                     variant="scrollable"
                     orientation="vertical"
                     scrollButtons="auto"

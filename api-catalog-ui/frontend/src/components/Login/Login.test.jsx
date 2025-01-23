@@ -204,7 +204,8 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
-        render(<Login isFetching />);
+        const authentication = {loginSuccess: false}
+        render(<Login isFetching authentication={authentication} />);
 
         expect(screen.getByTestId('submit')).toBeInTheDocument();
         expect(screen.getByTestId('spinner')).toBeInTheDocument();

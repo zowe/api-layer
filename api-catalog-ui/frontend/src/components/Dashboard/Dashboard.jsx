@@ -42,7 +42,8 @@ function Dashboard({
                        refreshedStaticApi,
                        wizardToggleDisplay,
                        filterText,
-                       closeAlert
+                       closeAlert,
+                       selectService
                    }) {
     const navigate = useNavigate();
     useEffect(() => {
@@ -73,6 +74,7 @@ function Dashboard({
             customUIStyle(tiles[0].customStyleConfig);
         }
         let allServices;
+        console.log(tiles)
         if (hasTiles) {
             allServices = sortServices(tiles);
         }
@@ -150,6 +152,7 @@ function Dashboard({
                                                     service={service}
                                                     key={service}
                                                     tile={tile}
+                                                    selectService={selectService}
                                                 />
                                             ))
                                     )}

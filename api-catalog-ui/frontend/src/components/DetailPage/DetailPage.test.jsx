@@ -147,6 +147,7 @@ describe('>>> Detailed Page component tests', () => {
                 </Routes>
             </BrowserRouter>
         );
+        screen.debug();
         const catalogTile  = screen.getByText('API Catalog');
         expect(catalogTile).toBeInTheDocument();
         const catalogDescription  = screen.getByText('API ML Microservice to locate and display API documentation for API ML discovered microservices');

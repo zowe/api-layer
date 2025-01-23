@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { shallow } from 'enzyme';
+import {render} from '@testing-library/react'
 import ServiceTab from './ServiceTab';
 
 const params = {
@@ -71,7 +71,7 @@ jest.mock('react-router', () => {
 describe('>>> ServiceTab component tests', () => {
     it('should display service tab information', () => {
         const selectService = jest.fn();
-        const serviceTab = shallow(
+        render(
             <ServiceTab
                 match={params}
                 selectedService={selectedService}

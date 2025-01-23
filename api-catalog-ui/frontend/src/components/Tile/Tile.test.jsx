@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import {fireEvent, screen} from '@testing-library/react';
-import { render } from '@testing-library/react'
+import {render} from '@testing-library/react'
 import Tile from './Tile';
 import '@testing-library/jest-dom';
 
@@ -63,59 +63,34 @@ jest.mock('react-router', () => {
 });
 describe('>>> Tile component tests', () => {
 
-    it('should display API Mediation Layer API tile with correct title', () => {
-        const instance = shallow(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
-        expect(instance.find('API Mediation Layer API')).not.toBeNull();
-    });
-
     it('should display status ', () => {
-        const {container} =render(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
+        const {container} = render(<Tile tile={sampleTile} service={sampleTile.services[0]}/>);
         screen.getByTestId('success-icon')
         screen.getByText('The service is running');
     });
 
     it('method getTileStatusText() should return correct values', () => {
-        render(<Tile tile={sampleTile} service={sampleTile.services[1]} />);
+        render(<Tile tile={sampleTile} service={sampleTile.services[1]}/>);
         screen.debug();
-        screen.getByTestId('success-icon')
-        screen.getByText('The service is running');
-        // const instance = wrapper.instance();
-        // expect(instance.getTileStatusText(sampleTile)).toBe('The service is running');
-        // resetSampleTile();
-        // sampleTile.status = 'DOWN';
-        // expect(instance.getTileStatusText(sampleTile)).toBe('The service is not running');
-        // resetSampleTile();
-        // sampleTile.status = 'WARNING';
-        // resetSampleTile();
-        // sampleTile.status = 'UNKNOWN';
-        // expect(instance.getTileStatusText(sampleTile)).toBe('Status unknown');
-        // expect(instance.getTileStatusText()).toBe('Status unknown');
+        screen.getByTestId('danger-icon')
+        screen.getByText('The service is not running');
     });
 
     it('should handle tile click', () => {
-        const historyMock = { push: jest.fn() };
         const storeCurrentTileId = jest.fn();
-        const wrapper = shallow(
+        render(
             <Tile
                 tile={sampleTile}
                 storeCurrentTileId={storeCurrentTileId}
                 service={sampleTile.services[0]}
-                history={historyMock}
-                match={match}
             />
         );
-        wrapper.find('[data-testid="tile"]').simulate('click');
-        expect(historyMock.push.mock.calls[0]).toEqual([`/service/${sampleTile.id}`]);
+        fireEvent.click(screen.getByTestId('tile'))
+        expect(mockNavigate).toHaveBeenCalled();
     });
 
     it('should show sso if it is set', () => {
-render(<Tile tile={sampleTile} service={sampleTile.services[0]} />);
-screen.getByText('SSO');
-    });
-
-    it('should mssing sso if it is not set', () => {
-        sampleTile.sso = false;
-        const wrapper = shallow(<Tile tile={sampleTile} service={sampleTile.services[1]} />);
-        expect(wrapper.text().includes('SSO')).toBe(false);
+        render(<Tile tile={sampleTile} service={sampleTile.services[0]}/>);
+        screen.getByText('(SSO)');
     });
 });

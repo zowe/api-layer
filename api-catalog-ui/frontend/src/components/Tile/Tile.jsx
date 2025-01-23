@@ -13,28 +13,28 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import {useNavigate} from "react-router";
 
-function Tile({tile, service, storeCurrentTileId}) {
+function Tile({tile, service, storeCurrentTileId,selectService}) {
     const navigate = useNavigate();
-    const getTileStatus = (tile) => {
+    const getTileStatus = (service) => {
         const unknownIcon = <>
             <HelpOutlineIcon id="unknown" style={{color: 'rgb(51, 56, 64)', fontSize: '12px'}}/>
-            'Status unknown'
+            Status unknown
         </>;
-        if (tile === null || tile === undefined) {
+        if (service === null || service === undefined) {
             return unknownIcon;
         }
-        const {status} = tile;
+        const {status} = service;
         switch (status) {
             case 'UP':
                 return <>
                     <Brightness1RoundedIcon data-testid="success-icon" id="success"
                                             style={{color: 'rgb(42, 133, 78)', fontSize: '12px'}}/>
-                    'The service is running'
+                    The service is running
                 </>;
             case 'DOWN':
                 return <>
-                    <ReportProblemIcon id="danger" style={{color: 'rgb(222, 27, 27)', fontSize: '12px'}}/>;
-                    'The service is not running'
+                    <ReportProblemIcon id="danger" data-testid="danger-icon" style={{color: 'rgb(222, 27, 27)', fontSize: '12px'}}/>
+                    The service is not running
                 </>
             default:
                 return unknownIcon;
@@ -42,22 +42,21 @@ function Tile({tile, service, storeCurrentTileId}) {
     };
 
     const handleClick = () => {
-        // const { tile, storeCurrentTileId, service } = this.props;
         const tileRoute = `/service/${service.serviceId}`;
         storeCurrentTileId(tile.id);
-
+        selectService(service, tile.id);
         navigate(tileRoute);
         localStorage.setItem('serviceId', service.serviceId);
     };
 
     return (
-        <Card key={tile.id} className="grid-tile pop grid-item" onClick={handleClick} data-testid="tile">
+        <Card key={service.serviceId} className="grid-tile pop grid-item" onClick={handleClick} data-testid="tile">
             <CardActionArea style={{fontSize: '0.875em', color: 'rgb(88, 96, 110)'}} className="card-action">
                 <CardContent style={{fontSize: '0.875em', color: 'rgb(88, 96, 110)'}} className="tile">
                     <div className="tile-ctn">
                         <div className="tile-title">
                             <Typography id="tileLabel" className="grid-tile-status">
-                                {getTileStatus(tile)}
+                                {getTileStatus(service)}
                             </Typography>
                             <Typography id="tiles-service-title" variant="subtitle1">
                                 {service.title}

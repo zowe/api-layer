@@ -16,7 +16,7 @@ import {
     fetchTilesStop,
     storeCurrentTileId,
 } from '../../actions/catalog-tile-actions';
-import { clearService } from '../../actions/selected-service-actions';
+import {clearService, selectService} from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
 import { createLoadingSelector, getFilteredServices } from '../../selectors/selectors';
 import { clearError, refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
@@ -35,9 +35,10 @@ const mapStateToProps = (state) => ({
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
     authentication: state.authenticationReducer,
     currentTileId: state.tilesReducer.currentTileId,
+
 });
 
-const mapDispatchToProps = {
+const mapDispatchToProps = (dispatch) => ({
     clearService,
     fetchTilesStart,
     fetchTilesSuccess,
@@ -51,6 +52,7 @@ const mapDispatchToProps = {
     selectEnabler,
     closeAlert: () => userActions.closeAlert(),
     storeCurrentTileId: (id) => storeCurrentTileId(id),
-};
+    selectService: (service, tileId) => dispatch(selectService(service, tileId)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

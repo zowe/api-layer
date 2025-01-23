@@ -11,8 +11,9 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { Router } from 'react-router';
+import {HashRouter, Router} from 'react-router';
 import ServiceTabContainer from './ServiceTabContainer';
+import AppContainer from "../App/AppContainer";
 
 const mockStore = configureStore();
 
@@ -47,11 +48,11 @@ describe('ServiceTab Container', () => {
             listen: jest.fn(),
         };
         container = render(
-            <Router history={history}>
+            <HashRouter>
                 <Provider store={store}>
                     <ServiceTabContainer tiles={tiles} />
                 </Provider>
-            </Router>
+            </HashRouter>
         );
     });
 
