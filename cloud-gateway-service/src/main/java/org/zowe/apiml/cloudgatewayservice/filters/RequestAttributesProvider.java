@@ -67,7 +67,7 @@ public class RequestAttributesProvider implements WebFilter, GlobalFilter, Order
 
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
+        return Ordered.HIGHEST_PRECEDENCE + 1;
     }
 
 }
