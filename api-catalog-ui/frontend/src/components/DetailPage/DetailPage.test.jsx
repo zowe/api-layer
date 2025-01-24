@@ -23,7 +23,7 @@ const tile = {
     id: 'apicatalog',
     title: 'API Mediation Layer for z/OS internal API services',
     status: 'UP',
-    description: 'lkajsdlkjaldskj',
+    description: 'Description of the tile',
     customStyleConfig: {},
     services: [
         {
@@ -147,10 +147,9 @@ describe('>>> Detailed Page component tests', () => {
                 </Routes>
             </BrowserRouter>
         );
-        screen.debug();
-        const catalogTile  = screen.getByText('API Catalog');
+        const catalogTile  = screen.getByText('API Mediation Layer for z/OS internal API services');
         expect(catalogTile).toBeInTheDocument();
-        const catalogDescription  = screen.getByText('API ML Microservice to locate and display API documentation for API ML discovered microservices');
+        const catalogDescription  = screen.getByText('Description of the tile');
         expect(catalogDescription).toBeInTheDocument();
     });
 

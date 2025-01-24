@@ -128,9 +128,11 @@ describe('>>> ServiceNavigationBar component tests', () => {
                            match={match}
                            currentTileId="apicatalog"
                            storeCurrentTileId={storeCurrentTileId}
+                           selectService={jest.fn()}
                        />}/>
             </Routes>
         </BrowserRouter>);
+        screen.debug();
         fireEvent.click(screen.getByText('API Catalog'));
 
         expect(storeCurrentTileId).toHaveBeenCalled();

@@ -83,6 +83,7 @@ describe('>>> Tile component tests', () => {
                 tile={sampleTile}
                 storeCurrentTileId={storeCurrentTileId}
                 service={sampleTile.services[0]}
+                selectService={jest.fn()}
             />
         );
         fireEvent.click(screen.getByTestId('tile'))

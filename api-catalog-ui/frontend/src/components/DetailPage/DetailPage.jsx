@@ -33,7 +33,7 @@ function DetailPage({
                         currentTileId,
                         fetchNewTiles,
                         tiles,
-    authentication
+                        authentication
                     }) {
     const [error, setError] = useState(null);
 
@@ -204,16 +204,3 @@ function DetailPage({
 
 export default DetailPage;
 
-// DetailPage.propTypes = {
-//     history: PropTypes.shape({
-//         push: PropTypes.func.isRequired,
-//     }).isRequired,
-//     selectedService: PropTypes.object.isRequired,
-//     selectedContentAnchor: PropTypes.string.isRequired,
-//     tiles: PropTypes.arrayOf(
-//         PropTypes.shape({
-//             title: PropTypes.string.isRequired,
-//             customStyleConfig: PropTypes.object.isRequired,
-//         })
-//     ).isRequired,
-// };
