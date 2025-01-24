@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.util;
 
-import com.google.common.base.Strings;
 import com.nimbusds.jose.util.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -110,7 +109,7 @@ public class SecurityUtils {
     private final static TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
 
     private final static String gatewayScheme = serviceConfiguration.getScheme();
-    private final static String gatewayHost = Strings.isNullOrEmpty(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
+    private final static String gatewayHost = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
     private final static int gatewayPort = serviceConfiguration.getPort();
 
     private final static String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
