@@ -83,7 +83,7 @@ describe('>>> Multi-tenancy deployment test', () => {
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
 
         cy.get(
-            '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div > div.header > h6:nth-child(4)'
+            '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div.tabs-swagger > div.serviceTab > div.header > h6:nth-child(4)'
         )
             .should('exist')
             .should(

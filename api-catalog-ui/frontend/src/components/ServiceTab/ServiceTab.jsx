@@ -25,23 +25,21 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const basePath = () => {
-
-        let basePath = '';
-        if (selectedService?.basePath) {
+        if (!selectedService?.basePath) {
             if (selectedService?.instances?.[0]?.includes('gateway')) {
                 // Return the basePath right away, since it's a GW instance (either primary or additional)
-                basePath = selectedService.basePath;
+                return selectedService.basePath;
             } else {
                 const version = selectedVersion || selectedService.defaultApiVersion;
                 let gatewayUrl = '';
-                if (selectedService.apis && selectedService.apis[version] && selectedService.apis[version].gatewayUrl) {
+                if (selectedService.apis && selectedService.apis[version]) {
                     gatewayUrl = selectedService.apis[version].gatewayUrl;
                 }
                 // Take the first part of the basePath and then add the gatewayUrl
-                basePath = `/${selectedService.serviceId}/${gatewayUrl}`;
+                return `/${selectedService.serviceId}/${gatewayUrl}`;
             }
         }
-        return basePath;
+        return selectedService.basePath;
     }
 
     const setCurrentService = () => {
@@ -177,7 +175,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                         )}
                         <div className="apiInfo-item">
                             <Tooltip
-                                key={basePath}
+                                key={basePath()}
                                 title="The path used by the Gateway to access API endpoints. This can be used to identify a service in client tools like Zowe CLI and Zowe explorer."
                                 placement="bottom"
                             >
