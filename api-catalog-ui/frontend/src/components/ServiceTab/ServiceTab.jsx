@@ -8,12 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Button, Link, MenuItem, Select, Tooltip, Typography } from '@material-ui/core';
-import {useEffect, useState} from 'react';
+import { useState} from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import {useParams} from "react-router";
 
 function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedTile}) {
 
@@ -24,11 +23,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
     const [selectedVersion, setSelectedVersion] = useState(null);
     const [previousVersion, setPreviousVersion] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [currService, setCurrService] = useState(null);
 
-    // useEffect(() => {
-    //     setCurrService(setCurrentService());
-    // }, []);
     const basePath = () => {
 
         let basePath = '';
@@ -78,16 +73,13 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
     const apiVersions = () => {
         let apiVersions = [];
 
-
-        const { currentService } = this;
-
         if (containsVersion()) {
-            apiVersions = currentService.apiVersions.map((version) => {
+            apiVersions = selectedService.apiVersions.map((version) => {
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
                 if (
                     selectedVersion === null &&
-                    (currentService.defaultApiVersion === version || currentService.apiVersions.length === 1)
+                    (selectedService.defaultApiVersion === version || selectedService.apiVersions.length === 1)
                 ) {
                     tabStyle = { backgroundColor: '#fff' };
                 }
@@ -113,7 +105,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
     }
 
     const handleDialogOpen = (currentService) => {
-        const { selectedVersion } = this.state;
+
         if (selectedVersion === null) {
             setPreviousVersion(currentService.defaultApiVersion)
         } else {
@@ -146,14 +138,10 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
     const showVersionDiv = !graphqlUrl;
     const message = 'The API documentation was retrieved but could not be displayed.';
     const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
-    const { serviceId } = useParams();
+
     return (
         <>
-            {selectedService === null && (
-                <Typography id="no-tiles-error" variant="h4">
-                    <p>The service ID "{serviceId}" does not match any registered service</p>
-                </Typography>
-            )}
+
             <Shield title={message}>
                 <div className="serviceTab">
                     <div className="header">
@@ -234,15 +222,15 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                                         Service ID and Version:
                                     </Typography>
                                 )}
-                                {selectedService && apiVersions?.length === 1 && apiVersions[0]?.key && (
+                                {selectedService && apiVersions()?.length === 1 && apiVersions()[0]?.key && (
                                     <Typography id="single-api-version-label" variant="subtitle2">
-                                        {apiVersions[0].key}
+                                        {apiVersions()[0].key}
                                     </Typography>
                                 )}
                             </div>
                         )}
                     </div>
-                    {showVersionDiv && selectedService && apiVersions?.length > 1 && (
+                    {showVersionDiv && selectedService && apiVersions()?.length > 1 && (
                         <div id="version-div">
                             <Select
                                 displayEmpty
@@ -256,7 +244,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                                 data-testid="version-menu"
                                 disableUnderline
                             >
-                                {apiVersions}
+                                {apiVersions()}
                             </Select>
                             <Button
                                 id="compare-button"
