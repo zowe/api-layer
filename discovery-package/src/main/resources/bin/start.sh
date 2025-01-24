@@ -59,18 +59,25 @@ fi
 if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
-# API Mediation Layer Debug Mode
-unset LOG_LEVEL
 
-if [ "${ZWE_configs_debug}" = "true" ]; then
-  export LOG_LEVEL="debug"
+if [ "${ZWE_configs_debug}" = "true" ]
+then
+    if [ -n "${ZWE_configs_spring_profiles_active}" ];
+    then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
 fi
 
 # FIXME: APIML_DIAG_MODE_ENABLED is not officially mentioned. We can still use it behind the scene,
 # or we can define configs.diagMode in manifest, then use "$ZWE_configs_diagMode".
 # if [[ ! -z "${APIML_DIAG_MODE_ENABLED}" ]]
 # then
-#     LOG_LEVEL=${APIML_DIAG_MODE_ENABLED}
+#   if [ -n "${ZWE_configs_spring_profiles_active}" ];
+#   then
+#       ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+#   fi
+#   ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}diag"
 # fi
 
 # NOTE: ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES is not defined in Zowe level any more, never heard anyone use it.
@@ -246,7 +253,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
-    -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \

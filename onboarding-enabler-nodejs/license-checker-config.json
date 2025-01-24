@@ -11,6 +11,6 @@
   },
   "ignore": [
     "bin", "lib", "coverage",
-    ".*", "*.md", "*.gradle", "**/*.yml"
+    ".*", "*.md", "*.gradle", "**/*.yml", "tools"
   ]
 }
