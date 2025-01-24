@@ -221,7 +221,38 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
     description "Run all integration tests for Zowe HA testing on z/OS (limited)"
 
     // TODO Modify integration tests that are created only for non-HA setup to handle both setups.
-    dependsOn 'runAllIntegrationTestsForZoweNonHaTestingOnZos', 'runHATests', 'runDeterministicLbHaTests', 'runStickySessionLbHaTests', 'runChaoticHATests'
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.ha", true
+    systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'SafIdTokenTest'
+        )
+    }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
+
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
 }
 
 task runAllIntegrationTestsForZoweTesting(type: Test) {
