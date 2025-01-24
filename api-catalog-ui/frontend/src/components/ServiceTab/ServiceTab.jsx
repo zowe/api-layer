@@ -102,6 +102,8 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
         return apiVersions;
     }
 
+    const av = apiVersions();
+
     const handleDialogOpen = (currentService) => {
 
         if (selectedVersion === null) {
@@ -220,15 +222,15 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                                         Service ID and Version:
                                     </Typography>
                                 )}
-                                {selectedService && apiVersions()?.length === 1 && apiVersions()[0]?.key && (
+                                {selectedService && av?.length === 1 && av[0]?.key && (
                                     <Typography id="single-api-version-label" variant="subtitle2">
-                                        {apiVersions()[0].key}
+                                        {av[0].key}
                                     </Typography>
                                 )}
                             </div>
                         )}
                     </div>
-                    {showVersionDiv && selectedService && apiVersions()?.length > 1 && (
+                    {showVersionDiv && selectedService && av?.length > 1 && (
                         <div id="version-div">
                             <Select
                                 displayEmpty
@@ -242,7 +244,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                                 data-testid="version-menu"
                                 disableUnderline
                             >
-                                {apiVersions()}
+                                {av}
                             </Select>
                             <Button
                                 id="compare-button"
