@@ -74,11 +74,9 @@ function Dashboard({
             customUIStyle(tiles[0].customStyleConfig);
         }
         let allServices;
-        console.log(tiles)
         if (hasTiles) {
             allServices = sortServices(tiles);
         }
-        console.log(allServices)
 
         return (
             <div className="main-content dashboard-content">
@@ -153,6 +151,7 @@ function Dashboard({
                                                     key={service}
                                                     tile={tile}
                                                     selectService={selectService}
+                                                    fetchTilesStart={fetchTilesStart}
                                                 />
                                             ))
                                     )}

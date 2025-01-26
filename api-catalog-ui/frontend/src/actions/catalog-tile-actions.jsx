@@ -16,7 +16,7 @@ import {
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
     STORE_CURRENT_TILEID,
-    FETCH_NEW_TILES_SUCCESS,
+    FETCH_TILES_NEW_SUCCESS,
     FETCH_NEW_TILES_REQUEST,
 } from '../constants/catalog-tile-constants';
 
@@ -44,7 +44,7 @@ export function fetchNewTilesSuccess(services) {
     // dismiss the notification if it is displayed
     toast.dismiss(fetchRetryToastId);
     return {
-        type: FETCH_NEW_TILES_SUCCESS,
+        type: FETCH_TILES_NEW_SUCCESS,
         payload: services,
     };
 }

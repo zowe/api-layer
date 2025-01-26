@@ -39,6 +39,7 @@ function DetailPage({
 
 
     useEffect(() => {
+
         fetchNewTiles();
         if (currentTileId) {
             fetchTilesStart(currentTileId);

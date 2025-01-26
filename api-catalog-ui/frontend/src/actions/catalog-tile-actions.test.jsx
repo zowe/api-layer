@@ -65,7 +65,7 @@ describe('>>> Catalog tiles actions tests', () => {
 
     it('should create when fetching new tiles is successful', () => {
         const expectedAction = {
-            type: constants.FETCH_NEW_TILES_SUCCESS,
+            type: constants.FETCH_TILES_NEW_SUCCESS,
             payload: [],
         };
 

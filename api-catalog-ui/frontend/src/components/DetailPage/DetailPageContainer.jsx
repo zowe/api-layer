@@ -15,7 +15,7 @@ import {
     fetchTilesStop,
     fetchTilesSuccess,
 } from '../../actions/catalog-tile-actions';
-import { clearService } from '../../actions/selected-service-actions';
+import {clearService, selectService} from '../../actions/selected-service-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
 import DetailPage from './DetailPage';
 
@@ -40,6 +40,7 @@ const mapDispatchToProps = (dispatch) => ({
     fetchTilesFailed: (error) => dispatch(fetchTilesFailed(error)),
     fetchTilesStop: () => dispatch(fetchTilesStop()),
     clearService: () => dispatch(clearService()),
+    selectService: (service, tileId) => dispatch(selectService(service, tileId)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DetailPage);

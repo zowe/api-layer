@@ -56,7 +56,7 @@ describe('>>> Service version compare Test', () => {
         );
         cy.get('div.MuiTabs-flexContainer.MuiTabs-flexContainerVertical') // Select the parent div
             .find('a.MuiTab-root') // Find all the anchor elements within the div
-            .should('have.length', 11); // Check if there are 16 anchor elements within the div
+            .should('have.length', 16); // Check if there are 16 anchor elements within the div
         cy.contains('Compare API Versions').should('exist');
     });
 

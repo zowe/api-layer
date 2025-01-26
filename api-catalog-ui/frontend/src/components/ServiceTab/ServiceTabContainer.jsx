@@ -16,6 +16,7 @@ const mapStateToProps = (state) => ({
     selectedService: state.selectedServiceReducer.selectedService,
     selectedTile: state.selectedServiceReducer.selectedTile,
     currentTileId: state.tilesReducer.currentTileId,
+    services: state.tilesReducer.services,
 });
 
 const mapDispatchToProps = (dispatch) => ({

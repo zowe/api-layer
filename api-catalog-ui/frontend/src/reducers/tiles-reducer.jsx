@@ -15,7 +15,7 @@ import {
     FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    FETCH_NEW_TILES_SUCCESS,
+    FETCH_TILES_NEW_SUCCESS,
     STORE_CURRENT_TILEID,
 } from '../constants/catalog-tile-constants';
 
@@ -38,7 +38,7 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 tiles: [...action.payload],
                 error: null,
             };
-        case FETCH_NEW_TILES_SUCCESS:
+        case FETCH_TILES_NEW_SUCCESS:
             return {
                 ...state,
                 currentTileId: state.currentTileId,

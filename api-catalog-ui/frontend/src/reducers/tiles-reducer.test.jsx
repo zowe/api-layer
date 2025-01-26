@@ -16,7 +16,7 @@ import {
     FETCH_TILES_SUCCESS,
     FETCH_TILES_RETRY,
     FETCH_NEW_TILES_REQUEST,
-    FETCH_NEW_TILES_SUCCESS,
+    FETCH_TILES_NEW_SUCCESS,
     STORE_CURRENT_TILEID,
 } from '../constants/catalog-tile-constants';
 
@@ -183,7 +183,7 @@ describe('>>> Tile reducer tests', () => {
         ).toEqual(expectedState);
     });
 
-    it('should handle FETCH_NEW_TILES_SUCCESS', () => {
+    it('should handle FETCH_TILES_NEW_SUCCESS', () => {
         const expectedState = {
             id: '',
             tiles: [sampleTile],
@@ -200,7 +200,7 @@ describe('>>> Tile reducer tests', () => {
                     error: null,
                 },
                 {
-                    type: FETCH_NEW_TILES_SUCCESS,
+                    type: FETCH_TILES_NEW_SUCCESS,
                     payload: [sampleTile],
                 }
             )
