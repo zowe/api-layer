@@ -43,7 +43,8 @@ function Dashboard({
                        wizardToggleDisplay,
                        filterText,
                        closeAlert,
-                       selectService
+                       selectService,
+                       fetchNewService
                    }) {
     const navigate = useNavigate();
     useEffect(() => {
@@ -54,7 +55,6 @@ function Dashboard({
         }
         return function cleanup () {
             clear();
-            fetchTilesStop();
         }
     }, []);
 
@@ -152,6 +152,7 @@ function Dashboard({
                                                     tile={tile}
                                                     selectService={selectService}
                                                     fetchTilesStart={fetchTilesStart}
+                                                    fetchNewService={fetchNewService}
                                                 />
                                             ))
                                     )}

@@ -11,12 +11,16 @@ import { connect } from 'react-redux';
 import { fetchTilesStop } from '../../actions/catalog-tile-actions';
 import { selectService } from '../../actions/selected-service-actions';
 import ServiceTab from './ServiceTab';
+import {createLoadingSelector} from "../../selectors/selectors";
 
+const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 const mapStateToProps = (state) => ({
     selectedService: state.selectedServiceReducer.selectedService,
     selectedTile: state.selectedServiceReducer.selectedTile,
     currentTileId: state.tilesReducer.currentTileId,
     services: state.tilesReducer.services,
+    isLoading: loadingSelector(state),
+    service: state.tilesReducer.service,
 });
 
 const mapDispatchToProps = (dispatch) => ({

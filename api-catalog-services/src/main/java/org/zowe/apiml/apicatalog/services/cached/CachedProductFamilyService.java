@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +57,8 @@ public class CachedProductFamilyService {
     private final TransformService transformService;
 
     private final Map<String, APIContainer> products = new HashMap<>();
+    @Getter
+    private final Map<String, APIService> services = new HashMap<>();
 
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final CustomStyleConfig customStyleConfig;
@@ -350,6 +353,11 @@ public class CachedProductFamilyService {
         container.addService(createAPIServiceFromInstance(instanceInfo));
         products.put(productFamilyId, container);
         return container;
+    }
+
+    public void addService(InstanceInfo instanceInfo) {
+        var serviceInfo = createAPIServiceFromInstance(instanceInfo);
+        services.put(serviceInfo.getServiceId(), serviceInfo);
     }
 
     /**

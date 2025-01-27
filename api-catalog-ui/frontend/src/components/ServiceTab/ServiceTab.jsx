@@ -13,11 +13,26 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
+import {useParams} from "react-router";
 
-function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedTile}) {
+function ServiceTab({tiles,selectService,currentTileId,selectedTile,isLoading,service}) {
+    console.log(service)
 
-    const  containsVersion = () =>{
-        return selectedService && 'apiVersions' in selectedService && selectedService.apiVersions;
+    const ser = useParams();
+    // console.log(!service.serviceId)
+    // if(!service.serviceId){
+    //     for(const sss of tiles[0].services){
+    //
+    //         if(sss.serviceId === ser['*']){
+    //             console.log(sss)
+    //             console.log(tiles[0].id)
+    //             selectService(sss,tiles[0].id)
+    //         }
+    //     }
+    // }
+    // console.log(service)
+    const  containsVersion = () => {
+        return service && 'apiVersions' in service && service.apiVersions;
     }
 
     const [selectedVersion, setSelectedVersion] = useState(null);
@@ -25,21 +40,22 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const basePath = () => {
-        if (!selectedService?.basePath) {
-            if (selectedService?.instances?.[0]?.includes('gateway')) {
+        console.log(service)
+        if (!service?.basePath) {
+            if (service?.instances?.[0]?.includes('gateway')) {
                 // Return the basePath right away, since it's a GW instance (either primary or additional)
-                return selectedService.basePath;
+                return service.basePath;
             } else {
-                const version = selectedVersion || selectedService.defaultApiVersion;
+                const version = selectedVersion || service.defaultApiVersion;
                 let gatewayUrl = '';
-                if (selectedService.apis && selectedService.apis[version]) {
-                    gatewayUrl = selectedService.apis[version].gatewayUrl;
+                if (service.apis && service.apis[version]) {
+                    gatewayUrl = service.apis[version].gatewayUrl;
                 }
                 // Take the first part of the basePath and then add the gatewayUrl
-                return `/${selectedService.serviceId}/${gatewayUrl}`;
+                return `/${service.serviceId}/${gatewayUrl}`;
             }
         }
-        return selectedService.basePath;
+        return service.basePath;
     }
 
     const setCurrentService = () => {
@@ -48,7 +64,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
         if (tiles && tiles.length > 0 && tiles[0] && tiles[0].services) {
             tiles[0].services.forEach((service) => {
                 if (service.serviceId === serviceId) {
-                    if (service.serviceId !== selectedService.serviceId || selectedTile !== currentTileId) {
+                    if (service.serviceId !== service.serviceId || selectedTile !== currentTileId) {
                         console.log(service)
                         console.log(currentTileId)
                         selectService(service, currentTileId);
@@ -62,22 +78,23 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
 
     const hasHomepage = () => {
         return (
-            selectedService.homePageUrl !== null &&
-            selectedService.homePageUrl !== undefined &&
-            selectedService.homePageUrl.length > 0
+            service.homePageUrl !== null &&
+            service.homePageUrl !== undefined &&
+            service.homePageUrl.length > 0
         );
     }
 
     const apiVersions = () => {
         let apiVersions = [];
-
+        console.log(containsVersion())
         if (containsVersion()) {
-            apiVersions = selectedService.apiVersions.map((version) => {
+            apiVersions = service.apiVersions.map((version) => {
+                console.log(version)
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
                 if (
                     selectedVersion === null &&
-                    (selectedService.defaultApiVersion === version || selectedService.apiVersions.length === 1)
+                    (service.defaultApiVersion === version || service.apiVersions.length === 1)
                 ) {
                     tabStyle = { backgroundColor: '#fff' };
                 }
@@ -129,15 +146,16 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
         return apiKey ? apis[apiKey].graphqlUrl : null;
     };
 
-    if (tiles === null || tiles === undefined || tiles.length === 0) {
-        throw new Error('No tile is selected.');
-    }
-
-    const graphqlUrl = getGraphqlUrl(selectedService.apis);
+    // if (tiles === null || tiles === undefined || tiles.length === 0) {
+    //     throw new Error('No tile is selected.');
+    // }
+    console.log(service)
+    const graphqlUrl = getGraphqlUrl(service.apis);
     const title = graphqlUrl ? 'GraphQL' : 'Swagger';
     const showVersionDiv = !graphqlUrl;
+    console.log(showVersionDiv)
     const message = 'The API documentation was retrieved but could not be displayed.';
-    const sso = selectedService.ssoAllInstances ? 'supported' : 'not supported';
+    const sso = service.ssoAllInstances ? 'supported' : 'not supported';
 
     return (
         <>
@@ -146,25 +164,25 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                 <div className="serviceTab">
                     <div className="header">
                         <Typography id="service-title" data-testid="service" variant="h4">
-                            {selectedService.title}
+                            {service.title}
                         </Typography>
                         {hasHomepage() && (
                             <>
-                                {selectedService.status === 'UP' && (
+                                {service.status === 'UP' && (
                                     <Tooltip
                                         data-testid="tooltip"
-                                        key={selectedService.serviceId}
+                                        key={service.serviceId}
                                         title="Open Service Homepage"
                                         placement="bottom"
                                     >
-                                        <Link data-testid="link" href={selectedService.homePageUrl}>
+                                        <Link data-testid="link" href={service.homePageUrl}>
                                             <strong>Service Homepage</strong>
                                         </Link>
                                     </Tooltip>
                                 )}
-                                {selectedService.status === 'DOWN' && (
+                                {service.status === 'DOWN' && (
                                     <Tooltip
-                                        key={selectedService.serviceId}
+                                        key={service.serviceId}
                                         title="API Homepage navigation is disabled as the service is not running"
                                         placement="bottom"
                                     >
@@ -187,17 +205,17 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                                 </Typography>
                             </Tooltip>
                             <Tooltip
-                                key={selectedService.serviceId}
+                                key={service.serviceId}
                                 title="The identifier for this service"
                                 placement="bottom"
                             >
                                 <Typography data-testid="service-id" variant="subtitle2">
                                     <label htmlFor="serviceId">Service ID:</label>
-                                    <span id="serviceId">{selectedService.serviceId}</span>
+                                    <span id="serviceId">{service.serviceId}</span>
                                 </Typography>
                             </Tooltip>
                             <Tooltip
-                                key={selectedService.ssoAllInstances}
+                                key={service.ssoAllInstances}
                                 title="All the instances of this service claim support of the SSO using Zowe API ML JWT tokens"
                                 placement="bottom"
                             >
@@ -209,7 +227,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                         </div>
 
                         <Typography data-testid="description" variant="subtitle2" style={{ color: 'black' }}>
-                            {selectedService.description}
+                            {service.description}
                         </Typography>
                         <br />
                         <Typography id="swagger-label" className="title1" size="medium" variant="outlined">
@@ -217,12 +235,12 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                         </Typography>
                         {showVersionDiv && (
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                                {containsVersion() && selectedService && (
+                                {containsVersion() && service && (
                                     <Typography id="version-label" variant="subtitle2">
                                         Service ID and Version:
                                     </Typography>
                                 )}
-                                {selectedService && av?.length === 1 && av[0]?.key && (
+                                {service && av?.length === 1 && av[0]?.key && (
                                     <Typography id="single-api-version-label" variant="subtitle2">
                                         {av[0].key}
                                     </Typography>
@@ -230,7 +248,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                             </div>
                         )}
                     </div>
-                    {showVersionDiv && selectedService && av?.length > 1 && (
+                    {showVersionDiv && service && av?.length > 1 && (
                         <div id="version-div">
                             <Select
                                 displayEmpty
@@ -239,7 +257,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                                 value={
                                     selectedVersion
                                         ? selectedVersion
-                                        : selectedService.defaultApiVersion
+                                        : service.defaultApiVersion
                                 }
                                 data-testid="version-menu"
                                 disableUnderline
@@ -249,7 +267,7 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                             <Button
                                 id="compare-button"
                                 style={{ backgroundColor: '#fff', color: '#0056B3' }}
-                                onClick={() => handleDialogOpen(selectedService)}
+                                onClick={() => handleDialogOpen(service)}
                                 key="diff"
                             >
                                 <Typography className="version-text">Compare API Versions</Typography>
@@ -257,15 +275,15 @@ function ServiceTab({tiles,selectedService,selectService,currentTileId,selectedT
                         </div>
                     )}
                     {graphqlUrl !== null && <GraphQLContainer graphqlUrl={graphqlUrl} />}
-                    {graphqlUrl === null && selectedVersion !== 'diff' && (
+                    {!isLoading && graphqlUrl === null && selectedVersion !== 'diff' && (
                         <SwaggerContainer selectedVersion={selectedVersion} />
                     )}
                     {graphqlUrl === null && selectedVersion === 'diff' && isDialogOpen && containsVersion() && (
                         <ServiceVersionDiffContainer
                             selectedVersion={previousVersion}
                             handleDialog={handleDialogClose}
-                            serviceId={selectedService.serviceId}
-                            versions={selectedService.apiVersions}
+                            serviceId={service.serviceId}
+                            versions={service.apiVersions}
                             isDialogOpen={isDialogOpen}
                         />
                     )}

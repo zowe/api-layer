@@ -117,7 +117,7 @@ public class InstanceInitializeService {
 
         // create containers for services
         listApplication.forEach(this::createContainers);
-
+        listApplication.forEach(this::createServices);
         // populate the cache
         Collection<APIContainer> containers = cachedProductFamilyService.getAllContainers();
         log.debug("Cache contains: " + containers.size() + " tiles.");
@@ -132,6 +132,16 @@ public class InstanceInitializeService {
                 log.debug("Initialising product family (creating tile for) : " + productFamilyId);
                 cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
             }
+
+        });
+    }
+    public void createServices(Application application) {
+        cachedServicesService.updateService(application.getName(), application);
+        application.getInstances().forEach(instanceInfo -> {
+
+                log.debug("Initialising serviceInfo (creating tile for) : " + instanceInfo.getInstanceId());
+                cachedProductFamilyService.addService(instanceInfo);
+
 
         });
     }

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
 import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.security.OidcUtils;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
@@ -149,6 +150,50 @@ public class ApiCatalogController {
                 });
             }
             return new ResponseEntity<>(apiContainers, HttpStatus.OK);
+        } catch (Exception e) {
+            apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
+            throw new ContainerStatusRetrievalThrowable(e);
+        }
+    }
+
+    /**
+     * Get all containers (and included services)
+     *
+     * @return a containers by id
+     */
+    @GetMapping(value = "/services/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Retrieves a specific dashboard tile information",
+        description = "Returns information for a specific tile {id} including status and tile description",
+        security = {
+            @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "URI not found"),
+        @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
+    })
+    public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
+        try {
+
+            var service = cachedProductFamilyService.getServices().get(id);
+            if (service != null) {
+                String apiDoc = cachedApiDocService.getDefaultApiDocForService(id);
+
+                if (apiDoc != null) {
+                    service.setApiDoc(apiDoc);
+                    List<String> apiVersions = cachedApiDocService.getApiVersionsForService(id);
+                    service.setApiVersions(apiVersions);
+
+                    String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(id);
+                    service.setDefaultApiVersion(defaultApiVersion);
+                }
+
+                return new ResponseEntity<>(service, HttpStatus.OK);
+            }
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalThrowable(e);

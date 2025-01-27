@@ -14,7 +14,7 @@ import {
     fetchTilesStart,
     fetchTilesSuccess,
     fetchTilesStop,
-    storeCurrentTileId,
+    storeCurrentTileId, fetchNewService,
 } from '../../actions/catalog-tile-actions';
 import {clearService, selectService} from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
@@ -23,7 +23,7 @@ import { clearError, refreshedStaticApi } from '../../actions/refresh-static-api
 import { selectEnabler, wizardToggleDisplay } from '../../actions/wizard-actions';
 import { userActions } from '../../actions/user-actions';
 
-const loadingSelector = createLoadingSelector(['FETCH_TILES']);
+const loadingSelector = createLoadingSelector(['FETCH']);
 
 const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
@@ -53,6 +53,7 @@ const mapDispatchToProps = {
     closeAlert: () => userActions.closeAlert(),
     storeCurrentTileId: (id) => storeCurrentTileId(id),
     selectService: (service, tileId) => selectService(service, tileId),
+    fetchNewService: (id) => fetchNewService(id)
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

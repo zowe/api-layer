@@ -16,7 +16,10 @@ import {
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
     FETCH_TILES_NEW_SUCCESS,
-    STORE_CURRENT_TILEID,
+    STORE_CURRENT_TILEID, FETCH_NEW_SERVICE_REQUEST,
+    FETCH_NEW_SERVICE_SUCCESS,
+    FETCH_SERVICE_STOP,
+    FETCH_SERVICE_FAILED
 } from '../constants/catalog-tile-constants';
 
 const tilesReducerDefaultState = {
@@ -36,6 +39,7 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 currentTileId: state.currentTileId,
                 services: [...state.services],
                 tiles: [...action.payload],
+                tilesLoading: false,
                 error: null,
             };
         case FETCH_TILES_NEW_SUCCESS:
@@ -46,9 +50,24 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 services: [...action.payload],
                 error: null,
             };
+        case FETCH_NEW_SERVICE_SUCCESS:
+            return {
+                ...state,
+                service: action.payload,
+                error: null,
+                serviceLoading: false,
+            };
         case STORE_CURRENT_TILEID:
             return { ...state, currentTileId: action.payload, error: null };
         case FETCH_TILES_FAILED:
+            return {
+                tiles: state.tiles,
+                services: state.services,
+                currentTileId: state.currentTileId,
+                id: '',
+                error: action.payload,
+            };
+        case FETCH_SERVICE_FAILED:
             return {
                 tiles: state.tiles,
                 services: state.services,
@@ -62,6 +81,7 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 services: state.services,
                 currentTileId: state.currentTileId,
                 id: action.payload,
+                tilesLoading: true,
                 error: null,
             };
         case FETCH_NEW_TILES_REQUEST:
@@ -72,9 +92,20 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 id: action.payload,
                 error: null,
             };
+       case FETCH_NEW_SERVICE_REQUEST:
+            return {
+                services: [],
+                tiles: state.tiles,
+                currentTileId: state.currentTileId,
+                id: action.payload,
+                serviceLoading: true,
+                error: null,
+            };
         case FETCH_TILES_RETRY:
             return state;
         case FETCH_TILES_STOP:
+            return state;
+        case FETCH_SERVICE_STOP:
             return state;
         default:
             return state;

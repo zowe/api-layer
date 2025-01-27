@@ -33,58 +33,45 @@ function DetailPage({
                         currentTileId,
                         fetchNewTiles,
                         tiles,
-                        authentication
+                        authentication,
+                        selectService,
+                        storeCurrentTileId,
+                        fetchNewService,
+                        service,
+                        fetchServiceStop,
+                        tilesLoading,
+                        serviceLoading
+
                     }) {
     const [error, setError] = useState(null);
+    const serviceId = useParams();
 
 
-    useEffect(() => {
-
-        fetchNewTiles();
-        if (currentTileId) {
-            fetchTilesStart(currentTileId);
-        }
-
-        return () => {
-            fetchTilesStop();
-        };
-    }, [fetchNewTiles, fetchTilesStart, fetchTilesStop, currentTileId]);
 
     useEffect(() => {
+
+        console.log(currentTileId)
+        // fetchTilesStart();
+        console.log(serviceId['*'])
+        // if(service.serviceId != serviceId['*']){
+        fetchNewService(serviceId['*']);
+        // }
+        console.log(service)
+        console.log(tiles)
+
         if (fetchTilesError) {
-            fetchTilesStop();
+            fetchServiceStop();
             setError(formatError(fetchTilesError));
-        } else if (selectedTile && selectedTile !== currentTileId) {
-            clearService();
-            fetchTilesStop();
-            fetchNewTiles();
-            fetchTilesStart(currentTileId);
-        } else if (services && services.length > 0 && !currentTileId) {
-            // const id = history.location.pathname.split('/service/')[1];
-            const id = 'apicatalog';
-            if (id) {
-                const correctTile = services.find((tile) =>
-                    tile.services.some((service) => service.serviceId === id)
-                );
-                if (correctTile) {
-                    tiles = [correctTile];
-                }
-            }
         }
-    }, [
-        fetchTilesError,
-        selectedTile,
-        currentTileId,
-        clearService,
-        fetchTilesStop,
-        fetchNewTiles,
-        fetchTilesStart,
-        services,
-    ]);
+        // return () => {
+        //     fetchTilesStop();
+        //     fetchServiceStop();
+        // };
+    }, [fetchTilesStart, fetchTilesStop, fetchTilesError,fetchServiceStop,fetchNewService]);
+
 
     const navigate = useNavigate();
     const handleGoBack = () => {
-
         navigate('/dashboard');
     };
     const iconBack = <ChevronLeftIcon/>;
@@ -92,15 +79,16 @@ function DetailPage({
     if (hasTiles && tiles[0]?.customStyleConfig && Object.keys(tiles[0].customStyleConfig).length > 0) {
         customUIStyle(tiles[0].customStyleConfig);
     }
-    if(authentication?.error?.status === 401){
+    if (authentication?.error?.status === 401) {
         navigate('/login');
     }
+
     return (
         <div className="main">
             <div className="nav-bar">
-                {services !== undefined && services.length > 0 && (
+                {tiles !== undefined && tiles.length > 0 && (
                     <Shield>
-                        <ServicesNavigationBarContainer services={services}/>
+                        <ServicesNavigationBarContainer/>
                     </Shield>
                 )}
             </div>
@@ -159,7 +147,7 @@ function DetailPage({
                     </div>
                 )}
                 <div className="content-description-container">
-                    {tiles !== undefined && tiles.length === 1 && (
+                    {!serviceLoading && service && (
                         <Suspense>
                             <div>
                                 <Routes>
@@ -169,7 +157,7 @@ function DetailPage({
                                         element={
                                             <Navigate
                                                 replace={true}
-                                                to={`/${tiles[0].services[0].serviceId}`}
+                                                to={`/gateway`}
                                             />
                                         }
                                     />
@@ -178,7 +166,7 @@ function DetailPage({
                                         element={
                                             <div className="tabs-swagger">
 
-                                                <ServiceTabContainer tiles={tiles}/>
+                                                <ServiceTabContainer/>
                                             </div>
                                         }
                                     />

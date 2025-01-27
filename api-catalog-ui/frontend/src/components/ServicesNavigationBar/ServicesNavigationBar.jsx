@@ -15,7 +15,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import {sortServices} from '../../selectors/selectors';
 
-function ServicesNavigationBar({services, searchCriteria, clear, filterText, storeCurrentTileId,selectService}) {
+function ServicesNavigationBar({services, searchCriteria, clear, filterText, storeCurrentTileId,fetchNewService}) {
 
 
     useEffect(() => {
@@ -25,20 +25,7 @@ function ServicesNavigationBar({services, searchCriteria, clear, filterText, sto
     }, []); // Dependencies
 
     const handleTabClick = (id) => {
-        let service;
-        for(const tl of services) {
-            for(const sr of tl?.services) {
-                if(sr?.serviceId === id){
-                    service = sr;
-                }
-
-            }
-        }
-        const correctTile = services.find((tile) => tile.services.some((service) => service.serviceId === id));
-        if (correctTile) {
-            selectService(service, correctTile.id);
-            storeCurrentTileId(correctTile.id);
-        }
+        fetchNewService(id)
     };
 
 
@@ -64,11 +51,13 @@ function ServicesNavigationBar({services, searchCriteria, clear, filterText, sto
     const basePath = location.pathname.replace(serviceId, '');
     let selectedTab = Number(0);
     let allServices;
+    console.log(services)
     if (hasTiles) {
         allServices = sortServices(services);
         const index = allServices.findIndex((item) => item.serviceId === serviceId);
         selectedTab = Number(index);
     }
+
     const TruncatedTabLabel = withStyles(styles)(({classes, label}) => (
         <Tooltip title={label} placement="bottom">
             <div className={classes.truncatedTabLabel}>{label}</div>

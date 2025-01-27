@@ -14,10 +14,10 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 
 export default class InstanceInfo extends Component {
     render() {
-        const { selectedService, selectedVersion, tiles } = this.props;
+        const { service, selectedVersion, tiles } = this.props;
 
         const apiInfo =
-            selectedService.apis[selectedVersion || selectedService.defaultApiVersion] || selectedService.apis.default;
+            service.apis[selectedVersion || service.defaultApiVersion] || service.apis.default;
         let apiId = '';
         if (apiInfo !== null) {
             apiId = apiInfo.apiId;
@@ -29,10 +29,10 @@ export default class InstanceInfo extends Component {
         return (
             <Shield title="Cannot display information about selected instance">
                 <div className="apiInfo-item">
-                    <Tooltip key={selectedService.baseUrl} title="The instance URL for this service" placement="bottom">
+                    <Tooltip key={service.baseUrl} title="The instance URL for this service" placement="bottom">
                         <Typography>
                             <label htmlFor="instanceUrl">Instance URL:</label>
-                            {!hideServiceInfo && <span id="instanceUrl">{selectedService.baseUrl}</span>}
+                            {!hideServiceInfo && <span id="instanceUrl">{service.baseUrl}</span>}
                         </Typography>
                     </Tooltip>
                 </div>
