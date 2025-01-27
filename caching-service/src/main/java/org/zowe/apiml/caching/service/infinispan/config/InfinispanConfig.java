@@ -84,7 +84,7 @@ public class InfinispanConfig {
         }
     }
 
-    @Bean
+    @Bean(destroyMethod = "stop")
     DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
