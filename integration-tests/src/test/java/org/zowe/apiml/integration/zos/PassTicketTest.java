@@ -188,7 +188,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenInvalidApplicationName() {
-                String expectedMessage = "The generation of the PassTicket failed. Reason:";
+                String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
                 TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
 
                 given()
