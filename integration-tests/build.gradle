@@ -241,7 +241,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'GatewayProxyTest',
-            'SafIdTokenTest'
+            'SafIdTokenTest',
+            'ChaoticHATest'
         )
     }
 
@@ -571,9 +572,13 @@ task runChaoticHATests(type: Test) {
     group "Integration tests"
     description "Run Chaotic tests verifying High Availability"
 
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.ha", true
+
     outputs.cacheIf { false }
 
-    systemProperty "environment.ha", true
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
