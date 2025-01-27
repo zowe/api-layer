@@ -97,7 +97,7 @@ instanceEnv:
     ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration: JWT
     ZWE_STATIC_DEFINITIONS_DIR: config/local/api-defs
     ZWE_configs_server_internal_enabled: true
-    ZWE_configs_debug: true
+    ZWE_configs_debug: false
     ZWE_configs_apiml_catalog_serviceId: apicatalog
     ZWE_configs_storage_size: 100
     ZWE_zowe_verifyCertificates: true
