@@ -11,11 +11,9 @@
 import {
     FETCH_TILES_FAILED,
     FETCH_TILES_REQUEST,
-    FETCH_NEW_TILES_REQUEST,
     FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    FETCH_TILES_NEW_SUCCESS,
     STORE_CURRENT_TILEID, FETCH_NEW_SERVICE_REQUEST,
     FETCH_NEW_SERVICE_SUCCESS,
     FETCH_SERVICE_STOP,
@@ -42,14 +40,6 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 tilesLoading: false,
                 error: null,
             };
-        case FETCH_TILES_NEW_SUCCESS:
-            return {
-                ...state,
-                currentTileId: state.currentTileId,
-                tiles: [...state.tiles],
-                services: [...action.payload],
-                error: null,
-            };
         case FETCH_NEW_SERVICE_SUCCESS:
             return {
                 ...state,
@@ -69,9 +59,6 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
             };
         case FETCH_SERVICE_FAILED:
             return {
-                tiles: state.tiles,
-                services: state.services,
-                currentTileId: state.currentTileId,
                 id: '',
                 error: action.payload,
             };
@@ -82,14 +69,6 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
                 currentTileId: state.currentTileId,
                 id: action.payload,
                 tilesLoading: true,
-                error: null,
-            };
-        case FETCH_NEW_TILES_REQUEST:
-            return {
-                services: [],
-                tiles: state.tiles,
-                currentTileId: state.currentTileId,
-                id: action.payload,
                 error: null,
             };
        case FETCH_NEW_SERVICE_REQUEST:

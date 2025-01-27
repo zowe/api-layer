@@ -11,9 +11,8 @@ import { connect } from 'react-redux';
 import {
     fetchTilesFailed,
     fetchTilesStart,
-    fetchNewTiles,
     fetchTilesStop,
-    fetchTilesSuccess, storeCurrentTileId, fetchNewService, fetchServiceStop,
+    fetchTilesSuccess, storeCurrentTileId, fetchNewService, fetchServiceStop, fetchServiceFailed,
 } from '../../actions/catalog-tile-actions';
 import {clearService, selectService} from '../../actions/selected-service-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
@@ -26,6 +25,7 @@ const mapStateToProps = (state) => ({
     services: state.tilesReducer.services,
     tiles: state.tilesReducer.tiles,
     fetchTilesError: state.tilesReducer.error,
+    fetchServiceError: state.tilesReducer.error,
     selectedTile: state.selectedServiceReducer.selectedTile,
     selectedService: state.selectedServiceReducer.selectedService,
     isLoading: loadingSelector(state),
@@ -38,15 +38,16 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     fetchTilesStart: (id) => dispatch(fetchTilesStart(id)),
-    fetchNewTiles: (id) => dispatch(fetchNewTiles(id)),
     fetchTilesSuccess: (tiles) => dispatch(fetchTilesSuccess(tiles)),
     fetchTilesFailed: (error) => dispatch(fetchTilesFailed(error)),
     fetchTilesStop: () => dispatch(fetchTilesStop()),
-    fetchServiceStop: () => dispatch(fetchServiceStop()),
     clearService: () => dispatch(clearService()),
     selectService: (service, tileId) => dispatch(selectService(service, tileId)),
     storeCurrentTileId: (id) => storeCurrentTileId(id),
-    fetchNewService: (id) => dispatch(fetchNewService(id))
+    fetchServiceStop: () => dispatch(fetchServiceStop()),
+    fetchNewService: (id) => dispatch(fetchNewService(id)),
+    fetchServiceFailed: (id) => dispatch(fetchServiceFailed(id)),
+
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DetailPage);

@@ -16,7 +16,6 @@ window.process = process; // Polyfill process for the browser
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
 import {
     FETCH_TILES_REQUEST,
-    FETCH_NEW_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_NEW_SERVICE_REQUEST,
     FETCH_SERVICE_STOP
@@ -25,7 +24,8 @@ import {
     fetchTilesFailed,
     fetchTilesRetry,
     fetchTilesSuccess,
-    fetchNewTilesSuccess, fetchNewServiceSuccess, fetchServiceFailed,
+    fetchNewServiceSuccess,
+    fetchServiceFailed,
 } from '../actions/catalog-tile-actions';
 import { userActions } from '../actions/user-actions';
 import getBaseUrl from '../helpers/urls';
@@ -189,23 +189,6 @@ export const fetchTilesPollingEpic = createFetchTilesEpic(
     retryMechanism
 );
 
-/**
- * Epic used to schedule call to fetch tiles from the containers endpoint. This is required to dynamically
- * populate the navigation side bar in the detail page and refresh it based on the scheduled period
- * @param action$ redux action
- * @param _store redux store
- * @param ajax ajax call
- * @param scheduler scheduler
- */
-export const fetchTilesPollingEpic2 = createFetchTilesEpic(
-    FETCH_NEW_TILES_REQUEST,
-    fetchNewTilesSuccess,
-    fetchTilesFailed,
-    FETCH_TILES_STOP,
-    getUrl,
-    checkOrigin,
-    retryMechanism
-);
 
 /**
  * Epic used to schedule call to fetch tiles from the containers endpoint. This is required to dynamically

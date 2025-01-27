@@ -15,7 +15,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import {sortServices} from '../../selectors/selectors';
 
-function ServicesNavigationBar({services, searchCriteria, clear, filterText, storeCurrentTileId,fetchNewService}) {
+function ServicesNavigationBar({services, searchCriteria, clear, filterText}) {
 
 
     useEffect(() => {
@@ -51,7 +51,6 @@ function ServicesNavigationBar({services, searchCriteria, clear, filterText, sto
     const basePath = location.pathname.replace(serviceId, '');
     let selectedTab = Number(0);
     let allServices;
-    console.log(services)
     if (hasTiles) {
         allServices = sortServices(services);
         const index = allServices.findIndex((item) => item.serviceId === serviceId);

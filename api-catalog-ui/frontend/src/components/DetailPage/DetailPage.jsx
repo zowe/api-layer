@@ -23,25 +23,14 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import {customUIStyle} from '../../utils/utilFunctions';
 
 function DetailPage({
-                        isLoading,
-                        clearService,
-                        fetchTilesStop,
                         fetchTilesError,
-                        selectedTile,
-                        services,
-                        fetchTilesStart,
-                        currentTileId,
-                        fetchNewTiles,
                         tiles,
                         authentication,
-                        selectService,
-                        storeCurrentTileId,
                         fetchNewService,
                         service,
                         fetchServiceStop,
-                        tilesLoading,
-                        serviceLoading
-
+                        serviceLoading,
+                        fetchServiceError
                     }) {
     const [error, setError] = useState(null);
     const serviceId = useParams();
@@ -50,24 +39,14 @@ function DetailPage({
 
     useEffect(() => {
 
-        console.log(currentTileId)
-        // fetchTilesStart();
-        console.log(serviceId['*'])
-        // if(service.serviceId != serviceId['*']){
         fetchNewService(serviceId['*']);
-        // }
-        console.log(service)
-        console.log(tiles)
 
-        if (fetchTilesError) {
+
+        if (fetchServiceError) {
             fetchServiceStop();
-            setError(formatError(fetchTilesError));
+            setError(formatError(fetchServiceError));
         }
-        // return () => {
-        //     fetchTilesStop();
-        //     fetchServiceStop();
-        // };
-    }, [fetchTilesStart, fetchTilesStop, fetchTilesError,fetchServiceStop,fetchNewService]);
+    }, [fetchServiceError,fetchServiceStop,fetchNewService]);
 
 
     const navigate = useNavigate();
@@ -94,8 +73,8 @@ function DetailPage({
             </div>
 
             <div className="main-content2 detail-content">
-                <Spinner isLoading={isLoading}/>
-                {fetchTilesError && (
+                <Spinner isLoading={serviceLoading}/>
+                {fetchServiceError && (
                     <div className="no-tiles-container">
                         <br/>
                         <IconButton id="go-back-button" onClick={handleGoBack} size="medium">
@@ -109,14 +88,14 @@ function DetailPage({
                             data-testid="detail-page-error"
                             variant="subtitle2"
                         >
-                            Tile details for "{currentTileId}" could not be retrieved, the following error was
+                            Details for service "{serviceId['*']}" could not be retrieved, the following error was
                             returned:
                         </Typography>
                         {error}
                     </div>
                 )}
 
-                {!isLoading && !fetchTilesError && (
+                {!serviceLoading && !fetchServiceError && (
                     <div className="api-description-container">
                         <IconButton
                             id="go-back-button"
@@ -130,16 +109,16 @@ function DetailPage({
                         </IconButton>
                         <div className="detailed-description-container">
                             <div className="title-api-container">
-                                {tiles !== undefined && tiles.length === 1 && (
+                                {service !== undefined && (
                                     <h2 id="title" className="text-block-11 title1">
-                                        {tiles[0].title}
+                                        {service.title}
                                     </h2>
                                 )}
                             </div>
                             <div className="paragraph-description-container">
-                                {tiles !== undefined && tiles.length > 0 && (
+                                {service !== undefined && (
                                     <p id="description" className="text-block-12">
-                                        {tiles[0].description}
+                                        {service.description}
                                     </p>
                                 )}
                             </div>
