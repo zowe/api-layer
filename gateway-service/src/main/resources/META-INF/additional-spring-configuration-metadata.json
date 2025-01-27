@@ -48,6 +48,12 @@
             "type": "java.util.Set",
             "defaultValue": false,
             "description": "Specifies what custom metadata are displayed in the /registry endpoint."
+        },
+        {
+            "name": "apiml.logging.timezone",
+            "type": "java.lang.String",
+            "defaultValue": "UTC",
+            "description": "Specifies the timezone to be used for logging."
         }
     ]
 }
