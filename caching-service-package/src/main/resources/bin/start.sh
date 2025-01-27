@@ -216,6 +216,16 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
+# migration step of Infinispan since version 3.2 (see #https://github.com/zowe/api-layer/pull/3960)
+original_infinispan_data_location="${ZWE_configs_storage_infinispan_persistence_dataLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/data"
+if [ -d "${original_infinispan_data_location}" ]; then
+    mv -f "${original_infinispan_data_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/data"
+fi
+original_infinispan_index_location="${ZWE_configs_storage_infinispan_persistence_indexLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/index"
+if [ -d "${original_infinispan_index_location}" ]; then
+    mv -f "${original_infinispan_index_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/index"
+fi
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
