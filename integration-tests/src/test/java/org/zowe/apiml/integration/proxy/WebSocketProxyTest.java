@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
 import jakarta.websocket.ContainerProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.*;
 import org.springframework.web.socket.CloseStatus;
@@ -45,7 +46,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
 @WebsocketTest
 class WebSocketProxyTest implements TestWithStartedInstances {
-    private final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final URI DC_WS_REST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/ws");
 
     private static final int WAIT_TIMEOUT_MS = 10000;
@@ -104,9 +105,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     private String discoverableClientGatewayUrl(String gatewayUrl) throws URISyntaxException {
-        String scheme = serviceConfiguration.getScheme().equals("http") ? "ws" : "wss";
-        String host = serviceConfiguration.getHost();
-        int port = serviceConfiguration.getPort();
+        String scheme = gatewayServiceConfiguration.getScheme().equals("http") ? "ws" : "wss";
+        String host = StringUtils.isNotBlank(gatewayServiceConfiguration.getDvipaHost()) ? gatewayServiceConfiguration.getDvipaHost() : gatewayServiceConfiguration.getHost();
+        int port = gatewayServiceConfiguration.getPort();
 
         return new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(gatewayUrl).build().toString();
     }
