@@ -20,6 +20,8 @@ import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
 import java.net.URISyntaxException;
+import java.util.Objects;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -52,7 +54,7 @@ class DeterministicLoadBalancingTest {
         void whenRoutedInstanceExists_thenReturn200() throws URISyntaxException {
             assumeTrue(haGatewayRequests.existing() > 1);
             assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
-            var expectedInstance = "discoverable-client:discoverableclient:10012";
+            var expectedInstance = Optional.ofNullable(System.getenv("DETERMINISTIC_ROUTING_SERVICE_ID")).filter(Objects::nonNull).orElse("discoverable-client:discoverableclient:10012");
 
             String jwt = gatewayToken();
 
