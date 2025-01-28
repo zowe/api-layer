@@ -179,15 +179,19 @@ public class ApiCatalogController {
         try {
 
             var service = cachedProductFamilyService.getServices().get(id);
+            log.debug("Getting service by id {}",  id);
             if (service != null) {
                 String apiDoc = cachedApiDocService.getDefaultApiDocForService(id);
+                log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
 
                 if (apiDoc != null) {
+                    log.debug("Getting api doc was retrieved");
                     service.setApiDoc(apiDoc);
                     List<String> apiVersions = cachedApiDocService.getApiVersionsForService(id);
                     service.setApiVersions(apiVersions);
-
+                    log.debug("Got api versions: {}", apiVersions!= null ? apiVersions.size() : 0);
                     String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(id);
+                    log.debug("Default api version: {}", defaultApiVersion);
                     service.setDefaultApiVersion(defaultApiVersion);
                 }
 

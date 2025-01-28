@@ -8,17 +8,6 @@
     <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %magenta(%X{userid:-}) %cyan(%-5level) %clr\(\(%logger{15}\)\) %msg%n"/>
 
     <turboFilter class="org.zowe.apiml.product.logging.UseridFilter"/>
-    <if condition='property("spring.profiles.active").contains("debug")||property("spring.profiles.active").contains("diag")||property("spring.profiles.active").contains("dev")'>
-        <then>
-        </then>
-        <else>
-            <turboFilter class="org.zowe.apiml.product.logging.ApimlDependencyLogHider"/>
-            <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
-            <turboFilter class="ch.qos.logback.classic.turbo.DuplicateMessageFilter">
-                <AllowedRepetitions>0</AllowedRepetitions>
-            </turboFilter>
-        </else>
-    </if>
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
