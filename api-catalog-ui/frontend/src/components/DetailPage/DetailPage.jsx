@@ -7,11 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, {Component, Suspense, useEffect, useRef, useState} from 'react';
+import React, { Suspense, useEffect, useState} from 'react';
 import {IconButton, Typography} from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import {Navigate, Route, Router, Routes, useMatch, useNavigate, useParams} from 'react-router';
-import PropTypes from 'prop-types';
+import {Navigate, Route, Routes, useNavigate, useParams} from 'react-router';
 import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
@@ -144,7 +143,6 @@ function DetailPage({
                                         path=":serviceId"
                                         element={
                                             <div className="tabs-swagger">
-
                                                 <ServiceTabContainer/>
                                             </div>
                                         }

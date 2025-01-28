@@ -219,6 +219,30 @@ public class CachedProductFamilyService {
     }
 
     /**
+     * Remove Instance which isn't available anymore. Based on what service the instance belongs to:
+     * 1) it will remove the whole APIContainer (Tile) if there is no instance of any service remaining
+     * 2) Remove the service from the containe if there is no instance of service remaining
+     * 3) Remove instance from the service
+     *
+     * @param removedInstance the service instance
+     */
+    public void removeInstanceFromServices(InstanceInfo removedInstance) {
+        var serviceId = removedInstance.getAppName();
+        var currentService = services.get(serviceId);
+        // There is nothing to do.
+        if (currentService == null) {
+            log.info("Service with id: {} instance {} not found", serviceId, removedInstance.getInstanceId());
+            return;
+        }
+        if (currentService.getInstances().size() == 1) {
+            services.get(serviceId);
+        } else {
+            currentService.getInstances().remove(removedInstance.getInstanceId());
+        }
+
+    }
+
+    /**
      * Update the summary totals, sso and API IDs info for a container based on it's running services
      *
      * @param apiContainer calculate totals for this container
@@ -312,7 +336,7 @@ public class CachedProductFamilyService {
                 }
 
                 RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-                return  transformService.retrieveApiBasePath(
+                return transformService.retrieveApiBasePath(
                     instanceInfo.getVIPAddress(),
                     instanceInfo.getHomePageUrl(),
                     routes);
@@ -399,8 +423,7 @@ public class CachedProductFamilyService {
                     apiBasePath = String.join("/", "", serviceId.toLowerCase());
                     title += " (" + apimlId + ")";
                 }
-            }
-            else {
+            } else {
                 apiBasePath = "/";
             }
         }
