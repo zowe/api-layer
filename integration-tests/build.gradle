@@ -242,7 +242,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'SAFProviderTest',
             'GatewayProxyTest',
             'SafIdTokenTest',
-            'ChaoticHATest'
+            'ChaoticHATest',
+            'GraphQLTest'
         )
     }
 
