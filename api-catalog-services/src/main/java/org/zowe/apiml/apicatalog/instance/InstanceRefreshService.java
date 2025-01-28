@@ -207,7 +207,6 @@ public class InstanceRefreshService {
     private void updateService(InstanceInfo instanceInfo) {
         cachedProductFamilyService.addService(instanceInfo);
         log.debug("Created/Updated service and updated cache: {}", instanceInfo.getInstanceId());
-
     }
 
     /**

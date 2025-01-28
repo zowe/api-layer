@@ -33,6 +33,7 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -56,9 +57,9 @@ public class CachedProductFamilyService {
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final TransformService transformService;
 
-    private final Map<String, APIContainer> products = new HashMap<>();
+    private final Map<String, APIContainer> products = new ConcurrentHashMap<>();
     @Getter
-    private final Map<String, APIService> services = new HashMap<>();
+    private final Map<String, APIService> services = new ConcurrentHashMap<>();
 
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final CustomStyleConfig customStyleConfig;
@@ -235,9 +236,10 @@ public class CachedProductFamilyService {
             return;
         }
         if (currentService.getInstances().size() == 1) {
-            services.get(serviceId);
+            services.remove(serviceId);
         } else {
             currentService.getInstances().remove(removedInstance.getInstanceId());
+            services.put(serviceId, currentService);
         }
 
     }
