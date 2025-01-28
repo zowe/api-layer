@@ -25,6 +25,8 @@ import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
 
+import java.time.Duration;
+
 @RateLimitTest
 public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
@@ -49,6 +51,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
         client =
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .responseTimeout(Duration.ofSeconds(30L))
                 .baseUrl(baseUrl)
                 .build();
     }
