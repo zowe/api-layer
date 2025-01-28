@@ -11,6 +11,7 @@
 package org.zowe.apiml.util.http;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
@@ -67,7 +68,11 @@ public class HttpRequestUtils {
     }
 
     public static URI getUri(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
-        return getUri(serviceConfiguration.getScheme(), serviceConfiguration.getHost(), serviceConfiguration.getPort(), endpoint, arguments);
+        var host = serviceConfiguration.getHost();
+        if (serviceConfiguration instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
+            host = s.getDvipaHost();
+        }
+        return getUri(serviceConfiguration.getScheme(), host, serviceConfiguration.getPort(), endpoint, arguments);
     }
 
     public static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair...arguments) {
@@ -90,12 +95,13 @@ public class HttpRequestUtils {
 
     public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
         String scheme = serviceConfiguration.getScheme();
-        String host = serviceConfiguration.getHost();
-        int port = serviceConfiguration.getPort();
-
-        StringTokenizer hostnameTokenizer = new StringTokenizer(host, ",");
+        var host = serviceConfiguration.getHost();
+        var hostnameTokenizer = new StringTokenizer(host, ",");
         host = hostnameTokenizer.nextToken();
-
+        if (serviceConfiguration instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
+            host = s.getDvipaHost();
+        }
+        int port = serviceConfiguration.getPort();
         return getUri(scheme, host, port, endpoint, arguments);
     }
 
