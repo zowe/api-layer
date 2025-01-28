@@ -42,7 +42,7 @@ import static org.hamcrest.core.Is.is;
 @TestInstance(Lifecycle.PER_CLASS)
 class QueryTest implements TestWithStartedInstances {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+    private final static String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String BASE_PATH = "/gateway/api/v1";
     private final static String QUERY_ENDPOINT = "/auth/query";
