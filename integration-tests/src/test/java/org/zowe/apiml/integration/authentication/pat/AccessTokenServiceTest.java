@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -67,9 +68,11 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .delete(REVOKE_ENDPOINT)
                 .then().statusCode(204);
-            given().contentType(ContentType.JSON).body(bodyContent).when()
-                .post(VALIDATE_ENDPOINT)
-                .then().statusCode(401);
+            IntStream.range(0, 3).forEach(x -> {
+                given().contentType(ContentType.JSON).body(bodyContent).when()
+                    .post(VALIDATE_ENDPOINT)
+                    .then().statusCode(401);
+            });
         }
 
         @Test
@@ -77,9 +80,11 @@ public class AccessTokenServiceTest {
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .delete(REVOKE_ENDPOINT)
                 .then().statusCode(204);
-            given().contentType(ContentType.JSON).body(bodyContent).when()
-                .delete(REVOKE_ENDPOINT)
-                .then().statusCode(401);
+            IntStream.range(0, 3).forEach(x -> {
+                given().contentType(ContentType.JSON).body(bodyContent).when()
+                    .delete(REVOKE_ENDPOINT)
+                    .then().statusCode(401);
+            });
         }
 
         @Test
@@ -131,9 +136,11 @@ public class AccessTokenServiceTest {
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
 //            validate after revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
-                .post(VALIDATE_ENDPOINT)
-                .then().statusCode(401);
+            IntStream.range(0, 3).forEach(x -> {
+                given().contentType(ContentType.JSON).body(bodyContent).when()
+                    .post(VALIDATE_ENDPOINT)
+                    .then().statusCode(401);
+            });
         }
 
         @Test
@@ -176,9 +183,11 @@ public class AccessTokenServiceTest {
                 .when().delete(REVOKE_FOR_SCOPE_ENDPOINT)
                 .then().statusCode(204);
 //            validate after revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
-                .post(VALIDATE_ENDPOINT)
-                .then().statusCode(401);
+            IntStream.range(0, 3).forEach(x -> {
+                given().contentType(ContentType.JSON).body(bodyContent).when()
+                    .post(VALIDATE_ENDPOINT)
+                    .then().statusCode(401);
+            });
         }
 
         @Test
