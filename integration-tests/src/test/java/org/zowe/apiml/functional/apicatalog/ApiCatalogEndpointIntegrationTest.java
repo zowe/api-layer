@@ -34,12 +34,16 @@ import org.zowe.apiml.util.http.HttpSecurityUtils;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -63,7 +67,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
-    private String baseHost;
+    private final List<String> baseHosts = new ArrayList<>();
     private String validGatewayToken;
     private String unauthorizedGatewayToken;
 
@@ -76,9 +80,9 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     @BeforeEach
     void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String host = gatewayServiceConfiguration.getHost();
         int port = gatewayServiceConfiguration.getExternalPort();
-        baseHost = host + ":" + port;
+        Stream.of(gatewayServiceConfiguration.getHost().split(","))
+            .forEach(host -> baseHosts.add(host + ":" + port));
     }
 
     @Nested
@@ -149,7 +153,9 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 // Then
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
                 assertFalse(componentSchemas.isEmpty(), apiCatalogSwagger);
-                assertEquals("https://" + baseHost + "/apicatalog/api/v1", swaggerServer, apiCatalogSwagger);
+                assertThat(apiCatalogSwagger, baseHosts.stream()
+                    .map(host -> "https://" + host + "/apicatalog/api/v1")
+                    .toList(), hasItem(equalTo(swaggerServer)));
                 assertNull(paths.get("/status/updates"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers"), apiCatalogSwagger);
@@ -182,7 +188,9 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 // Then
                 assertFalse(paths.isEmpty(), apiCatalogSwagger);
                 assertFalse(componentSchemas.isEmpty(), apiCatalogSwagger);
-                assertEquals("https://" + baseHost + "/apicatalog/api/v1", swaggerServer, apiCatalogSwagger);
+                assertThat(apiCatalogSwagger, baseHosts.stream()
+                    .map(host -> "https://" + host + "/apicatalog/api/v1")
+                    .toList(), hasItem(equalTo(swaggerServer)));
                 assertNull(paths.get("/status/updates"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
                 assertNotNull(paths.get("/containers"), apiCatalogSwagger);
