@@ -162,7 +162,7 @@ public class AccessTokenServiceTest {
             requestBody.put("userId", SecurityUtils.USERNAME);
             given()
                 .contentType(ContentType.JSON)
-                .config(SslContext.clientCertValid)
+                .config(SslContext.clientCertUser)
                 .body(requestBody)
             .when()
                 .delete(REVOKE_FOR_USER_ENDPOINT)
@@ -234,7 +234,7 @@ public class AccessTokenServiceTest {
             requestBody.put("serviceId", "api-catalog");
             given()
                 .contentType(ContentType.JSON)
-                .config(SslContext.clientCertValid)
+                .config(SslContext.clientCertUser)
                 .body(requestBody)
             .when()
                 .delete(REVOKE_FOR_SCOPE_ENDPOINT)
@@ -260,7 +260,7 @@ public class AccessTokenServiceTest {
             requestBody.put("timestamp", "1582239600000");
             given()
                 .contentType(ContentType.JSON)
-                .config(SslContext.clientCertValid)
+                .config(SslContext.clientCertUser)
                 .body(requestBody)
             .when()
                 .delete(REVOKE_FOR_USER_ENDPOINT)
