@@ -258,9 +258,14 @@ public class AccessTokenServiceTest {
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
             requestBody.put("timestamp", "1582239600000");
-            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
-                .when().delete(REVOKE_FOR_USER_ENDPOINT)
-                .then().statusCode(204);
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertValid)
+                .body(requestBody)
+            .when()
+                .delete(REVOKE_FOR_USER_ENDPOINT)
+            .then()
+                .statusCode(204);
 //            evict the rule
             given()
                 .contentType(ContentType.JSON)
