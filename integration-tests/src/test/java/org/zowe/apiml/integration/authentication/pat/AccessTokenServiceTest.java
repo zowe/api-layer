@@ -65,25 +65,41 @@ public class AccessTokenServiceTest {
 
         @Test
         void givenValidToken_invalidateTheToken() {
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .delete(REVOKE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
             IntStream.range(0, 3).forEach(x -> {
-                given().contentType(ContentType.JSON).body(bodyContent).when()
+                given()
+                    .contentType(ContentType.JSON)
+                    .body(bodyContent)
+                .when()
                     .post(VALIDATE_ENDPOINT)
-                    .then().statusCode(401);
+                .then()
+                    .statusCode(401);
             });
         }
 
         @Test
         void givenTokenInvalidated_returnUnauthorized() {
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .delete(REVOKE_ENDPOINT)
-                .then().statusCode(204);
+                .then()
+            .statusCode(204);
             IntStream.range(0, 3).forEach(x -> {
-                given().contentType(ContentType.JSON).body(bodyContent).when()
+                given()
+                    .contentType(ContentType.JSON)
+                    .body(bodyContent)
+                .when()
                     .delete(REVOKE_ENDPOINT)
-                    .then().statusCode(401);
+                .then()
+                    .statusCode(401);
             });
         }
 
@@ -91,9 +107,13 @@ public class AccessTokenServiceTest {
         void givenMatchingScopes_validateTheToken() throws Exception {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
         }
 
         @Test
@@ -101,9 +121,13 @@ public class AccessTokenServiceTest {
             SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
             RestAssured.useRelaxedHTTPSValidation();
             bodyContent.setServiceId("differentService");
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(401);
+            .then()
+                .statusCode(401);
         }
 
     }
@@ -126,20 +150,33 @@ public class AccessTokenServiceTest {
             bodyContent.setServiceId("service");
             bodyContent.setToken(pat);
 //            validate before revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
 //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
-                .when().delete(REVOKE_FOR_USER_ENDPOINT)
-                .then().statusCode(204);
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertValid)
+                .body(requestBody)
+            .when()
+                .delete(REVOKE_FOR_USER_ENDPOINT)
+            .then()
+                .statusCode(204);
 //            validate after revocation rule
             IntStream.range(0, 3).forEach(x -> {
-                given().contentType(ContentType.JSON).body(bodyContent).when()
+                given()
+                    .contentType(ContentType.JSON)
+                    .body(bodyContent)
+                .when()
                     .post(VALIDATE_ENDPOINT)
-                    .then().statusCode(401);
+                .then()
+                    .statusCode(401);
             });
         }
 
@@ -150,17 +187,29 @@ public class AccessTokenServiceTest {
             bodyContent.setServiceId("service");
             bodyContent.setToken(pat);
 //            validate before revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
 //            revoke all tokens for USERNAME
-            given().contentType(ContentType.JSON).config(SslContext.clientCertValid)
-                .when().delete(REVOKE_OWN_TOKENS_ENDPOINT)
-                .then().statusCode(204);
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertValid)
+            .when()
+                .delete(REVOKE_OWN_TOKENS_ENDPOINT)
+            .then()
+                .statusCode(204);
 //            validate after revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(401);
+            .then()
+                .statusCode(401);
         }
 
         @Test
@@ -173,20 +222,33 @@ public class AccessTokenServiceTest {
             bodyContent.setServiceId("gateway");
             bodyContent.setToken(pat);
 //            validate before revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
 //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("serviceId", "api-catalog");
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
-                .when().delete(REVOKE_FOR_SCOPE_ENDPOINT)
-                .then().statusCode(204);
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertValid)
+                .body(requestBody)
+            .when()
+                .delete(REVOKE_FOR_SCOPE_ENDPOINT)
+            .then()
+                .statusCode(204);
 //            validate after revocation rule
             IntStream.range(0, 3).forEach(x -> {
-                given().contentType(ContentType.JSON).body(bodyContent).when()
+                given()
+                    .contentType(ContentType.JSON)
+                    .body(bodyContent)
+                .when()
                     .post(VALIDATE_ENDPOINT)
-                    .then().statusCode(401);
+                .then()
+                    .statusCode(401);
             });
         }
 
@@ -196,21 +258,28 @@ public class AccessTokenServiceTest {
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
             requestBody.put("timestamp", "1582239600000");
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser).body(requestBody)
+            given().contentType(ContentType.JSON).config(SslContext.clientCertValid).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
                 .then().statusCode(204);
 //            evict the rule
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser)
-                .when()
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertValid)
+            .when()
                 .delete(EVICT_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
 //            return all the items from the cache
-            given().contentType(ContentType.JSON).config(SslContext.clientCertUser)
-                .when()
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertUser)
+            .when()
                 .get(CACHE_LIST_ENDPOINT)
-                .then()
+            .then()
                 .statusCode(200)
-                .body("content", not(containsString("1582239600000"))).extract().asString();
+                .body("content", not(containsString("1582239600000")))
+                .extract()
+                .asString();
         }
 
         @Test
@@ -221,21 +290,34 @@ public class AccessTokenServiceTest {
             bodyContent.setServiceId("service");
             bodyContent.setToken(pat);
 //            validate before revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
 //            validate after revocation rule
-            given().contentType(ContentType.JSON).body(bodyContent).when()
+            given()
+                .contentType(ContentType.JSON)
+                .body(bodyContent)
+            .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(204);
+            .then()
+                .statusCode(204);
             //            revoke all tokens for USERNAME
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("userId", SecurityUtils.USERNAME);
-            given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
-                .when().delete(REVOKE_FOR_USER_ENDPOINT)
-                .then().statusCode(403);
+            given()
+                .contentType(ContentType.JSON)
+                .config(SslContext.clientCertApiml)
+                .body(requestBody)
+            .when()
+                .delete(REVOKE_FOR_USER_ENDPOINT)
+            .then()
+                .statusCode(403);
         }
-    }
 
+    }
 
 }
