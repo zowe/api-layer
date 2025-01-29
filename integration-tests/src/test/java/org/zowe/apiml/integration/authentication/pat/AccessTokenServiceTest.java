@@ -269,7 +269,7 @@ public class AccessTokenServiceTest {
 //            evict the rule
             given()
                 .contentType(ContentType.JSON)
-                .config(SslContext.clientCertValid)
+                .config(SslContext.clientCertUser)
             .when()
                 .delete(EVICT_ENDPOINT)
             .then()
