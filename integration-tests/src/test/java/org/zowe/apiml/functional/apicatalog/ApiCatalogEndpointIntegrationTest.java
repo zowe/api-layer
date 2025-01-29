@@ -62,10 +62,10 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v1.0.0";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/apicatalog/zowe.apiml.apicatalog v18.0.0";
 
-    private final static String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
-    private final static String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
+    private static final String UNAUTHORIZED_USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getUser();
+    private static final String UNAUTHORIZED_PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-unauthorized").get(0).getPassword();
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getUser();
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getAuxiliaryUserList().getCredentials("servicesinfo-authorized").get(0).getPassword();
 
     private final List<String> baseHosts = new ArrayList<>();
     private String validGatewayToken;
@@ -75,10 +75,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
     void init() {
         validGatewayToken = gatewayToken(USERNAME, PASSWORD);
         unauthorizedGatewayToken = gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD);
-    }
 
-    @BeforeEach
-    void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         int port = gatewayServiceConfiguration.getExternalPort();
         Stream.of(gatewayServiceConfiguration.getHost().split(","))
