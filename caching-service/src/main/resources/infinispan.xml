@@ -1,4 +1,11 @@
-<infinispan>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:15.1 https://infinispan.org/schemas/infinispan-config-15.1.xsd
+                        urn:infinispan:server:15.1 https://infinispan.org/schemas/infinispan-server-15.1.xsd
+                        urn:infinispan:jgroups:5.3 http://www.jgroups.org/schema/jgroups-5.3.xsd
+"
+    xmlns="urn:infinispan:config:15.1"
+    xmlns:server="urn:infinispan:server:15.1">
     <jgroups>
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
@@ -82,7 +89,6 @@
                 <class>java.util.Arrays$ArrayList</class>
             </allow-list>
         </serialization>
-
 
     </cache-container>
 </infinispan>

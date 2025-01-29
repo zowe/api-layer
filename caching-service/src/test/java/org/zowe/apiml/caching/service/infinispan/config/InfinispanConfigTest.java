@@ -10,11 +10,18 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class InfinispanConfigTest {
 
@@ -48,6 +55,60 @@ class InfinispanConfigTest {
             infinispanConfig.updateKeyring();
             assertEquals("/path", ReflectionTestUtils.getField(infinispanConfig, "keyStore"));
             assertEquals("pass", ReflectionTestUtils.getField(infinispanConfig, "keyStorePass"));
+        }
+
+    }
+
+    @Nested
+    class GlobalConfiguration {
+
+        private static final String INSTANCE = "ZWE_haInstance_id";
+        private static final String WORKSPACE = "ZWE_zowe_workspaceDirectory";
+
+        Map<String, String> getEnvMap() {
+            try {
+                Class<?> envVarClass = System.getenv().getClass();
+                Field mField = envVarClass.getDeclaredField("m");
+                mField.setAccessible(true);
+                return (Map<String, String>) mField.get(System.getenv());
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                fail(e);
+                return null;
+            }
+        }
+
+        @BeforeEach
+        @AfterEach
+        void cleanUp() {
+            getEnvMap().remove(INSTANCE);
+            getEnvMap().remove(WORKSPACE);
+        }
+
+        @Test
+        void givenNoEnvironmentValues_whenEvaluatingRootFolder_thenUseLocalhost() {
+            assertEquals("caching-service" + File.separator + "localhost", InfinispanConfig.getRootFolder());
+        }
+
+        @Test
+        void givenOnlyInstanceIdValues_whenEvaluatingRootFolder_thenUseRelativePath() {
+            getEnvMap().put(INSTANCE, "myInstance");
+            assertEquals("caching-service" + File.separator + "myInstance", InfinispanConfig.getRootFolder());
+
+        }
+
+        @Test
+        void givenAllEnvironmentValues_whenEvaluatingRootFolder_thenUseExactLocation() {
+            getEnvMap().put(INSTANCE, "lpar1");
+            getEnvMap().put(WORKSPACE, "/some/path");
+            assertEquals(File.separator + "some" + File.separator + "path" + File.separator + "caching-service" + File.separator + "lpar1", InfinispanConfig.getRootFolder());
+
+        }
+
+        @Test
+        void givenOnlyWorkspaceValues_whenEvaluatingRootFolder_thenUseExactLocationWithLocalhost() {
+            getEnvMap().put(WORKSPACE, "/another/path");
+            assertEquals(File.separator + "another" + File.separator + "path" + File.separator + "caching-service" + File.separator + "localhost", InfinispanConfig.getRootFolder());
+
         }
 
     }
