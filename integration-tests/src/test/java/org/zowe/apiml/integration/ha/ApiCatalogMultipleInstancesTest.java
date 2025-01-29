@@ -31,6 +31,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 public class ApiCatalogMultipleInstancesTest {
     private final HAApiCatalogRequests haApiCatalogRequests = new HAApiCatalogRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
+
     @BeforeEach
     void setUp() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
