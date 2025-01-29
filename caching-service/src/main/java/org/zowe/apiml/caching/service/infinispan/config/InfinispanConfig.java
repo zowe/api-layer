@@ -38,6 +38,7 @@ import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -77,7 +78,22 @@ public class InfinispanConfig {
         }
     }
 
-    @Bean
+    static String getRootFolder() {
+        // using getenv().get is because of system compatibility (see non-case sensitive on Windows)
+        String instanceId = System.getenv().get("ZWE_haInstance_id");
+        if (StringUtils.isBlank(instanceId)) {
+            instanceId = "localhost";
+        }
+
+        String workspaceFolder = System.getenv().get("ZWE_zowe_workspaceDirectory");
+        if (StringUtils.isBlank(workspaceFolder)) {
+            return Paths.get("caching-service", instanceId).toString();
+        } else {
+            return Paths.get(workspaceFolder, "caching-service", instanceId).toString();
+        }
+    }
+
+    @Bean(destroyMethod = "stop")
     DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
@@ -94,6 +110,9 @@ public class InfinispanConfig {
         } catch (IOException e) {
             throw new InfinispanConfigException("Can't read configuration file", e);
         }
+        holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
+        holder.newConfigurationBuilder("default").persistence().passivation(true).addSoftIndexFileStore()
+            .shared(false);
 
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
