@@ -38,7 +38,10 @@ public abstract class AbstractIRRPassTicketException extends Exception {
     }
 
     protected String getMessage(String baseMessage) {
-        return baseMessage + ' ' + getErrorCode().getMessage();
+        return String.format("%s %s: safRc=%d, racfRc=%d, racfRsn=%d",
+            baseMessage, getErrorCode().getMessage(),
+            this.safRc, this.racfRc, this.racfRsn
+        );
     }
 
     public int getHttpStatus() {
