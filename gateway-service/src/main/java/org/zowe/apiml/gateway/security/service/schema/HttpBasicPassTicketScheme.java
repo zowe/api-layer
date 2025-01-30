@@ -41,7 +41,6 @@ import java.util.Optional;
  * SAF and generating new authentication header in request.
  */
 @Component
-@Slf4j
 public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
@@ -106,8 +105,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
             String error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
-            logger.log(MessageType.DEBUG, error);
-            log.debug("%s: %s", error, e);
+            logger.log(MessageType.DEBUG, String.format("%s: %s", error, e));
             throw new AuthSchemeException("org.zowe.apiml.security.ticket.generateFailed", error);
         }
         final String encoded = Base64.getEncoder()
