@@ -22,9 +22,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.io.ByteArrayInputStream;
@@ -55,6 +57,14 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     private final CertificateValidator certificateValidator;
 
+    private final AuthExceptionHandler authExceptionHandler;
+
+    private final boolean rejectIfZoweCertificateMissing;
+
+    public CategorizeCertsFilter(Set<String> publicKeyCertificatesBase64, CertificateValidator certificateValidator, AuthExceptionHandler authExceptionHandler) {
+        this(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler, true);
+    }
+
     /**
      * Get certificates from request (if exists), separate them (to use only APIML certificate to request sign and
      * other for authentication) and store again into request.
@@ -64,10 +74,11 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * in the default attribute.
      *
      * @param request Request to filter certificates
+     * @throws InsufficientAuthenticationException Optionally, if the Zowe server certificate is missing and rejectIfZoweCertificateMissing is set to true
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certs != null) {
+        if (certs != null && certs.length > 0) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
             if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
@@ -81,7 +92,12 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             }
 
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
+
+        } else if (rejectIfZoweCertificateMissing) {
+            log.debug("No X509 certificate found in request attribute {}", ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+            throw new InsufficientAuthenticationException("No Zowe Server X509 certificate found in request");
         }
+
     }
 
     private Optional<Certificate> getClientCertFromHeader(HttpServletRequest request) {
@@ -138,7 +154,11 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      **/
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        categorizeCerts(request);
+        try {
+            categorizeCerts(request);
+        } catch (InsufficientAuthenticationException ex) {
+            authExceptionHandler.handleException(request, response, ex);
+        }
         filterChain.doFilter(mutate(request), response);
     }
 

@@ -218,7 +218,7 @@ public class AccessTokenServiceTest {
             requestBody.put("userId", SecurityUtils.USERNAME);
             given().contentType(ContentType.JSON).config(SslContext.clientCertApiml).body(requestBody)
                 .when().delete(REVOKE_FOR_USER_ENDPOINT)
-                .then().statusCode(403);
+                .then().statusCode(401);
 //            validate after revocation rule
             given().contentType(ContentType.JSON).body(bodyContent).when()
                 .post(VALIDATE_ENDPOINT)

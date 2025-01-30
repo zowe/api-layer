@@ -40,7 +40,7 @@ import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
-public class ZaasNegativeTest {
+public class ZaasSchemeNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
     private final static SafIdtConfiguration SAFIDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
@@ -115,7 +115,7 @@ public class ZaasNegativeTest {
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasSchemeNegativeTest#provideZaasEndpoints")
         void givenNoToken(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
             requestSpecification
@@ -127,7 +127,7 @@ public class ZaasNegativeTest {
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpointsWithAllTokens")
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasSchemeNegativeTest#provideZaasEndpointsWithAllTokens")
         void givenInvalidToken(URI uri, RequestSpecification requestSpecification, String token) {
             //@formatter:off
             requestSpecification
@@ -140,7 +140,7 @@ public class ZaasNegativeTest {
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasSchemeNegativeTest#provideZaasEndpoints")
         void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
             String oktaTokenNoMapping = SecurityUtils.validOktaAccessToken(false);
             //@formatter:off
@@ -165,7 +165,7 @@ public class ZaasNegativeTest {
         String keystore;
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasSchemeNegativeTest#provideZaasEndpoints")
         void givenNoCertificate_thenReturnUnauthorized(URI uri, RequestSpecification requestSpecification) {
             //@formatter:off
             requestSpecification
@@ -179,7 +179,7 @@ public class ZaasNegativeTest {
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasSchemeNegativeTest#provideZaasTokenEndpoints")
         void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, RequestSpecification requestSpecification) throws Exception {
             TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
             SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());

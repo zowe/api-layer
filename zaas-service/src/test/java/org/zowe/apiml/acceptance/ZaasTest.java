@@ -53,7 +53,7 @@ class ZaasTest {
 
         //@formatter:off
         given().config(config().sslConfig(new SSLConfig().sslSocketFactory(
-                new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), ALLOW_ALL_HOSTNAME_VERIFIER)))
+                new SSLSocketFactory(httpConfig.getSecureSslContext(), ALLOW_ALL_HOSTNAME_VERIFIER)))
             )
             .cookie(COOKIE, zosmfJwt)
         .when()

@@ -27,6 +27,7 @@ import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
 
 import java.io.IOException;
 
@@ -112,6 +113,9 @@ class ZaasAuthenticationFilterTest {
         AuthSource authSource = new JwtAuthSource("token");
         request.setAttribute(AUTH_SOURCE_ATTR, authSource);
         when(authSourceService.isValid(authSource)).thenReturn(isValid);
+        if (isValid) {
+            when(authSourceService.parse(authSource)).thenReturn(new ParsedTokenAuthSource("user", null, null, null));
+        }
     }
 
 }

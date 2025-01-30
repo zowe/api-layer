@@ -10,18 +10,21 @@
 
 package org.zowe.apiml.security.common.filter;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.utils.X509Utils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +74,7 @@ class CategorizeCertsFilterTest {
     private X509Certificate[] clientCerts;
 
     private CertificateValidator certificateValidator;
+    private AuthExceptionHandler authExceptionHandler;
 
     @BeforeAll
     public static void init() throws CertificateException {
@@ -80,13 +84,15 @@ class CategorizeCertsFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws ServletException {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
         chain = new MockFilterChain();
         certificateValidator = mock(CertificateValidator.class);
+        authExceptionHandler = mock(AuthExceptionHandler.class);
         when(certificateValidator.isForwardingEnabled()).thenReturn(false);
         when(certificateValidator.isTrusted(any())).thenReturn(false);
+        doNothing().when(authExceptionHandler).handleException(any(), any(), any());
     }
 
     @Nested
@@ -94,7 +100,7 @@ class CategorizeCertsFilterTest {
 
         @BeforeEach
         void setUp() {
-            filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator);
+            filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator, authExceptionHandler);
         }
 
         @Nested
@@ -309,6 +315,7 @@ class CategorizeCertsFilterTest {
 
             private static final String COMMON_HEADER = "User-Agent";
             private static final String COMMON_HEADER_VALUE = "dummy";
+
             @BeforeEach
             void setUp() {
                 request.addHeader(COMMON_HEADER, COMMON_HEADER_VALUE);
@@ -336,7 +343,7 @@ class CategorizeCertsFilterTest {
                 X509Utils.correctBase64("apimlCert1"),
                 X509Utils.correctBase64("apimlCertCA")
             ));
-            filter = new CategorizeCertsFilter(serverCertChain, certificateValidator);
+            filter = new CategorizeCertsFilter(serverCertChain, certificateValidator, authExceptionHandler);
         }
 
         @Nested
@@ -484,6 +491,33 @@ class CategorizeCertsFilterTest {
                     assertFalse(nextRequest.getHeaders(CLIENT_CERT_HEADER).hasMoreElements());
                 }
             }
+        }
+    }
+
+    @Nested
+    class WhenNoZoweServerCertificateProvided {
+
+        private MockHttpServletRequest requestWithNoCertificates;
+
+        @BeforeEach
+        void setup() {
+            requestWithNoCertificates = new MockHttpServletRequest();
+        }
+
+        @Test
+        void givenRejectOnMissingZoweServerCertificateEnabled_thenThrowException() throws ServletException, IOException {
+            var rejectOnFilter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator, authExceptionHandler);
+            ArgumentCaptor<RuntimeException> argument = ArgumentCaptor.forClass(RuntimeException.class);
+            rejectOnFilter.doFilter(requestWithNoCertificates, response, chain);
+            verify(authExceptionHandler, times(1)).handleException(any(), any(), argument.capture());
+            assertInstanceOf(InsufficientAuthenticationException.class, argument.getValue());
+        }
+
+        @Test
+        void givenRejectOnMissingZoweServerCertificateDisabled_thenDoNotThrowException() throws ServletException, IOException {
+            var rejectOffFilter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator, authExceptionHandler, false);
+            rejectOffFilter.doFilter(request, response, chain);
+            verify(authExceptionHandler, never()).handleException(any(), any(), any());
         }
     }
 }

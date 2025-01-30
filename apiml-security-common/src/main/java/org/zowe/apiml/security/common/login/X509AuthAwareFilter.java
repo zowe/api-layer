@@ -10,22 +10,21 @@
 
 package org.zowe.apiml.security.common.login;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import java.io.IOException;
 
-public class X509AuthAwareFilter extends X509AuthenticationFilter {
+public class X509AuthAwareFilter extends X509ForwardingAwareAuthenticationFilter {
     private final AuthenticationFailureHandler failureHandler;
 
     public X509AuthAwareFilter(String endpoint, AuthenticationFailureHandler failureHandler, AuthenticationProvider authenticationProvider) {
