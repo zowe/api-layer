@@ -224,6 +224,7 @@ logging:
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: DEBUG
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN

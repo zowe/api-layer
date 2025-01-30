@@ -211,5 +211,6 @@ logging:
     level:
         ROOT: INFO
         org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.jgroups: DEBUG
         org.infinispan: DEBUG
