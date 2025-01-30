@@ -41,14 +41,14 @@ import static org.hamcrest.core.Is.is;
 @zOSMFAuthTest
 @TestInstance(Lifecycle.PER_CLASS)
 class QueryTest implements TestWithStartedInstances {
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String BASE_PATH = "/gateway/api/v1";
-    private final static String QUERY_ENDPOINT = "/auth/query";
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String COOKIE = "apimlAuthenticationToken";
+    private static final String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    private static final String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
+    private static final int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    private static final String BASE_PATH = "/gateway/api/v1";
+    private static final String QUERY_ENDPOINT = "/auth/query";
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String COOKIE = "apimlAuthenticationToken";
 
     public static final String QUERY_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT);
 

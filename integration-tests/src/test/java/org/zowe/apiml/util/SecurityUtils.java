@@ -103,30 +103,30 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
 import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
 
 public class SecurityUtils {
-    public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
+    public static final String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
-    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private final static TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+    private static final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
 
-    private final static String gatewayScheme = serviceConfiguration.getScheme();
-    private final static String gatewayHost = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
-    private final static int gatewayPort = serviceConfiguration.getPort();
+    private static final String gatewayScheme = serviceConfiguration.getScheme();
+    private static final String gatewayHost = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
+    private static final int gatewayPort = serviceConfiguration.getPort();
 
-    private final static String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
-    private final static String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-    private final static int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
+    private static final String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+    private static final String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
+    private static final int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
 
-    public final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    public static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    public static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
-    public final static String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
-    public final static String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
-    public final static String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
-    public final static String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
-    public final static String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
-    public final static String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
+    public static final String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
+    public static final String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
+    public static final String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
+    public static final String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
+    public static final String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
+    public static final String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
 
-    public final static String COOKIE_NAME = "apimlAuthenticationToken";
+    public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
 
     protected static String getUsername() {
@@ -166,7 +166,7 @@ public class SecurityUtils {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         try {
-            String cookie = given()
+            return given()
                     .contentType(JSON)
                     .body(loginRequest)
                 .when()
@@ -176,7 +176,6 @@ public class SecurityUtils {
                     .statusCode(is(SC_NO_CONTENT))
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
                     .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
-            return cookie;
         } finally {
             RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         }
@@ -269,7 +268,7 @@ public class SecurityUtils {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         try {
-            String zosmfToken = given()
+            return given()
                 .contentType(JSON)
                 .auth().preemptive().basic(USERNAME, PASSWORD)
                 .header("X-CSRF-ZOSMF-HEADER", "")
@@ -279,7 +278,6 @@ public class SecurityUtils {
                 .statusCode(is(expectedCode))
                 .cookie(cookie, not(isEmptyString()))
                 .extract().cookie(cookie);
-            return zosmfToken;
         } finally {
             RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         }
@@ -390,7 +388,7 @@ public class SecurityUtils {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         try {
-            String token = given()
+            return given()
                 .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
                 .body(accessTokenRequest)
             .when()
@@ -399,7 +397,6 @@ public class SecurityUtils {
                 .log().ifValidationFails(LogDetail.ALL)
                 .statusCode(is(SC_OK))
                 .extract().body().asString();
-            return token;
         } finally {
             RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         }
@@ -414,14 +411,13 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
 
         try {
-            String token = given().config(sslConfig)
+            return given().config(sslConfig)
                 .body(accessTokenRequest)
                 .when()
                 .post(gatewayGenerateAccessTokenEndpoint)
                 .then()
                 .statusCode(is(SC_OK))
                 .extract().body().asString();
-            return token;
         } finally {
             RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         }
