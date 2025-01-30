@@ -68,7 +68,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*"));
 
             given()
-                .config(SslContext.clientCertValid)
+                .config(SslContext.clientCertUser)
                 .header("X-CSRF-ZOSMF-HEADER", "")
             .when()
                 .get(uri)
