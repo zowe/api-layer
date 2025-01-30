@@ -105,10 +105,13 @@ class PATWithAllSchemesTest {
         String name, URI urlSpecification, Consumer<Response> validation) {
         String pat = personalAccessToken(Collections.singleton(name));
 
-        validation.accept(authenticationAction.apply(given(), pat)
+        Response response = authenticationAction.apply(given(), pat)
             .config(SslContext.tlsWithoutCert)
             .when()
-            .get(urlSpecification)
-        );
+            .get(urlSpecification);
+
+        assertEquals(HttpStatus.SC_OK, response.getStatusCode(), "Expected HTTP 200 OK response");
+
+        validation.accept(response);
     }
 }
