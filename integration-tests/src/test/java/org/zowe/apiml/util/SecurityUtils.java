@@ -108,13 +108,13 @@ public class SecurityUtils {
     private static final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
 
-    private static final String gatewayScheme = serviceConfiguration.getScheme();
-    private static final String gatewayHost = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
-    private static final int gatewayPort = serviceConfiguration.getPort();
+    private static final String GATEWAY_SCHEME = serviceConfiguration.getScheme();
+    private static final String GATEWAY_HOST = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
+    private static final int GATEWAY_PORT = serviceConfiguration.getPort();
 
-    private static final String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
-    private static final String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-    private static final int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
+    private static final String ZOSMF_SCHEME = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+    private static final String ZOSMF_HOST = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
+    private static final int ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
 
     public static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     public static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -136,11 +136,11 @@ public class SecurityUtils {
     //@formatter:off
 
     public static String getGatewayUrl(String path) {
-        return getGatewayUrl(path, gatewayPort);
+        return getGatewayUrl(path, GATEWAY_PORT);
     }
 
     public static String getGatewayUrl(String path, int port) {
-        return String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, port, path);
+        return String.format("%s://%s:%d%s", GATEWAY_SCHEME, GATEWAY_HOST, port, path);
     }
 
     public static String getGatewayLogoutUrl(String path) {
@@ -232,7 +232,7 @@ public class SecurityUtils {
             CookieStore cookieStore = new BasicCookieStore();
             context.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 
-            HttpUriRequest request = new HttpPost(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT));
+            HttpUriRequest request = new HttpPost(String.format("%s://%s:%d%s", ZOSMF_SCHEME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_AUTH_ENDPOINT));
             request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
             request.addHeader(HttpHeaders.AUTHORIZATION, String.format("Basic %s", java.util.Base64.getEncoder().encodeToString(String.format("%s:%s", USERNAME, PASSWORD).getBytes())));
             request.addHeader("X-CSRF-ZOSMF-HEADER", "csrf");
@@ -260,7 +260,7 @@ public class SecurityUtils {
      * @return
      */
     public static String getZosmfToken(String cookie) {
-        return getZosmfToken(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT), cookie, SC_OK);
+        return getZosmfToken(String.format("%s://%s:%d%s", ZOSMF_SCHEME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_AUTH_ENDPOINT), cookie, SC_OK);
     }
 
     private static String getZosmfToken(String url, String cookie, int expectedCode) {
