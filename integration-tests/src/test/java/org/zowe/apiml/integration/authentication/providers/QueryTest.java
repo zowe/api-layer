@@ -61,10 +61,6 @@ class QueryTest implements TestWithStartedInstances {
     @BeforeAll
     void init() {
         this.validToken = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-    }
-
-    @BeforeEach
-    void setUp() {
         RestAssured.port = PORT;
         RestAssured.basePath = BASE_PATH;
         RestAssured.useRelaxedHTTPSValidation();
