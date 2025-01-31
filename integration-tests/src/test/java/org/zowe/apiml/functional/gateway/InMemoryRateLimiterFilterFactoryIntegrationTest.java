@@ -72,7 +72,9 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
         client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
             .exchange()
-            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+            .expectBody()
+            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");;
     }
 
     @Test
@@ -85,7 +87,9 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
         client.get()
             .cookie("apimlAuthenticationToken", "theFirstUser")
             .exchange()
-            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+            .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+            .expectBody()
+            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");
 
         // the second user requires access
         client.get()
