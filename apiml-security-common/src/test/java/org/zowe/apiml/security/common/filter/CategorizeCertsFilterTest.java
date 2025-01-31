@@ -91,7 +91,7 @@ class CategorizeCertsFilterTest {
         certificateValidator = mock(CertificateValidator.class);
         authExceptionHandler = mock(AuthExceptionHandler.class);
         when(certificateValidator.isForwardingEnabled()).thenReturn(false);
-        when(certificateValidator.isTrusted(any())).thenReturn(false);
+        when(certificateValidator.hasGatewayChain(any())).thenReturn(false);
         doNothing().when(authExceptionHandler).handleException(any(), any(), any());
     }
 
@@ -100,7 +100,7 @@ class CategorizeCertsFilterTest {
 
         @BeforeEach
         void setUp() {
-            filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator, authExceptionHandler);
+            filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator, authExceptionHandler, false);
         }
 
         @Nested
@@ -124,7 +124,7 @@ class CategorizeCertsFilterTest {
                 @BeforeEach
                 void setUp() {
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
-                    when(certificateValidator.isTrusted(any())).thenReturn(true);
+                    when(certificateValidator.hasGatewayChain(any())).thenReturn(true);
                 }
 
                 @Test
@@ -206,7 +206,7 @@ class CategorizeCertsFilterTest {
 
                 @Test
                 void givenTrustedCerts_thenClientCertHeaderAccepted() throws ServletException, IOException {
-                    when(certificateValidator.isTrusted(certificates)).thenReturn(true);
+                    when(certificateValidator.hasGatewayChain(certificates)).thenReturn(true);
                     // when incoming certs are all trusted means that all their public keys are added to the filter
                     filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCert1"));
                     filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCertCA"));
@@ -231,7 +231,7 @@ class CategorizeCertsFilterTest {
 
                 @Test
                 void givenNotTrustedCerts_thenClientCertHeaderIgnored() throws ServletException, IOException {
-                    when(certificateValidator.isTrusted(certificates)).thenReturn(false);
+                    when(certificateValidator.hasGatewayChain(certificates)).thenReturn(false);
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
                     assertNotNull(nextRequest);
@@ -286,7 +286,7 @@ class CategorizeCertsFilterTest {
                 public void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, "invalid_cert");
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
-                    when(certificateValidator.isTrusted(certificates)).thenReturn(true);
+                    when(certificateValidator.hasGatewayChain(certificates)).thenReturn(true);
                 }
 
                 @Test
@@ -417,7 +417,7 @@ class CategorizeCertsFilterTest {
 
                 @Test
                 void givenTrustedCerts_thenClientCertHeaderAccepted() throws ServletException, IOException {
-                    when(certificateValidator.isTrusted(certificates)).thenReturn(true);
+                    when(certificateValidator.hasGatewayChain(certificates)).thenReturn(true);
                     // when incoming certs are all trusted means that all their public keys are added to the filter
                     filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCert1"));
                     filter.getPublicKeyCertificatesBase64().add(X509Utils.correctBase64("apimlCertCA"));
@@ -442,7 +442,7 @@ class CategorizeCertsFilterTest {
 
                 @Test
                 void givenNotTrustedCerts_thenClientCertHeaderIgnored() throws ServletException, IOException {
-                    when(certificateValidator.isTrusted(certificates)).thenReturn(false);
+                    when(certificateValidator.hasGatewayChain(certificates)).thenReturn(false);
                     filter.doFilter(request, response, chain);
                     HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
                     assertNotNull(nextRequest);

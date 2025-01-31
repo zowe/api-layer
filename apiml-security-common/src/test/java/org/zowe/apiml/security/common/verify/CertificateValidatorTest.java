@@ -60,16 +60,16 @@ public class CertificateValidatorTest {
         }
         @Test
         void whenAllCertificatesFoundThenTheyAreTrusted() {
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert2}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1, cert2}));
         }
 
         @Test
         void whenSomeCertificateNotFoundThenAllUntrusted() {
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert3}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert2, cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1, cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2, cert3}));
         }
     }
 
@@ -82,9 +82,9 @@ public class CertificateValidatorTest {
         }
         @Test
         void thenAnyCertificateIsNotTrusted() {
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert3}));
         }
     }
 
@@ -119,10 +119,10 @@ public class CertificateValidatorTest {
 
         @Test
         void whenAllCertificatesFoundThenTheyAreTrusted() {
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert3}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert3}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1, cert3}));
         }
 
     }

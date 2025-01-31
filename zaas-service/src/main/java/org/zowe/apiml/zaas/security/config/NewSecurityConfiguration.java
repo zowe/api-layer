@@ -35,6 +35,7 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
@@ -48,6 +49,7 @@ import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
+import org.zowe.apiml.security.common.filter.X509ClientRejectIfMissingFilter;
 import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
@@ -368,12 +370,11 @@ public class NewSecurityConfiguration {
                 return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                     authConfigurationProperties.getZaasTicketEndpoint()
                 ))).authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), X509AuthenticationFilter.class)
+                    .addFilterAfter(new X509ClientRejectIfMissingFilter(authExceptionHandler), CategorizeCertsFilter.class)
                     .authenticationProvider(tokenAuthenticationProvider)
-                    .logout(logout -> logout.disable()) // logout filter in this chain not needed
-                    .x509(x509 -> x509 //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
-                        .userDetailsService(new SimpleUserDetailService())
-                    ).with(new CustomSecurityFilters(), Customizer.withDefaults())
+                    .logout(AbstractHttpConfigurer::disable) // logout filter in this chain not needed
+                    .with(new CustomSecurityFilters(), withDefaults())
                     .build();
             }
 
@@ -502,7 +503,7 @@ public class NewSecurityConfiguration {
                         .anyRequest()
                         .authenticated()
                     )
-                    .logout(logout -> logout.disable());  // logout filter in this chain not needed
+                    .logout(AbstractHttpConfigurer::disable);  // logout filter in this chain not needed
 
                 if (isAttlsEnabled) {
                     http.x509(withDefaults())

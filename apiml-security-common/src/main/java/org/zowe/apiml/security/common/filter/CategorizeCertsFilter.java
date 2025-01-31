@@ -80,7 +80,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null && certs.length > 0) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
-            if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs) && clientCert.isPresent()) {
+            if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
                 // add the client certificate to the certs array
                 String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
@@ -158,6 +158,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             categorizeCerts(request);
         } catch (InsufficientAuthenticationException ex) {
             authExceptionHandler.handleException(request, response, ex);
+            return;
         }
         filterChain.doFilter(mutate(request), response);
     }
