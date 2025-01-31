@@ -55,9 +55,10 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     @Getter
     private final Set<String> publicKeyCertificatesBase64;
 
+    //TODO:cleanup
     private final CertificateValidator certificateValidator;
 
-    private final AuthExceptionHandler authExceptionHandler;
+    final AuthExceptionHandler authExceptionHandler;
 
     private final boolean rejectIfZoweCertificateMissing;
 
@@ -78,7 +79,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certs != null && certs.length > 0) {
+        if (certs != null && certs.length > 0 && certs[0] != null) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
             if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
@@ -93,14 +94,14 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
 
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
 
-        } else if (rejectIfZoweCertificateMissing) {
-            log.debug("No X509 certificate found in request attribute {}", ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
-            throw new InsufficientAuthenticationException("No Zowe Server X509 certificate found in request");
+//        } else if (rejectIfZoweCertificateMissing) {
+//            log.debug("No X509 certificate found in request attribute {}", ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+//            throw new InsufficientAuthenticationException("No Zowe Server X509 certificate found in request");
         }
 
     }
 
-    private Optional<Certificate> getClientCertFromHeader(HttpServletRequest request) {
+    Optional<Certificate> getClientCertFromHeader(HttpServletRequest request) {
         String certFromHeader = request.getHeader(CLIENT_CERT_HEADER);
 
         if (StringUtils.isNotEmpty(certFromHeader)) {
@@ -123,7 +124,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @param originalRequest incoming original http request object
      * @return wrapped http request object with overridden functions
      */
-    private HttpServletRequest mutate(HttpServletRequest originalRequest) {
+    HttpServletRequest mutate(HttpServletRequest originalRequest) {
         return new HttpServletRequestWrapper(originalRequest) {
 
             @Override

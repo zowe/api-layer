@@ -62,9 +62,9 @@ public class CertificateValidator {
             return false;
         }
         List<Certificate> trustedCerts = Arrays.stream(proxyCertificatesEndpoints)
-            .map(trustedCertificatesProvider::getTrustedCerts)
-            .flatMap(List::stream)
-            .toList();
+                .map(trustedCertificatesProvider::getTrustedCerts)
+                .flatMap(List::stream)
+                .toList();
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 log.debug("Certificate is not trusted by endpoint {}. Untrusted certificate is {}", proxyCertificatesEndpoints, cert);

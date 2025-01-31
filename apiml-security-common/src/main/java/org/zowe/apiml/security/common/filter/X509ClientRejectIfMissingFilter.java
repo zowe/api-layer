@@ -14,32 +14,44 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+
+/**
+ * Checks the client certificate is present in the request. No further validation is done, the client certificate
+ * was already validated by Gateway. Servers as a counterpart to {@link CategorizeCertsFilter} for simple scenarios
+ * when client certificate is required to be present but is not used for authorization.
+ */
 
 @Slf4j
-@RequiredArgsConstructor
-public class X509ClientRejectIfMissingFilter extends OncePerRequestFilter {
+public class X509ClientRejectIfMissingFilter extends CategorizeCertsFilter {
 
-    static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
-
-    private final AuthExceptionHandler authExceptionHandler;
-
+    public X509ClientRejectIfMissingFilter(CertificateValidator certificateValidator, AuthExceptionHandler authExceptionHandler) {
+        super(new HashSet<>(), certificateValidator, authExceptionHandler, true);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE);
-        if (certs == null || certs.length == 0) {
+        var certOpt = getClientCertFromHeader(request);
+        if (certOpt.isEmpty()) {
             log.debug("No X509 client certificate found in request.");
             authExceptionHandler.handleException(request, response, new InvalidCertificateException("X509 client certificate required but missing."));
             return;
         }
-        filterChain.doFilter(request, response);
+
+        var cert = (X509Certificate) certOpt.get();
+        var auth = new PreAuthenticatedAuthenticationToken(cert.getSubjectX500Principal(), cert);
+        auth.setAuthenticated(true);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        filterChain.doFilter(mutate(request), response);
     }
 }

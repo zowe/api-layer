@@ -44,8 +44,7 @@ public abstract class NonCompulsoryAuthenticationProcessingFilter extends Abstra
 
         try {
             authResult = attemptAuthentication(request, response);
-        }
-        catch (AuthenticationException failed) {
+        } catch (AuthenticationException failed) {
             // Authentication failed
             unsuccessfulAuthentication(request, response, failed);
             return;

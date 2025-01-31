@@ -17,8 +17,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
@@ -41,11 +39,11 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
             Optional<AuthSource> authSource = Optional.ofNullable((AuthSource) request.getAttribute(AUTH_SOURCE_ATTR));
             if (authSource.isEmpty() || !authSourceService.isValid(authSource.get())) {
                 throw new InsufficientAuthenticationException("Authentication failed.");
-            } else {
-                var auth = new PreAuthenticatedAuthenticationToken(
-                    authSourceService.parse(authSource.get()).getUserId(), null);
-                auth.setAuthenticated(true);
-                SecurityContextHolder.getContext().setAuthentication(auth);
+//            } else {
+//                var auth = new PreAuthenticatedAuthenticationToken(
+//                    authSourceService.parse(authSource.get()).getUserId(), null);
+//                auth.setAuthenticated(true);
+//                SecurityContextHolder.getContext().setAuthentication(auth);
             }
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {

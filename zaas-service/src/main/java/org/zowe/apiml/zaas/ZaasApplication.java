@@ -24,7 +24,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
 import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan(

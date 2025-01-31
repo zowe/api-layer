@@ -56,7 +56,7 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_PROVIDE_TWO_TRUSTED_CERTS});
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[]{URL_PROVIDE_TWO_TRUSTED_CERTS});
         }
         @Test
         void whenAllCertificatesFoundThenTheyAreTrusted() {
@@ -78,7 +78,7 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_WITH_NO_TRUSTED_CERTS});
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[]{URL_WITH_NO_TRUSTED_CERTS});
         }
         @Test
         void thenAnyCertificateIsNotTrusted() {
@@ -114,7 +114,7 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_PROVIDE_TWO_TRUSTED_CERTS, URL_PROVIDE_THIRD_TRUSTED_CERT});
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[]{URL_PROVIDE_TWO_TRUSTED_CERTS, URL_PROVIDE_THIRD_TRUSTED_CERT});
         }
 
         @Test
@@ -144,7 +144,7 @@ public class CertificateValidatorTest {
 
             @Test
             void thenUrlIsSetAsListCorrectly() {
-                assertArrayEquals(new String[] {"url1"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+                assertArrayEquals(new String[]{"url1"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
             }
 
         }
@@ -161,7 +161,7 @@ public class CertificateValidatorTest {
 
             @Test
             void thenUrlsAreSetCorrectly() {
-                assertArrayEquals(new String[] {"url1", "url2"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+                assertArrayEquals(new String[]{"url1", "url2"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
             }
 
         }
