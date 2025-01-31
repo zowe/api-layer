@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.functional.gateway;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -24,13 +23,15 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.time.Duration;
+import java.util.stream.IntStream;
 
 @RateLimitTest
 public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
 
-    final int bucketCapacity = 20;
+    final int bucketCapacity = 60;
 
     @BeforeAll
     static void setUpTester() {
@@ -49,6 +50,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
         client =
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .responseTimeout(Duration.ofSeconds(30L))
                 .baseUrl(baseUrl)
                 .build();
     }
@@ -62,36 +64,32 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
     }
 
     @Test
-    void testRateLimitingWhenExceeded() throws JsonProcessingException {
-        for (int i = 0; i < bucketCapacity; i++) {
-            client.get()
-                .cookie("apimlAuthenticationToken", "validTokenValue")
-                .exchange();
-        }
+    void testRateLimitingWhenExceeded() {
+        IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
+            .cookie("apimlAuthenticationToken", "validTokenValue")
+            .exchange());
 
         client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
             .exchange()
             .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
-            .expectBody(String.class)
-            .value(body -> body.contains("Connections limit exceeded for service"));
+            .expectBody()
+            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");;
     }
 
     @Test
     void testRateLimiterAllowsAccessToAnotherUser() {
         // the first user requires access
-        for (int i = 0; i < bucketCapacity; i++) {
-            client.get()
-                .cookie("apimlAuthenticationToken", "theFirstUser")
-                .exchange();
-        }
+        IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
+            .cookie("apimlAuthenticationToken", "theFirstUser")
+            .exchange());
         //access should be denied
         client.get()
             .cookie("apimlAuthenticationToken", "theFirstUser")
             .exchange()
             .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
-            .expectBody(String.class)
-            .value(body -> body.contains("Connections limit exceeded for service"));
+            .expectBody()
+            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");
 
         // the second user requires access
         client.get()

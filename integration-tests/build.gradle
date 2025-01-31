@@ -77,7 +77,7 @@ test {
 
 task startUpCheck(type: Test) {
     group 'integration tests'
-    description "Check that the API Mediation Layer is up and runnig"
+    description "Check that the API Mediation Layer is up and running"
 
     systemProperties System.properties
     useJUnitPlatform {
@@ -96,7 +96,6 @@ task environmentCheck(type: Test) {
     }
     outputs.upToDateWhen { false }
 }
-
 
 task runStartUpCheck(type: Test) {
     group 'integration tests'
@@ -170,14 +169,14 @@ task runAllIntegrationTests(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
+task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
     // This task is intended to run on z/OS systems with some limitations:
-    // Only 1 Gateway
+    // Only 1 Gateway (Non-HA mode)
     // z/OSMF Authentication provider only
     // No support for SAF ID Tokens
 
     group "Integration tests"
-    description "Run all integration tests for Zowe testing on z/OS (limited)"
+    description "Run all integration tests for Zowe Non-HA testing on z/OS (limited)"
 
     def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
     systemProperty "environment.config", targetSystem
@@ -203,7 +202,58 @@ task runAllIntegrationTestsForZoweTestingOnZos(type: Test) {
             'SafIdTokenTest'
         )
     }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
     outputs.upToDateWhen { false }
+}
+
+task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
+    // This task is intended to run on z/OS systems with some limitations:
+    // More than 1 Gateway (HA mode)
+    // z/OSMF Authentication provider only
+    // No support for SAF ID Tokens
+
+    group "Integration tests"
+    description "Run all integration tests for Zowe HA testing on z/OS (limited)"
+
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.ha", true
+    systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'SafIdTokenTest',
+            'ChaoticHATest',
+            'GraphQLTest'
+        )
+    }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
+
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
 }
 
 task runAllIntegrationTestsForZoweTesting(type: Test) {
@@ -350,6 +400,7 @@ task runGatewayProxyTest(type: Test) {
         )
     }
 }
+
 task runGatewayServiceRoutingTest(type: Test) {
     group "integration tests"
     description "Run tests verifying central gateway can locate service and translate auth scheme"
@@ -521,9 +572,13 @@ task runChaoticHATests(type: Test) {
     group "Integration tests"
     description "Run Chaotic tests verifying High Availability"
 
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.ha", true
+
     outputs.cacheIf { false }
 
-    systemProperty "environment.ha", true
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(

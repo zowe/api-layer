@@ -89,6 +89,11 @@ class SafResourceAccessSafTest {
         assertTrue(safResourceAccessVerifying.hasSafResourceAccess(authentication, CLASS, RESOURCE, LEVEL.name()));
     }
 
+    @Test
+    void testHasSafResourceAccess_whenUseridEmpty_thenFalse() {
+        assertFalse(safResourceAccessVerifying.hasSafResourceAccess(new UsernamePasswordAuthenticationToken("", "token"), CLASS, RESOURCE, LEVEL.name()));
+    }
+  
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {"", "tooLongUserId"})
