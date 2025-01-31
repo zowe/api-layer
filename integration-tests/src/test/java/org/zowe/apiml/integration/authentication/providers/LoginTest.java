@@ -48,7 +48,7 @@ import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.*;
@@ -110,7 +110,7 @@ class LoginTest implements TestWithStartedInstances {
                     .statusCode(is(SC_NO_CONTENT))
                     // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
                     .header("Set-Cookie", containsString("SameSite=Strict"))
-                    .cookie(COOKIE_NAME, not(isEmptyString()))
+                    .cookie(COOKIE_NAME, not(is(emptyString())))
                     .extract().detailedCookie(COOKIE_NAME);
 
                 assertValidAuthToken(cookie);
@@ -128,7 +128,7 @@ class LoginTest implements TestWithStartedInstances {
                     .statusCode(is(SC_NO_CONTENT))
                     // RestAssured version in use doesn't have SameSite attribute in cookie so validate using the Set-Cookie header
                     .header("Set-Cookie", containsString("SameSite=Strict"))
-                    .cookie(COOKIE_NAME, not(isEmptyString()))
+                    .cookie(COOKIE_NAME, not(is(emptyString())))
                     .extract().cookie(COOKIE_NAME);
 
                 int i = token.lastIndexOf('.');
