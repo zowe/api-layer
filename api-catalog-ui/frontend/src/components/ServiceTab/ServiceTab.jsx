@@ -13,24 +13,9 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
-import {useParams} from "react-router";
 
-function ServiceTab({tiles,selectService,currentTileId,selectedTile,isLoading,service}) {
-    console.log(service)
+function ServiceTab({isLoading,service}) {
 
-    const ser = useParams();
-    // console.log(!service.serviceId)
-    // if(!service.serviceId){
-    //     for(const sss of tiles[0].services){
-    //
-    //         if(sss.serviceId === ser['*']){
-    //             console.log(sss)
-    //             console.log(tiles[0].id)
-    //             selectService(sss,tiles[0].id)
-    //         }
-    //     }
-    // }
-    // console.log(service)
     const  containsVersion = () => {
         return service && 'apiVersions' in service && service.apiVersions;
     }
@@ -58,24 +43,6 @@ function ServiceTab({tiles,selectService,currentTileId,selectedTile,isLoading,se
         return service.basePath;
     }
 
-    const setCurrentService = () => {
-        let currentService = null;
-
-        if (tiles && tiles.length > 0 && tiles[0] && tiles[0].services) {
-            tiles[0].services.forEach((service) => {
-                if (service.serviceId === serviceId) {
-                    if (service.serviceId !== service.serviceId || selectedTile !== currentTileId) {
-                        console.log(service)
-                        console.log(currentTileId)
-                        selectService(service, currentTileId);
-                    }
-                    currentService = service;
-                }
-            });
-        }
-        return currentService;
-    }
-
     const hasHomepage = () => {
         return (
             service.homePageUrl !== null &&
@@ -86,10 +53,8 @@ function ServiceTab({tiles,selectService,currentTileId,selectedTile,isLoading,se
 
     const apiVersions = () => {
         let apiVersions = [];
-        console.log(containsVersion())
         if (containsVersion()) {
             apiVersions = service.apiVersions.map((version) => {
-                console.log(version)
                 // Pre select default version or if only one version exists select that
                 let tabStyle = {};
                 if (
@@ -146,14 +111,9 @@ function ServiceTab({tiles,selectService,currentTileId,selectedTile,isLoading,se
         return apiKey ? apis[apiKey].graphqlUrl : null;
     };
 
-    // if (tiles === null || tiles === undefined || tiles.length === 0) {
-    //     throw new Error('No tile is selected.');
-    // }
-    console.log(service)
     const graphqlUrl = getGraphqlUrl(service.apis);
     const title = graphqlUrl ? 'GraphQL' : 'Swagger';
     const showVersionDiv = !graphqlUrl;
-    console.log(showVersionDiv)
     const message = 'The API documentation was retrieved but could not be displayed.';
     const sso = service.ssoAllInstances ? 'supported' : 'not supported';
 

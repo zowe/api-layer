@@ -405,7 +405,6 @@ public class CachedProductFamilyService {
                 String id = (apiInfo.getMajorVersion() < 0) ? DEFAULT_APIINFO_KEY : apiInfo.getApiId() + " v" + apiInfo.getVersion();
                 apiInfoById.put(id, apiInfo);
             });
-
             if (!apiInfoById.containsKey(DEFAULT_APIINFO_KEY)) {
                 ApiInfo defaultApiInfo = apiInfoList.stream().filter(ApiInfo::isDefaultApi).findFirst().orElse(null);
                 apiInfoById.put(DEFAULT_APIINFO_KEY, defaultApiInfo);
@@ -433,6 +432,7 @@ public class CachedProductFamilyService {
         return new APIService.Builder(StringUtils.lowerCase(serviceId))
             .title(title)
             .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
+            .tileDescription(instanceInfo.getMetadata().get(CATALOG_DESCRIPTION))
             .secured(secureEnabled)
             .baseUrl(instanceInfo.getHomePageUrl())
             .homePageUrl(instanceHomePage)

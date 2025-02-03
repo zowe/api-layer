@@ -36,6 +36,9 @@ public class APIService implements Serializable {
     @Schema(description = "The description of the API service")
     private String description;
 
+    @Schema(description = "The description of the API service tile")
+    private String tileDescription;
+
     @Schema(description = "The status of the API service")
     private String status;
 
@@ -94,6 +97,11 @@ public class APIService implements Serializable {
 
         public Builder description(String description) {
             apiService.description = description;
+            return this;
+        }
+
+        public Builder tileDescription(String tileDescription) {
+            apiService.tileDescription = tileDescription;
             return this;
         }
 

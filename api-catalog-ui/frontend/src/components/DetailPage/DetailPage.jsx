@@ -40,7 +40,6 @@ function DetailPage({
 
         fetchNewService(serviceId['*']);
 
-
         if (fetchServiceError) {
             fetchServiceStop();
             setError(formatError(fetchServiceError));
@@ -117,7 +116,7 @@ function DetailPage({
                             <div className="paragraph-description-container">
                                 {service !== undefined && (
                                     <p id="description" className="text-block-12">
-                                        {service.description}
+                                        {service.tileDescription}
                                     </p>
                                 )}
                             </div>
