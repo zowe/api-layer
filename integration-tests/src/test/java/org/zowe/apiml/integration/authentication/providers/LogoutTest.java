@@ -45,8 +45,10 @@ class LogoutTest implements TestWithStartedInstances {
 
     @Nested
     class WhenUserLogOut {
+
         @Nested
         class InvalidateTheToken {
+
             @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
             void givenValidCredentials(String logoutUrl) {
@@ -61,6 +63,9 @@ class LogoutTest implements TestWithStartedInstances {
                 // check if it is logged out
                 assertIfLogged(jwt, false);
             }
+
         }
+
     }
+
 }

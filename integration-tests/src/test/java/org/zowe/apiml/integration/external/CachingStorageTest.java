@@ -33,8 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.requests.Endpoints.CACHING_CACHE;
@@ -79,9 +79,9 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .when()
-            .get(CACHING_PATH).then().body("20", is(not(isEmptyString())))
-            .body("21", is(not(isEmptyString())))
-            .body("22", is(not(isEmptyString())))
+            .get(CACHING_PATH).then().body("20", is(not(is(emptyString()))))
+            .body("21", is(not(is(emptyString()))))
+            .body("22", is(not(is(emptyString()))))
             .statusCode(200);
 
         ExecutorService deleteService = Executors.newFixedThreadPool(8);
@@ -100,9 +100,9 @@ class CachingStorageTest implements TestWithStartedInstances {
         given().config(SslContext.clientCertValid)
             .contentType(JSON)
             .when()
-            .get(CACHING_PATH).then().body("20", isEmptyOrNullString())
-            .body("21", isEmptyOrNullString())
-            .body("22", isEmptyOrNullString())
+            .get(CACHING_PATH).then().body("20", is(emptyOrNullString()))
+            .body("21", is(emptyOrNullString()))
+            .body("22", is(emptyOrNullString()))
             .statusCode(200);
     }
 
@@ -128,9 +128,9 @@ class CachingStorageTest implements TestWithStartedInstances {
             .get(CACHING_INVALIDATE_TOKEN_PATH + "/invalidTokens")
             .then()
             .statusCode(200)
-            .body("testTokens0", is(not(isEmptyOrNullString())))
-            .body("testTokens1", is(not(isEmptyOrNullString())))
-            .body("testTokens2", is(not(isEmptyOrNullString())));
+            .body("testTokens0", is(not(is(emptyOrNullString()))))
+            .body("testTokens1", is(not(is(emptyOrNullString()))))
+            .body("testTokens2", is(not(is(emptyOrNullString()))));
     }
 
     @Test
@@ -188,14 +188,14 @@ class CachingStorageTest implements TestWithStartedInstances {
             .get(CACHING_INVALIDATE_TOKEN_PATH)
             .then()
             .statusCode(200)
-            .body("invalidTokens", is(not(isEmptyOrNullString())))
-            .body("invalidTokenRules", is(not(isEmptyOrNullString())))
-            .body("invalidTokens.hashed_token0", is(not(isEmptyOrNullString())))
-            .body("invalidTokens.hashed_token1", is(not(isEmptyOrNullString())))
-            .body("invalidTokens.hashed_token2", is(not(isEmptyOrNullString())))
-            .body("invalidTokenRules.hashed_rule0", is(not(isEmptyOrNullString())))
-            .body("invalidTokenRules.hashed_rule1", is(not(isEmptyOrNullString())))
-            .body("invalidTokenRules.hashed_rule2", is(not(isEmptyOrNullString())));
+            .body("invalidTokens", is(not(is(emptyOrNullString()))))
+            .body("invalidTokenRules", is(not(is(emptyOrNullString()))))
+            .body("invalidTokens.hashed_token0", is(not(is(emptyOrNullString()))))
+            .body("invalidTokens.hashed_token1", is(not(is(emptyOrNullString()))))
+            .body("invalidTokens.hashed_token2", is(not(is(emptyOrNullString()))))
+            .body("invalidTokenRules.hashed_rule0", is(not(is(emptyOrNullString()))))
+            .body("invalidTokenRules.hashed_rule1", is(not(is(emptyOrNullString()))))
+            .body("invalidTokenRules.hashed_rule2", is(not(is(emptyOrNullString()))));
     }
 
     @Nested
@@ -250,7 +250,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH + "/testKey")
                         .then()
-                        .body(not(isEmptyString()))
+                        .body(not(is(emptyString())))
                         .statusCode(is(SC_OK));
                 } finally {
                     deleteValueUnderServiceIdWithoutValidation("testKey", SslContext.clientCertValid);
@@ -267,7 +267,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                     .when()
                     .get(CACHING_PATH + "/invalidKey")
                     .then()
-                    .body(not(isEmptyString()))
+                    .body(not(is(emptyString())))
                     .statusCode(is(SC_NOT_FOUND));
             }
         }
@@ -306,10 +306,10 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH)
                         .then().log().all()
-                        .body("testKey1", is(not(isEmptyString())),
-                            "testKey2", is(not(isEmptyString())),
-                            "testKey3", isEmptyOrNullString(),
-                            "testKey4", isEmptyOrNullString())
+                        .body("testKey1", is(not(is(emptyString()))),
+                            "testKey2", is(not(is(emptyString()))),
+                            "testKey3", is(emptyOrNullString()),
+                            "testKey4", is(emptyOrNullString()))
                         .statusCode(is(SC_OK));
 
                     given().config(user2)
@@ -318,10 +318,10 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH)
                         .then().log().all()
-                        .body("testKey3", is(not(isEmptyString())),
-                            "testKey4", is(not(isEmptyString())),
-                            "testKey1", isEmptyOrNullString(),
-                            "testKey2", isEmptyOrNullString())
+                        .body("testKey3", is(not(is(emptyString()))),
+                            "testKey4", is(not(is(emptyString()))),
+                            "testKey1", is(emptyOrNullString()),
+                            "testKey2", is(emptyOrNullString()))
                         .statusCode(is(SC_OK));
                 } finally {
                     deleteValueUnderServiceIdWithoutValidation("testKey1", user1);
@@ -358,10 +358,10 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH)
                         .then().log().all()
-                        .body("testKey1", is(not(isEmptyString())),
-                            "testKey2", isEmptyOrNullString(),
-                            "testKey3", isEmptyOrNullString(),
-                            "testKey4", isEmptyOrNullString())
+                        .body("testKey1", is(not(is(emptyString()))),
+                            "testKey2", is(emptyOrNullString()),
+                            "testKey3", is(emptyOrNullString()),
+                            "testKey4", is(emptyOrNullString()))
                         .statusCode(is(SC_OK));
 
                     given().config(user1)
@@ -371,10 +371,10 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH)
                         .then().log().all()
-                        .body("testKey2", is(not(isEmptyString())),
-                            "testKey1", isEmptyOrNullString(),
-                            "testKey3", isEmptyOrNullString(),
-                            "testKey4", isEmptyOrNullString())
+                        .body("testKey2", is(not(is(emptyString()))),
+                            "testKey1", is(emptyOrNullString()),
+                            "testKey3", is(emptyOrNullString()),
+                            "testKey4", is(emptyOrNullString()))
                         .statusCode(is(SC_OK));
 
                     given().config(user2)
@@ -384,10 +384,10 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH)
                         .then().log().all()
-                        .body("testKey3", is(not(isEmptyString())),
-                            "testKey4", is(not(isEmptyString())),
-                            "testKey1", isEmptyOrNullString(),
-                            "testKey2", isEmptyOrNullString())
+                        .body("testKey3", is(not(is(emptyString()))),
+                            "testKey4", is(not(is(emptyString()))),
+                            "testKey1", is(emptyOrNullString()),
+                            "testKey2", is(emptyOrNullString()))
                         .statusCode(is(SC_OK));
 
                     given().config(user2)
@@ -397,10 +397,10 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .when()
                         .get(CACHING_PATH)
                         .then().log().all()
-                        .body("testKey4", is(not(isEmptyString())),
-                            "testKey3", isEmptyOrNullString(),
-                            "testKey1", isEmptyOrNullString(),
-                            "testKey2", isEmptyOrNullString())
+                        .body("testKey4", is(not(is(emptyString()))),
+                            "testKey3", is(emptyOrNullString()),
+                            "testKey1", is(emptyOrNullString()),
+                            "testKey2", is(emptyOrNullString()))
                         .statusCode(is(SC_OK));
                 } finally {
                     deleteValueUnderServiceIdWithoutValidation("testKey1", user1, serviceSpecificId1);
@@ -441,7 +441,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                     .when()
                     .get(CACHING_PATH + "/testKey1")
                     .then()
-                    .body(not(isEmptyString()))
+                    .body(not(is(emptyString())))
                     .statusCode(is(SC_NOT_FOUND));
             }
         }

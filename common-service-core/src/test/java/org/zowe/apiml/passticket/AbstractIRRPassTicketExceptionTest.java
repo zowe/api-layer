@@ -34,7 +34,7 @@ class AbstractIRRPassTicketExceptionTest {
 
         te = new TestException(8, 16, 28);
         assertSame(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, te.getErrorCode());
-        assertEquals(HttpStatus.SC_BAD_REQUEST, te.getHttpStatus());
+        assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, te.getHttpStatus());
     }
 
     class TestException extends AbstractIRRPassTicketException {
