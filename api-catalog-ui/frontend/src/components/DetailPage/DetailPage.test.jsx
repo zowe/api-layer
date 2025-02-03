@@ -31,6 +31,7 @@ const tile = {
             title: 'API Catalog',
             description:
                 'API ML Microservice to locate and display API documentation for API ML discovered microservices',
+            tileDescription: 'Description of the tile',
             status: 'UP',
             secured: false,
             homePageUrl: '/ui/v1/apicatalog',
@@ -49,14 +50,18 @@ jest.mock('react-router', () => {
         useNavigate: () => mockNavigate,
     };
 });
+
+jest.mock("../ServiceTab/ServiceTabContainer", () => ({
+    __esModule: true,
+   default: jest.fn(() => ({})),
+}));
 describe('>>> Detailed Page component tests', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     it('should start epic on mount', () => {
-        const fetchTilesStart = jest.fn();
-        const fetchNewTiles = jest.fn();
+        const fetchNewService = jest.fn();
 
         renderWithProviders(<BrowserRouter>
                     <Routes>
@@ -64,32 +69,30 @@ describe('>>> Detailed Page component tests', () => {
                             tiles={[tile]}
                             services={tile.services}
                             currentTileId="apicatalog"
-                            fetchTilesStart={fetchTilesStart}
-                            fetchNewTiles={fetchNewTiles}
-                            fetchTilesStop={jest.fn()}
+                            fetchNewService={fetchNewService}
+                            fetchServiceStop={jest.fn()}
                         />}/>
                     </Routes>
             </BrowserRouter>
         );
-        expect(fetchTilesStart).toHaveBeenCalled();
+        expect(fetchNewService).toHaveBeenCalled();
     });
 
     it('should stop epic on unmount', () => {
-        const fetchTilesStop = jest.fn();
+        const fetchServiceStop = jest.fn();
         const {unmount} = renderWithProviders(
             <BrowserRouter>
                 <Routes>
                     <Route path="*" element={<DetailPage
                         tiles={[tile]}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStart={jest.fn()}
-                        fetchTilesStop={fetchTilesStop}
+                        fetchNewService={jest.fn()}
+                        fetchServiceStop={fetchServiceStop}
                     />}/>
                 </Routes>
             </BrowserRouter>
         );
         unmount();
-        expect(fetchTilesStop).toHaveBeenCalled();
+        expect(fetchServiceStop).toHaveBeenCalled();
     });
 
     it('should handle a back button click', () => {
@@ -98,11 +101,10 @@ describe('>>> Detailed Page component tests', () => {
                 <Routes>
                     <Route path="*" element={<DetailPage
                         tiles={[tile]}
-                        services={tile.services}
+                        service={tile.services[0]}
                         currentTileId="apicatalog"
-                        fetchTilesStart={jest.fn()}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStop={jest.fn()}
+                        fetchNewService={jest.fn()}
+                        fetchServiceStop={jest.fn()}
                     />}/>
                 </Routes>
             </BrowserRouter>
@@ -119,8 +121,8 @@ describe('>>> Detailed Page component tests', () => {
                     <Route path="*" element={<DetailPage
                         tiles={[tile]}
                         fetchTilesStart={jest.fn()}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStop={jest.fn()}
+                        fetchNewService={jest.fn()}
+                        fetchServiceStop={jest.fn()}
                         isLoading={isLoading}
                     />}/>
                 </Routes>
@@ -137,49 +139,48 @@ describe('>>> Detailed Page component tests', () => {
                 <Routes>
                     <Route path="*" element={<DetailPage
                         tiles={[tile]}
-                        services={tile.services}
+                        service={tile.services[0]}
                         currentTileId="apicatalog"
                         fetchTilesStart={jest.fn()}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStop={jest.fn()}
+                        fetchNewService={jest.fn()}
+                        fetchServiceStop={jest.fn()}
                         isLoading={isLoading}
                     />}/>
                 </Routes>
             </BrowserRouter>
         );
-        const catalogTile  = screen.getByText('API Mediation Layer for z/OS internal API services');
-        expect(catalogTile).toBeInTheDocument();
         const catalogDescription  = screen.getByText('Description of the tile');
         expect(catalogDescription).toBeInTheDocument();
     });
 
-    it('should stop fetch tiles for 404 response code', () => {
+    it('should stop fetch service for 404 response code', () => {
         const isLoading = false;
-        const fetchTilesStop = jest.fn();
-        const fetchTilesError = {
+        const fetchServiceStop = jest.fn();
+        const fetchServiceError = {
             status: 404,
         };
-        renderWithProviders(
+        const {unmount} = renderWithProviders(
             <BrowserRouter>
                 <Routes>
                     <Route path="*" element={<DetailPage
                         tiles={[tile]}
                         fetchTilesStart={jest.fn()}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStop={fetchTilesStop}
-                        fetchTilesError={fetchTilesError}
+                        fetchNewService={jest.fn()}
+                        fetchServiceStop={fetchServiceStop}
+                        fetchServiceError={fetchServiceError}
                         isLoading={isLoading}
                     />}/>
                 </Routes>
             </BrowserRouter>
         );
-        expect(fetchTilesStop).toHaveBeenCalled();
+
+        expect(fetchServiceStop).toHaveBeenCalled();
     });
 
     it('should stop fetch tiles for error message', () => {
         const isLoading = false;
-        const fetchTilesStop = jest.fn();
-        const fetchTilesError = {
+        const fetchServiceStop = jest.fn();
+        const fetchServiceError = {
             message: 'some message',
         };
         renderWithProviders(
@@ -188,43 +189,15 @@ describe('>>> Detailed Page component tests', () => {
                     <Route path="*" element={<DetailPage
                         tiles={[tile]}
                         fetchTilesStart={jest.fn()}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStop={fetchTilesStop}
-                        fetchTilesError={fetchTilesError}
+                        fetchNewService={jest.fn()}
+                        fetchServiceStop={fetchServiceStop}
+                        fetchServiceError={fetchServiceError}
                         isLoading={isLoading}
                     />}/>
                 </Routes>
             </BrowserRouter>
         );
-        expect(fetchTilesStop).toHaveBeenCalled();
-    });
-
-    it('should clear the selected service, stop and restart fetching if a different tile is selected ', () => {
-        const isLoading = false;
-        const fetchTilesError = null;
-        const fetchTilesStop = jest.fn();
-        const fetchTilesStart = jest.fn();
-        const clearService = jest.fn();
-        const selectedTile = 'apicatalog';
-        renderWithProviders(
-            <BrowserRouter>
-                <Routes>
-                    <Route path="*" element={<DetailPage
-                        tiles={[tile]}
-                        clearService={clearService}
-                        fetchTilesStart={fetchTilesStart}
-                        fetchNewTiles={jest.fn()}
-                        fetchTilesStop={fetchTilesStop}
-                        fetchTilesError={fetchTilesError}
-                        isLoading={isLoading}
-                        selectedTile={selectedTile}
-                    />}/>
-                </Routes>
-            </BrowserRouter>
-        );
-        expect(fetchTilesStop).toHaveBeenCalled();
-        expect(clearService).toHaveBeenCalled();
-        expect(fetchTilesStart).toHaveBeenCalled();
+        expect(fetchServiceStop).toHaveBeenCalled();
     });
 
 

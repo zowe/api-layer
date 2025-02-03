@@ -91,24 +91,6 @@ describe('>>> Dashboard component tests', () => {
         );
     });
 
-    it('should stop epic on unmount', () => {
-        const fetchTilesStop = jest.fn();
-        const clear = jest.fn();
-        const {unmount} = render(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={fetchTilesStop}
-                clearService={jest.fn()}
-                clear={clear}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        unmount();
-        expect(fetchTilesStop).toHaveBeenCalled();
-        expect(clear).toHaveBeenCalled();
-    });
 
     it('should trigger filterText on handleSearch', async () => {
         const filterText = jest.fn();

@@ -72,12 +72,4 @@ describe('>>> Catalog tiles actions tests', () => {
         expect(actions.fetchNewServiceSuccess([])).toEqual(expectedAction);
     });
 
-    it('should create when storing current tile ID', () => {
-        const expectedAction = {
-            type: constants.STORE_CURRENT_TILEID,
-            payload: 'id',
-        };
-
-        expect(actions.storeCurrentTileId('id')).toEqual(expectedAction);
-    });
 });

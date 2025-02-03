@@ -44,6 +44,9 @@ function DetailPage({
             fetchServiceStop();
             setError(formatError(fetchServiceError));
         }
+        return () => {
+            fetchServiceStop();
+        }
     }, [fetchServiceError,fetchServiceStop,fetchNewService]);
 
 
