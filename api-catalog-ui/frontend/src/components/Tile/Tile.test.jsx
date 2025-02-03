@@ -77,13 +77,10 @@ describe('>>> Tile component tests', () => {
     });
 
     it('should handle tile click', () => {
-        const storeCurrentTileId = jest.fn();
         render(
             <Tile
-                tile={sampleTile}
-                storeCurrentTileId={storeCurrentTileId}
+                fetchNewService={jest.fn()}
                 service={sampleTile.services[0]}
-                selectService={jest.fn()}
             />
         );
         fireEvent.click(screen.getByTestId('tile'))

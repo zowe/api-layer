@@ -13,7 +13,7 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import {useNavigate} from "react-router";
 
-function Tile({tile, service, storeCurrentTileId,selectService,fetchTilesStart,fetchNewService}) {
+function Tile({service,fetchNewService}) {
     const navigate = useNavigate();
     const getTileStatus = (service) => {
         const unknownIcon = <>
@@ -43,9 +43,6 @@ function Tile({tile, service, storeCurrentTileId,selectService,fetchTilesStart,f
 
     const handleClick = () => {
         const tileRoute = `/service/${service.serviceId}`;
-        storeCurrentTileId(tile.id);
-        // fetchTilesStart(tile.id);
-        console.log(service)
         fetchNewService(service.serviceId);
         // selectService(service, tile.id);
         navigate(tileRoute);
@@ -79,10 +76,3 @@ function Tile({tile, service, storeCurrentTileId,selectService,fetchTilesStart,f
 }
 
 export default Tile;
-
-// Tile.propTypes = {
-//     service: PropTypes.shape({
-//         title: PropTypes.string,
-//         sso: PropTypes.bool,
-//     }).isRequired,
-// };

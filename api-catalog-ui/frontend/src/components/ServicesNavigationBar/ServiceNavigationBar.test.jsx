@@ -89,16 +89,6 @@ describe('>>> ServiceNavigationBar component tests', () => {
         expect(clear).toHaveBeenCalled();
     });
 
-    // it('should trigger filterText on handleSearch', async () => {
-    //     const filterText = jest.fn();
-    //     useLocation.mockReturnValue({
-    //         pathname: '/mock/path/1234',
-    //     });
-    //     render(
-    //         <ServicesNavigationBar filterText={filterText} services={[]} currentTileId="apicatalog" clear={jest.fn()}/>
-    //     );
-    //     expect(filterText).toHaveBeenCalled();
-    // });
 
     it('should display label', () => {
         useLocation.mockReturnValue({
@@ -112,29 +102,5 @@ describe('>>> ServiceNavigationBar component tests', () => {
 
     });
 
-    it('should set current tile id', () => {
-        localStorage.setItem('serviceId', 'apicatalog');
-        const storeCurrentTileId = jest.fn();
-        const clear = jest.fn();
-        useLocation.mockReturnValue({
-            pathname: '/mock/path/1234',
-        });
-        render(<BrowserRouter>
-            <Routes>
-                <Route path="*"
-                       element={<ServicesNavigationBar
-                           clear={clear}
-                           services={[tile]}
-                           match={match}
-                           currentTileId="apicatalog"
-                           storeCurrentTileId={storeCurrentTileId}
-                           selectService={jest.fn()}
-                       />}/>
-            </Routes>
-        </BrowserRouter>);
-        screen.debug();
-        fireEvent.click(screen.getByText('API Catalog'));
 
-        expect(storeCurrentTileId).toHaveBeenCalled();
-    });
 });

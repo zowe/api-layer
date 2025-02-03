@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import ServicesNavigationBar from './ServicesNavigationBar';
 import { getFilteredServices } from '../../selectors/selectors';
 import { clear, filterText } from '../../actions/filter-actions';
-import {fetchNewService, storeCurrentTileId} from '../../actions/catalog-tile-actions';
+import {fetchNewService} from '../../actions/catalog-tile-actions';
 import {selectService} from "../../actions/selected-service-actions";
 
 const mapStateToProps = (state) => ({
@@ -22,7 +22,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     filterText: (text) => dispatch(filterText(text)),
     clear: () => dispatch(clear()),
-    storeCurrentTileId: (id) => dispatch(storeCurrentTileId(id)),
     selectService: (service, tileId) => dispatch(selectService(service, tileId)),
     fetchNewService: (id) => dispatch(fetchNewService(id))
 });

@@ -11,7 +11,6 @@ import { connect } from 'react-redux';
 import SwaggerUIApiml from './SwaggerUIApiml';
 
 const mapStateToProps = (state) => ({
-    selectedService: state.selectedServiceReducer.selectedService,
     service: state.tilesReducer.service,
     tiles: state.tilesReducer.tiles,
 });

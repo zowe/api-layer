@@ -15,8 +15,9 @@ import {
     FETCH_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    STORE_CURRENT_TILEID,
-    FETCH_NEW_SERVICE_REQUEST, FETCH_NEW_SERVICE_SUCCESS, FETCH_SERVICE_STOP,
+    FETCH_NEW_SERVICE_REQUEST,
+    FETCH_NEW_SERVICE_SUCCESS,
+    FETCH_SERVICE_STOP,
     FETCH_SERVICE_FAILED
 } from '../constants/catalog-tile-constants';
 
@@ -54,13 +55,6 @@ export function fetchNewServiceSuccess(service) {
     return {
         type: FETCH_NEW_SERVICE_SUCCESS,
         payload: service,
-    };
-}
-
-export function storeCurrentTileId(currentId) {
-    return {
-        type: STORE_CURRENT_TILEID,
-        payload: currentId,
     };
 }
 

@@ -36,7 +36,6 @@ function Dashboard({
                        refreshedStaticApisError,
                        clearError,
                        authentication,
-                       storeCurrentTileId,
                        selectEnabler,
                        clear,
                        refreshedStaticApi,
@@ -146,7 +145,6 @@ function Dashboard({
                                             .filter((tile) => tile.services.includes(service))
                                             .map((tile) => (
                                                 <Tile
-                                                    storeCurrentTileId={storeCurrentTileId}
                                                     service={service}
                                                     key={service}
                                                     tile={tile}

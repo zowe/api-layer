@@ -14,7 +14,7 @@ import SwaggerContainer from '../Swagger/SwaggerContainer';
 import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
 
-function ServiceTab({isLoading,service}) {
+function ServiceTab({service}) {
 
     const  containsVersion = () => {
         return service && 'apiVersions' in service && service.apiVersions;
@@ -25,7 +25,6 @@ function ServiceTab({isLoading,service}) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const basePath = () => {
-        console.log(service)
         if (!service?.basePath) {
             if (service?.instances?.[0]?.includes('gateway')) {
                 // Return the basePath right away, since it's a GW instance (either primary or additional)
@@ -235,7 +234,7 @@ function ServiceTab({isLoading,service}) {
                         </div>
                     )}
                     {graphqlUrl !== null && <GraphQLContainer graphqlUrl={graphqlUrl} />}
-                    {!isLoading && graphqlUrl === null && selectedVersion !== 'diff' && (
+                    {graphqlUrl === null && selectedVersion !== 'diff' && (
                         <SwaggerContainer selectedVersion={selectedVersion} />
                     )}
                     {graphqlUrl === null && selectedVersion === 'diff' && isDialogOpen && containsVersion() && (

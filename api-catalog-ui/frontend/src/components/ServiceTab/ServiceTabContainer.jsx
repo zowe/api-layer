@@ -8,24 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { connect } from 'react-redux';
-import { fetchTilesStop } from '../../actions/catalog-tile-actions';
-import { selectService } from '../../actions/selected-service-actions';
 import ServiceTab from './ServiceTab';
-import {createLoadingSelector} from "../../selectors/selectors";
 
-const loadingSelector = createLoadingSelector(['FETCH_TILES']);
 const mapStateToProps = (state) => ({
-    selectedService: state.selectedServiceReducer.selectedService,
-    selectedTile: state.selectedServiceReducer.selectedTile,
-    currentTileId: state.tilesReducer.currentTileId,
-    services: state.tilesReducer.services,
-    isLoading: loadingSelector(state),
     service: state.tilesReducer.service,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-    fetchTilesStop: () => dispatch(fetchTilesStop()),
-    selectService: (service, tileId) => dispatch(selectService(service, tileId)),
 });
 
 
@@ -35,4 +21,4 @@ const withRouter = (ServiceTab) =>{
     }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ServiceTab));
+export default withRouter(connect(mapStateToProps)(ServiceTab));

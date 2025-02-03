@@ -12,9 +12,7 @@ import { Component } from 'react';
 import './InstanceInfo.css';
 import Shield from '../ErrorBoundary/Shield/Shield';
 
-export default class InstanceInfo extends Component {
-    render() {
-        const { service, selectedVersion, tiles } = this.props;
+function InstanceInfo({ service, selectedVersion, tiles }) {
 
         const apiInfo =
             service.apis[selectedVersion || service.defaultApiVersion] || service.apis.default;
@@ -46,5 +44,7 @@ export default class InstanceInfo extends Component {
                 </div>
             </Shield>
         );
-    }
+
 }
+
+export default InstanceInfo;

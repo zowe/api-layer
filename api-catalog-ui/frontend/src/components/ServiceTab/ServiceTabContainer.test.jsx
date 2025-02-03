@@ -32,21 +32,11 @@ describe('ServiceTab Container', () => {
         store = mockStore({
             tilesReducer: {
                 tiles,
-            },
-            selectedServiceReducer: {
-                selectedTile: 'tile',
-                selectedService: {
+                service: {
                     serviceId: 'service',
-                },
-            },
+                }
+            }
         });
-        const history = {
-            location: {
-                pathname: {},
-            },
-            push: jest.fn(),
-            listen: jest.fn(),
-        };
         container = render(
             <HashRouter>
                 <Provider store={store}>
