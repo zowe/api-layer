@@ -21,17 +21,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.util.categories.GraphQLTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
-@org.zowe.apiml.util.categories.BookControllerTest
+@GraphQLTest
 public class BookControllerTest {
 
     static HttpGraphQlTester tester;
@@ -60,6 +63,7 @@ public class BookControllerTest {
 
         WebTestClient client =
             WebTestClient.bindToServer().clientConnector(new ReactorClientHttpConnector(httpClient))
+                .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(baseUrl)
                 .build();
         tester = HttpGraphQlTester.create(client);

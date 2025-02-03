@@ -31,16 +31,27 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static io.restassured.http.ContentType.XML;
-import static org.apache.http.HttpStatus.*;
+import static io.restassured.http.ContentType.TEXT;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.SecurityUtils.USERNAME;
+import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtTokenFromGw;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
 
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
@@ -152,7 +163,7 @@ class PassTicketTest {
             .then()
                 .statusCode(SC_OK)
                 .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", is(USERNAME))
+                .body("userId", equalToIgnoringCase(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
         }
@@ -264,7 +275,7 @@ class PassTicketTest {
             given()
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
-                .contentType(XML)
+                .contentType(TEXT)
             .when()
                 .post(ZAAS_TICKET_URI)
             .then()

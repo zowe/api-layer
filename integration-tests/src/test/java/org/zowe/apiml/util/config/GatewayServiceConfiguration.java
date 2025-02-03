@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 public class GatewayServiceConfiguration implements ServiceConfiguration {
     private String scheme;
     private String host;
+    private String dvipaHost;
     private int port;
     private int externalPort;
     private int instances;

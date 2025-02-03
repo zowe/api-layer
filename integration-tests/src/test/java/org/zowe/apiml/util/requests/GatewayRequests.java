@@ -26,7 +26,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.util.SecurityUtils.*;
@@ -105,7 +105,7 @@ public class GatewayRequests {
                 .post(getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpoint()))
             .then()
                 .statusCode(is(SC_NO_CONTENT))
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(is(emptyString())))
                 .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
         } catch (URISyntaxException e) {
             log.info("GatewayRequests#refresh", e);
