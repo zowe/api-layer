@@ -7,8 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 import { Button, Link, MenuItem, Select, Tooltip, Typography } from '@material-ui/core';
-import { useState} from 'react';
+import { useState } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';

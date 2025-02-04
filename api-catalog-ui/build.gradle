@@ -61,8 +61,8 @@ task npmTest(type: NpmTask) {
 
     args = ['run', 'test']
 }
-//npmTest.dependsOn npmInstall
-//test.dependsOn npmTest
+npmTest.dependsOn npmInstall
+test.dependsOn npmTest
 
 task npmE2ECI(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
     group = 'npm'
@@ -80,7 +80,7 @@ task npmLint(type: NpmTask) {
     description = 'Run eslint'
     args = ['run', 'lint']
 }
-//npmLint.dependsOn npmInstall
+npmLint.dependsOn npmInstall
 
 task npmBuild(type: NpmTask) {
 
@@ -102,10 +102,10 @@ task npmBuild(type: NpmTask) {
 }
 
 npmBuild.dependsOn npmInstall
-//npmBuild.dependsOn npmLint
+npmBuild.dependsOn npmLint
 build.dependsOn npmBuild
 
-//npmBuild.dependsOn npmTest
+npmBuild.dependsOn npmTest
 
 jar {
     enabled false

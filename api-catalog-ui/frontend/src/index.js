@@ -17,7 +17,7 @@ import { createEpicMiddleware } from 'redux-observable';
 import { ajax } from 'rxjs/ajax';
 import logger from 'redux-logger';
 import * as log from 'loglevel';
-import {HashRouter, useNavigate} from 'react-router';
+import { HashRouter } from 'react-router';
 import { PersistGate } from 'redux-persist/integration/react';
 import { createBlacklistFilter } from 'redux-persist-transform-filter';
 
