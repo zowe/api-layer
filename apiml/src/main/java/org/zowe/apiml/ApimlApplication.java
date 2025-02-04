@@ -19,15 +19,6 @@ import org.springframework.context.annotation.FilterType;
 
 @EnableEurekaServer
 @SpringBootApplication(
-    scanBasePackages = {
-        "org.zowe.apiml",
-
-        "org.zowe.apiml.security.common",
-        "org.zowe.apiml.gateway.security.login",
-
-        "com.netflix",
-        "org.springframework"
-    },
     exclude = {ReactiveOAuth2ClientAutoConfiguration.class}
 )
 @ComponentScan(
