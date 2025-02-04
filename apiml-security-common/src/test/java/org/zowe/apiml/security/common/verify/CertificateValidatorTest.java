@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.utils.X509Utils;
@@ -129,8 +129,10 @@ public class CertificateValidatorTest {
 
     @Nested
     @Import(CertificateValidator.class)
-    @MockBean(TrustedCertificatesProvider.class)
     class Configuration {
+
+        @MockitoBean
+        private TrustedCertificatesProvider trustedCertificatesProvider;
 
         @Nested
         @TestPropertySource(properties = {

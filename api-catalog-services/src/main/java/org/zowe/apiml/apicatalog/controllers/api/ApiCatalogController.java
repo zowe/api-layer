@@ -92,6 +92,7 @@ public class ApiCatalogController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "204", description = "No service available"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "URI not found"),

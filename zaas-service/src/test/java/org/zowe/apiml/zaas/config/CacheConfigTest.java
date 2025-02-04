@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
@@ -31,9 +31,13 @@ class CacheConfigTest {
     @Nested
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class)
     @ActiveProfiles("test")
-    @MockBean(GatewayClient.class)
-    @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class EnabledCache {
+
+        @MockitoBean
+        private GatewayClient gatewayClient;
+
+        @MockitoBean(name = "restTemplateWithKeystore")
+        private RestTemplate restTemplateWithKeystore;
 
         @Autowired
         private CacheManager cacheManager;
@@ -51,9 +55,13 @@ class CacheConfigTest {
         "apiml.caching.enabled=false"
     })
     @ActiveProfiles("test")
-    @MockBean(GatewayClient.class)
-    @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class DisabledCache {
+
+        @MockitoBean
+        private GatewayClient gatewayClient;
+
+        @MockitoBean(name = "restTemplateWithKeystore")
+        private RestTemplate restTemplateWithKeystore;
 
         @Autowired
         private CacheManager cacheManager;

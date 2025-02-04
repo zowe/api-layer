@@ -77,9 +77,7 @@ public class AuthEndpointConfig {
 
     private WebClient.RequestBodySpec getWebclient(ServerRequest serverRequest, String path) {
         var sslInfo = serverRequest.exchange().getRequest().getSslInfo();
-        //TODO: remove after checking integration tests
         var client = sslInfo == null ? this.webClient : this.webClientClientCert;
-        //var client = this.webClientClientCert;
 
         var request = client
             .method(serverRequest.method())

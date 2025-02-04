@@ -158,7 +158,7 @@ public class NewSecurityConfiguration {
             public void configure(HttpSecurity http) throws Exception {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 //drive filter order this way
-                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(loginFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(x509ForwardingAwareAuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                     .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
@@ -217,7 +217,7 @@ public class NewSecurityConfiguration {
             public void configure(HttpSecurity http) throws Exception {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 //drive filter order this way
-                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(new StoreAccessTokenInfoFilter(handlerInitializer.getUnAuthorizedHandler().getHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(accessTokenFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(x509ForwardingAwareAuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
@@ -264,7 +264,7 @@ public class NewSecurityConfiguration {
             private class CustomSecurityFilters extends AbstractHttpConfigurer<AccessToken.CustomSecurityFilters, HttpSecurity> {
                 @Override
                 public void configure(HttpSecurity http) {
-                    http.addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    http.addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterAfter(x509ForwardingAwareAuthenticationFilter(), CategorizeCertsFilter.class)
                         .addFilterAfter(loginFilter(http), X509AuthAwareFilter.class);
                 }
@@ -301,7 +301,7 @@ public class NewSecurityConfiguration {
                     .authorizeHttpRequests(requests -> requests
                         .anyRequest().authenticated())
                     .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
-                    .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(new ZaasAuthenticationFilter(authSourceService, authExceptionHandler), CategorizeCertsFilter.class);
 
@@ -373,11 +373,9 @@ public class NewSecurityConfiguration {
                 ))).authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                     .authenticationProvider(tokenAuthenticationProvider)
                     .logout(AbstractHttpConfigurer::disable) // logout filter in this chain not needed
-                    //Todo: validate
                     .x509(x509 -> x509 //default x509 filter, authenticates trusted cert, ticketFilter(..) depends on this
                         .userDetailsService(new SimpleUserDetailService())
-                    )
-                    .with(new CustomSecurityFilters(), withDefaults())
+                    ).with(new CustomSecurityFilters(), withDefaults())
                     .build();
             }
 
@@ -385,10 +383,7 @@ public class NewSecurityConfiguration {
                 @Override
                 public void configure(HttpSecurity http) throws Exception {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                    //TODO: check only there is some certificate in SSL context, X509 can remain here
-                    http
-//                        .addFilterAfter(new X509ClientRejectIfMissingFilter(certificateValidator, authExceptionHandler), X509AuthenticationFilter.class)
-                        .addFilterBefore(ticketFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
+                    http.addFilterBefore(ticketFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
                 }
 
                 private QueryFilter ticketFilter(String ticketEndpoint, AuthenticationManager authenticationManager) {
@@ -424,7 +419,7 @@ public class NewSecurityConfiguration {
                 ))).authorizeHttpRequests(requests -> requests
                         .anyRequest().authenticated())
                     .authenticationProvider(tokenAuthenticationProvider)
-                    .logout(AbstractHttpConfigurer::disable) // logout filter in this chain not needed
+                    .logout(logout -> logout.disable()) // logout filter in this chain not needed
                     .x509(x509 -> x509 //default x509 filter, authenticates trusted cert, refreshFilter(..) depends on this
                         .userDetailsService(new SimpleUserDetailService()))
                     .with(new CustomSecurityFilters(), Customizer.withDefaults());
@@ -500,10 +495,6 @@ public class NewSecurityConfiguration {
                     http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
                         .requestMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                        .requestMatchers("/gateway/conformance/**")
-                        .requestMatchers("/gateway/api/v1/conformance/**")
-                        .requestMatchers("/gateway/validate")
-                        .requestMatchers("/gateway/api/v1/validate")
                     )
                 ).authorizeHttpRequests(requests -> requests
                         .anyRequest()
@@ -516,7 +507,7 @@ public class NewSecurityConfiguration {
                         // filter out API ML certificate
                         .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 } else {
-                    http.addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                    http.addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 }
 
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -573,7 +564,7 @@ public class NewSecurityConfiguration {
             }
 
             private CategorizeCertsFilter reversedCategorizeCertFilter() {
-                CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, authExceptionHandler);
+                CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
                 out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
                 out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
                 return out;
@@ -642,4 +633,5 @@ public class NewSecurityConfiguration {
     private UserDetailsService x509UserDetailsService() {
         return username -> new User(username, "", Collections.emptyList());
     }
+
 }

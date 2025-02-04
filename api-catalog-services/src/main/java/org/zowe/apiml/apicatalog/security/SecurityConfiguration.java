@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -68,6 +69,7 @@ import java.util.Set;
 @EnableApimlAuth
 @EnableMethodSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
+@ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "false", matchIfMissing = true)
 public class SecurityConfiguration {
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
@@ -130,7 +132,7 @@ public class SecurityConfiguration {
         }
 
         private CategorizeCertsFilter reversedCategorizeCertFilter() {
-            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator, handlerInitializer.getUnAuthorizedHandler().getHandler(), false);
+            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
             out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
             out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
             return out;
@@ -299,4 +301,5 @@ public class SecurityConfiguration {
     public LogoutSuccessHandler logoutSuccessHandler() {
         return new ApiCatalogLogoutSuccessHandler(authConfigurationProperties);
     }
+
 }

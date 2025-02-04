@@ -112,10 +112,6 @@ class ZaasAuthenticationFilterTest {
         AuthSource authSource = new JwtAuthSource("token");
         request.setAttribute(AUTH_SOURCE_ATTR, authSource);
         when(authSourceService.isValid(authSource)).thenReturn(isValid);
-        //TODO
-        //if (isValid) {
-        //    when(authSourceService.parse(authSource)).thenReturn(new ParsedTokenAuthSource("user", null, null, null));
-        //}
     }
 
 }
