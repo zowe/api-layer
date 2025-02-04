@@ -17,6 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -42,7 +45,14 @@ public class ConfigReader {
                 if (instance == null) {
                     final String configFileName = configurationFile;
                     ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-                    File configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
+                    File configFile = null;
+                    try {
+                        Path path = Paths.get(Objects.requireNonNull(classLoader.getResource(configFileName)).toURI());
+                        configFile = path.toFile();
+                    } catch (URISyntaxException e) {
+                        log.error("Incorrect environment-configuration.yml location: " + e.getMessage(), e);
+                        configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
+                    }
                     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                     EnvironmentConfiguration configuration;
                     try {
@@ -51,7 +61,7 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", 10010, 10017, 1, "10010", ROUTED_SERVICE);
+                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10017, 1, "10010", ROUTED_SERVICE);
                         CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
                         ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
@@ -70,7 +80,7 @@ public class ConfigReader {
 
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
-                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf");
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf", "");
                         IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
                         SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
                         OidcConfiguration oidcConfiguration = new OidcConfiguration("");
@@ -96,10 +106,11 @@ public class ConfigReader {
                     }
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
-                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", new String(configuration.getCredentials().getPassword())));
+                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", StringUtils.isEmpty(configuration.getCredentials().getPassword()) ? "" : new String(configuration.getCredentials().getPassword())));
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
+                    configuration.getGatewayServiceConfiguration().setDvipaHost(System.getProperty("gateway.dvipaHost", configuration.getGatewayServiceConfiguration().getDvipaHost()));
                     configuration.getGatewayServiceConfiguration().setPort(parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
                     configuration.getGatewayServiceConfiguration().setExternalPort(parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
                     configuration.getGatewayServiceConfiguration().setInstances(parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));

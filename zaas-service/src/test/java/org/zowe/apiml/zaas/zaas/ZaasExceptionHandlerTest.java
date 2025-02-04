@@ -54,7 +54,7 @@ class ZaasExceptionHandlerTest {
             .get("/unknown/endpoint")
         .then()
             .statusCode(404)
-            .body("messages[0].messageKey", is("org.zowe.apiml.common.endPointNotFound"));
+            .body("messages[0].messageKey", is("org.zowe.apiml.common.notFound"));
     }
 
     @ParameterizedTest

@@ -93,7 +93,7 @@ describe("Swagger rendering", () => {
                 .should('exist');
 
             cy.get('@swaggerContainer')
-                .get('div.information-container > section > div > div.info > .main')
+                .get('div.information-container > section div.info .main')
                 .as('mainInfo');
 
             cy.get('@mainInfo').should('exist');

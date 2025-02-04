@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -42,8 +43,10 @@ class GatewayAuthenticationTest {
 
     @Nested
     class GivenBearerAuthentication {
+
         @Nested
         class WhenAccessingProtectedEndpoint {
+
             @ParameterizedTest
             @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenAuthenticate(String endpoint) {
@@ -56,14 +59,19 @@ class GatewayAuthenticationTest {
                     .then()
                     .statusCode(is(SC_OK));
             }
+
         }
+
     }
 
     @Nested
     class GivenInvalidBearerAuthentication {
+
         @Nested
         class WhenAccessingProtectedEndpoint {
+
             @ParameterizedTest
+            @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
             @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
                 String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
@@ -78,6 +86,9 @@ class GatewayAuthenticationTest {
                         "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
+
 }

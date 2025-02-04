@@ -12,8 +12,10 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.SecurityUtils;
@@ -36,31 +38,31 @@ import static org.hamcrest.core.Is.is;
 @GeneralAuthenticationTest
 @SAFAuthTest
 @zOSMFAuthTest
+@TestInstance(Lifecycle.PER_CLASS)
 class QueryTest implements TestWithStartedInstances {
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String BASE_PATH = "/gateway/api/v1";
-    private final static String QUERY_ENDPOINT = "/auth/query";
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String COOKIE = "apimlAuthenticationToken";
+    private static final String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    private static final String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
+    private static final int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    private static final String BASE_PATH = "/gateway/api/v1";
+    private static final String QUERY_ENDPOINT = "/auth/query";
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String COOKIE = "apimlAuthenticationToken";
 
     public static final String QUERY_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT);
 
-    private String token;
+    private String validToken;
 
     static String[] queryUrlsSource() {
         return new String[]{QUERY_ENDPOINT_URL};
     }
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    void init() {
+        this.validToken = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
         RestAssured.port = PORT;
         RestAssured.basePath = BASE_PATH;
         RestAssured.useRelaxedHTTPSValidation();
-
-        token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
     }
 
     @Nested
@@ -72,7 +74,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInHeader(String queryUrl) {
                 given()
-                    .header("Authorization", "Bearer " + token)
+                    .header("Authorization", "Bearer " + validToken)
                 .when()
                     .get(queryUrl)
                 .then()
@@ -84,7 +86,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInCookie(String queryUrl) {
                 given()
-                    .cookie(COOKIE, token)
+                    .cookie(COOKIE, validToken)
                 .when()
                     .get(queryUrl)
                 .then()
@@ -156,7 +158,7 @@ class QueryTest implements TestWithStartedInstances {
                 String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
                 given()
-                    .cookie(invalidCookie, token)
+                    .cookie(invalidCookie, validToken)
                 .when()
                     .get(queryUrl)
                 .then()
@@ -179,7 +181,7 @@ class QueryTest implements TestWithStartedInstances {
                 String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
 
                 given()
-                    .header("Authorization", "Bearer " + token)
+                    .header("Authorization", "Bearer " + validToken)
                 .when()
                     .post(queryUrl)
                 .then()

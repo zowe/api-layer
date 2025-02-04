@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
@@ -22,11 +21,13 @@ import static org.mockito.Mockito.*;
 
 class CatalogApiDocControllerApiDocNotFoundTestContextConfiguration {
 
-    @MockBean
-    private APIServiceStatusService apiServiceStatusService;
+    @Bean
+    public APIServiceStatusService apiServiceStatusService() {
+        return mock(APIServiceStatusService.class);
+    }
 
     @Bean
-    public CatalogApiDocController catalogApiDocController() {
+    public CatalogApiDocController catalogApiDocController(APIServiceStatusService apiServiceStatusService) {
         when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", "v1"))
             .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 

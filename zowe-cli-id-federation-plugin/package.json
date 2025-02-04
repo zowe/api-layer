@@ -49,18 +49,18 @@
     "csv-parse": "5.6.0"
   },
   "devDependencies": {
-    "@eslint/js": "9.17.0",
+    "@eslint/js": "9.18.0",
     "@types/jest": "29.5.14",
-    "@types/node": "20.17.12",
-    "@typescript-eslint/eslint-plugin": "8.19.1",
-    "@typescript-eslint/parser": "8.19.1",
-    "@zowe/cli": "8.10.3",
-    "@zowe/cli-test-utils": "8.10.3",
-    "@zowe/imperative": "8.10.3",
+    "@types/node": "20.17.14",
+    "@typescript-eslint/eslint-plugin": "8.20.0",
+    "@typescript-eslint/parser": "8.20.0",
+    "@zowe/cli": "8.11.0",
+    "@zowe/cli-test-utils": "8.11.0",
+    "@zowe/imperative": "8.11.0",
     "copyfiles": "2.4.1",
     "env-cmd": "10.1.0",
-    "eslint": "9.17.0",
-    "eslint-plugin-jest": "28.10.0",
+    "eslint": "9.18.0",
+    "eslint-plugin-jest": "28.11.0",
     "eslint-plugin-license-header": "0.6.1",
     "eslint-plugin-unused-imports": "4.1.4",
     "globals": "15.14.0",
@@ -76,13 +76,13 @@
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
     "typedoc": "0.27.6",
-    "typescript": "5.7.2"
+    "typescript": "5.7.3"
   },
   "overrides": {
-    "@babel/traverse": "7.26.4"
+    "@babel/traverse": "7.26.5"
   },
   "peerDependencies": {
-    "@zowe/imperative": "8.10.3"
+    "@zowe/imperative": "8.11.0"
   },
     "engines": {
         "npm": "=10.9.2",

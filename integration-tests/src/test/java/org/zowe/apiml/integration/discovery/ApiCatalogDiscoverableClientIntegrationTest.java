@@ -31,8 +31,8 @@ import java.util.LinkedHashMap;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
@@ -132,7 +132,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
         LinkedHashMap<String, String> codeSnippet = (LinkedHashMap<String, String>) codeSnippets.get(0);
         assertEquals("/greeting", codeSnippet.get("endpoint"));
         assertNotNull(codeSnippet.get("codeBlock"));
-        assertThat(codeSnippet.get("codeBlock"), not(isEmptyString()));
+        assertThat(codeSnippet.get("codeBlock"), not(is(emptyString())));
         assertEquals("java", codeSnippet.get("language"));
     }
 
