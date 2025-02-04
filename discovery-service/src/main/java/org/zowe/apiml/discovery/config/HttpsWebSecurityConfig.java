@@ -12,13 +12,13 @@ package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
@@ -46,9 +46,9 @@ import java.util.Collections;
  */
 @Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity
 @EnableApimlAuth
 @Profile({"https", "attls"})
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     private final HandlerInitializer handlerInitializer;

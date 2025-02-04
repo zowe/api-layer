@@ -12,8 +12,25 @@ package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
-@SpringBootApplication
+@SpringBootApplication(
+    scanBasePackages = {
+        "org.zowe.apiml",
+
+        "org.zowe.apiml.security.common",
+        "org.zowe.apiml.gateway.security.login",
+
+        "org.springframework.cloud.netflix.eureka"
+    }
+)
+@ComponentScan(
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.REGEX,
+        pattern = ".*Application"
+    )
+)
 public class ApimlApplication {
 
     public static void main(String[] args) {
