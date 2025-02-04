@@ -25,7 +25,7 @@ import org.springframework.context.annotation.FilterType;
         "org.zowe.apiml.security.common",
         "org.zowe.apiml.gateway.security.login",
 
-        "com.netflix.eureka",
+        "com.netflix",
         "org.springframework"
     },
     exclude = {ReactiveOAuth2ClientAutoConfiguration.class}
