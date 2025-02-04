@@ -22,4 +22,5 @@ public class ZosmfServiceConfiguration implements ServiceConfiguration {
     private String host;
     private int port;
     private String serviceId;
+    private String contextRoot;
 }

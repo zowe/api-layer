@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.util.requests;
 
-import com.jayway.jsonpath.ReadContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
+import org.hamcrest.Matchers;
 import org.zowe.apiml.util.config.ApiCatalogServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
@@ -27,20 +27,19 @@ import static org.hamcrest.core.Is.is;
 
 @Slf4j
 public class ApiCatalogRequests {
-    private static final ApiCatalogServiceConfiguration apiCatalogServiceConfiguration =  ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
+    private static final ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
 
-    private final Requests requests;
     private final String scheme;
     private final String host;
     private final int port;
     private final String instance;
 
     public ApiCatalogRequests(String host) {
-        this(apiCatalogServiceConfiguration.getScheme(), host, apiCatalogServiceConfiguration.getPort(), new Requests());
+        this(apiCatalogServiceConfiguration.getScheme(), host, apiCatalogServiceConfiguration.getPort());
     }
-    public ApiCatalogRequests(String scheme, String host, int port, Requests requests) {
-        this.requests = requests;
+
+    public ApiCatalogRequests(String scheme, String host, int port) {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
@@ -54,11 +53,17 @@ public class ApiCatalogRequests {
         try {
             log.info("ApiCatalogRequests#isUp Instance: {}", instance);
 
-            ReadContext healthResponse = requests.getJson(getApiCatalogUriWithPath("/apicatalog" + Endpoints.HEALTH));
-            String health = healthResponse.read("$.status");
-
-            return health.equals("UP");
-        } catch (Exception e) {
+            given()
+                .contentType(JSON)
+                .auth()
+                .basic(credentials.getUser(), new String(credentials.getPassword()))
+                .when()
+                .get(getApiCatalogUriWithPath("/apicatalog" + Endpoints.HEALTH))
+                .then()
+                .statusCode(200)
+                .body("status", Matchers.is("UP"));
+            return true;
+        } catch (AssertionError | URISyntaxException e) {
             log.info("ApiCatalogRequests#isUP", e);
 
             return false;

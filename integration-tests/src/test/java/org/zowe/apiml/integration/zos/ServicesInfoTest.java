@@ -158,9 +158,10 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnForbidden {
+
             @Test
             @SuppressWarnings({"squid:S2699", "Assets are after then()"})
-            void givenInvalidCredentials() {
+            void givenValidUnauthorizedCredentials() {
                 String expectedMessage = "The user is not authorized to the target resource:";
 
                 //@formatter:off

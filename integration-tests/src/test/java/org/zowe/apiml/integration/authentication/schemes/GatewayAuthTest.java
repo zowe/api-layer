@@ -48,18 +48,18 @@ public class GatewayAuthTest implements TestWithStartedInstances {
     static Stream<Arguments> validToBeTransformed() {
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
-                assertNull(response.jsonPath().getString("headers.authorization"));
-                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+                assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"), "Expected not null apimlAuthenticationToken. Response was: " + response.asPrettyString());
+                assertNull(response.jsonPath().getString("headers.authorization"), "Expected null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
             }),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("cookies.jwtToken"));
-                assertNull(response.jsonPath().getString("headers.authorization"));
-                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+                assertNotNull(response.jsonPath().getString("cookies.jwtToken"), "Expected not null jwtToken cookie. Response was: " + response.asPrettyString());
+                assertNull(response.jsonPath().getString("headers.authorization"), "Expected null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
             }),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("headers.authorization"));
-                assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
+                assertNotNull(response.jsonPath().getString("headers.authorization"), "Expected not null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "), "Expected basic Authorization present. Response was: " + response.asPrettyString());
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         ));
@@ -81,10 +81,12 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 "cookies.jwtToken",
                 "headers.authorization"
             }) {
-                if (path.equals(ignore)) continue;
-                assertNull(response.jsonPath().getString(path));
+                if (path.equals(ignore)) {
+                    continue;
+                }
+                assertNull(response.jsonPath().getString(path), "Expected " + path + " to be Null. Response is: " + response.asPrettyString());
             }
-            assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+            assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs. Response is: " + response.asPrettyString());
         };
 
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
@@ -196,7 +198,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
             .when()
                 .get(HttpRequestUtils.getUri(GATEWAY_CONF, basePath));
-            assertEquals(200, response.getStatusCode());
+            assertEquals(200, response.getStatusCode(), "Expected 200 while using token " + pat);
             assertions.accept("headers.authorization", response);
             assertEquals("Bearer " + pat, response.jsonPath().getString("headers.authorization"));
         }
