@@ -60,6 +60,13 @@ dependencies {
     implementation(libs.spring.boot.starter)
     implementation libs.bundles.jaxb
 
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.oauth2.client
+    implementation libs.spring.boot.starter.thymeleaf
+
     testImplementation libs.spring.boot.starter.test
     testImplementation(libs.modulith.test)
 
