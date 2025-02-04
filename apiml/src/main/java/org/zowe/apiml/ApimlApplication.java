@@ -12,9 +12,11 @@ package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
+@EnableEurekaServer
 @SpringBootApplication(
     scanBasePackages = {
         "org.zowe.apiml",
@@ -22,7 +24,8 @@ import org.springframework.context.annotation.FilterType;
         "org.zowe.apiml.security.common",
         "org.zowe.apiml.gateway.security.login",
 
-        "org.springframework.cloud.netflix.eureka"
+        "com.netflix.eureka",
+        "org.springframework"
     }
 )
 @ComponentScan(
