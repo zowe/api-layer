@@ -40,7 +40,7 @@ public class AttlsFilter extends OncePerRequestFilter {
             rawCertificate = InboundAttls.getCertificate();
         } catch (Exception e) {
             log.error("Not possible to get rawCertificate from AT-TLS context", e);
-            AttlsErrorHandler.handleError(response, "Exception reading rawCertificate");
+            AttlsErrorHandler.handleError(response, "Exception getting rawCertificate");
         }
 
         if (rawCertificate != null && rawCertificate.length > 0) {
