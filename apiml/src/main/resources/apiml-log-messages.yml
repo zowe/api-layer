@@ -1,0 +1,134 @@
+messages:
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    - key: org.zowe.apiml.gateway.internalServerError
+      number: ZWEAG111
+      type: ERROR
+      text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    - key: org.zowe.apiml.gateway.security.attls.notSecure
+      number: ZWEAG501
+      type: ERROR
+      text: "The connection is not secure."
+      reason: "AT-TLS is not properly configured."
+      action: "Review AT-TLS documentation and make sure your configuration is correct for this service."
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    - key: org.zowe.apiml.gateway.requestContainEncodedCharacter
+      number: ZWEAG701
+      type: ERROR
+      text: "Service '%s' does not allow encoded characters in the request path: '%s'."
+      reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
+      action: "Contact the system administrator and request enablement of encoded characters in the service."
+
+    - key: org.zowe.apiml.gateway.requestContainEncodedSlash
+      number: ZWEAG702
+      type: ERROR
+      text: "Gateway does not allow encoded slashes in request: '%s'."
+      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
+      action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
+
+    - key: org.zowe.apiml.gateway.verifier.wrongServiceId
+      number: ZWEAG717
+      type: ERROR
+      text: "The service id provided is invalid: '%s'"
+      reason: "The provided id is not valid under conformance criteria."
+      action: "Verify the conformance criteria, provide valid service id."
+
+    - key: org.zowe.apiml.gateway.verifier.noMetadata
+      number: ZWEAG718
+      type: ERROR
+      text: "Cannot retrieve metadata: '%s'"
+      reason: "Metadata aren't accessible"
+      action: "Verify that the metadata are accessible and not empty"
+
+    - key: org.zowe.apiml.gateway.verifier.nonConformant
+      number: ZWEAG719
+      type: INFO
+      text: "The service is not conformant: %s"
+      reason: "The provided service does not satisfy the conformance criteria and is therefore not valid."
+      action: "Verify the conformance criteria."
+
+    # Legacy messages
+
+    - key: org.zowe.apiml.security.invalidMethod
+      number: ZWEAG101
+      type: ERROR
+      text: "Authentication method '%s' is not supported for URL '%s'"
+      reason: "The HTTP request method is not supported by the URL."
+      action: "Use the correct HTTP request method supported by the URL."
+
+    - key: org.zowe.apiml.security.authRequired
+      number: ZWEAG105
+      type: ERROR
+      text: "Authentication is required for URL '%s'"
+      reason: "Authentication is required."
+      action: "Provide valid authentication."
+
+    - key: org.zowe.apiml.gateway.security.schema.missingX509Authentication
+      number: ZWEAG167
+      type: ERROR
+      text: "No client certificate provided in the request"
+      reason: "The X509 client certificate was not provided with the request"
+      action: "Configure your client to provide valid certificate."
+
+    - key: org.zowe.apiml.common.sslContextInitializationError
+      number: ZWEAM400
+      type: ERROR
+      text: "Error initializing SSL Context: '%s'"
+      reason: "An error occurred while initializing the SSL Context."
+      action: "Refer to the specific message to identify the exact problem.\n
+      Possible causes include:\n
+      - Incorrect security algorithm\n
+      - The keystore is invalid or corrupted\n
+      - The certificate is invalid or corrupted"
+
+    - key: org.zowe.apiml.security.forbidden
+      number: ZWEAT403
+      type: ERROR
+      text: "The user is not authorized to the target resource: %s"
+      reason: "The service has accepted the authentication of the user but the user does not have access rights to the resource."
+      action: "Contact your security administrator to give you access."
+
+    - key: org.zowe.apiml.gateway.responseStatusError
+      number: ZWEAG510
+      type: ERROR
+      text: "Request to the resource ended with unexpected status code."
+      reason: "The service did not respond properly."
+      action: "Verify that the target service is healthy."
+
+    - key: org.zowe.apiml.gateway.servicesRequestFailed
+      number: ZWESG100
+      type: WARNING
+      text: "Cannot receive information about services on API Gateway with apimlId '%s' because: %s"
+      reason: "Cannot connect to the Gateway service."
+      action: "Make sure that the external Gateway service is running and the truststore of the both Gateways contain the corresponding certificate."
+
+    - key: org.zowe.apiml.gateway.zaas.internalServerError
+      number: ZWESG101
+      type: ERROR
+      text: "An internal exception occurred in ZAAS service %s."
+      reason: "ZAAS cannot process authentication required to finish the request."
+      action: "Make sure that the ZAAS is configured well and check all security requirements."
+
+    - key: org.zowe.apiml.gateway.connectionsLimitApproached
+      number: ZWESG429
+      type: ERROR
+      text: "Request was denied access."
+      reason: "Connections limit exceeded."
+      action: "Wait for the number of active connections to decrease before retrying your request."
