@@ -162,14 +162,15 @@ public class ApiCatalogController {
      * @return a containers by id
      */
     @GetMapping(value = "/services/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Retrieves a specific dashboard tile information",
-        description = "Returns information for a specific tile {id} including status and tile description",
+    @Operation(summary = "Retrieves a specific service information",
+        description = "Returns information for a specific service {id} including status and service description",
         security = {
             @SecurityRequirement(name = "BasicAuthorization"), @SecurityRequirement(name = "CookieAuth")
         }
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "204", description = "No service available"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "URI not found"),
@@ -196,7 +197,7 @@ public class ApiCatalogController {
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
+            apimlLog.log("org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalThrowable(e);
         }
     }
