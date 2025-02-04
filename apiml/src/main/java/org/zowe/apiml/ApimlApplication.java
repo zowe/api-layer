@@ -13,16 +13,7 @@ package org.zowe.apiml;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(
-    scanBasePackages = {
-        "org.zowe.apiml.gateway",
-        "org.zowe.apiml.product.web",
-        "org.zowe.apiml.product.gateway",
-        "org.zowe.apiml.product.version",
-        "org.zowe.apiml.product.logging",
-        "org.zowe.apiml.security"
-    }
-)
+@SpringBootApplication
 public class ApimlApplication {
 
     public static void main(String[] args) {
