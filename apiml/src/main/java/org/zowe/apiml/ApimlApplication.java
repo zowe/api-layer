@@ -12,7 +12,6 @@ package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -22,13 +21,12 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.Re
         "org.zowe.apiml.product.version",
         "org.zowe.apiml.product.logging",
         "org.zowe.apiml.security"
-    },
-    exclude = {ReactiveOAuth2ClientAutoConfiguration.class}
+    }
 )
 public class ApimlApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(GatewayServiceApplication.class, args);
+        SpringApplication.run(ApimlApplication.class, args);
     }
 
 }

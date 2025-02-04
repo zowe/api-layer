@@ -29,7 +29,8 @@ ext.servicesToPublish = [
     'zaas-service',
     'zaas-package',
     'gateway-service',
-    'gateway-package'
+    'gateway-package',
+    'apiml'
 ]
 
 ext.sdksToPublish = ext.enablers + ext.javaLibraries

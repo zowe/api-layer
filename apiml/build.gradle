@@ -56,6 +56,10 @@ dependencies {
     api project(':gateway-service')
     api project(':discovery-service')
 
+    implementation(libs.bundles.modulith)
+    implementation(libs.spring.boot.starter)
+    implementation libs.bundles.jaxb
+
     testImplementation libs.spring.boot.starter.test
 
     compileOnly libs.lombok

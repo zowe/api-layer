@@ -1,0 +1,64 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
+/**
+ * This gradle file extends task `build` to create thin JAR files:
+ * <baseName>-lite.jar - contains base SpringBoot part to be executable and built submodules
+ * <baseName>-lite-lib.jar - contains all external libraries (except modules)
+ *
+ * To run application with thin and library file use:
+ * java -Dloader.path=<baseName>-lite-lib-<version>.jar -jar <basename>-lite-<version>.jar
+ *
+ * Example:
+ * java -Dloader.path=zowe-rest-api-sample-spring-lite-lib-0.0.1-SNAPSHOT.jar -jar zowe-rest-api-sample-spring-lite-0.0.1-SNAPSHOT.jar
+ */
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath libs.spring.boot.gradle.plugin
+    }
+}
+
+apply from: "$rootDir/gradle/lite-project.gradle"
+
+task liteJar(type: BootJar) {
+    //Do not allow duplicates by ignoring subsequent items to be created at the same path.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    targetJavaVersion = JavaVersion.VERSION_17
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
+    }
+    def modulesJar = getModulesJarNames()
+    archiveFileName = getBaseNameLite() + ".jar"
+    mainClass = getSpringBootApp()
+    exclude { details -> details.file && details.file.name.endsWith('.jar') && !modulesJar.contains(details.file.name) }
+    with bootJar
+
+    archiveClassifier = "lite"
+}
+
+configurations {
+    liteJarConfiguration
+}
+
+artifacts {
+    liteJarConfiguration(liteJar) {
+        builtBy(liteJar)
+    }
+}
+task liteLibJar(type: Jar) {
+    archiveFileName = getBaseNameLite() + "-lib.jar"
+    entryCompression = ZipEntryCompression.STORED
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }}
+    include '*.jar'
+    exclude getModulesJarFilters()
+    with bootJar
+
+    archiveClassifier = "lite-lib"
+}
+
+jar.dependsOn liteLibJar
+jar.dependsOn liteJar
