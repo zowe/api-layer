@@ -11,7 +11,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import GraphQLContainer from './GraphQLUIApimlContainer';
+import GraphQLUIApiml from './GraphQLUIApiml';
 
 const mockStore = configureStore();
 
@@ -44,7 +44,7 @@ describe('GraphQL Container', () => {
         });
         container = render(
             <Provider store={store}>
-                <GraphQLContainer graphqlUrl="http://localhost:4000/graphql" />
+                <GraphQLUIApiml graphqlUrl="http://localhost:4000/graphql" />
             </Provider>
         );
     });

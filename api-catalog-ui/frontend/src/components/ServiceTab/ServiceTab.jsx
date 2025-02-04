@@ -11,8 +11,8 @@ import { Button, Link, MenuItem, Select, Tooltip, Typography } from '@material-u
 import { useState} from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
-import GraphQLContainer from '../GraphQL/GraphQLUIApimlContainer';
 import ServiceVersionDiffContainer from '../ServiceVersionDiff/ServiceVersionDiffContainer';
+import GraphQLUIApiml from "../GraphQL/GraphQLUIApiml";
 
 function ServiceTab({service}) {
 
@@ -225,6 +225,7 @@ function ServiceTab({service}) {
                             </Select>
                             <Button
                                 id="compare-button"
+                                data-testid="diff-button"
                                 style={{ backgroundColor: '#fff', color: '#0056B3' }}
                                 onClick={() => handleDialogOpen(service)}
                                 key="diff"
@@ -233,7 +234,7 @@ function ServiceTab({service}) {
                             </Button>
                         </div>
                     )}
-                    {graphqlUrl !== null && <GraphQLContainer graphqlUrl={graphqlUrl} />}
+                    {graphqlUrl !== null && <GraphQLUIApiml graphqlUrl={graphqlUrl} />}
                     {graphqlUrl === null && selectedVersion !== 'diff' && (
                         <SwaggerContainer selectedVersion={selectedVersion} />
                     )}
