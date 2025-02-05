@@ -13,7 +13,6 @@ package org.zowe.apiml;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.registry.InstanceRegistry;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.ServiceInstance;
@@ -23,16 +22,15 @@ import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Flux;
 
 import java.util.*;
 
 @Configuration
-@RequiredArgsConstructor
 public class ModulithConfig {
-
-    private final InstanceRegistry instanceRegistry;
 
     @Value("${server.ssl.enabled:true}")
     private boolean https;
@@ -141,12 +139,24 @@ public class ModulithConfig {
         };
     }
 
-
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        InstanceRegistry instanceRegistry = event.getApplicationContext().getBean(InstanceRegistry.class);
         for (Map.Entry<String, InstanceInfo> entry : localInstances.entrySet()) {
             instanceRegistry.register(getInstanceInfo(entry.getKey()), Integer.MAX_VALUE, CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
         }
+    }
+
+    @Bean
+    public MessageService messageService() {
+        MessageService messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/utility-log-messages.yml");
+        messageService.loadMessages("/common-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
+
+        messageService.loadMessages("/gateway-log-messages.yml");
+        messageService.loadMessages("/zaas-log-messages.yml");
+        return messageService;
     }
 
 }

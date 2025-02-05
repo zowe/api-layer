@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class SafProviderBeansConfig {
     @Bean
-    @ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest")
+    @ConditionalOnProperty(name = "apiml.security.saf.provider", havingValue = "rest", matchIfMissing = true)
     public SafIdtProvider restSafProvider(RestTemplate restTemplate) {
         return new SafRestAuthenticationService(restTemplate);
     }

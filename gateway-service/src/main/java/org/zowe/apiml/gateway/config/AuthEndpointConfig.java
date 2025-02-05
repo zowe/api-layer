@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
@@ -49,6 +50,7 @@ import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_
  */
 @Slf4j
 @Configuration
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class AuthEndpointConfig {
 
     private String[] HEADERS_TO_RESEND = {

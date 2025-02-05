@@ -1,3 +1,5 @@
+debug: true
+
 eureka:
     dashboard:
         path: /dashbrd
@@ -115,6 +117,11 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
+        saf:
+            provider: rest
+            urls:
+                authenticate: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/saf/authenticate
+                verify: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/saf/verify
     health:
         protected: true
 server:

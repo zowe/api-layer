@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Error service configuration
  */
-@Configuration
+@Configuration("zaasMessageServiceConfiguration")
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class MessageServiceConfiguration {
 
     @Bean
