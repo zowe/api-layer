@@ -10,12 +10,13 @@
 
 package org.zowe.apiml.apicatalog.config;
 
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.routing.transform.TransformService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.routing.transform.TransformService;
 
 /**
  * General configuration of the API Catalog.
@@ -25,7 +26,9 @@ public class BeanConfig {
 
     @Bean
     @Primary
-    public MessageService messageServiceCatalog(MessageService messageService) {
+    public MessageService messageServiceCatalog() {
+        MessageService messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/security-client-log-messages.yml");
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
         messageService.loadMessages("/security-common-log-messages.yml");

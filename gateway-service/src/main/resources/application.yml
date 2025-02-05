@@ -70,6 +70,7 @@ spring:
                     okta:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
     main:
+        allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
 
@@ -127,10 +128,6 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
-    application:
-        name: gateway
-    main:
-        allow-circular-references: true
 
 logbackServiceName: ZWEAGW1
 

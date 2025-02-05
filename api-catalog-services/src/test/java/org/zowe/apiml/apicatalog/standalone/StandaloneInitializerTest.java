@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -26,11 +25,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -82,11 +77,13 @@ class StandaloneInitializerTest {
     @Profile("test")
     public static class TestConfiguration {
 
-        @MockBean
-        private StandaloneLoaderService standaloneLoaderService;
+        @Bean
+        public StandaloneLoaderService standaloneLoaderService() {
+            return mock(StandaloneLoaderService.class);
+        }
 
         @Bean
-        public StandaloneInitializer getStandaloneInitializer() {
+        public StandaloneInitializer getStandaloneInitializer(StandaloneLoaderService standaloneLoaderService) {
             return new StandaloneInitializer(standaloneLoaderService);
         }
 

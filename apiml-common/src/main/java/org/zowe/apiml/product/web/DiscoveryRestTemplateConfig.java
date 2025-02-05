@@ -12,12 +12,13 @@ package org.zowe.apiml.product.web;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
+import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
+import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
@@ -30,15 +31,16 @@ public class DiscoveryRestTemplateConfig {
     private static final ApimlLogger apimlLog = ApimlLogger.of(DiscoveryRestTemplateConfig.class, YamlMessageServiceInstance.getInstance());
 
     @Bean
-    public RestTemplateTransportClientFactories restTemplateTransportClientFactories(RestTemplateDiscoveryClientOptionalArgs restTemplateDiscoveryClientOptionalArgs) {
-        return new RestTemplateTransportClientFactories(restTemplateDiscoveryClientOptionalArgs);
+    public RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
+        return new RestClientTransportClientFactories(restClientDiscoveryClientOptionalArgs);
     }
 
     @Bean
-    public RestTemplateDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
-                                                               @Qualifier("secureSslContext") SSLContext secureSslContext,
-                                                               HostnameVerifier secureHostnameVerifier) {
-        RestTemplateDiscoveryClientOptionalArgs clientArgs = new RestTemplateDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+    public RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
+                                                             @Qualifier("secureSslContext") SSLContext secureSslContext,
+                                                             HostnameVerifier secureHostnameVerifier
+    ) {
+        RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(), RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
@@ -51,7 +53,7 @@ public class DiscoveryRestTemplateConfig {
     }
 
     private static DefaultEurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
-        RestTemplateTimeoutProperties properties = new RestTemplateTimeoutProperties();
+        RestClientTimeoutProperties properties = new RestClientTimeoutProperties();
         properties.setConnectTimeout(180000);
         properties.setConnectRequestTimeout(180000);
         properties.setSocketTimeout(180000);
