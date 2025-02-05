@@ -11,6 +11,7 @@
 package org.zowe.apiml.product.security;
 
 import org.apache.coyote.http11.AbstractHttp11Protocol;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import java.util.Arrays;
  * Configuration of web server security
  */
 @Configuration
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class WebServerSecurityConfig {
 
     @Bean
