@@ -99,7 +99,7 @@ class SafResourceAccessSafTest {
     @ValueSource(strings = {"", "tooLongUserId"})
     void testInvalidUserIds_thenSkipped(String userId) {
         var auth = new UsernamePasswordAuthenticationToken(userId, "");
-        assertDoesNotThrow(() -> safResourceAccessVerifying.hasSafResourceAccess(auth, CLASS, RESOURCE, LEVEL.name()));
+        assertFalse(assertDoesNotThrow(() -> safResourceAccessVerifying.hasSafResourceAccess(auth, CLASS, RESOURCE, LEVEL.name())));
         verify(checkPermissionMock, never()).checkPermission(any(), any(), any(), anyInt());
     }
 
