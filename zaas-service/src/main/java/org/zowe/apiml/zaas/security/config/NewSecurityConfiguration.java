@@ -161,7 +161,7 @@ public class NewSecurityConfiguration {
                 http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(loginFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(x509ForwardingAwareAuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-                    .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+                    .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chain because there is nothing on /auth/login endpoint
             }
 
             private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
@@ -188,7 +188,18 @@ public class NewSecurityConfiguration {
     }
 
     /**
-     * Access token endpoint share single filter that handles auth with and without certificate.
+     * Secures endpoints:
+     *   - /auth/access-token/generate
+     *
+     * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports credentials in header and body.
+     * The request is fulfilled by the filter chain only, there is no controller to handle it.
+     * Order of custom filters:
+     *   - CategorizeCertsFilter - checks for forwarded client certificate and put it into a custom request attribute
+     *   - StoreAccessTokenInfoFilter - extracts access token filter from request to a custom attribute
+     *   - LoginFilter - attempts to log in a user using basic authentication credentials, generates access token and stops the chain on success, reply with the token
+     *   - X509ForwardingAwareAuthenticationFilter - attempts to log in a user using forwarded client certificate, generates access token and stops the chain on success, reply with the token
+     *   - ShouldBeAlreadyAuthenticatedFilter - stops filter chain if none of the authentications was successful
+     *
      */
     @Configuration
     @RequiredArgsConstructor
@@ -221,7 +232,7 @@ public class NewSecurityConfiguration {
                     .addFilterBefore(new StoreAccessTokenInfoFilter(handlerInitializer.getUnAuthorizedHandler().getHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(accessTokenFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(x509ForwardingAwareAuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
-                    .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
+                    .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chain because there is nothing on /auth/access-token/generate endpoint
             }
 
             private LoginFilter accessTokenFilter(String endpoint, AuthenticationManager authenticationManager) {
@@ -241,6 +252,17 @@ public class NewSecurityConfiguration {
             }
         }
 
+        /**
+         * Secures endpoints:
+         *  - /auth/access-token/revoke/tokens/**
+         *  - /auth/access-token/evict
+         *
+         * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports only credentials in header.
+         * Order of custom filters:
+         *  - CategorizeCertsFilter - checks for forwarded client certificate and put it into a custom request attribute
+         *  - X509AuthAwareFilter - attempts to log in using a user using forwarded client certificate, replaces pre-authentication in security context by the authentication result
+         *  - BasicAuthFilter - attempts to log in a user using credentials from basic authentication header
+         */
         @Configuration
         @RequiredArgsConstructor
         @Order(8)
