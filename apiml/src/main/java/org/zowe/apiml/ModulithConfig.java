@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.annotation.Bean;
@@ -25,8 +26,7 @@ import org.springframework.context.event.EventListener;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Flux;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -98,7 +98,7 @@ public class ModulithConfig {
         return new ReactiveDiscoveryClient() {
             @Override
             public String description() {
-                return "Discovery client of local instances";
+                return "Reactive discovery client of local instances";
             }
 
             @Override
@@ -113,6 +113,30 @@ public class ModulithConfig {
             @Override
             public Flux<String> getServices() {
                 return Flux.fromIterable(localInstances.keySet());
+            }
+        };
+    }
+
+    @Bean
+    public DiscoveryClient getLocalDiscoveryClient() {
+        return new DiscoveryClient() {
+            @Override
+            public String description() {
+                return "Discovery client of local instances";
+            }
+
+            @Override
+            public List<ServiceInstance> getInstances(String serviceId) {
+                var instanceInfo = localInstances.get(serviceId);
+                if (instanceInfo == null) {
+                    return Collections.emptyList();
+                }
+                return Collections.singletonList(new EurekaServiceInstance(instanceInfo));
+            }
+
+            @Override
+            public List<String> getServices() {
+                return new ArrayList<>(localInstances.keySet());
             }
         };
     }
