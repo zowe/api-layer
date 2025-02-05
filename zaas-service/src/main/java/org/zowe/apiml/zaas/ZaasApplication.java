@@ -16,6 +16,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.zowe.apiml.extension.ExtensionConfigReader;
 import org.zowe.apiml.extension.ExtensionsLoader;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
@@ -35,6 +36,7 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
     }
 )
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
+@EnableWebMvc
 public class ZaasApplication {
 
     public static void main(String[] args) {
