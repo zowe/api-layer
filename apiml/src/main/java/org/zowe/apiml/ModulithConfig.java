@@ -15,6 +15,7 @@ import com.netflix.eureka.registry.InstanceRegistry;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -22,6 +23,7 @@ import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
@@ -157,6 +159,14 @@ public class ModulithConfig {
         messageService.loadMessages("/gateway-log-messages.yml");
         messageService.loadMessages("/zaas-log-messages.yml");
         return messageService;
+    }
+
+    @Bean
+    public TomcatContextCustomizer servletContextPropagator(List<ServletContextAware> listeners) {
+        return context -> {
+            var sc = context.getServletContext();
+            listeners.forEach(l -> l.setServletContext(sc));
+        };
     }
 
 }
