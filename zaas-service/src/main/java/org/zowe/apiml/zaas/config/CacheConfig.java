@@ -193,7 +193,7 @@ public class CacheConfig {
         return new CacheUtils();
     }
 
-    @Bean
+    @Bean("cachingCachingServiceClient")
     public CachingServiceClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
         return new CachingServiceClient(restTemplate, gatewayClient);
     }
