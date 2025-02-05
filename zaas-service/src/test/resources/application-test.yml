@@ -177,4 +177,4 @@ management:
 ---
 spring.config.activate.on-profile: dev
 
-logbackServiceName: ZWEAGW1
+logbackServiceName: ZWEAZS1
