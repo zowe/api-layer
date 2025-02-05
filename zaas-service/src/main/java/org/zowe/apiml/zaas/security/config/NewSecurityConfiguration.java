@@ -502,15 +502,6 @@ public class NewSecurityConfiguration {
             private final CompoundAuthProvider compoundAuthProvider;
             private final AuthenticationProvider tokenAuthenticationProvider;
 
-            private final String[] protectedEndpoints = {
-                SafResourceAccessController.FULL_CONTEXT_PATH,
-                "/application",
-                "/gateway/conformance",
-                "/gateway/api/v1/conformance",
-                "/gateway/validate",
-                "/gateway/api/v1/validate"
-            };
-
             @Bean
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(
@@ -529,7 +520,7 @@ public class NewSecurityConfiguration {
                         // filter out API ML certificate
                         .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 } else {
-                    http.addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                    http.x509(x509 -> x509.userDetailsService(x509UserDetailsService())); // default x509 filter, authenticates trusted cert
                 }
 
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -558,7 +549,7 @@ public class NewSecurityConfiguration {
                         authenticationManager,
                         handlerInitializer.getAuthenticationFailureHandler(),
                         handlerInitializer.getResourceAccessExceptionHandler(),
-                        protectedEndpoints);
+                        new String[] {"/"});
                 }
 
                 /**
@@ -570,7 +561,7 @@ public class NewSecurityConfiguration {
                         handlerInitializer.getAuthenticationFailureHandler(),
                         handlerInitializer.getResourceAccessExceptionHandler(),
                         authConfigurationProperties,
-                        protectedEndpoints);
+                        new String[] {"/"});
                 }
 
                 /**
@@ -581,7 +572,7 @@ public class NewSecurityConfiguration {
                         authenticationManager,
                         handlerInitializer.getAuthenticationFailureHandler(),
                         handlerInitializer.getResourceAccessExceptionHandler(),
-                        protectedEndpoints);
+                        new String[] {"/"});
                 }
             }
 
