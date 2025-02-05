@@ -39,11 +39,6 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
             Optional<AuthSource> authSource = Optional.ofNullable((AuthSource) request.getAttribute(AUTH_SOURCE_ATTR));
             if (authSource.isEmpty() || !authSourceService.isValid(authSource.get())) {
                 throw new InsufficientAuthenticationException("Authentication failed.");
-//            } else {
-//                var auth = new PreAuthenticatedAuthenticationToken(
-//                    authSourceService.parse(authSource.get()).getUserId(), null);
-//                auth.setAuthenticated(true);
-//                SecurityContextHolder.getContext().setAuthentication(auth);
             }
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {
