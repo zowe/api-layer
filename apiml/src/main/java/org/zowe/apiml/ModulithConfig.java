@@ -11,15 +11,20 @@
 package org.zowe.apiml;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.eureka.registry.InstanceRegistry;
+import com.netflix.appinfo.LeaseInfo;
+import com.netflix.discovery.shared.Application;
+import com.netflix.eureka.EurekaServerContext;
+import com.netflix.eureka.EurekaServerContextHolder;
+import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -49,6 +54,11 @@ public class ModulithConfig {
     private final Map<String, InstanceInfo> localInstances = new HashMap<>();
 
     private InstanceInfo getInstanceInfo(String serviceId) {
+        var leaseInfo = LeaseInfo.Builder.newBuilder()
+            // TODO: use maxInt to define infinity, there was an error to store -1000 instead
+            .setDurationInSecs(Short.MAX_VALUE)//Integer.MAX_VALUE)
+            .build();
+
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
             .setAppName(serviceId)
@@ -74,7 +84,7 @@ public class ModulithConfig {
             //.setSecureVIPAddress(final String secureVIPAddress)
             //.setSecureVIPAddressDeser(String secureVIPAddress)
             //.setDataCenterInfo(DataCenterInfo datacenter)
-            //.setLeaseInfo(LeaseInfo info)
+            .setLeaseInfo(leaseInfo)
             //.add(String key, String val)
             //.setMetadata(Map<String, String> mt)
             //.setASGName(String asgName)
@@ -86,6 +96,13 @@ public class ModulithConfig {
             .build();
     }
 
+    private PeerAwareInstanceRegistry getRegistry() {
+        return Optional.ofNullable(EurekaServerContextHolder.getInstance())
+            .map(EurekaServerContextHolder::getServerContext)
+            .map(EurekaServerContext::getRegistry)
+            .orElse(null);
+    }
+
     @PostConstruct
     void createLocalInstances() {
         localInstances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
@@ -93,8 +110,16 @@ public class ModulithConfig {
         localInstances.put(CoreService.ZAAS.getServiceId(), getInstanceInfo(CoreService.ZAAS.getServiceId()));
     }
 
+    @EventListener
+    public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
+        var registry = getRegistry();
+        for (Map.Entry<String, InstanceInfo> entry : localInstances.entrySet()) {
+            registry.register(getInstanceInfo(entry.getKey()), Integer.MAX_VALUE, CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
+        }
+    }
+
     @Bean
-    public ReactiveDiscoveryClient getLocalReactiveDiscoveryClient() {
+    public ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
         return new ReactiveDiscoveryClient() {
             @Override
             public String description() {
@@ -103,22 +128,18 @@ public class ModulithConfig {
 
             @Override
             public Flux<ServiceInstance> getInstances(String serviceId) {
-                var instanceInfo = localInstances.get(serviceId);
-                if (instanceInfo == null) {
-                    return Flux.empty();
-                }
-                return Flux.just(new EurekaServiceInstance(instanceInfo));
+                return Flux.fromIterable(registryDiscoveryClient.getInstances(serviceId));
             }
 
             @Override
             public Flux<String> getServices() {
-                return Flux.fromIterable(localInstances.keySet());
+                return Flux.fromIterable(registryDiscoveryClient.getServices());
             }
         };
     }
 
     @Bean
-    public DiscoveryClient getLocalDiscoveryClient() {
+    public DiscoveryClient registryDiscoveryClient() {
         return new DiscoveryClient() {
             @Override
             public String description() {
@@ -127,26 +148,32 @@ public class ModulithConfig {
 
             @Override
             public List<ServiceInstance> getInstances(String serviceId) {
-                var instanceInfo = localInstances.get(serviceId);
-                if (instanceInfo == null) {
+                var registry = getRegistry();
+                if (registry == null) {
                     return Collections.emptyList();
                 }
-                return Collections.singletonList(new EurekaServiceInstance(instanceInfo));
+                return Optional.ofNullable(registry.getApplication(StringUtils.upperCase(serviceId)))
+                    .map(Application::getInstances)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(EurekaServiceInstance::new)
+                    .map(ServiceInstance.class::cast)
+                    .toList();
             }
 
             @Override
             public List<String> getServices() {
-                return new ArrayList<>(localInstances.keySet());
+                var registry = getRegistry();
+                if (registry == null) {
+                    return Collections.emptyList();
+                }
+                return registry.getApplications().getRegisteredApplications()
+                    .stream()
+                    .map(Application::getName)
+                    .distinct()
+                    .toList();
             }
         };
-    }
-
-    @EventListener
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        InstanceRegistry instanceRegistry = event.getApplicationContext().getBean(InstanceRegistry.class);
-        for (Map.Entry<String, InstanceInfo> entry : localInstances.entrySet()) {
-            instanceRegistry.register(getInstanceInfo(entry.getKey()), Integer.MAX_VALUE, CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
-        }
     }
 
     @Bean
