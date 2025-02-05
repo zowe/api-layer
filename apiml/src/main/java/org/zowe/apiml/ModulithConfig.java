@@ -55,8 +55,12 @@ public class ModulithConfig {
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
-            // TODO: use maxInt to define infinity, there was an error to store -1000 instead
-            .setDurationInSecs(Short.MAX_VALUE)//Integer.MAX_VALUE)
+            .setDurationInSecs(Integer.MAX_VALUE)
+            .setEvictionTimestamp(Long.MAX_VALUE)
+            .setRegistrationTimestamp(System.currentTimeMillis())
+            .setRenewalTimestamp(System.currentTimeMillis())
+            .setRenewalIntervalInSecs(Integer.MAX_VALUE)
+            .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 
         return InstanceInfo.Builder.newBuilder()
