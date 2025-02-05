@@ -619,7 +619,6 @@ public class NewSecurityConfiguration {
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest()
                     .permitAll()).logout(AbstractHttpConfigurer::disable)
-                // sort out client and apiml internal certificates
                 .build();
         }
     }
