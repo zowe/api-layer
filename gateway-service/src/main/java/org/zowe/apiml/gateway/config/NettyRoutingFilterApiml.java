@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
+import static org.springframework.cloud.gateway.support.RouteMetadataUtils.RESPONSE_TIMEOUT_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 @Slf4j
@@ -66,23 +67,29 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     @Override
     protected HttpClient getHttpClient(Route route, ServerWebExchange exchange) {
         // select proper HttpClient instance by attribute apiml.useClientCert
-        boolean useClientCert = Optional.ofNullable((Boolean) exchange.getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE)).orElse(Boolean.FALSE);
-        HttpClient httpClient = useClientCert ? httpClientClientCert : httpClientNoCert;
+        var useClientCert = Optional.ofNullable((Boolean) exchange.getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE)).orElse(Boolean.FALSE);
+        var httpClient = useClientCert ? httpClientClientCert : httpClientNoCert;
 
         log.debug("Using client with keystore {}", useClientCert);
-        Object connectTimeoutAttr = route.getMetadata().get(CONNECT_TIMEOUT_ATTR);
+        var connectTimeoutAttr = route.getMetadata().get(CONNECT_TIMEOUT_ATTR);
+        var responseTimeoutAttr = route.getMetadata().get(RESPONSE_TIMEOUT_ATTR);
+
+        httpClient = httpClient
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, requestTimeout)
+            .responseTimeout(Duration.ofMillis(requestTimeout));
+
+        if (responseTimeoutAttr != null) {
+            httpClient = httpClient.responseTimeout(Duration.parse(String.valueOf(responseTimeoutAttr)));
+        }
+
         if (connectTimeoutAttr != null) {
             // if there is configured timeout, respect it
             Integer connectTimeout = getInteger(connectTimeoutAttr);
-            return httpClient
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
-                .responseTimeout(Duration.ofMillis(connectTimeout));
+            httpClient = httpClient
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
         }
 
-        // otherwise just return selected HttpClient with the default configured timeouts
-        return httpClient
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, requestTimeout)
-            .responseTimeout(Duration.ofMillis(requestTimeout));
+        return httpClient;
     }
 
     @Override
