@@ -10,8 +10,119 @@
 
 package org.zowe.apiml;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.eureka.registry.InstanceRegistry;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
+import org.zowe.apiml.product.constants.CoreService;
+import reactor.core.publisher.Flux;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class ModulithConfig {
+
+    private final InstanceRegistry instanceRegistry;
+
+    @Value("${server.ssl.enabled:true}")
+    private boolean https;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
+    @Value("${apiml.service.ipAddress:127.0.0.1}")
+    private String ipAddress;
+
+    @Value("${apiml.service.port:10010}")
+    private int port;
+
+    private final Map<String, InstanceInfo> localInstances = new HashMap<>();
+
+    private InstanceInfo getInstanceInfo(String serviceId) {
+        return InstanceInfo.Builder.newBuilder()
+            .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
+            .setAppName(serviceId)
+            //.setAppNameForDeser(String appName)
+            //.setAppGroupName(String appGroupName)
+            //.setAppGroupNameForDeser(String appGroupName)
+            .setHostName(hostname)
+            .setStatus(InstanceInfo.InstanceStatus.UP)
+            //.setOverriddenStatus(InstanceStatus status)
+            .setIPAddr(ipAddress)
+            .setPort(port)
+            .setSecurePort(port)
+            .enablePort(InstanceInfo.PortType.SECURE, https)
+            .enablePort(InstanceInfo.PortType.UNSECURE, !https)
+            //.setHomePageUrl(String relativeUrl, String explicitUrl)
+            //.setHomePageUrlForDeser(String homePageUrl)
+            //.setStatusPageUrl(String relativeUrl, String explicitUrl)
+            //.setStatusPageUrlForDeser(String statusPageUrl)
+            //.setHealthCheckUrls(String relativeUrl, String explicitUrl, String secureExplicitUrl)
+            //.setHealthCheckUrlsForDeser(String healthCheckUrl, String secureHealthCheckUrl)
+            .setVIPAddress(serviceId)
+            //.setVIPAddressDeser(String vipAddress)
+            //.setSecureVIPAddress(final String secureVIPAddress)
+            //.setSecureVIPAddressDeser(String secureVIPAddress)
+            //.setDataCenterInfo(DataCenterInfo datacenter)
+            //.setLeaseInfo(LeaseInfo info)
+            //.add(String key, String val)
+            //.setMetadata(Map<String, String> mt)
+            //.setASGName(String asgName)
+            //.setIsCoordinatingDiscoveryServer(boolean isCoordinatingDiscoveryServer)
+            .setLastUpdatedTimestamp(System.currentTimeMillis())
+            //.setLastDirtyTimestamp(long lastDirtyTimestamp)
+            //.setActionType(ActionType actionType)
+            //.setNamespace(String namespace)
+            .build();
+    }
+
+    @PostConstruct
+    void createLocalInstances() {
+        localInstances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
+        localInstances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
+        localInstances.put(CoreService.ZAAS.getServiceId(), getInstanceInfo(CoreService.ZAAS.getServiceId()));
+    }
+
+    @Bean
+    public ReactiveDiscoveryClient getLocalReactiveDiscoveryClient() {
+        return new ReactiveDiscoveryClient() {
+            @Override
+            public String description() {
+                return "Discovery client of local instances";
+            }
+
+            @Override
+            public Flux<ServiceInstance> getInstances(String serviceId) {
+                var instanceInfo = localInstances.get(serviceId);
+                if (instanceInfo == null) {
+                    return Flux.empty();
+                }
+                return Flux.just(new EurekaServiceInstance(instanceInfo));
+            }
+
+            @Override
+            public Flux<String> getServices() {
+                return Flux.fromIterable(localInstances.keySet());
+            }
+        };
+    }
+
+
+    @EventListener
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        for (Map.Entry<String, InstanceInfo> entry : localInstances.entrySet()) {
+            instanceRegistry.register(getInstanceInfo(entry.getKey()), Integer.MAX_VALUE, CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
+        }
+    }
+
 }
