@@ -20,7 +20,7 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/eureka/apps")
+@RequestMapping(path="/eureka/apps",produces="application/json")
 @DependsOn("modulithConfig")
 @Slf4j
 public class MyApplicationsResource extends ApplicationsResource {
@@ -35,31 +35,22 @@ public class MyApplicationsResource extends ApplicationsResource {
     }
 
     @GetMapping
-    public Mono<Object> getAllContainer(
+    public Mono<String> getAllContainer(
         @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
         @Nullable @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
         @Nullable @RequestParam(value = "regions", required = false) String regionsStr) {
 
         var res = super.getContainers(null, acceptHeader, acceptEncoding, eurekaAccept, null, regionsStr);
-        ObjectMapper mapper = new EurekaJsonJacksonCodec().getObjectMapper(Applications.class);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        try {
-            var applications = mapper.readValue((String)res.getEntity(), Applications.class);
-            return Mono.just(applications);
-        } catch (IOException e) {
-           log.error(e.getMessage(), e);
-        }
-        return Mono.error(new RuntimeException("Could not get applications"));
+        return Mono.just((String)res.getEntity());
     }
 
     @GetMapping("/delta")
-    public Mono<Response> getContainerDiff(
-        @RequestHeader(HEADER_ACCEPT) String acceptHeader,
-        @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
-        @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
+    public Mono<String> getContainerDiff(
+        @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
+        @Nullable @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
+        @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
         @Nullable @RequestParam("regions") String regionsStr) {
-        return Mono.just(super.getContainerDifferential(null, acceptHeader, acceptEncoding, eurekaAccept, null, regionsStr));
+        return Mono.just((String)super.getContainerDifferential(null, acceptHeader, acceptEncoding, eurekaAccept, null, regionsStr).getEntity());
     }
 }
