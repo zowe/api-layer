@@ -206,4 +206,69 @@ public class ModulithConfig {
         };
     }
 
+    /*
+    @Bean
+    @Primary
+    public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(HttpHandler httpHandler, List<FilterRegistrationBean> filters) {
+        return new TomcatReactiveWebServerFactory() {
+            @Override
+            protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
+                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, filters));
+            }
+        };
+    }
+
+    static class ServletWithFilters extends TomcatHttpHandlerAdapter {
+
+        private final Servlet servlet;
+        private final FilterChain filterChain;
+
+        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, List<FilterRegistrationBean> filters) {
+            super(httpHandler);
+            this.servlet = servlet;
+
+            FilterChain filterChain = servlet::service;
+            for (var filter : filters) {
+                filterChain = createFilterChain(filter.getFilter(), filterChain);
+            }
+            this.filterChain = filterChain;
+        }
+
+        FilterChain createFilterChain(Filter filter, FilterChain filterChain) {
+            return (request, response) -> {
+                filter.doFilter(request, response, filterChain);
+            };
+        }
+
+        @Override
+        public void init(ServletConfig config) {
+            try {
+                servlet.init(config);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public ServletConfig getServletConfig() {
+            return servlet.getServletConfig();
+        }
+
+        @Override
+        public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+            this.filterChain.doFilter(req, res);
+        }
+
+        @Override
+        public String getServletInfo() {
+            return servlet.getServletInfo();
+        }
+
+        @Override
+        public void destroy() {
+            servlet.destroy();
+        }
+
+    }*/
+
 }
