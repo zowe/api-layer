@@ -16,14 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SafResourceAccessSafTest {
@@ -91,6 +92,15 @@ class SafResourceAccessSafTest {
     @Test
     void testHasSafResourceAccess_whenUseridEmpty_thenFalse() {
         assertFalse(safResourceAccessVerifying.hasSafResourceAccess(new UsernamePasswordAuthenticationToken("", "token"), CLASS, RESOURCE, LEVEL.name()));
+    }
+  
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "tooLongUserId"})
+    void testInvalidUserIds_thenSkipped(String userId) {
+        var auth = new UsernamePasswordAuthenticationToken(userId, "");
+        assertFalse(assertDoesNotThrow(() -> safResourceAccessVerifying.hasSafResourceAccess(auth, CLASS, RESOURCE, LEVEL.name())));
+        verify(checkPermissionMock, never()).checkPermission(any(), any(), any(), anyInt());
     }
 
     @Builder
